@@ -123,11 +123,10 @@ public class FilterLineReachabilityRows {
                 .put(
                     COL_BLOCKING_LINES,
                     line.getBlockingLines().stream()
-                        .map(
-                            i -> {
-                              AclLine l = acl.getLines().get(i);
-                              return firstNonNull(l.getName(), l.toString());
-                            })
+                        .map(i -> {
+                          AclLine l = acl.getLines().get(i);
+                          return firstNonNull(l.getName(), l.toString());
+                        })
                         .collect(ImmutableList.toImmutableList()))
                 .put(COL_DIFF_ACTION, line.hasDiffAction());
             return null;

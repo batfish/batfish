@@ -439,10 +439,9 @@ public final class FortiosGrammarTest {
             "abcdefghijklmnopqrstuvwxyz abcdefghi",
             "interface name",
             "abcdefghijklmnop");
-    illegalNames.forEach(
-        (nameType, name) ->
-            warningMatchers.add(
-                allOf(hasComment("Illegal value for " + nameType), hasText(containsString(name)))));
+    illegalNames.forEach((nameType, name) ->
+        warningMatchers.add(
+            allOf(hasComment("Illegal value for " + nameType), hasText(containsString(name)))));
     warningMatchers.add(hasComment("Address edit block ignored: name is invalid"));
 
     // Expect warnings for each undefined reference in the config (in an otherwise legal context)
@@ -1447,14 +1446,12 @@ public final class FortiosGrammarTest {
 
     // Ensure that all zones' interfaces know what they're in
     Stream.of(zone1, zone2, zoneLongName)
-        .forEach(
-            zone ->
-                zone.getInterfaces()
-                    .forEach(
-                        zoneIface ->
-                            assertThat(
-                                c.getAllInterfaces().get(zoneIface).getZoneName(),
-                                equalTo(zone.getName()))));
+        .forEach(zone ->
+            zone.getInterfaces()
+                .forEach(zoneIface ->
+                    assertThat(
+                        c.getAllInterfaces().get(zoneIface).getZoneName(),
+                        equalTo(zone.getName()))));
   }
 
   @Test

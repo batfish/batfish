@@ -589,38 +589,35 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   private void applyVrrp(Configuration c) {
-    _vrrpGroups.forEach(
-        (ifaceName, vrrpInterface) -> {
-          org.batfish.datamodel.Interface iface = c.getAllInterfaces().get(ifaceName);
-          if (iface != null) {
-            vrrpInterface
-                .getVrrpGroups()
-                .forEach(
-                    (vrid, vrrpGroup) -> {
-                      org.batfish.datamodel.VrrpGroup.Builder newGroup =
-                          org.batfish.datamodel.VrrpGroup.builder();
-                      newGroup.setPreempt(vrrpGroup.getPreempt());
-                      newGroup.setPriority(vrrpGroup.getPriority());
-                      ConcreteInterfaceAddress ifaceAddress = iface.getConcreteAddress();
-                      if (ifaceAddress != null) {
-                        newGroup.setSourceAddress(ifaceAddress);
-                        Ip virtualAddress = vrrpGroup.getVirtualAddress();
-                        if (virtualAddress != null) {
-                          newGroup.setVirtualAddresses(ifaceName, virtualAddress);
-                        } else {
-                          _w.redFlag(
-                              "No virtual address set for VRRP on interface: '" + ifaceName + "'");
-                        }
-                      } else {
-                        _w.redFlagf(
-                            "Could not determine source address of VRRP control traffic on"
-                                + " interface '%s' due to missing ip address",
-                            ifaceName);
-                      }
-                      iface.addVrrpGroup(vrid, newGroup.build());
-                    });
-          }
-        });
+    _vrrpGroups.forEach((ifaceName, vrrpInterface) -> {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get(ifaceName);
+      if (iface != null) {
+        vrrpInterface
+            .getVrrpGroups()
+            .forEach((vrid, vrrpGroup) -> {
+              org.batfish.datamodel.VrrpGroup.Builder newGroup =
+                  org.batfish.datamodel.VrrpGroup.builder();
+              newGroup.setPreempt(vrrpGroup.getPreempt());
+              newGroup.setPriority(vrrpGroup.getPriority());
+              ConcreteInterfaceAddress ifaceAddress = iface.getConcreteAddress();
+              if (ifaceAddress != null) {
+                newGroup.setSourceAddress(ifaceAddress);
+                Ip virtualAddress = vrrpGroup.getVirtualAddress();
+                if (virtualAddress != null) {
+                  newGroup.setVirtualAddresses(ifaceName, virtualAddress);
+                } else {
+                  _w.redFlag("No virtual address set for VRRP on interface: '" + ifaceName + "'");
+                }
+              } else {
+                _w.redFlagf(
+                    "Could not determine source address of VRRP control traffic on"
+                        + " interface '%s' due to missing ip address",
+                    ifaceName);
+              }
+              iface.addVrrpGroup(vrid, newGroup.build());
+            });
+      }
+    });
   }
 
   private boolean containsIpAccessList(String eaListName, String mapName) {
@@ -1144,37 +1141,32 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // create origination prefilter from listed advertised networks
     proc.getIpNetworks()
-        .forEach(
-            (prefix, bgpNetwork) -> {
-              Conjunction exportNetworkConditions = new Conjunction();
-              PrefixSpace space = new PrefixSpace();
-              space.addPrefix(prefix);
-              newBgpProcess.addToOriginationSpace(space);
-              exportNetworkConditions
-                  .getConjuncts()
-                  .add(
-                      new MatchPrefixSet(
-                          DestinationNetwork.instance(), new ExplicitPrefixSet(space)));
-              exportNetworkConditions
-                  .getConjuncts()
-                  .add(
-                      new Not(
-                          new MatchProtocol(
-                              RoutingProtocol.BGP,
-                              RoutingProtocol.IBGP,
-                              RoutingProtocol.AGGREGATE)));
-              Optional.ofNullable(bgpNetwork.getRouteMapName())
-                  .map(_routeMaps::get)
-                  .ifPresent(
-                      rm -> exportNetworkConditions.getConjuncts().add(new CallExpr(rm.getName())));
-              redistributionPolicy.addStatement(
-                  new If(
-                      "Add network statement routes to BGP",
-                      exportNetworkConditions,
-                      ImmutableList.of(
-                          new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
-                          Statements.ExitAccept.toStaticStatement())));
-            });
+        .forEach((prefix, bgpNetwork) -> {
+          Conjunction exportNetworkConditions = new Conjunction();
+          PrefixSpace space = new PrefixSpace();
+          space.addPrefix(prefix);
+          newBgpProcess.addToOriginationSpace(space);
+          exportNetworkConditions
+              .getConjuncts()
+              .add(new MatchPrefixSet(DestinationNetwork.instance(), new ExplicitPrefixSet(space)));
+          exportNetworkConditions
+              .getConjuncts()
+              .add(
+                  new Not(
+                      new MatchProtocol(
+                          RoutingProtocol.BGP, RoutingProtocol.IBGP, RoutingProtocol.AGGREGATE)));
+          Optional.ofNullable(bgpNetwork.getRouteMapName())
+              .map(_routeMaps::get)
+              .ifPresent(
+                  rm -> exportNetworkConditions.getConjuncts().add(new CallExpr(rm.getName())));
+          redistributionPolicy.addStatement(
+              new If(
+                  "Add network statement routes to BGP",
+                  exportNetworkConditions,
+                  ImmutableList.of(
+                      new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
+                      Statements.ExitAccept.toStaticStatement())));
+        });
 
     // Finalize redistribution policy and attach to process
     redistributionPolicy.addStatement(Statements.ExitReject.toStaticStatement()).build();
@@ -2018,28 +2010,25 @@ public final class CiscoConfiguration extends VendorConfiguration {
       newAreaInterfacesBuilder.add(ifaceName);
       finalizeInterfaceOspfSettings(iface, vsIface, proc, areaNum);
     }
-    areaInterfacesBuilders.forEach(
-        (areaNum, interfacesBuilder) ->
-            areas.get(areaNum).addInterfaces(interfacesBuilder.build()));
+    areaInterfacesBuilders.forEach((areaNum, interfacesBuilder) ->
+        areas.get(areaNum).addInterfaces(interfacesBuilder.build()));
     proc.getNssas()
-        .forEach(
-            (areaId, nssaSettings) -> {
-              if (!areas.containsKey(areaId)) {
-                return;
-              }
-              areas.get(areaId).setStubType(StubType.NSSA);
-              areas.get(areaId).setNssaSettings(toNssaSettings(nssaSettings));
-            });
+        .forEach((areaId, nssaSettings) -> {
+          if (!areas.containsKey(areaId)) {
+            return;
+          }
+          areas.get(areaId).setStubType(StubType.NSSA);
+          areas.get(areaId).setNssaSettings(toNssaSettings(nssaSettings));
+        });
 
     proc.getStubs()
-        .forEach(
-            (areaId, stubSettings) -> {
-              if (!areas.containsKey(areaId)) {
-                return;
-              }
-              areas.get(areaId).setStubType(StubType.STUB);
-              areas.get(areaId).setStubSettings(toStubSettings(stubSettings));
-            });
+        .forEach((areaId, stubSettings) -> {
+          if (!areas.containsKey(areaId)) {
+            return;
+          }
+          areas.get(areaId).setStubType(StubType.STUB);
+          areas.get(areaId).setStubSettings(toStubSettings(stubSettings));
+        });
 
     // create summarization filters for inter-area routes
     for (Entry<Long, Map<Prefix, OspfAreaSummary>> e1 : proc.getSummaries().entrySet()) {
@@ -2550,10 +2539,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         .addAll(
             tacacsPlusGroups.values().stream()
                 .filter(group -> group instanceof TacacsPlusServerGroup)
-                .flatMap(
-                    group ->
-                        Streams.concat(
-                            group.getServers().stream(), group.getPrivateServers().stream()))
+                .flatMap(group ->
+                    Streams.concat(group.getServers().stream(), group.getPrivateServers().stream()))
                 .collect(ImmutableSet.toImmutableSet()))
         .build();
   }
@@ -2740,62 +2727,55 @@ public final class CiscoConfiguration extends VendorConfiguration {
      * Consolidate info about networkObjects
      * - Associate networkObjects with their Info
      */
-    _networkObjectInfos.forEach(
-        (name, info) -> {
-          if (_networkObjects.containsKey(name)) {
-            _networkObjects.get(name).setInfo(info);
-          }
-        });
+    _networkObjectInfos.forEach((name, info) -> {
+      if (_networkObjects.containsKey(name)) {
+        _networkObjects.get(name).setInfo(info);
+      }
+    });
 
     // convert each NetworkObject and NetworkObjectGroup to IpSpace
     _networkObjectGroups.forEach(
         (name, networkObjectGroup) -> c.getIpSpaces().put(name, toIpSpace(networkObjectGroup)));
     _networkObjectGroups
         .keySet()
-        .forEach(
-            name ->
-                c.getIpSpaceMetadata()
-                    .put(
-                        name,
-                        new IpSpaceMetadata(
-                            name, CiscoStructureType.NETWORK_OBJECT_GROUP.getDescription(), null)));
+        .forEach(name ->
+            c.getIpSpaceMetadata()
+                .put(
+                    name,
+                    new IpSpaceMetadata(
+                        name, CiscoStructureType.NETWORK_OBJECT_GROUP.getDescription(), null)));
     _networkObjects.forEach(
         (name, networkObject) -> c.getIpSpaces().put(name, networkObject.toIpSpace()));
     _networkObjects
         .keySet()
-        .forEach(
-            name ->
-                c.getIpSpaceMetadata()
-                    .put(
-                        name,
-                        new IpSpaceMetadata(
-                            name, CiscoStructureType.NETWORK_OBJECT.getDescription(), null)));
+        .forEach(name ->
+            c.getIpSpaceMetadata()
+                .put(
+                    name,
+                    new IpSpaceMetadata(
+                        name, CiscoStructureType.NETWORK_OBJECT.getDescription(), null)));
 
     // convert each IcmpTypeGroup to IpAccessList
-    _icmpTypeObjectGroups.forEach(
-        (name, icmpTypeObjectGroups) ->
-            c.getIpAccessLists()
-                .put(computeIcmpObjectGroupAclName(name), toIpAccessList(icmpTypeObjectGroups)));
+    _icmpTypeObjectGroups.forEach((name, icmpTypeObjectGroups) ->
+        c.getIpAccessLists()
+            .put(computeIcmpObjectGroupAclName(name), toIpAccessList(icmpTypeObjectGroups)));
 
     // convert each ProtocolObjectGroup to IpAccessList
-    _protocolObjectGroups.forEach(
-        (name, protocolObjectGroup) ->
-            c.getIpAccessLists()
-                .put(computeProtocolObjectGroupAclName(name), toIpAccessList(protocolObjectGroup)));
+    _protocolObjectGroups.forEach((name, protocolObjectGroup) ->
+        c.getIpAccessLists()
+            .put(computeProtocolObjectGroupAclName(name), toIpAccessList(protocolObjectGroup)));
 
     // convert each ServiceObject and ServiceObjectGroup to IpAccessList
-    _serviceObjectGroups.forEach(
-        (name, serviceObjectGroup) ->
-            c.getIpAccessLists()
-                .put(
-                    computeServiceObjectGroupAclName(name),
-                    toIpAccessList(serviceObjectGroup, _serviceObjects, _serviceObjectGroups)));
-    _serviceObjects.forEach(
-        (name, serviceObject) ->
-            c.getIpAccessLists()
-                .put(
-                    computeServiceObjectAclName(name),
-                    toIpAccessList(serviceObject, _serviceObjects, _serviceObjectGroups)));
+    _serviceObjectGroups.forEach((name, serviceObjectGroup) ->
+        c.getIpAccessLists()
+            .put(
+                computeServiceObjectGroupAclName(name),
+                toIpAccessList(serviceObjectGroup, _serviceObjects, _serviceObjectGroups)));
+    _serviceObjects.forEach((name, serviceObject) ->
+        c.getIpAccessLists()
+            .put(
+                computeServiceObjectAclName(name),
+                toIpAccessList(serviceObject, _serviceObjects, _serviceObjectGroups)));
 
     // TODO: convert route maps that are used for PBR to PacketPolicies
 
@@ -2814,35 +2794,33 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _securityZones.forEach((name, securityZone) -> c.getZones().put(name, new Zone(name)));
 
     // populate zone interfaces based on IOS security zones
-    _interfaces.forEach(
-        (ifaceName, iface) -> {
-          String zoneName = iface.getSecurityZone();
-          if (zoneName == null) {
-            return;
-          }
-          Zone zone = c.getZones().get(zoneName);
-          if (zone == null) {
-            return;
-          }
-          zone.setInterfaces(
-              ImmutableSet.<String>builder().addAll(zone.getInterfaces()).add(ifaceName).build());
-        });
+    _interfaces.forEach((ifaceName, iface) -> {
+      String zoneName = iface.getSecurityZone();
+      if (zoneName == null) {
+        return;
+      }
+      Zone zone = c.getZones().get(zoneName);
+      if (zone == null) {
+        return;
+      }
+      zone.setInterfaces(
+          ImmutableSet.<String>builder().addAll(zone.getInterfaces()).add(ifaceName).build());
+    });
 
     // create zone policies
     createZoneAcls(c);
 
     // convert interfaces
-    _interfaces.forEach(
-        (ifaceName, iface) -> {
-          // Handle renaming interfaces for ASA devices
-          String newIfaceName = iface.getName();
-          org.batfish.datamodel.Interface newInterface = toInterface(newIfaceName, iface, c);
-          String vrfName = iface.getVrf();
-          if (vrfName == null) {
-            throw new BatfishException("Missing vrf name for iface: '" + iface.getName() + "'");
-          }
-          c.getAllInterfaces().put(newIfaceName, newInterface);
-        });
+    _interfaces.forEach((ifaceName, iface) -> {
+      // Handle renaming interfaces for ASA devices
+      String newIfaceName = iface.getName();
+      org.batfish.datamodel.Interface newInterface = toInterface(newIfaceName, iface, c);
+      String vrfName = iface.getVrf();
+      if (vrfName == null) {
+        throw new BatfishException("Missing vrf name for iface: '" + iface.getName() + "'");
+      }
+      c.getAllInterfaces().put(newIfaceName, newInterface);
+    });
     /*
      * On IOS, add a single FirewallSessionInterfaceInfo for all inside interfaces and a
      * single FirewallSessionInterfaceInfo for all outside interfaces. This way, when an outgoing
@@ -2888,76 +2866,74 @@ public final class CiscoConfiguration extends VendorConfiguration {
      * - tunnel interfaces
      * TODO: VLAN interfaces
      */
-    _interfaces.forEach(
-        (ifaceName, iface) -> {
-          // Portchannels
-          String chGroup = iface.getChannelGroup();
-          if (chGroup != null) {
-            org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(chGroup);
-            if (viIface != null) {
-              viIface.addDependency(new Dependency(ifaceName, DependencyType.AGGREGATE));
-            }
+    _interfaces.forEach((ifaceName, iface) -> {
+      // Portchannels
+      String chGroup = iface.getChannelGroup();
+      if (chGroup != null) {
+        org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(chGroup);
+        if (viIface != null) {
+          viIface.addDependency(new Dependency(ifaceName, DependencyType.AGGREGATE));
+        }
+      }
+      // subinterfaces
+      Matcher m = INTERFACE_WITH_SUBINTERFACE.matcher(iface.getName());
+      if (m.matches()) {
+        String parentInterfaceName = m.group(1);
+        Interface parentInterface = _interfaces.get(parentInterfaceName);
+        if (parentInterface != null) {
+          org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(ifaceName);
+          if (viIface != null) {
+            viIface.addDependency(new Dependency(parentInterfaceName, DependencyType.BIND));
           }
-          // subinterfaces
-          Matcher m = INTERFACE_WITH_SUBINTERFACE.matcher(iface.getName());
-          if (m.matches()) {
-            String parentInterfaceName = m.group(1);
-            Interface parentInterface = _interfaces.get(parentInterfaceName);
-            if (parentInterface != null) {
-              org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(ifaceName);
-              if (viIface != null) {
-                viIface.addDependency(new Dependency(parentInterfaceName, DependencyType.BIND));
+        }
+      }
+      // Redundant Interfaces
+      {
+        org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(ifaceName);
+        if (viIface != null && viIface.getInterfaceType() == InterfaceType.REDUNDANT) {
+          iface.getMemberInterfaces().stream()
+              .map(c.getAllInterfaces()::get)
+              .filter(Objects::nonNull)
+              .forEach(memberViIface ->
+                  viIface.addDependency(
+                      new Dependency(memberViIface.getName(), DependencyType.AGGREGATE)));
+        }
+      }
+      // Tunnels
+      Tunnel tunnel = iface.getTunnel();
+      if (tunnel != null) {
+        org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(ifaceName);
+        if (viIface != null) {
+          // Add dependency
+          if (isRealInterfaceName(tunnel.getSourceInterfaceName())) {
+            String parentIfaceName = canonicalizeInterfaceName(tunnel.getSourceInterfaceName());
+            viIface.addDependency(new Dependency(parentIfaceName, DependencyType.BIND));
+            // Also set tunnel config while we're at at it.
+            // Step one: determine IP address of parent interface
+            @Nullable
+            Ip parentIp =
+                Optional.ofNullable(c.getActiveInterfaces().get(parentIfaceName))
+                    .map(org.batfish.datamodel.Interface::getConcreteAddress)
+                    .map(ConcreteInterfaceAddress::getIp)
+                    .orElse(null);
+            // Step 2: create tunnel configs for non-IPsec tunnels. IPsec handled separately.
+            if (tunnel.getMode() != TunnelMode.IPSEC_IPV4) {
+              // Ensure we have both src and dst IPs, otherwise don't convert
+              if (tunnel.getDestination() != null
+                  && (tunnel.getSourceAddress() != null || parentIp != null)) {
+                viIface.setTunnelConfig(
+                    TunnelConfiguration.builder()
+                        .setSourceAddress(firstNonNull(tunnel.getSourceAddress(), parentIp))
+                        .setDestinationAddress(tunnel.getDestination())
+                        .build());
+              } else {
+                _w.redFlagf("Could not determine src/dst IPs for tunnel %s", iface.getName());
               }
             }
           }
-          // Redundant Interfaces
-          {
-            org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(ifaceName);
-            if (viIface != null && viIface.getInterfaceType() == InterfaceType.REDUNDANT) {
-              iface.getMemberInterfaces().stream()
-                  .map(c.getAllInterfaces()::get)
-                  .filter(Objects::nonNull)
-                  .forEach(
-                      memberViIface ->
-                          viIface.addDependency(
-                              new Dependency(memberViIface.getName(), DependencyType.AGGREGATE)));
-            }
-          }
-          // Tunnels
-          Tunnel tunnel = iface.getTunnel();
-          if (tunnel != null) {
-            org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(ifaceName);
-            if (viIface != null) {
-              // Add dependency
-              if (isRealInterfaceName(tunnel.getSourceInterfaceName())) {
-                String parentIfaceName = canonicalizeInterfaceName(tunnel.getSourceInterfaceName());
-                viIface.addDependency(new Dependency(parentIfaceName, DependencyType.BIND));
-                // Also set tunnel config while we're at at it.
-                // Step one: determine IP address of parent interface
-                @Nullable
-                Ip parentIp =
-                    Optional.ofNullable(c.getActiveInterfaces().get(parentIfaceName))
-                        .map(org.batfish.datamodel.Interface::getConcreteAddress)
-                        .map(ConcreteInterfaceAddress::getIp)
-                        .orElse(null);
-                // Step 2: create tunnel configs for non-IPsec tunnels. IPsec handled separately.
-                if (tunnel.getMode() != TunnelMode.IPSEC_IPV4) {
-                  // Ensure we have both src and dst IPs, otherwise don't convert
-                  if (tunnel.getDestination() != null
-                      && (tunnel.getSourceAddress() != null || parentIp != null)) {
-                    viIface.setTunnelConfig(
-                        TunnelConfiguration.builder()
-                            .setSourceAddress(firstNonNull(tunnel.getSourceAddress(), parentIp))
-                            .setDestinationAddress(tunnel.getDestination())
-                            .build());
-                  } else {
-                    _w.redFlagf("Could not determine src/dst IPs for tunnel %s", iface.getName());
-                  }
-                }
-              }
-            }
-          }
-        });
+        }
+      }
+    });
 
     convertIpSlas(_ipSlas, c);
     convertTracks(_tracks, _ipSlas.keySet()::contains, _interfaces.keySet()::contains, c);
@@ -2986,35 +2962,31 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // RSA pub named keys to IKE phase 1 key and IKE phase 1 policy
     _cryptoNamedRsaPubKeys
         .values()
-        .forEach(
-            namedRsaPubKey -> {
-              IkePhase1Key ikePhase1Key = toIkePhase1Key(namedRsaPubKey);
-              ikePhase1KeysBuilder.put(getRsaPubKeyGeneratedName(namedRsaPubKey), ikePhase1Key);
+        .forEach(namedRsaPubKey -> {
+          IkePhase1Key ikePhase1Key = toIkePhase1Key(namedRsaPubKey);
+          ikePhase1KeysBuilder.put(getRsaPubKeyGeneratedName(namedRsaPubKey), ikePhase1Key);
 
-              IkePhase1Policy ikePhase1Policy =
-                  toIkePhase1Policy(namedRsaPubKey, this, ikePhase1Key);
-              c.getIkePhase1Policies().put(ikePhase1Policy.getName(), ikePhase1Policy);
-            });
-
-    // standalone ISAKMP keys to IKE phase 1 key and IKE phase 1 policy
-    _isakmpKeys.forEach(
-        isakmpKey -> {
-          IkePhase1Key ikePhase1Key = toIkePhase1Key(isakmpKey);
-          ikePhase1KeysBuilder.put(getIsakmpKeyGeneratedName(isakmpKey), ikePhase1Key);
-
-          IkePhase1Policy ikePhase1Policy = toIkePhase1Policy(isakmpKey, this, ikePhase1Key);
+          IkePhase1Policy ikePhase1Policy = toIkePhase1Policy(namedRsaPubKey, this, ikePhase1Key);
           c.getIkePhase1Policies().put(ikePhase1Policy.getName(), ikePhase1Policy);
         });
+
+    // standalone ISAKMP keys to IKE phase 1 key and IKE phase 1 policy
+    _isakmpKeys.forEach(isakmpKey -> {
+      IkePhase1Key ikePhase1Key = toIkePhase1Key(isakmpKey);
+      ikePhase1KeysBuilder.put(getIsakmpKeyGeneratedName(isakmpKey), ikePhase1Key);
+
+      IkePhase1Policy ikePhase1Policy = toIkePhase1Policy(isakmpKey, this, ikePhase1Key);
+      c.getIkePhase1Policies().put(ikePhase1Policy.getName(), ikePhase1Policy);
+    });
 
     c.setIkePhase1Keys(ikePhase1KeysBuilder.build());
 
     // ISAKMP profiles to IKE phase 1 policies
     _isakmpProfiles
         .values()
-        .forEach(
-            isakmpProfile ->
-                c.getIkePhase1Policies()
-                    .put(isakmpProfile.getName(), toIkePhase1Policy(isakmpProfile, this, c, _w)));
+        .forEach(isakmpProfile ->
+            c.getIkePhase1Policies()
+                .put(isakmpProfile.getName(), toIkePhase1Policy(isakmpProfile, this, c, _w)));
 
     // convert ipsec transform sets
     ImmutableSortedMap.Builder<String, IpsecPhase2Proposal> ipsecPhase2ProposalsBuilder =
@@ -3058,96 +3030,94 @@ public final class CiscoConfiguration extends VendorConfiguration {
     c.setIpsecPeerConfigs(ipsecPeerConfigBuilder.build());
 
     // convert routing processes
-    _vrfs.forEach(
-        (vrfName, vrf) -> {
-          org.batfish.datamodel.Vrf newVrf = c.getVrfs().get(vrfName);
+    _vrfs.forEach((vrfName, vrf) -> {
+      org.batfish.datamodel.Vrf newVrf = c.getVrfs().get(vrfName);
 
-          // description
-          newVrf.setDescription(vrf.getDescription());
+      // description
+      newVrf.setDescription(vrf.getDescription());
 
-          // add snmp trap servers to main list
-          if (newVrf.getSnmpServer() != null) {
-            c.getSnmpTrapServers().addAll(newVrf.getSnmpServer().getHosts().keySet());
-          }
+      // add snmp trap servers to main list
+      if (newVrf.getSnmpServer() != null) {
+        c.getSnmpTrapServers().addAll(newVrf.getSnmpServer().getHosts().keySet());
+      }
 
-          // convert static routes
-          for (StaticRoute staticRoute : vrf.getStaticRoutes()) {
-            newVrf.getStaticRoutes().add(toStaticRoute(staticRoute, _tracks::containsKey));
-          }
-          // For the default VRF, also convert static routes created by add-route in NAT rules
-          if (vrf == getDefaultVrf()) {
-            newVrf.getStaticRoutes().addAll(generateIosNatAddRouteRoutes());
-          }
+      // convert static routes
+      for (StaticRoute staticRoute : vrf.getStaticRoutes()) {
+        newVrf.getStaticRoutes().add(toStaticRoute(staticRoute, _tracks::containsKey));
+      }
+      // For the default VRF, also convert static routes created by add-route in NAT rules
+      if (vrf == getDefaultVrf()) {
+        newVrf.getStaticRoutes().addAll(generateIosNatAddRouteRoutes());
+      }
 
-          // convert rip process
-          RipProcess ripProcess = vrf.getRipProcess();
-          if (ripProcess != null) {
-            org.batfish.datamodel.RipProcess newRipProcess = toRipProcess(ripProcess, vrfName, c);
-            newVrf.setRipProcess(newRipProcess);
-          }
+      // convert rip process
+      RipProcess ripProcess = vrf.getRipProcess();
+      if (ripProcess != null) {
+        org.batfish.datamodel.RipProcess newRipProcess = toRipProcess(ripProcess, vrfName, c);
+        newVrf.setRipProcess(newRipProcess);
+      }
 
-          // Convert OSPF processes.
-          newVrf.setOspfProcesses(
-              vrf.getOspfProcesses().values().stream()
-                  .map(proc -> toOspfProcess(proc, vrfName, c, this))
-                  .filter(Objects::nonNull));
+      // Convert OSPF processes.
+      newVrf.setOspfProcesses(
+          vrf.getOspfProcesses().values().stream()
+              .map(proc -> toOspfProcess(proc, vrfName, c, this))
+              .filter(Objects::nonNull));
 
-          // convert eigrp processes
-          vrf.getEigrpProcesses().values().stream()
-              .map(proc -> CiscoConversions.toEigrpProcess(proc, vrfName, c, this))
-              .filter(Objects::nonNull)
-              .forEach(newVrf::addEigrpProcess);
+      // convert eigrp processes
+      vrf.getEigrpProcesses().values().stream()
+          .map(proc -> CiscoConversions.toEigrpProcess(proc, vrfName, c, this))
+          .filter(Objects::nonNull)
+          .forEach(newVrf::addEigrpProcess);
 
-          // convert isis process
-          IsisProcess isisProcess = vrf.getIsisProcess();
-          if (isisProcess != null) {
-            org.batfish.datamodel.isis.IsisProcess newIsisProcess =
-                CiscoConversions.toIsisProcess(isisProcess, c, this);
-            newVrf.setIsisProcess(newIsisProcess);
-          }
+      // convert isis process
+      IsisProcess isisProcess = vrf.getIsisProcess();
+      if (isisProcess != null) {
+        org.batfish.datamodel.isis.IsisProcess newIsisProcess =
+            CiscoConversions.toIsisProcess(isisProcess, c, this);
+        newVrf.setIsisProcess(newIsisProcess);
+      }
 
-          // convert bgp process
-          BgpProcess bgpProcess = vrf.getBgpProcess();
-          if (bgpProcess != null) {
-            org.batfish.datamodel.BgpProcess newBgpProcess = toBgpProcess(c, bgpProcess, vrfName);
-            newVrf.setBgpProcess(newBgpProcess);
-          } else if (vrf.getIpv4UnicastAddressFamily() != null
-              && !vrf.getIpv4UnicastAddressFamily().getRouteTargetImport().isEmpty()) {
-            /*
-             * Despite no BGP config this vrf is leaked into. Make a dummy BGP process.
-             */
-            assert newVrf.getBgpProcess() == null;
-            newVrf.setBgpProcess(
-                bgpProcessBuilder()
-                    .setRouterId(Ip.ZERO)
-                    .setRedistributionPolicy(initDenyAllBgpRedistributionPolicy(c))
-                    .build());
-          }
-        });
+      // convert bgp process
+      BgpProcess bgpProcess = vrf.getBgpProcess();
+      if (bgpProcess != null) {
+        org.batfish.datamodel.BgpProcess newBgpProcess = toBgpProcess(c, bgpProcess, vrfName);
+        newVrf.setBgpProcess(newBgpProcess);
+      } else if (vrf.getIpv4UnicastAddressFamily() != null
+          && !vrf.getIpv4UnicastAddressFamily().getRouteTargetImport().isEmpty()) {
+        /*
+         * Despite no BGP config this vrf is leaked into. Make a dummy BGP process.
+         */
+        assert newVrf.getBgpProcess() == null;
+        newVrf.setBgpProcess(
+            bgpProcessBuilder()
+                .setRouterId(Ip.ZERO)
+                .setRedistributionPolicy(initDenyAllBgpRedistributionPolicy(c))
+                .build());
+      }
+    });
     /*
      * Another pass over interfaces to push final settings to VI interfaces.
      * (e.g. has OSPF settings but no associated OSPF process, common in show run all)
      */
-    _interfaces.forEach(
-        (ifaceName, vsIface) -> {
-          org.batfish.datamodel.Interface iface = c.getAllInterfaces().get(ifaceName);
-          if (iface == null) {
-            // Should never get here
-            return;
-          } else if (iface.getOspfAreaName() != null) {
-            // Already configured
-            return;
-          }
-          // Not part of an OSPF area, but has settings
-          if (vsIface.getOspfArea() != null
-              || vsIface.getOspfCost() != null
-              || vsIface.getOspfPassive() != null
-              || vsIface.getOspfNetworkType() != null
-              || vsIface.getOspfDeadInterval() != null
-              || vsIface.getOspfHelloInterval() != null) {
-            finalizeInterfaceOspfSettings(iface, vsIface, null, null);
-          }
-        });
+    _interfaces.forEach((ifaceName, vsIface) -> {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get(ifaceName);
+      if (iface == null) {
+        // Should never get here
+        return;
+      } else if (iface.getOspfAreaName() != null) {
+        // Already configured
+        return;
+      }
+      // Not part of an OSPF area, but has settings
+      if (vsIface.getOspfArea() != null
+          || vsIface.getOspfCost() != null
+          || vsIface.getOspfPassive() != null
+          || vsIface.getOspfNetworkType() != null
+          || vsIface.getOspfDeadInterval() != null
+          || vsIface.getOspfHelloInterval() != null) {
+        finalizeInterfaceOspfSettings(iface, vsIface, null, null);
+      }
+    });
 
     convertVrfLeakingConfig(_vrfs.values(), c);
 
@@ -3468,95 +3438,87 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   private void createInspectClassMapAcls(Configuration c) {
-    _inspectClassMaps.forEach(
-        (inspectClassMapName, inspectClassMap) -> {
-          String inspectClassMapAclName = computeInspectClassMapAclName(inspectClassMapName);
-          MatchSemantics matchSemantics = inspectClassMap.getMatchSemantics();
-          List<AclLineMatchExpr> matchConditions =
-              inspectClassMap.getMatches().stream()
-                  .map(
-                      inspectClassMapMatch ->
-                          inspectClassMapMatch.toAclLineMatchExpr(this, c, matchSemantics, _w))
-                  .collect(ImmutableList.toImmutableList());
-          AclLineMatchExpr matchClassMap =
-              switch (matchSemantics) {
-                case MATCH_ALL -> and(matchConditions);
-                case MATCH_ANY -> or(matchConditions);
-              };
-          IpAccessList.builder()
-              .setOwner(c)
-              .setName(inspectClassMapAclName)
-              .setLines(
-                  ImmutableList.of(
-                      ExprAclLine.accepting().setMatchCondition(matchClassMap).build()))
-              .setSourceName(inspectClassMapName)
-              .setSourceType(CiscoStructureType.INSPECT_CLASS_MAP.getDescription())
-              .build();
-        });
+    _inspectClassMaps.forEach((inspectClassMapName, inspectClassMap) -> {
+      String inspectClassMapAclName = computeInspectClassMapAclName(inspectClassMapName);
+      MatchSemantics matchSemantics = inspectClassMap.getMatchSemantics();
+      List<AclLineMatchExpr> matchConditions =
+          inspectClassMap.getMatches().stream()
+              .map(inspectClassMapMatch ->
+                  inspectClassMapMatch.toAclLineMatchExpr(this, c, matchSemantics, _w))
+              .collect(ImmutableList.toImmutableList());
+      AclLineMatchExpr matchClassMap =
+          switch (matchSemantics) {
+            case MATCH_ALL -> and(matchConditions);
+            case MATCH_ANY -> or(matchConditions);
+          };
+      IpAccessList.builder()
+          .setOwner(c)
+          .setName(inspectClassMapAclName)
+          .setLines(
+              ImmutableList.of(ExprAclLine.accepting().setMatchCondition(matchClassMap).build()))
+          .setSourceName(inspectClassMapName)
+          .setSourceType(CiscoStructureType.INSPECT_CLASS_MAP.getDescription())
+          .build();
+    });
   }
 
   private void createInspectPolicyMapAcls(Configuration c) {
-    _inspectPolicyMaps.forEach(
-        (inspectPolicyMapName, inspectPolicyMap) -> {
-          String inspectPolicyMapAclName = computeInspectPolicyMapAclName(inspectPolicyMapName);
-          ImmutableList.Builder<AclLine> policyMapAclLines = ImmutableList.builder();
-          inspectPolicyMap
-              .getInspectClasses()
-              .forEach(
-                  (inspectClassName, inspectPolicyMapInspectClass) -> {
-                    PolicyMapClassAction action = inspectPolicyMapInspectClass.getAction();
-                    if (action == null) {
-                      return;
-                    }
-                    String inspectClassMapAclName = computeInspectClassMapAclName(inspectClassName);
-                    if (!c.getIpAccessLists().containsKey(inspectClassMapAclName)) {
-                      return;
-                    }
-                    AclLineMatchExpr matchCondition = new PermittedByAcl(inspectClassMapAclName);
-                    switch (action) {
-                      case DROP ->
-                          policyMapAclLines.add(
-                              ExprAclLine.rejecting()
-                                  .setMatchCondition(matchCondition)
-                                  .setName(
-                                      String.format(
-                                          "Drop if matched by class-map: '%s'", inspectClassName))
-                                  .build());
-                      case INSPECT ->
-                          policyMapAclLines.add(
-                              ExprAclLine.accepting()
-                                  .setMatchCondition(matchCondition)
-                                  .setName(
-                                      String.format(
-                                          "Inspect if matched by class-map: '%s'",
-                                          inspectClassName))
-                                  .build());
-                      case PASS ->
-                          policyMapAclLines.add(
-                              ExprAclLine.accepting()
-                                  .setMatchCondition(matchCondition)
-                                  .setName(
-                                      String.format(
-                                          "Pass if matched by class-map: '%s'", inspectClassName))
-                                  .build());
-                    }
-                  });
-          policyMapAclLines.add(
-              ExprAclLine.builder()
-                  .setAction(inspectPolicyMap.getClassDefaultAction())
-                  .setMatchCondition(TrueExpr.INSTANCE)
-                  .setName(
-                      String.format(
-                          "class-default action: %s", inspectPolicyMap.getClassDefaultAction()))
-                  .build());
-          IpAccessList.builder()
-              .setOwner(c)
-              .setName(inspectPolicyMapAclName)
-              .setLines(policyMapAclLines.build())
-              .setSourceName(inspectPolicyMapName)
-              .setSourceType(CiscoStructureType.INSPECT_POLICY_MAP.getDescription())
-              .build();
-        });
+    _inspectPolicyMaps.forEach((inspectPolicyMapName, inspectPolicyMap) -> {
+      String inspectPolicyMapAclName = computeInspectPolicyMapAclName(inspectPolicyMapName);
+      ImmutableList.Builder<AclLine> policyMapAclLines = ImmutableList.builder();
+      inspectPolicyMap
+          .getInspectClasses()
+          .forEach((inspectClassName, inspectPolicyMapInspectClass) -> {
+            PolicyMapClassAction action = inspectPolicyMapInspectClass.getAction();
+            if (action == null) {
+              return;
+            }
+            String inspectClassMapAclName = computeInspectClassMapAclName(inspectClassName);
+            if (!c.getIpAccessLists().containsKey(inspectClassMapAclName)) {
+              return;
+            }
+            AclLineMatchExpr matchCondition = new PermittedByAcl(inspectClassMapAclName);
+            switch (action) {
+              case DROP ->
+                  policyMapAclLines.add(
+                      ExprAclLine.rejecting()
+                          .setMatchCondition(matchCondition)
+                          .setName(
+                              String.format("Drop if matched by class-map: '%s'", inspectClassName))
+                          .build());
+              case INSPECT ->
+                  policyMapAclLines.add(
+                      ExprAclLine.accepting()
+                          .setMatchCondition(matchCondition)
+                          .setName(
+                              String.format(
+                                  "Inspect if matched by class-map: '%s'", inspectClassName))
+                          .build());
+              case PASS ->
+                  policyMapAclLines.add(
+                      ExprAclLine.accepting()
+                          .setMatchCondition(matchCondition)
+                          .setName(
+                              String.format("Pass if matched by class-map: '%s'", inspectClassName))
+                          .build());
+            }
+          });
+      policyMapAclLines.add(
+          ExprAclLine.builder()
+              .setAction(inspectPolicyMap.getClassDefaultAction())
+              .setMatchCondition(TrueExpr.INSTANCE)
+              .setName(
+                  String.format(
+                      "class-default action: %s", inspectPolicyMap.getClassDefaultAction()))
+              .build());
+      IpAccessList.builder()
+          .setOwner(c)
+          .setName(inspectPolicyMapAclName)
+          .setLines(policyMapAclLines.build())
+          .setSourceName(inspectPolicyMapName)
+          .setSourceType(CiscoStructureType.INSPECT_POLICY_MAP.getDescription())
+          .build();
+    });
   }
 
   private void createZoneAcls(Configuration c) {
@@ -3568,21 +3530,20 @@ public final class CiscoConfiguration extends VendorConfiguration {
             zoneByNameEntry -> new MatchSrcInterface(zoneByNameEntry.getValue().getInterfaces()));
 
     c.getZones().values().stream()
-        .map(
-            zone -> {
-              // Don't bother if zone is empty
-              SortedSet<String> interfaces = zone.getInterfaces();
-              if (interfaces.isEmpty()) {
-                return null;
-              }
-              String zoneName = zone.getName();
-              if (_securityZones.containsKey(zoneName)) {
-                // IOS security zone
-                return createIosSecurityZoneAcl(zone, matchSrcInterfaceBySrcZone, c);
-              }
-              // shouldn't reach here
-              return null;
-            })
+        .map(zone -> {
+          // Don't bother if zone is empty
+          SortedSet<String> interfaces = zone.getInterfaces();
+          if (interfaces.isEmpty()) {
+            return null;
+          }
+          String zoneName = zone.getName();
+          if (_securityZones.containsKey(zoneName)) {
+            // IOS security zone
+            return createIosSecurityZoneAcl(zone, matchSrcInterfaceBySrcZone, c);
+          }
+          // shouldn't reach here
+          return null;
+        })
         .filter(Objects::nonNull)
         .forEach(acl -> c.getIpAccessLists().put(acl.getName(), acl));
   }
@@ -3614,15 +3575,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // zoneName refers to dstZone
     Map<String, SecurityZonePair> zonePairsBySrcZoneName = _securityZonePairs.get(zoneName);
     if (zonePairsBySrcZoneName != null) {
-      zonePairsBySrcZoneName.forEach(
-          (srcZoneName, zonePair) ->
-              createZonePairAcl(
-                      c,
-                      matchSrcInterfaceBySrcZone.get(srcZoneName),
-                      zoneName,
-                      srcZoneName,
-                      zonePair)
-                  .ifPresent(zonePolicies::add));
+      zonePairsBySrcZoneName.forEach((srcZoneName, zonePair) ->
+          createZonePairAcl(
+                  c, matchSrcInterfaceBySrcZone.get(srcZoneName), zoneName, srcZoneName, zonePair)
+              .ifPresent(zonePolicies::add));
     }
 
     return IpAccessList.builder()
@@ -3759,15 +3715,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
       // check EIGRP policies
       // distribute lists
       if (vrf.getEigrpProcesses().values().stream()
-          .flatMap(
-              eigrpProcess ->
-                  Streams.concat(
-                      Stream.of(
-                              eigrpProcess.getInboundGlobalDistributeList(),
-                              eigrpProcess.getOutboundGlobalDistributeList())
-                          .filter(Objects::nonNull),
-                      eigrpProcess.getInboundInterfaceDistributeLists().values().stream(),
-                      eigrpProcess.getOutboundInterfaceDistributeLists().values().stream()))
+          .flatMap(eigrpProcess ->
+              Streams.concat(
+                  Stream.of(
+                          eigrpProcess.getInboundGlobalDistributeList(),
+                          eigrpProcess.getOutboundGlobalDistributeList())
+                      .filter(Objects::nonNull),
+                  eigrpProcess.getInboundInterfaceDistributeLists().values().stream(),
+                  eigrpProcess.getOutboundInterfaceDistributeLists().values().stream()))
           .anyMatch(distributeList -> distributeList.getFilterName().equals(aclName))) {
         return true;
       }
@@ -3865,17 +3820,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     _keyrings.values().stream()
         .filter(keyring -> !keyring.getLocalInterfaceName().equals(UNSET_LOCAL_INTERFACE))
-        .forEach(
-            keyring ->
-                keyring.setLocalAddress(ifaceNameToPrimaryIp.get(keyring.getLocalInterfaceName())));
+        .forEach(keyring ->
+            keyring.setLocalAddress(ifaceNameToPrimaryIp.get(keyring.getLocalInterfaceName())));
 
     _isakmpProfiles.values().stream()
         .filter(
             isakmpProfile -> !isakmpProfile.getLocalInterfaceName().equals(UNSET_LOCAL_INTERFACE))
-        .forEach(
-            isakmpProfile ->
-                isakmpProfile.setLocalAddress(
-                    ifaceNameToPrimaryIp.get(isakmpProfile.getLocalInterfaceName())));
+        .forEach(isakmpProfile ->
+            isakmpProfile.setLocalAddress(
+                ifaceNameToPrimaryIp.get(isakmpProfile.getLocalInterfaceName())));
   }
 
   /** Resolves the addresses of the interfaces used in sourceInterfaceName of Tunnel interfaces */
@@ -3952,22 +3905,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private void convertIpCommunityLists(Configuration c) {
     // create CommunitySetMatchExpr for route-map match community
-    _standardCommunityLists.forEach(
-        (name, ipCommunityListStandard) ->
-            c.getCommunitySetMatchExprs()
-                .put(name, toCommunitySetMatchExpr(ipCommunityListStandard)));
-    _expandedCommunityLists.forEach(
-        (name, ipCommunityListExpanded) ->
-            c.getCommunitySetMatchExprs()
-                .put(name, toCommunitySetMatchExpr(ipCommunityListExpanded)));
+    _standardCommunityLists.forEach((name, ipCommunityListStandard) ->
+        c.getCommunitySetMatchExprs().put(name, toCommunitySetMatchExpr(ipCommunityListStandard)));
+    _expandedCommunityLists.forEach((name, ipCommunityListExpanded) ->
+        c.getCommunitySetMatchExprs().put(name, toCommunitySetMatchExpr(ipCommunityListExpanded)));
 
     // create CommunityMatchExpr for route-map set comm-list delete
-    _standardCommunityLists.forEach(
-        (name, ipCommunityListStandard) ->
-            c.getCommunityMatchExprs().put(name, toCommunityMatchExpr(ipCommunityListStandard)));
-    _expandedCommunityLists.forEach(
-        (name, ipCommunityListExpanded) ->
-            c.getCommunityMatchExprs().put(name, toCommunityMatchExpr(ipCommunityListExpanded)));
+    _standardCommunityLists.forEach((name, ipCommunityListStandard) ->
+        c.getCommunityMatchExprs().put(name, toCommunityMatchExpr(ipCommunityListStandard)));
+    _expandedCommunityLists.forEach((name, ipCommunityListExpanded) ->
+        c.getCommunityMatchExprs().put(name, toCommunityMatchExpr(ipCommunityListExpanded)));
   }
 
   private static CommunitySetMatchExpr toCommunitySetMatchExpr(

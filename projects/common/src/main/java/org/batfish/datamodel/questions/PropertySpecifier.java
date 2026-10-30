@@ -74,11 +74,10 @@ public abstract class PropertySpecifier {
       if (!outputCollection.isEmpty() && !(outputCollection.iterator().next() instanceof String)) {
         Stream<?> stream =
             outputCollection.stream()
-                .map(
-                    e ->
-                        (e instanceof ComparableStructure)
-                            ? ((ComparableStructure<?>) e).getName()
-                            : e.toString());
+                .map(e ->
+                    (e instanceof ComparableStructure)
+                        ? ((ComparableStructure<?>) e).getName()
+                        : e.toString());
         outputPropertyValue =
             targetSchema.getType() == Type.LIST
                 ? stream.collect(ImmutableList.toImmutableList())

@@ -319,15 +319,14 @@ public final class RibDelta<R extends AbstractRouteDecorator> {
       return empty();
     }
     Builder<T> builder = RibDelta.builder();
-    delta._actions.forEach(
-        (uRouteAdvertisement) -> {
-          T tRoute = converter.apply(uRouteAdvertisement.getRoute());
-          if (uRouteAdvertisement.isWithdrawn()) {
-            builder.from(importingRib.removeRouteGetDelta(tRoute));
-          } else {
-            builder.from(importingRib.mergeRouteGetDelta(tRoute));
-          }
-        });
+    delta._actions.forEach(uRouteAdvertisement -> {
+      T tRoute = converter.apply(uRouteAdvertisement.getRoute());
+      if (uRouteAdvertisement.isWithdrawn()) {
+        builder.from(importingRib.removeRouteGetDelta(tRoute));
+      } else {
+        builder.from(importingRib.mergeRouteGetDelta(tRoute));
+      }
+    });
     return builder.build();
   }
 

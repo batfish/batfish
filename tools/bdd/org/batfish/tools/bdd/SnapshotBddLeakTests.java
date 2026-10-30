@@ -58,16 +58,12 @@ public class SnapshotBddLeakTests {
     Map<String, BDDSourceManager> srcMgrs = BDDSourceManager.forNetwork(pkt, _configs);
     _configs
         .values()
-        .forEach(
-            cfg -> {
-              IpAccessListToBddImpl ipAccessListToBdd =
-                  new IpAccessListToBddImpl(
-                      pkt,
-                      srcMgrs.get(cfg.getHostname()),
-                      cfg.getIpAccessLists(),
-                      cfg.getIpSpaces());
-              cfg.getIpAccessLists().values().forEach(ipAccessListToBdd::toBdd);
-            });
+        .forEach(cfg -> {
+          IpAccessListToBddImpl ipAccessListToBdd =
+              new IpAccessListToBddImpl(
+                  pkt, srcMgrs.get(cfg.getHostname()), cfg.getIpAccessLists(), cfg.getIpSpaces());
+          cfg.getIpAccessLists().values().forEach(ipAccessListToBdd::toBdd);
+        });
     factory.runGC();
     return factory.getNodeNum() - nodes;
   }

@@ -20,13 +20,12 @@ public final class VrrpAFailOverPolicyTemplate implements Serializable {
 
   public void addOrReplaceGateway(Ip ip, int weight) {
     ImmutableMap.Builder<Ip, Integer> gateways = ImmutableMap.builder();
-    _gateways.forEach(
-        (eIp, eWeight) -> {
-          if (eIp.equals(ip)) {
-            return;
-          }
-          gateways.put(eIp, eWeight);
-        });
+    _gateways.forEach((eIp, eWeight) -> {
+      if (eIp.equals(ip)) {
+        return;
+      }
+      gateways.put(eIp, eWeight);
+    });
     gateways.put(ip, weight);
     _gateways = gateways.build();
   }

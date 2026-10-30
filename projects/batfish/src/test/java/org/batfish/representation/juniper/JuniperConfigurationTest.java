@@ -990,9 +990,8 @@ public class JuniperConfigurationTest {
             .setHostname("c")
             .setConfigurationFormat(ConfigurationFormat.JUNIPER)
             .build();
-    ifaceNames.forEach(
-        ifaceName ->
-            org.batfish.datamodel.TestInterface.builder().setName(ifaceName).setOwner(c).build());
+    ifaceNames.forEach(ifaceName ->
+        org.batfish.datamodel.TestInterface.builder().setName(ifaceName).setOwner(c).build());
     return c;
   }
 

@@ -45,10 +45,9 @@ public class StaticRouteManager implements Serializable {
     }
 
     // Arista does not preserve modifiers unless retyped.
-    _variants.removeIf(
-        r ->
-            r.getNextHop().equals(route.getNextHop())
-                && Objects.equals(r.getDistance(), route.getDistance()));
+    _variants.removeIf(r ->
+        r.getNextHop().equals(route.getNextHop())
+            && Objects.equals(r.getDistance(), route.getDistance()));
 
     // TODO: do we need to care about name or track?
     _variants.add(route);
@@ -60,10 +59,9 @@ public class StaticRouteManager implements Serializable {
    * the current prefix. Returns true iff any routes were removed.
    */
   public boolean removeVariant(NextHop hop, @Nullable Integer adminDistance) {
-    return _variants.removeIf(
-        v ->
-            v.getNextHop().equals(hop)
-                && (adminDistance == null || adminDistance.equals(v.getDistance())));
+    return _variants.removeIf(v ->
+        v.getNextHop().equals(hop)
+            && (adminDistance == null || adminDistance.equals(v.getDistance())));
   }
 
   public @Nonnull List<StaticRoute> getVariants() {

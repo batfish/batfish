@@ -103,56 +103,40 @@ public final class CompletionMetadataUtils {
     PrefixTrieMultiMap<IpCompletionMetadata> ips = new PrefixTrieMultiMap<>();
     configurations
         .values()
-        .forEach(
-            configuration -> {
-              configuration
-                  .getAllInterfaces()
-                  .values()
-                  .forEach(
-                      iface -> {
-                        iface.getAllConcreteAddresses().stream()
-                            .forEach(
-                                interfaceAddress -> {
-                                  addInterfaceIp(
-                                      ips, configuration, iface, interfaceAddress.getIp());
-                                  addConnectedSubnet(
-                                      ips,
-                                      configuration,
-                                      iface,
-                                      interfaceAddress.getPrefix(),
-                                      ownedIps);
-                                });
-                      });
+        .forEach(configuration -> {
+          configuration
+              .getAllInterfaces()
+              .values()
+              .forEach(iface -> {
+                iface.getAllConcreteAddresses().stream()
+                    .forEach(interfaceAddress -> {
+                      addInterfaceIp(ips, configuration, iface, interfaceAddress.getIp());
+                      addConnectedSubnet(
+                          ips, configuration, iface, interfaceAddress.getPrefix(), ownedIps);
+                    });
+              });
 
-              configuration
-                  .getGeneratedReferenceBooks()
-                  .values()
-                  .forEach(
-                      book ->
-                          book.getAddressGroups()
-                              .forEach(
-                                  ag ->
-                                      ag.getAddresses()
-                                          // we are ignoring child groups; their IPs will be caught
-                                          // when we process that group itself
-                                          .forEach(
-                                              a ->
-                                                  addGeneratedRefBookAddress(
-                                                      a,
-                                                      configuration,
-                                                      book.getName(),
-                                                      ag.getName(),
-                                                      ips))));
-            });
-
-    WELL_KNOWN_IPS.forEach(
-        (ip, description) -> {
-          if (ips.get(ip.toPrefix()).isEmpty()) {
-            ips.put(
-                ip.toPrefix(),
-                new IpCompletionMetadata(new IpCompletionRelevance(description, description)));
-          }
+          configuration
+              .getGeneratedReferenceBooks()
+              .values()
+              .forEach(book ->
+                  book.getAddressGroups()
+                      .forEach(ag ->
+                          ag.getAddresses()
+                              // we are ignoring child groups; their IPs will be caught
+                              // when we process that group itself
+                              .forEach(a ->
+                                  addGeneratedRefBookAddress(
+                                      a, configuration, book.getName(), ag.getName(), ips))));
         });
+
+    WELL_KNOWN_IPS.forEach((ip, description) -> {
+      if (ips.get(ip.toPrefix()).isEmpty()) {
+        ips.put(
+            ip.toPrefix(),
+            new IpCompletionMetadata(new IpCompletionRelevance(description, description)));
+      }
+    });
     return ips;
   }
 
@@ -256,24 +240,23 @@ public final class CompletionMetadataUtils {
       String groupName,
       PrefixTrieMultiMap<IpCompletionMetadata> ips) {
     Ip.tryParse(ipString)
-        .ifPresent(
-            ip -> {
-              IpCompletionRelevance relevance =
-                  new IpCompletionRelevance(
-                      addressGroupDisplayString(configuration, bookName, groupName),
-                      configuration.getHostname(),
-                      configuration.getHumanName(),
-                      bookName,
-                      groupName);
+        .ifPresent(ip -> {
+          IpCompletionRelevance relevance =
+              new IpCompletionRelevance(
+                  addressGroupDisplayString(configuration, bookName, groupName),
+                  configuration.getHostname(),
+                  configuration.getHumanName(),
+                  bookName,
+                  groupName);
 
-              Set<IpCompletionMetadata> metadata = ips.get(ip.toPrefix());
-              assert metadata.size() < 2;
-              if (metadata.isEmpty()) {
-                ips.put(ip.toPrefix(), new IpCompletionMetadata(relevance));
-              } else {
-                metadata.iterator().next().addRelevance(relevance);
-              }
-            });
+          Set<IpCompletionMetadata> metadata = ips.get(ip.toPrefix());
+          assert metadata.size() < 2;
+          if (metadata.isEmpty()) {
+            ips.put(ip.toPrefix(), new IpCompletionMetadata(relevance));
+          } else {
+            metadata.iterator().next().addRelevance(relevance);
+          }
+        });
   }
 
   public static Set<String> getMlagIds(Map<String, Configuration> configurations) {
@@ -297,33 +280,27 @@ public final class CompletionMetadataUtils {
     ImmutableSet.Builder<String> prefixes = ImmutableSet.builder();
     configurations
         .values()
-        .forEach(
-            configuration -> {
-              configuration
-                  .getAllInterfaces()
-                  .values()
-                  .forEach(
-                      iface ->
-                          iface.getAllConcreteAddresses().stream()
-                              .map(interfaceAddress -> interfaceAddress.getPrefix().toString())
-                              .forEach(prefixes::add));
+        .forEach(configuration -> {
+          configuration
+              .getAllInterfaces()
+              .values()
+              .forEach(iface ->
+                  iface.getAllConcreteAddresses().stream()
+                      .map(interfaceAddress -> interfaceAddress.getPrefix().toString())
+                      .forEach(prefixes::add));
 
-              configuration
-                  .getGeneratedReferenceBooks()
-                  .values()
-                  .forEach(
-                      book ->
-                          book.getAddressGroups()
+          configuration
+              .getGeneratedReferenceBooks()
+              .values()
+              .forEach(book ->
+                  book.getAddressGroups()
+                      .forEach(ag ->
+                          ag.getAddresses()
+                              // we are ignoring child groups; their prefixes will be
+                              // caught when we process that group itself
                               .forEach(
-                                  ag ->
-                                      ag.getAddresses()
-                                          // we are ignoring child groups; their prefixes will be
-                                          // caught when we process that group itself
-                                          .forEach(
-                                              a ->
-                                                  Prefix.tryParse(a)
-                                                      .ifPresent(prefix -> prefixes.add(a)))));
-            });
+                                  a -> Prefix.tryParse(a).ifPresent(prefix -> prefixes.add(a)))));
+        });
     return prefixes.build();
   }
 
@@ -331,9 +308,8 @@ public final class CompletionMetadataUtils {
     ImmutableSet.Builder<String> routingPolicyNames = ImmutableSet.builder();
     configurations
         .values()
-        .forEach(
-            configuration ->
-                routingPolicyNames.addAll(configuration.getRoutingPolicies().keySet()));
+        .forEach(configuration ->
+            routingPolicyNames.addAll(configuration.getRoutingPolicies().keySet()));
     return routingPolicyNames.build();
   }
 
@@ -341,21 +317,20 @@ public final class CompletionMetadataUtils {
       Map<Location, LocationInfo> locationInfo, Map<String, Configuration> configurations) {
     IpSpaceToBDD toBdd = new BDDPacket().getDstIpSpaceToBDD();
     return locationInfo.entrySet().stream()
-        .map(
-            entry -> {
-              Location location = entry.getKey();
-              LocationInfo info = entry.getValue();
+        .map(entry -> {
+          Location location = entry.getKey();
+          LocationInfo info = entry.getValue();
 
-              // must be a source per location info and must have a source IP
-              boolean isSource = info.isSource() && !toBdd.visit(info.getSourceIps()).isZero();
+          // must be a source per location info and must have a source IP
+          boolean isSource = info.isSource() && !toBdd.visit(info.getSourceIps()).isZero();
 
-              boolean isTracerouteSource = isTracerouteSource(location, configurations);
+          boolean isTracerouteSource = isTracerouteSource(location, configurations);
 
-              if (isSource || isTracerouteSource) {
-                return new LocationCompletionMetadata(location, isSource, isTracerouteSource);
-              }
-              return null;
-            })
+          if (isSource || isTracerouteSource) {
+            return new LocationCompletionMetadata(location, isSource, isTracerouteSource);
+          }
+          return null;
+        })
         .filter(Objects::nonNull)
         .collect(ImmutableSet.toImmutableSet());
   }
@@ -390,26 +365,23 @@ public final class CompletionMetadataUtils {
     ImmutableSet.Builder<String> structureNames = ImmutableSet.builder();
     configurations
         .values()
-        .forEach(
-            configuration ->
-                NamedStructurePropertySpecifier.JAVA_MAP
-                    .values()
-                    .forEach(
-                        type -> {
-                          // fetch names of all defined structures of given type and configuration
-                          Object namedStructuresMap = type.getGetter().apply(configuration);
-                          // should be an instance of a Map
-                          if (namedStructuresMap instanceof Map<?, ?>) {
-                            ((Map<?, ?>) namedStructuresMap)
-                                .keySet()
-                                .forEach(
-                                    key -> {
-                                      if (key instanceof String) {
-                                        structureNames.add((String) key);
-                                      }
-                                    });
+        .forEach(configuration ->
+            NamedStructurePropertySpecifier.JAVA_MAP
+                .values()
+                .forEach(type -> {
+                  // fetch names of all defined structures of given type and configuration
+                  Object namedStructuresMap = type.getGetter().apply(configuration);
+                  // should be an instance of a Map
+                  if (namedStructuresMap instanceof Map<?, ?>) {
+                    ((Map<?, ?>) namedStructuresMap)
+                        .keySet()
+                        .forEach(key -> {
+                          if (key instanceof String) {
+                            structureNames.add((String) key);
                           }
-                        }));
+                        });
+                  }
+                }));
     return structureNames.build();
   }
 

@@ -165,21 +165,20 @@ public class TransitGatewayPeeringConnectorTest {
         sendSideAttachment, recvSideAttachment, vsConfig, viConfigs, new Warnings());
 
     ImmutableList.of(sendRoutingTable1, sendRoutingTable2)
-        .forEach(
-            rt -> {
-              String recvSideInterfaceName =
-                  receiveSidePeeringInterfaceName(
-                      rt.getId(), sendSideAttachment.getId(), associatedRouteTableId);
-              assertTrue(recvTgwCfg.getAllInterfaces().containsKey(recvSideInterfaceName));
-              assertTrue(
-                  viConfigs
-                      .getLayer1Edges()
-                      .contains(
-                          new Layer1Edge(
-                              sendTgwCfg.getHostname(),
-                              sendSidePeeringInterfaceName(rt.getId(), sendSideAttachment.getId()),
-                              recvTgwCfg.getHostname(),
-                              recvSideInterfaceName)));
-            });
+        .forEach(rt -> {
+          String recvSideInterfaceName =
+              receiveSidePeeringInterfaceName(
+                  rt.getId(), sendSideAttachment.getId(), associatedRouteTableId);
+          assertTrue(recvTgwCfg.getAllInterfaces().containsKey(recvSideInterfaceName));
+          assertTrue(
+              viConfigs
+                  .getLayer1Edges()
+                  .contains(
+                      new Layer1Edge(
+                          sendTgwCfg.getHostname(),
+                          sendSidePeeringInterfaceName(rt.getId(), sendSideAttachment.getId()),
+                          recvTgwCfg.getHostname(),
+                          recvSideInterfaceName)));
+        });
   }
 }

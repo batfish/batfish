@@ -377,22 +377,21 @@ public class TransferBDD {
           for (TransferResult curr : currResults) {
             BDD currBDD = curr.getReturnValue().getInputConstraints();
             compute(e, toTransferBDDState(p.indent(), curr), context, retainAllPaths)
-                .forEach(
-                    r -> {
-                      BDD condition = r.getReturnValue().getInputConstraints().and(currBDD);
-                      if (condition.isZero()) {
-                        condition.free();
-                        return;
-                      }
-                      TransferResult updated = r.setReturnValueBDD(condition);
-                      // if we're on a path where e evaluates to false, then this path is done;
-                      // otherwise we will evaluate the next conjunct in the next iteration
-                      if (!updated.getReturnValue().getAccepted()) {
-                        finalResults.add(updated);
-                      } else {
-                        nextResults.add(updated);
-                      }
-                    });
+                .forEach(r -> {
+                  BDD condition = r.getReturnValue().getInputConstraints().and(currBDD);
+                  if (condition.isZero()) {
+                    condition.free();
+                    return;
+                  }
+                  TransferResult updated = r.setReturnValueBDD(condition);
+                  // if we're on a path where e evaluates to false, then this path is done;
+                  // otherwise we will evaluate the next conjunct in the next iteration
+                  if (!updated.getReturnValue().getAccepted()) {
+                    finalResults.add(updated);
+                  } else {
+                    nextResults.add(updated);
+                  }
+                });
           }
           currResults = retainAllPaths ? nextResults : combineTransferResults(nextResults);
         } catch (UnsupportedOperationException ufe) {
@@ -411,23 +410,20 @@ public class TransferBDD {
       */
       if (!disj.getDisjuncts().isEmpty()
           && disj.getDisjuncts().stream()
-              .allMatch(
-                  d ->
-                      d instanceof MatchAsPath
-                          && ((MatchAsPath) d).getAsPathExpr().equals(InputAsPath.instance()))) {
+              .allMatch(d ->
+                  d instanceof MatchAsPath
+                      && ((MatchAsPath) d).getAsPathExpr().equals(InputAsPath.instance()))) {
         checkForAsPathMatchAfterUpdate(currRoute);
         // collect all as-path regexes, produce a single regex that is their union, and then create
         // the corresponding BDD
         Set<SymbolicAsPathRegex> asPathRegexes =
             disj.getDisjuncts().stream()
-                .flatMap(
-                    d ->
-                        ((MatchAsPath) d)
-                                .getAsPathMatchExpr()
-                                .accept(
-                                    new AsPathMatchExprToRegexes(),
-                                    new Arg(this, currRoute, context))
-                                .stream())
+                .flatMap(d ->
+                    ((MatchAsPath) d)
+                            .getAsPathMatchExpr()
+                            .accept(
+                                new AsPathMatchExprToRegexes(), new Arg(this, currRoute, context))
+                            .stream())
                 .collect(ImmutableSet.toImmutableSet());
         BDD asPathRegexBDD =
             asPathRegexes.isEmpty()
@@ -447,22 +443,21 @@ public class TransferBDD {
             for (TransferResult curr : currResults) {
               BDD currBDD = curr.getReturnValue().getInputConstraints();
               compute(e, toTransferBDDState(p.indent(), curr), context, retainAllPaths)
-                  .forEach(
-                      r -> {
-                        BDD condition = r.getReturnValue().getInputConstraints().and(currBDD);
-                        if (condition.isZero()) {
-                          condition.free();
-                          return;
-                        }
-                        TransferResult updated = r.setReturnValueBDD(condition);
-                        // if we're on a path where e evaluates to true, then this path is done;
-                        // otherwise we will evaluate the next disjunct in the next iteration
-                        if (updated.getReturnValue().getAccepted()) {
-                          finalResults.add(updated);
-                        } else {
-                          nextResults.add(updated);
-                        }
-                      });
+                  .forEach(r -> {
+                    BDD condition = r.getReturnValue().getInputConstraints().and(currBDD);
+                    if (condition.isZero()) {
+                      condition.free();
+                      return;
+                    }
+                    TransferResult updated = r.setReturnValueBDD(condition);
+                    // if we're on a path where e evaluates to true, then this path is done;
+                    // otherwise we will evaluate the next disjunct in the next iteration
+                    if (updated.getReturnValue().getAccepted()) {
+                      finalResults.add(updated);
+                    } else {
+                      nextResults.add(updated);
+                    }
+                  });
             }
             currResults = nextResults;
           } catch (UnsupportedOperationException ufe) {
@@ -498,14 +493,13 @@ public class TransferBDD {
                     .setChainContext(TransferParam.ChainContext.CONJUNCTION)
                     .indent();
             compute(e, toTransferBDDState(param, curr), context, retainAllPaths)
-                .forEach(
-                    r -> {
-                      if (r.getFallthroughValue()) {
-                        nextResults.add(r);
-                      } else {
-                        finalResults.add(r);
-                      }
-                    });
+                .forEach(r -> {
+                  if (r.getFallthroughValue()) {
+                    nextResults.add(r);
+                  } else {
+                    finalResults.add(r);
+                  }
+                });
           }
           currResults = nextResults;
         }
@@ -532,22 +526,21 @@ public class TransferBDD {
           // properly; if there is an exit or return in the policy then the flag will be unset
           TransferResult updatedCurr = curr.setFallthroughValue(true);
           compute(pol, toTransferBDDState(param, updatedCurr), context, retainAllPaths)
-              .forEach(
-                  r -> {
-                    // r's BDD only represents the constraints on a path through the policy pol, so
-                    // we explicitly incorporate the constraints accrued on the path through the
-                    // prior policies in the chain
-                    BDD condition = r.getReturnValue().getInputConstraints().and(currBDD);
-                    if (condition.isZero()) {
-                      return;
-                    }
-                    TransferResult updated = r.setReturnValueBDD(condition);
-                    if (updated.getFallthroughValue()) {
-                      nextResults.add(updated.setFallthroughValue(false));
-                    } else {
-                      finalResults.add(updated);
-                    }
-                  });
+              .forEach(r -> {
+                // r's BDD only represents the constraints on a path through the policy pol, so
+                // we explicitly incorporate the constraints accrued on the path through the
+                // prior policies in the chain
+                BDD condition = r.getReturnValue().getInputConstraints().and(currBDD);
+                if (condition.isZero()) {
+                  return;
+                }
+                TransferResult updated = r.setReturnValueBDD(condition);
+                if (updated.getFallthroughValue()) {
+                  nextResults.add(updated.setFallthroughValue(false));
+                } else {
+                  finalResults.add(updated);
+                }
+              });
         }
         currResults = nextResults;
       }
@@ -716,11 +709,10 @@ public class TransferBDD {
       }
       BDD miPred =
           mi.getInterfaces().stream()
-              .map(
-                  nhi -> {
-                    int index = _configAtomicPredicates.getNextHopInterfaces().indexOf(nhi);
-                    return currRoute.getNextHopInterfaces().value(index);
-                  })
+              .map(nhi -> {
+                int index = _configAtomicPredicates.getNextHopInterfaces().indexOf(nhi);
+                return currRoute.getNextHopInterfaces().value(index);
+              })
               .reduce(_factory.zero(), BDD::or);
       finalResults.add(result.setReturnValueBDD(miPred).setReturnValueAccepted(true));
 
@@ -1098,11 +1090,9 @@ public class TransferBDD {
       // restore the original returnAssigned value
       List<TransferBDDState> restoredResults =
           callResults.stream()
-              .map(
-                  r ->
-                      toTransferBDDState(
-                          finalCurP,
-                          r.getTransferResult().setReturnAssignedValue(oldReturnAssigned)))
+              .map(r ->
+                  toTransferBDDState(
+                      finalCurP, r.getTransferResult().setReturnAssignedValue(oldReturnAssigned)))
               .collect(ImmutableList.toImmutableList());
       return retainAllPaths ? restoredResults : combineStates(restoredResults);
 
@@ -1640,9 +1630,8 @@ public class TransferBDD {
     }
     LOGGER.debug("Condensed {} values into {} distinct groups", states.size(), grouped.size());
     ImmutableList.Builder<T> ret = ImmutableList.builderWithExpectedSize(grouped.size());
-    grouped.forEach(
-        (state, inputConstraints) ->
-            ret.add(replaceInputConstraint.apply(factory.orAll(inputConstraints), state)));
+    grouped.forEach((state, inputConstraints) ->
+        ret.add(replaceInputConstraint.apply(factory.orAll(inputConstraints), state)));
     return ret.build();
   }
 

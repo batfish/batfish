@@ -122,13 +122,12 @@ final class IssueAggregation {
   static @Nonnull Map<ParseWarningTriplet, Multimap<String, Integer>>
       aggregateDuplicateParseWarnings(Map<String, Warnings> fileWarnings) {
     Map<ParseWarningTriplet, Multimap<String, Integer>> map = new HashMap<>();
-    fileWarnings.forEach(
-        (filename, warnings) -> {
-          for (ParseWarning w : warnings.getParseWarnings()) {
-            ParseWarningTriplet triplet = new ParseWarningTriplet(w);
-            map.computeIfAbsent(triplet, k -> HashMultimap.create()).put(filename, w.getLine());
-          }
-        });
+    fileWarnings.forEach((filename, warnings) -> {
+      for (ParseWarning w : warnings.getParseWarnings()) {
+        ParseWarningTriplet triplet = new ParseWarningTriplet(w);
+        map.computeIfAbsent(triplet, k -> HashMultimap.create()).put(filename, w.getLine());
+      }
+    });
     return map;
   }
 
@@ -142,12 +141,11 @@ final class IssueAggregation {
   static @Nonnull Map<Warning, SortedSet<String>> aggregateDuplicateWarnings(
       Map<String, Warnings> nodeToWarnings, Function<Warnings, Set<Warning>> warningFunc) {
     Map<Warning, SortedSet<String>> map = new HashMap<>();
-    nodeToWarnings.forEach(
-        (node, warnings) -> {
-          for (Warning warning : warningFunc.apply(warnings)) {
-            map.computeIfAbsent(warning, w -> new TreeSet<>()).add(node);
-          }
-        });
+    nodeToWarnings.forEach((node, warnings) -> {
+      for (Warning warning : warningFunc.apply(warnings)) {
+        map.computeIfAbsent(warning, w -> new TreeSet<>()).add(node);
+      }
+    });
     return map;
   }
 
@@ -160,10 +158,8 @@ final class IssueAggregation {
   static @Nonnull Map<ErrorDetailsTriplet, SortedSet<String>> aggregateDuplicateErrors(
       Map<String, ErrorDetails> nodeToErrorDetails) {
     Map<ErrorDetailsTriplet, SortedSet<String>> map = new HashMap<>();
-    nodeToErrorDetails.forEach(
-        (source, details) ->
-            map.computeIfAbsent(new ErrorDetailsTriplet(details), t -> new TreeSet<>())
-                .add(source));
+    nodeToErrorDetails.forEach((source, details) ->
+        map.computeIfAbsent(new ErrorDetailsTriplet(details), t -> new TreeSet<>()).add(source));
     return map;
   }
 }

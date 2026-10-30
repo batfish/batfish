@@ -154,35 +154,30 @@ public class BgpSessionStatusAnswerer extends Answerer {
 
     // Generate answer row for each BGP peer (or rows, for dynamic peers with multiple remotes)
     return configuredTopology.nodes().stream()
-        .flatMap(
-            peerId ->
-                switch (peerId.getType()) {
-                  case ACTIVE -> {
-                    BgpActivePeerConfig activePeer = nc.getBgpPointToPointPeerConfig(peerId);
-                    assert activePeer != null;
-                    yield Stream.of(
-                        getActivePeerRow(
-                            peerId,
-                            activePeer,
-                            ipVrfOwners,
-                            configuredTopology,
-                            establishedTopology));
-                  }
-                  case DYNAMIC -> {
-                    BgpPassivePeerConfig passivePeer = nc.getBgpDynamicPeerConfig(peerId);
-                    assert passivePeer != null;
-                    yield getPassivePeerRows(
-                        peerId, passivePeer, nc, configuredTopology, establishedTopology)
-                        .stream();
-                  }
-                  case UNNUMBERED -> {
-                    BgpUnnumberedPeerConfig unnumPeer = nc.getBgpUnnumberedPeerConfig(peerId);
-                    assert unnumPeer != null;
-                    yield Stream.of(
-                        getUnnumberedPeerRow(
-                            peerId, unnumPeer, configuredTopology, establishedTopology));
-                  }
-                })
+        .flatMap(peerId ->
+            switch (peerId.getType()) {
+              case ACTIVE -> {
+                BgpActivePeerConfig activePeer = nc.getBgpPointToPointPeerConfig(peerId);
+                assert activePeer != null;
+                yield Stream.of(
+                    getActivePeerRow(
+                        peerId, activePeer, ipVrfOwners, configuredTopology, establishedTopology));
+              }
+              case DYNAMIC -> {
+                BgpPassivePeerConfig passivePeer = nc.getBgpDynamicPeerConfig(peerId);
+                assert passivePeer != null;
+                yield getPassivePeerRows(
+                    peerId, passivePeer, nc, configuredTopology, establishedTopology)
+                    .stream();
+              }
+              case UNNUMBERED -> {
+                BgpUnnumberedPeerConfig unnumPeer = nc.getBgpUnnumberedPeerConfig(peerId);
+                assert unnumPeer != null;
+                yield Stream.of(
+                    getUnnumberedPeerRow(
+                        peerId, unnumPeer, configuredTopology, establishedTopology));
+              }
+            })
         .filter(row -> matchesQuestionFilters(row, nodes, remoteNodes, question))
         .collect(ImmutableList.toImmutableList());
   }
@@ -334,37 +329,34 @@ public class BgpSessionStatusAnswerer extends Answerer {
 
     // Compatible remotes exist. Generate a row for each.
     return compatibleRemotes.stream()
-        .map(
-            remoteId -> {
-              BgpSessionProperties sessionProps =
-                  configuredTopology.edgeValue(passiveId, remoteId).orElse(null);
-              assert sessionProps != null;
-              BgpActivePeerConfig activeRemote = nc.getBgpPointToPointPeerConfig(remoteId);
-              assert activeRemote != null;
-              BgpSessionStatus status =
-                  establishedRemotes.contains(remoteId) ? ESTABLISHED : NOT_ESTABLISHED;
-              if (status == ESTABLISHED) {
-                // Use the real session properties if they are.
-                sessionProps = establishedTopology.edgeValue(passiveId, remoteId).orElse(null);
-                if (sessionProps == null) {
-                  throw new IllegalStateException(
-                      String.format(
-                          "Established session missing from established topology %s -> %s",
-                          passiveId, remoteId));
-                }
-              }
-              return rb.put(COL_ESTABLISHED_STATUS, status)
-                  .put(COL_ADDRESS_FAMILIES, sessionProps.getAddressFamilies())
-                  .put(COL_LOCAL_IP, sessionProps.getLocalIp())
-                  .put(COL_LOCAL_AS, sessionProps.getLocalAs())
-                  .put(COL_REMOTE_AS, Long.toString(sessionProps.getRemoteAs()))
-                  .put(COL_REMOTE_NODE, new Node(remoteId.getHostname()))
-                  .put(
-                      COL_REMOTE_IP,
-                      new SelfDescribingObject(Schema.IP, sessionProps.getRemoteIp()))
-                  .put(COL_SESSION_TYPE, sessionProps.getSessionType())
-                  .build();
-            })
+        .map(remoteId -> {
+          BgpSessionProperties sessionProps =
+              configuredTopology.edgeValue(passiveId, remoteId).orElse(null);
+          assert sessionProps != null;
+          BgpActivePeerConfig activeRemote = nc.getBgpPointToPointPeerConfig(remoteId);
+          assert activeRemote != null;
+          BgpSessionStatus status =
+              establishedRemotes.contains(remoteId) ? ESTABLISHED : NOT_ESTABLISHED;
+          if (status == ESTABLISHED) {
+            // Use the real session properties if they are.
+            sessionProps = establishedTopology.edgeValue(passiveId, remoteId).orElse(null);
+            if (sessionProps == null) {
+              throw new IllegalStateException(
+                  String.format(
+                      "Established session missing from established topology %s -> %s",
+                      passiveId, remoteId));
+            }
+          }
+          return rb.put(COL_ESTABLISHED_STATUS, status)
+              .put(COL_ADDRESS_FAMILIES, sessionProps.getAddressFamilies())
+              .put(COL_LOCAL_IP, sessionProps.getLocalIp())
+              .put(COL_LOCAL_AS, sessionProps.getLocalAs())
+              .put(COL_REMOTE_AS, Long.toString(sessionProps.getRemoteAs()))
+              .put(COL_REMOTE_NODE, new Node(remoteId.getHostname()))
+              .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, sessionProps.getRemoteIp()))
+              .put(COL_SESSION_TYPE, sessionProps.getSessionType())
+              .build();
+        })
         .collect(ImmutableList.toImmutableList());
   }
 

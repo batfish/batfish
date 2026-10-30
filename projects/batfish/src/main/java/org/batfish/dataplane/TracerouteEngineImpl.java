@@ -47,27 +47,21 @@ public final class TracerouteEngineImpl implements TracerouteEngine {
     _configurations = configurations;
     _interfacesMatchedAgainst =
         Caffeine.newBuilder()
-            .build(
-                hostname -> {
-                  Configuration c = _configurations.get(hostname);
-                  checkArgument(c != null, "Missing configuration for %s", hostname);
-                  return SourcesReferencedOnDevice.activeReferencedSources(c);
-                });
+            .build(hostname -> {
+              Configuration c = _configurations.get(hostname);
+              checkArgument(c != null, "Missing configuration for %s", hostname);
+              return SourcesReferencedOnDevice.activeReferencedSources(c);
+            });
   }
 
   @Override
   public SortedMap<Flow, List<TraceAndReverseFlow>> computeTracesAndReverseFlows(
       Set<Flow> flows, Set<FirewallSessionTraceInfo> sessions, boolean ignoreFilters) {
     return computeTraceDags(flows, sessions, ignoreFilters).entrySet().parallelStream()
-        .map(
-            entry ->
-                new SimpleEntry<>(
-                    entry.getKey(),
-                    entry
-                        .getValue()
-                        .getTraces()
-                        .limit(10000)
-                        .collect(ImmutableList.toImmutableList())))
+        .map(entry ->
+            new SimpleEntry<>(
+                entry.getKey(),
+                entry.getValue().getTraces().limit(10000).collect(ImmutableList.toImmutableList())))
         .collect(
             ImmutableSortedMap.toImmutableSortedMap(
                 Ordering.natural(), Entry::getKey, Entry::getValue));
@@ -79,21 +73,20 @@ public final class TracerouteEngineImpl implements TracerouteEngine {
     ImmutableMap.Builder<Flow, TraceDag> result =
         ImmutableMap.builderWithExpectedSize(flows.size());
     Iterables.partition(flows, CHUNK_SIZE)
-        .forEach(
-            c ->
-                result.putAll(
-                    new TracerouteEngineImplContext(
-                            _dataPlane,
-                            _topology,
-                            sessions,
-                            // This copy is annoying, but should add negligible runtime overhead.
-                            // Copying is much faster than even producing a NO_ROUTE trace.
-                            ImmutableSet.copyOf(c),
-                            _dataPlane.getFibs(),
-                            ignoreFilters,
-                            _configurations,
-                            _interfacesMatchedAgainst::get)
-                        .buildTraceDags()));
+        .forEach(c ->
+            result.putAll(
+                new TracerouteEngineImplContext(
+                        _dataPlane,
+                        _topology,
+                        sessions,
+                        // This copy is annoying, but should add negligible runtime overhead.
+                        // Copying is much faster than even producing a NO_ROUTE trace.
+                        ImmutableSet.copyOf(c),
+                        _dataPlane.getFibs(),
+                        ignoreFilters,
+                        _configurations,
+                        _interfacesMatchedAgainst::get)
+                    .buildTraceDags()));
     return result.build();
   }
 }

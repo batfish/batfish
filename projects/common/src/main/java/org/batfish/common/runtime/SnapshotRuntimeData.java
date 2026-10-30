@@ -76,13 +76,12 @@ public final class SnapshotRuntimeData {
     Builder setInterfacesLineUp(@Nonnull Iterable<NodeInterfacePair> interfaces, boolean lineUp) {
       // Compile provided interfaces to a mapping of hostname -> interfaces
       Map<String, Set<String>> ifaceMap = new HashMap<>();
-      interfaces.forEach(
-          iface ->
-              ifaceMap
-                  // Canonicalize hostnames (should be unnecessary because NodeInterfacePair always
-                  // lowercases hostnames, but just in case)
-                  .computeIfAbsent(iface.getHostname().toLowerCase(), i -> new HashSet<>())
-                  .add(iface.getInterface()));
+      interfaces.forEach(iface ->
+          ifaceMap
+              // Canonicalize hostnames (should be unnecessary because NodeInterfacePair always
+              // lowercases hostnames, but just in case)
+              .computeIfAbsent(iface.getHostname().toLowerCase(), i -> new HashSet<>())
+              .add(iface.getInterface()));
 
       // For each affected hostname, update its runtime data with the new interface data
       for (Entry<String, Set<String>> e : ifaceMap.entrySet()) {
@@ -150,13 +149,10 @@ public final class SnapshotRuntimeData {
   @JsonIgnore
   public @Nonnull Set<NodeInterfacePair> getBlacklistedInterfaces() {
     return _runtimeData.entrySet().stream()
-        .flatMap(
-            nodeEntry ->
-                nodeEntry.getValue().getInterfaces().entrySet().stream()
-                    .filter(ifaceEntry -> Objects.equals(ifaceEntry.getValue().getLineUp(), false))
-                    .map(
-                        ifaceEntry ->
-                            NodeInterfacePair.of(nodeEntry.getKey(), ifaceEntry.getKey())))
+        .flatMap(nodeEntry ->
+            nodeEntry.getValue().getInterfaces().entrySet().stream()
+                .filter(ifaceEntry -> Objects.equals(ifaceEntry.getValue().getLineUp(), false))
+                .map(ifaceEntry -> NodeInterfacePair.of(nodeEntry.getKey(), ifaceEntry.getKey())))
         .collect(ImmutableSet.toImmutableSet());
   }
 

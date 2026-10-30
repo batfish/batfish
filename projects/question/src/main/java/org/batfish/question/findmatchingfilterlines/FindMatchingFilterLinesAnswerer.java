@@ -128,15 +128,14 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
     Map<String, BDDSourceManager> mgrMap = BDDSourceManager.forNetwork(bddPacket, configs);
 
     return acls.keySet().stream()
-        .flatMap(
-            nodeName ->
-                getRowsForNode(
-                    configs.get(nodeName),
-                    bddPacket,
-                    mgrMap.get(nodeName),
-                    acls.get(nodeName),
-                    headerSpaceBdd,
-                    action));
+        .flatMap(nodeName ->
+            getRowsForNode(
+                configs.get(nodeName),
+                bddPacket,
+                mgrMap.get(nodeName),
+                acls.get(nodeName),
+                headerSpaceBdd,
+                action));
   }
 
   private static Stream<Row> getRowsForNode(
@@ -150,24 +149,22 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
         new IpAccessListToBddImpl(bddPacket, mgr, node.getIpAccessLists(), node.getIpSpaces());
     Row.TypedRowBuilder rowBuilder = Row.builder(METADATA_MAP).put(COL_NODE, node.getHostname());
     return acls.stream()
-        .flatMap(
-            aclName -> {
-              List<AclLine> aclLines = node.getIpAccessLists().get(aclName).getLines();
-              return getBehaviorToReport(aclLines, headerSpaceBdd, bddConverter, action)
-                  .entrySet()
-                  .stream()
-                  .map(
-                      e -> {
-                        int lineIndex = e.getKey();
-                        AclLine line = aclLines.get(lineIndex);
-                        return rowBuilder
-                            .put(COL_FILTER, aclName)
-                            .put(COL_LINE, firstNonNull(line.getName(), line.toString()))
-                            .put(COL_LINE_INDEX, lineIndex)
-                            .put(COL_ACTION, e.getValue())
-                            .build();
-                      });
-            });
+        .flatMap(aclName -> {
+          List<AclLine> aclLines = node.getIpAccessLists().get(aclName).getLines();
+          return getBehaviorToReport(aclLines, headerSpaceBdd, bddConverter, action)
+              .entrySet()
+              .stream()
+              .map(e -> {
+                int lineIndex = e.getKey();
+                AclLine line = aclLines.get(lineIndex);
+                return rowBuilder
+                    .put(COL_FILTER, aclName)
+                    .put(COL_LINE, firstNonNull(line.getName(), line.toString()))
+                    .put(COL_LINE_INDEX, lineIndex)
+                    .put(COL_ACTION, e.getValue())
+                    .build();
+              });
+        });
   }
 
   /**

@@ -52,39 +52,35 @@ public class ReferencedStructuresAnswerer extends Answerer {
     _batfish
         .loadConvertConfigurationAnswerElementOrReparse(snapshot)
         .getReferencedStructures()
-        .forEach(
-            (filename, value) -> {
-              if (!includeFiles.contains(filename)) {
+        .forEach((filename, value) -> {
+          if (!includeFiles.contains(filename)) {
+            return;
+          }
+          List<Row> rows1 = new ArrayList<>();
+          value.forEach((structType, byName) -> {
+            if (!includeStructureTypes.matcher(structType).matches()) {
+              return;
+            }
+            byName.forEach((name, byContext) -> {
+              if (!includeStructureNames.matcher(name).matches()) {
                 return;
               }
-              List<Row> rows1 = new ArrayList<>();
-              value.forEach(
-                  (structType, byName) -> {
-                    if (!includeStructureTypes.matcher(structType).matches()) {
-                      return;
-                    }
-                    byName.forEach(
-                        (name, byContext) -> {
-                          if (!includeStructureNames.matcher(name).matches()) {
-                            return;
-                          }
-                          byContext.forEach(
-                              (context, lineNums) -> {
-                                rows1.add(
-                                    Row.of(
-                                        COL_STRUCTURE_TYPE,
-                                        structType,
-                                        COL_STRUCTURE_NAME,
-                                        name,
-                                        COL_CONTEXT,
-                                        context,
-                                        COL_SOURCE_LINES,
-                                        new FileLines(filename, lineNums)));
-                              });
-                        });
-                  });
-              rows.addAll(rows1);
+              byContext.forEach((context, lineNums) -> {
+                rows1.add(
+                    Row.of(
+                        COL_STRUCTURE_TYPE,
+                        structType,
+                        COL_STRUCTURE_NAME,
+                        name,
+                        COL_CONTEXT,
+                        context,
+                        COL_SOURCE_LINES,
+                        new FileLines(filename, lineNums)));
+              });
             });
+          });
+          rows.addAll(rows1);
+        });
 
     TableAnswerElement table = new TableAnswerElement(createMetadata());
     table.postProcessAnswer(_question, rows);

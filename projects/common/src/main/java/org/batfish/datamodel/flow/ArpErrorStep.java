@@ -36,7 +36,7 @@ public final class ArpErrorStep extends Step<ArpErrorStepDetail> {
     @JsonCreator
     private static ArpErrorStepDetail jsonCreator(
         @JsonProperty(PROP_OUTPUT_INTERFACE) @Nullable NodeInterfacePair outInterface,
-        @JsonProperty(PROP_RESOLVED_NEXTHOP_IP) @Nullable() Ip resolvedNexthopIp) {
+        @JsonProperty(PROP_RESOLVED_NEXTHOP_IP) @Nullable Ip resolvedNexthopIp) {
       checkArgument(outInterface != null, "Missing %s", PROP_OUTPUT_INTERFACE);
       return new ArpErrorStepDetail(outInterface, resolvedNexthopIp);
     }

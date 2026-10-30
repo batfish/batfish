@@ -327,11 +327,10 @@ final class IncrementalBdpEngine {
     ImmutableSet.Builder<VxlanNode> nodes = ImmutableSet.builder();
     topology
         .getLayer2VniEdges()
-        .forEach(
-            edge -> {
-              nodes.add(edge.nodeU());
-              nodes.add(edge.nodeV());
-            });
+        .forEach(edge -> {
+          nodes.add(edge.nodeU());
+          nodes.add(edge.nodeV());
+        });
     return nodes.build();
   }
 
@@ -353,10 +352,9 @@ final class IncrementalBdpEngine {
     }
     // Find the VLAN interface for this VLAN number
     return cOpt.get().getAllInterfaces().values().stream()
-        .filter(
-            iface ->
-                iface.getInterfaceType() == InterfaceType.VLAN
-                    && Integer.valueOf(vlanNumber).equals(iface.getVlan()))
+        .filter(iface ->
+            iface.getInterfaceType() == InterfaceType.VLAN
+                && Integer.valueOf(vlanNumber).equals(iface.getVlan()))
         .findFirst()
         .orElse(null);
   }
@@ -632,14 +630,11 @@ final class IncrementalBdpEngine {
       Map<String, Collection<TrackRoute>> trackRoutesByHostname, SortedMap<String, Node> nodes) {
     ImmutableTable.Builder<String, TrackRoute, Boolean> trackRouteResults =
         ImmutableTable.builder();
-    trackRoutesByHostname.forEach(
-        (hostname, trackRoutes) -> {
-          Node node = nodes.get(hostname);
-          trackRoutes.forEach(
-              trackRoute ->
-                  trackRouteResults.put(
-                      hostname, trackRoute, evaluateTrackRoute(trackRoute, node)));
-        });
+    trackRoutesByHostname.forEach((hostname, trackRoutes) -> {
+      Node node = nodes.get(hostname);
+      trackRoutes.forEach(trackRoute ->
+          trackRouteResults.put(hostname, trackRoute, evaluateTrackRoute(trackRoute, node)));
+    });
     return trackRouteResults.build();
   }
 
@@ -650,16 +645,15 @@ final class IncrementalBdpEngine {
   private static @Nonnull Map<String, Collection<TrackReachability>> collectTrackReachabilities(
       Map<String, Configuration> configurations) {
     ImmutableMap.Builder<String, Collection<TrackReachability>> builder = ImmutableMap.builder();
-    configurations.forEach(
-        (hostname, c) -> {
-          Collection<TrackReachability> trackReachabilities =
-              c.getTrackingGroups().values().stream()
-                  .flatMap(TRACK_REACHABILITY_COLLECTOR::visit)
-                  .collect(ImmutableSet.toImmutableSet());
-          if (!trackReachabilities.isEmpty()) {
-            builder.put(hostname, trackReachabilities);
-          }
-        });
+    configurations.forEach((hostname, c) -> {
+      Collection<TrackReachability> trackReachabilities =
+          c.getTrackingGroups().values().stream()
+              .flatMap(TRACK_REACHABILITY_COLLECTOR::visit)
+              .collect(ImmutableSet.toImmutableSet());
+      if (!trackReachabilities.isEmpty()) {
+        builder.put(hostname, trackReachabilities);
+      }
+    });
     return builder.build();
   }
 
@@ -715,16 +709,15 @@ final class IncrementalBdpEngine {
   private static @Nonnull Map<String, Collection<TrackRoute>> collectTrackRoutes(
       Map<String, Configuration> configurations) {
     ImmutableMap.Builder<String, Collection<TrackRoute>> builder = ImmutableMap.builder();
-    configurations.forEach(
-        (hostname, c) -> {
-          Collection<TrackRoute> trackRoutes =
-              c.getTrackingGroups().values().stream()
-                  .flatMap(TRACK_ROUTE_COLLECTOR::visit)
-                  .collect(ImmutableSet.toImmutableSet());
-          if (!trackRoutes.isEmpty()) {
-            builder.put(hostname, trackRoutes);
-          }
-        });
+    configurations.forEach((hostname, c) -> {
+      Collection<TrackRoute> trackRoutes =
+          c.getTrackingGroups().values().stream()
+              .flatMap(TRACK_ROUTE_COLLECTOR::visit)
+              .collect(ImmutableSet.toImmutableSet());
+      if (!trackRoutes.isEmpty()) {
+        builder.put(hostname, trackRoutes);
+      }
+    });
     return builder.build();
   }
 
@@ -806,17 +799,15 @@ final class IncrementalBdpEngine {
         new TracerouteEngineImpl(dp, topologyContext.getLayer3Topology(), configurations);
     ImmutableTable.Builder<String, TrackReachability, Boolean> trackReachabilityResults =
         ImmutableTable.builder();
-    trackReachabilitiesByHostname.forEach(
-        (hostname, trackReachabilities) -> {
-          Configuration config = configurations.get(hostname);
-          Map<String, Fib> fibs = dp.getFibs().get(hostname);
-          trackReachabilities.forEach(
-              trackReachability ->
-                  trackReachabilityResults.put(
-                      hostname,
-                      trackReachability,
-                      evaluateTrackReachability(trackReachability, config, fibs, tr)));
-        });
+    trackReachabilitiesByHostname.forEach((hostname, trackReachabilities) -> {
+      Configuration config = configurations.get(hostname);
+      Map<String, Fib> fibs = dp.getFibs().get(hostname);
+      trackReachabilities.forEach(trackReachability ->
+          trackReachabilityResults.put(
+              hostname,
+              trackReachability,
+              evaluateTrackReachability(trackReachability, config, fibs, tr)));
+    });
     return trackReachabilityResults.build();
   }
 
@@ -886,16 +877,15 @@ final class IncrementalBdpEngine {
       LOGGER.info("{}: Recompute IS-IS routes: subIteration {}", iterationLabel, isisSubIterations);
       isisChanged.set(false);
       vrs.parallelStream()
-          .forEach(
-              vr -> {
-                Entry<RibDelta<IsisRoute>, RibDelta<IsisRoute>> p =
-                    vr.propagateIsisRoutes(networkConfigurations);
-                if (p != null
-                    && vr.unstageIsisRoutes(
-                        allNodes, networkConfigurations, p.getKey(), p.getValue())) {
-                  isisChanged.set(true);
-                }
-              });
+          .forEach(vr -> {
+            Entry<RibDelta<IsisRoute>, RibDelta<IsisRoute>> p =
+                vr.propagateIsisRoutes(networkConfigurations);
+            if (p != null
+                && vr.unstageIsisRoutes(
+                    allNodes, networkConfigurations, p.getKey(), p.getValue())) {
+              isisChanged.set(true);
+            }
+          });
     }
 
     LOGGER.info("{}: Propagate OSPF external", iterationLabel);
@@ -989,11 +979,10 @@ final class IncrementalBdpEngine {
     // Activate static routes
     LOGGER.info("Compute static routes post IGP convergence");
     vrs.parallelStream()
-        .forEach(
-            vr -> {
-              // Use static evaluator since we don't have dataplane yet
-              vr.activateStaticRoutes(new PreDataPlaneTrackMethodEvaluator(vr.getConfiguration()));
-            });
+        .forEach(vr -> {
+          // Use static evaluator since we don't have dataplane yet
+          vr.activateStaticRoutes(new PreDataPlaneTrackMethodEvaluator(vr.getConfiguration()));
+        });
 
     // Set iteration stats in the answer
     ae.setOspfInternalIterations(numOspfInternalIterations);
@@ -1178,12 +1167,9 @@ final class IncrementalBdpEngine {
             .collect(Collectors.joining(", ")));
     dirty.stream()
         .limit(DEBUG_MAX_LISTED_VRS)
-        .forEach(
-            vr ->
-                LOGGER.error(
-                    "Dirty VR {}:\n{}",
-                    vrName(vr),
-                    vr.describeDirtyState(DEBUG_MAX_ROUTES_PER_VR)));
+        .forEach(vr ->
+            LOGGER.error(
+                "Dirty VR {}:\n{}", vrName(vr), vr.describeDirtyState(DEBUG_MAX_ROUTES_PER_VR)));
   }
 
   /** Per-VR iteration hash codes from the previous iteration; only kept when debug logging. */
@@ -1324,22 +1310,20 @@ final class IncrementalBdpEngine {
       ripInternalChanged.set(false);
       LOGGER.info("RIP internal: Iteration {}", ripInternalIterations);
       vrs.parallelStream()
-          .forEach(
-              vr -> {
-                if (vr.propagateRipInternalRoutes(nodes, topology)) {
-                  ripInternalChanged.set(true);
-                }
-              });
+          .forEach(vr -> {
+            if (vr.propagateRipInternalRoutes(nodes, topology)) {
+              ripInternalChanged.set(true);
+            }
+          });
       LOGGER.info("Unstage RIP internal: Iteration {}", ripInternalIterations);
       vrs.parallelStream().forEach(VirtualRouter::unstageRipInternalRoutes);
 
       LOGGER.info("Import RIP internal: Iteration {}", ripInternalIterations);
       vrs.parallelStream()
-          .forEach(
-              vr -> {
-                importRib(vr._ripRib, vr._ripInternalRib);
-                importRib(vr.getMainRib(), vr._ripRib, vr.getName());
-              });
+          .forEach(vr -> {
+            importRib(vr._ripRib, vr._ripInternalRib);
+            importRib(vr.getMainRib(), vr._ripRib, vr.getName());
+          });
     }
   }
 }

@@ -117,33 +117,32 @@ public final class VxlanTopologyUtilsTest {
     public Map<Flow, TraceDag> computeTraceDags(
         Set<Flow> flows, Set<FirewallSessionTraceInfo> sessions, boolean ignoreFilters) {
       return flows.stream()
-          .map(
-              flow -> {
-                List<TraceAndReverseFlow> result = _results.get(flow.getIngressNode());
-                TraceDag dag =
-                    new TraceDag() {
-                      @Override
-                      public int countEdges() {
-                        throw new UnsupportedOperationException();
-                      }
+          .map(flow -> {
+            List<TraceAndReverseFlow> result = _results.get(flow.getIngressNode());
+            TraceDag dag =
+                new TraceDag() {
+                  @Override
+                  public int countEdges() {
+                    throw new UnsupportedOperationException();
+                  }
 
-                      @Override
-                      public int countNodes() {
-                        throw new UnsupportedOperationException();
-                      }
+                  @Override
+                  public int countNodes() {
+                    throw new UnsupportedOperationException();
+                  }
 
-                      @Override
-                      public int size() {
-                        throw new UnsupportedOperationException();
-                      }
+                  @Override
+                  public int size() {
+                    throw new UnsupportedOperationException();
+                  }
 
-                      @Override
-                      public Stream<TraceAndReverseFlow> getAllTraces() {
-                        return result.stream();
-                      }
-                    };
-                return new SimpleEntry<>(flow, dag);
-              })
+                  @Override
+                  public Stream<TraceAndReverseFlow> getAllTraces() {
+                    return result.stream();
+                  }
+                };
+            return new SimpleEntry<>(flow, dag);
+          })
           .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
     }
   }
@@ -930,18 +929,16 @@ public final class VxlanTopologyUtilsTest {
     Map<String, Configuration> configs = compatibleVxlanConfigs();
     // make VNI settings use multicast
     Stream.of(configs.get(NODE1), configs.get(NODE2))
-        .forEach(
-            config -> {
-              Vrf vrf = config.getDefaultVrf();
-              vrf.setLayer2Vnis(
-                  vrf.getLayer2Vnis().values().stream()
-                      .map(
-                          vni ->
-                              vni.toBuilder()
-                                  .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
-                                  .build())
-                      .collect(ImmutableSet.toImmutableSet()));
-            });
+        .forEach(config -> {
+          Vrf vrf = config.getDefaultVrf();
+          vrf.setLayer2Vnis(
+              vrf.getLayer2Vnis().values().stream()
+                  .map(vni ->
+                      vni.toBuilder()
+                          .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
+                          .build())
+                  .collect(ImmutableSet.toImmutableSet()));
+        });
 
     assertFalse(
         VxlanTopologyUtils.reachableEdge(

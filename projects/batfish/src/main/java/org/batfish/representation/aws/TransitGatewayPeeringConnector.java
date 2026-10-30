@@ -44,24 +44,22 @@ class TransitGatewayPeeringConnector {
             .filter(attachment -> attachment.getResourceType() == ResourceType.PEERING)
             .collect(ImmutableSet.toImmutableSet());
 
-    peeringAttachments.forEach(
-        sendSideAttachment -> {
-          Set<TransitGatewayAttachment> peers =
-              peeringAttachments.stream()
-                  .filter(attachment -> arePeers(sendSideAttachment, attachment))
-                  .collect(ImmutableSet.toImmutableSet());
-          if (peers.isEmpty()) {
-            warnings.redFlagf("Matching peer for TGW attachment %s not found", sendSideAttachment);
-          } else if (peers.size() > 1) {
-            warnings.redFlagf(
-                "Multiple matching peers found for TGW attachment %s: %s. Connecting to all of"
-                    + " them.",
-                sendSideAttachment, peers);
-          }
-          peers.forEach(
-              peer ->
-                  connectSenderReceiver(sendSideAttachment, peer, vsConfigs, viConfigs, warnings));
-        });
+    peeringAttachments.forEach(sendSideAttachment -> {
+      Set<TransitGatewayAttachment> peers =
+          peeringAttachments.stream()
+              .filter(attachment -> arePeers(sendSideAttachment, attachment))
+              .collect(ImmutableSet.toImmutableSet());
+      if (peers.isEmpty()) {
+        warnings.redFlagf("Matching peer for TGW attachment %s not found", sendSideAttachment);
+      } else if (peers.size() > 1) {
+        warnings.redFlagf(
+            "Multiple matching peers found for TGW attachment %s: %s. Connecting to all of"
+                + " them.",
+            sendSideAttachment, peers);
+      }
+      peers.forEach(
+          peer -> connectSenderReceiver(sendSideAttachment, peer, vsConfigs, viConfigs, warnings));
+    });
   }
 
   /**
@@ -125,36 +123,35 @@ class TransitGatewayPeeringConnector {
                 routeTable -> routeTable.getGatewayId().equals(sendSideAttachment.getGatewayId()))
             .collect(ImmutableSet.toImmutableSet());
 
-    sendSideRouteTables.forEach(
-        rt -> {
-          Interface sendSideIface =
-              sendSideTgw
-                  .getAllInterfaces()
-                  .get(sendSidePeeringInterfaceName(rt.getId(), sendSideAttachment.getId()));
-          if (sendSideIface == null) {
-            warnings.redFlagf(
-                "Interface for route table %s for peering attachment %s on TGW %s not found",
-                rt.getId(), sendSideAttachment.getId(), sendSideAttachment.getGatewayId());
-            return;
-          }
+    sendSideRouteTables.forEach(rt -> {
+      Interface sendSideIface =
+          sendSideTgw
+              .getAllInterfaces()
+              .get(sendSidePeeringInterfaceName(rt.getId(), sendSideAttachment.getId()));
+      if (sendSideIface == null) {
+        warnings.redFlagf(
+            "Interface for route table %s for peering attachment %s on TGW %s not found",
+            rt.getId(), sendSideAttachment.getId(), sendSideAttachment.getGatewayId());
+        return;
+      }
 
-          // create an interface on the receive side in the right VRF
-          Interface recvSideIface =
-              Utils.newInterface(
-                  receiveSidePeeringInterfaceName(
-                      rt.getId(), recvSideAttachment.getId(), associatedRouteTableId),
-                  recvSideTgw,
-                  vrfNameForRouteTable(associatedRouteTableId),
-                  LinkLocalAddress.of(LINK_LOCAL_IP),
-                  "From " + recvSideAttachment.getResourceId());
+      // create an interface on the receive side in the right VRF
+      Interface recvSideIface =
+          Utils.newInterface(
+              receiveSidePeeringInterfaceName(
+                  rt.getId(), recvSideAttachment.getId(), associatedRouteTableId),
+              recvSideTgw,
+              vrfNameForRouteTable(associatedRouteTableId),
+              LinkLocalAddress.of(LINK_LOCAL_IP),
+              "From " + recvSideAttachment.getResourceId());
 
-          Utils.addLayer1Edge(
-              viConfigs,
-              sendSideTgw.getHostname(),
-              sendSideIface.getName(),
-              recvSideTgw.getHostname(),
-              recvSideIface.getName());
-        });
+      Utils.addLayer1Edge(
+          viConfigs,
+          sendSideTgw.getHostname(),
+          sendSideIface.getName(),
+          recvSideTgw.getHostname(),
+          recvSideIface.getName());
+    });
   }
 
   /**

@@ -96,18 +96,17 @@ public class SnapshotBddBenchmarks {
   public long ipAccessListToBdd() {
     Map<String, BDDSourceManager> srcMgrs = BDDSourceManager.forNetwork(_pkt, _configs);
     return _configs.entrySet().stream()
-        .mapToLong(
-            entry -> {
-              String hostname = entry.getKey();
-              Configuration cfg = entry.getValue();
-              IpAccessListToBddImpl ipAccessListToBdd =
-                  new IpAccessListToBddImpl(
-                      _pkt, srcMgrs.get(hostname), cfg.getIpAccessLists(), cfg.getIpSpaces());
-              return cfg.getIpAccessLists().values().stream()
-                  .map(ipAccessListToBdd::toBdd)
-                  .peek(BDD::free)
-                  .count();
-            })
+        .mapToLong(entry -> {
+          String hostname = entry.getKey();
+          Configuration cfg = entry.getValue();
+          IpAccessListToBddImpl ipAccessListToBdd =
+              new IpAccessListToBddImpl(
+                  _pkt, srcMgrs.get(hostname), cfg.getIpAccessLists(), cfg.getIpSpaces());
+          return cfg.getIpAccessLists().values().stream()
+              .map(ipAccessListToBdd::toBdd)
+              .peek(BDD::free)
+              .count();
+        })
         .sum();
   }
 }

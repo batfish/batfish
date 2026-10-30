@@ -145,9 +145,8 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
         // promoted after a removal, or an added route that demoted existing routes to backup). So
         // we don't have to check the RIB.
         if (delta.stream()
-            .anyMatch(
-                action ->
-                    !action.isWithdrawn() && _resolutionRestriction.test(action.getRoute()))) {
+            .anyMatch(action ->
+                !action.isWithdrawn() && _resolutionRestriction.test(action.getRoute()))) {
           _ribResolutionTrie.addPrefix(prefix);
         } else {
           _ribResolutionTrie.removePrefix(prefix);
@@ -326,13 +325,12 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
     private void updateAffectedRoutesOutEdges(AnnotatedRoute<AbstractRoute> route) {
       getAffectedRoutes(route.getNetwork())
           .filter(_resolutionGraph::containsVertex)
-          .forEach(
-              activeAffectedRoute -> {
-                _resolutionGraph.removeAllEdges(
-                    ImmutableSet.copyOf(_resolutionGraph.outgoingEdgesOf(activeAffectedRoute)));
-                lpmIfValid(activeAffectedRoute)
-                    .forEach(resolver -> _resolutionGraph.addEdge(activeAffectedRoute, resolver));
-              });
+          .forEach(activeAffectedRoute -> {
+            _resolutionGraph.removeAllEdges(
+                ImmutableSet.copyOf(_resolutionGraph.outgoingEdgesOf(activeAffectedRoute)));
+            lpmIfValid(activeAffectedRoute)
+                .forEach(resolver -> _resolutionGraph.addEdge(activeAffectedRoute, resolver));
+          });
     }
 
     /**

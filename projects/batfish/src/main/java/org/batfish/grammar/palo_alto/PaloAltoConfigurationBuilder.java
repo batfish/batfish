@@ -1457,13 +1457,12 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
         Optional.ofNullable(_currentOspfArea.getTypeSettings())
             .filter(OspfAreaStub.class::isInstance)
             .map(OspfAreaStub.class::cast)
-            .orElseGet(
-                () -> {
-                  // overwrite if missing or a different area type
-                  OspfAreaStub newStubArea = new OspfAreaStub();
-                  _currentOspfArea.setTypeSettings(newStubArea);
-                  return newStubArea;
-                });
+            .orElseGet(() -> {
+              // overwrite if missing or a different area type
+              OspfAreaStub newStubArea = new OspfAreaStub();
+              _currentOspfArea.setTypeSettings(newStubArea);
+              return newStubArea;
+            });
   }
 
   @Override
@@ -1497,13 +1496,12 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
         Optional.ofNullable(_currentOspfArea.getTypeSettings())
             .filter(OspfAreaNssa.class::isInstance)
             .map(OspfAreaNssa.class::cast)
-            .orElseGet(
-                () -> {
-                  // overwrite if missing or a different area type
-                  OspfAreaNssa newNssaArea = new OspfAreaNssa();
-                  _currentOspfArea.setTypeSettings(newNssaArea);
-                  return newNssaArea;
-                });
+            .orElseGet(() -> {
+              // overwrite if missing or a different area type
+              OspfAreaNssa newNssaArea = new OspfAreaNssa();
+              _currentOspfArea.setTypeSettings(newNssaArea);
+              return newNssaArea;
+            });
   }
 
   @Override
@@ -2021,15 +2019,14 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void exitStvt_ip_netmask(PaloAltoParser.Stvt_ip_netmaskContext ctx) {
-    _currentTemplateVariableName.ifPresent(
-        name -> {
-          // Store the variable as an address object, since that is how it is used
-          AddressObject addr = new AddressObject(name);
-          applyIpNetmask(addr, ctx.ip_netmask());
-          getOrCreateDefaultVsys(_currentTemplate).getAddressObjects().put(name, addr);
+    _currentTemplateVariableName.ifPresent(name -> {
+      // Store the variable as an address object, since that is how it is used
+      AddressObject addr = new AddressObject(name);
+      applyIpNetmask(addr, ctx.ip_netmask());
+      getOrCreateDefaultVsys(_currentTemplate).getAddressObjects().put(name, addr);
 
-          defineFlattenedStructure(ADDRESS_OBJECT, computeObjectName(_currentVsys, name), ctx);
-        });
+      defineFlattenedStructure(ADDRESS_OBJECT, computeObjectName(_currentVsys, name), ctx);
+    });
   }
 
   /** Apply the ip-netmask (ip addr or prefix) to the specified {@link AddressObject}. */
@@ -2044,20 +2041,17 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void exitStvt_ip_range(PaloAltoParser.Stvt_ip_rangeContext ctx) {
-    _currentTemplateVariableName.ifPresent(
-        name -> {
-          toIpRange(ctx.ip_range())
-              .ifPresent(
-                  range -> {
-                    // Store the variable as an address object, since that is how it is used
-                    AddressObject addr = new AddressObject(name);
-                    addr.setIpRange(range);
-                    getOrCreateDefaultVsys(_currentTemplate).getAddressObjects().put(name, addr);
+    _currentTemplateVariableName.ifPresent(name -> {
+      toIpRange(ctx.ip_range())
+          .ifPresent(range -> {
+            // Store the variable as an address object, since that is how it is used
+            AddressObject addr = new AddressObject(name);
+            addr.setIpRange(range);
+            getOrCreateDefaultVsys(_currentTemplate).getAddressObjects().put(name, addr);
 
-                    defineFlattenedStructure(
-                        ADDRESS_OBJECT, computeObjectName(_currentVsys, name), ctx);
-                  });
-        });
+            defineFlattenedStructure(ADDRESS_OBJECT, computeObjectName(_currentVsys, name), ctx);
+          });
+    });
   }
 
   @Override
@@ -2976,14 +2970,13 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
     } else {
       assert deviceBinding.uint8() != null;
       Optional<Integer> maybeId = toInteger(ctx, deviceBinding);
-      return maybeId.map(
-          id -> {
-            if (id == 0) {
-              return NatRule.ActiveActiveDeviceBinding.ZERO;
-            }
-            assert id == 1;
-            return NatRule.ActiveActiveDeviceBinding.ONE;
-          });
+      return maybeId.map(id -> {
+        if (id == 0) {
+          return NatRule.ActiveActiveDeviceBinding.ZERO;
+        }
+        assert id == 1;
+        return NatRule.ActiveActiveDeviceBinding.ONE;
+      });
     }
   }
 

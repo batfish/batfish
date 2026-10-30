@@ -470,10 +470,8 @@ class FlowTracer {
 
     SortedSet<NodeInterfacePair> interfacesThatReplyToArp =
         neighborIfaces.stream()
-            .filter(
-                iface ->
-                    _tracerouteContext.repliesToArp(
-                        iface.getHostname(), iface.getInterface(), arpIp))
+            .filter(iface ->
+                _tracerouteContext.repliesToArp(iface.getHostname(), iface.getInterface(), arpIp))
             .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
 
     if (interfacesThatReplyToArp.isEmpty()) {
@@ -665,20 +663,18 @@ class FlowTracer {
         // applicable, used as ARP IP)
         Ip lookupIp =
             ips.stream()
-                .filter(
-                    ip -> {
-                      // Intentionally forcing crashes with .get() here
-                      Fib fib = _tracerouteContext.getFib(currentNodeName, lookupVrfName).get();
-                      Set<FibEntry> entries =
-                          fibLookupAction.requireConnected()
-                              ? fib.get(ip).stream()
-                                  // Filter entries if a directly connected hext hop is required
-                                  .filter(
-                                      entry -> entry.getTopLevelRoute() instanceof ConnectedRoute)
-                                  .collect(ImmutableSet.toImmutableSet())
-                              : fib.get(ip);
-                      return !entries.isEmpty();
-                    })
+                .filter(ip -> {
+                  // Intentionally forcing crashes with .get() here
+                  Fib fib = _tracerouteContext.getFib(currentNodeName, lookupVrfName).get();
+                  Set<FibEntry> entries =
+                      fibLookupAction.requireConnected()
+                          ? fib.get(ip).stream()
+                              // Filter entries if a directly connected hext hop is required
+                              .filter(entry -> entry.getTopLevelRoute() instanceof ConnectedRoute)
+                              .collect(ImmutableSet.toImmutableSet())
+                          : fib.get(ip);
+                  return !entries.isEmpty();
+                })
                 .findFirst()
                 .orElse(null);
 
@@ -885,10 +881,9 @@ class FlowTracer {
     Transformation transformation = session.getTransformation();
     TransformationResult transformationResult =
         Optional.ofNullable(transformation)
-            .map(
-                t ->
-                    TransformationEvaluator.eval(
-                        t, _currentFlow, inputIfaceName, ipAccessLists, ipSpaces))
+            .map(t ->
+                TransformationEvaluator.eval(
+                    t, _currentFlow, inputIfaceName, ipAccessLists, ipSpaces))
             .orElse(null);
     if (transformation != null) {
       matchDetail.setTransformation(flowDiffs(_currentFlow, transformationResult.getOutputFlow()));
@@ -1045,10 +1040,9 @@ class FlowTracer {
                   StepAction filterResult =
                       Optional.ofNullable(outgoingInterface.getFirewallSessionInterfaceInfo())
                           .map(FirewallSessionInterfaceInfo::getOutgoingAclName)
-                          .map(
-                              outgoingAclName ->
-                                  applyFilter(
-                                      ipAccessLists.get(outgoingAclName), FilterType.EGRESS_FILTER))
+                          .map(outgoingAclName ->
+                              applyFilter(
+                                  ipAccessLists.get(outgoingAclName), FilterType.EGRESS_FILTER))
                           .orElse(null);
                   if (filterResult == DENIED) {
                     return null;

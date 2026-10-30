@@ -191,14 +191,13 @@ public final class ElasticsearchDomain implements AwsVpcEntity, Serializable {
   public List<Configuration> toConfigurationNodes(
       ConvertedConfiguration awsConfiguration, Region region, Warnings warnings) {
     return IntStream.range(0, _instanceCount)
-        .mapToObj(
-            instanceNum ->
-                toConfigurationNode(
-                    instanceNum,
-                    _subnets.get(instanceNum % _subnets.size()),
-                    awsConfiguration,
-                    region,
-                    warnings))
+        .mapToObj(instanceNum ->
+            toConfigurationNode(
+                instanceNum,
+                _subnets.get(instanceNum % _subnets.size()),
+                awsConfiguration,
+                region,
+                warnings))
         .filter(Objects::nonNull)
         .collect(ImmutableList.toImmutableList());
   }

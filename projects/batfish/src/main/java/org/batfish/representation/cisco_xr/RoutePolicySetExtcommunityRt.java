@@ -38,14 +38,13 @@ public final class RoutePolicySetExtcommunityRt extends RoutePolicySetStatement 
   public @Nonnull Statement toSetStatement(CiscoXrConfiguration cc, Configuration c, Warnings w) {
     return _expr
         .accept(XrToViCommunitySetExpr.INSTANCE, c)
-        .map(
-            communitySetExpr ->
-                _additive
-                    ? CommunitySetUnion.of(InputCommunities.instance(), communitySetExpr)
-                    : CommunitySetUnion.of(
-                        new CommunitySetDifference(
-                            InputCommunities.instance(), RouteTargetExtendedCommunities.instance()),
-                        communitySetExpr))
+        .map(communitySetExpr ->
+            _additive
+                ? CommunitySetUnion.of(InputCommunities.instance(), communitySetExpr)
+                : CommunitySetUnion.of(
+                    new CommunitySetDifference(
+                        InputCommunities.instance(), RouteTargetExtendedCommunities.instance()),
+                    communitySetExpr))
         .<Statement>map(SetCommunities::new)
         .orElse(INVALID);
   }

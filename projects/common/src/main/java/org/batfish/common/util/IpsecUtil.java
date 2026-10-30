@@ -114,27 +114,26 @@ public class IpsecUtil {
                   destinationIp, privateIpsByPublicIp, localIpIpsecPeerConfigIds)
                   .stream(),
               localIpIpsecPeerConfigIds.getOrDefault(destinationIp, ImmutableSet.of()).stream())
-          .forEach(
-              candidateIpsecPeerConfigId -> {
-                IpsecPeerConfig candidateIpsecPeer =
-                    networkConfigurations.getIpsecPeerConfig(candidateIpsecPeerConfigId);
-                if (candidateIpsecPeer == null) {
-                  return;
-                }
-                // skip if an IPSec peer is a crypto map based vpn and other is a tunnel interface
-                // based vpn
-                if (ipsecStaticPeerConfig.getTunnelInterface() == null
-                    ^ candidateIpsecPeer.getTunnelInterface() == null) {
-                  return;
-                }
-                Configuration candidateOwner =
-                    configurations.get(candidateIpsecPeerConfigId.getHostName());
+          .forEach(candidateIpsecPeerConfigId -> {
+            IpsecPeerConfig candidateIpsecPeer =
+                networkConfigurations.getIpsecPeerConfig(candidateIpsecPeerConfigId);
+            if (candidateIpsecPeer == null) {
+              return;
+            }
+            // skip if an IPSec peer is a crypto map based vpn and other is a tunnel interface
+            // based vpn
+            if (ipsecStaticPeerConfig.getTunnelInterface() == null
+                ^ candidateIpsecPeer.getTunnelInterface() == null) {
+              return;
+            }
+            Configuration candidateOwner =
+                configurations.get(candidateIpsecPeerConfigId.getHostName());
 
-                IpsecSession ipsecSession =
-                    getIpsecSession(
-                        initiatorOwner, candidateOwner, ipsecStaticPeerConfig, candidateIpsecPeer);
-                graph.putEdgeValue(ipsecPeerConfigId, candidateIpsecPeerConfigId, ipsecSession);
-              });
+            IpsecSession ipsecSession =
+                getIpsecSession(
+                    initiatorOwner, candidateOwner, ipsecStaticPeerConfig, candidateIpsecPeer);
+            graph.putEdgeValue(ipsecPeerConfigId, candidateIpsecPeerConfigId, ipsecSession);
+          });
     }
 
     return new IpsecTopology(graph);
@@ -405,16 +404,14 @@ public class IpsecUtil {
       List<String> responderProposals) {
     List<IpsecPhase2Proposal> initiatorIpsecProposalList =
         initiatorProposals.stream()
-            .map(
-                ipsecP2ProposalName ->
-                    initiatorOwner.getIpsecPhase2Proposals().get(ipsecP2ProposalName))
+            .map(ipsecP2ProposalName ->
+                initiatorOwner.getIpsecPhase2Proposals().get(ipsecP2ProposalName))
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
     List<IpsecPhase2Proposal> responderProposalList =
         responderProposals.stream()
-            .map(
-                ipsecP2ProposalName ->
-                    responderOwner.getIpsecPhase2Proposals().get(ipsecP2ProposalName))
+            .map(ipsecP2ProposalName ->
+                responderOwner.getIpsecPhase2Proposals().get(ipsecP2ProposalName))
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
 
@@ -443,11 +440,10 @@ public class IpsecUtil {
                 .collect(Collectors.toList());
 
     return dynamicIkePhase1Policies.stream()
-        .filter(
-            dynamicIkeP1Policy ->
-                dynamicIkeP1Policy
-                    .getRemoteIdentity()
-                    .containsIp(initiator.getLocalAddress(), ImmutableMap.of()))
+        .filter(dynamicIkeP1Policy ->
+            dynamicIkeP1Policy
+                .getRemoteIdentity()
+                .containsIp(initiator.getLocalAddress(), ImmutableMap.of()))
         .findFirst()
         .orElse(null);
   }
@@ -487,9 +483,8 @@ public class IpsecUtil {
         ipsecGraph
             .edgeValue(endPointU, endPointV)
             .filter(ipsecSession -> ipsecSession.getNegotiatedIpsecP2Proposal() != null)
-            .ifPresent(
-                ipsecSession ->
-                    prunedIpsecTopology.putEdgeValue(endPointU, endPointV, ipsecSession));
+            .ifPresent(ipsecSession ->
+                prunedIpsecTopology.putEdgeValue(endPointU, endPointV, ipsecSession));
       }
     }
 
@@ -724,35 +719,31 @@ public class IpsecUtil {
 
     List<TraceAndReverseFlow> reverseTraces =
         forwardTracesAndReverseFlows.stream()
-            .filter(
-                traceAndReverseFlow ->
-                    traceAndReverseFlow.getTrace().getDisposition() == FlowDisposition.ACCEPTED)
-            .filter(
-                traceAndReverseFlow ->
-                    traceAndReverseFlow.getReverseFlow() != null
-                        && traceAndReverseFlow
-                            .getReverseFlow()
-                            .getIngressNode()
-                            .equals(destinationNode))
-            .flatMap(
-                traceAndReverseFlow ->
-                    tracerouteEngine
-                        .computeTracesAndReverseFlows(
-                            ImmutableSet.of(traceAndReverseFlow.getReverseFlow()),
-                            traceAndReverseFlow.getNewFirewallSessions(),
-                            false)
-                        .get(traceAndReverseFlow.getReverseFlow())
-                        .stream())
+            .filter(traceAndReverseFlow ->
+                traceAndReverseFlow.getTrace().getDisposition() == FlowDisposition.ACCEPTED)
+            .filter(traceAndReverseFlow ->
+                traceAndReverseFlow.getReverseFlow() != null
+                    && traceAndReverseFlow
+                        .getReverseFlow()
+                        .getIngressNode()
+                        .equals(destinationNode))
+            .flatMap(traceAndReverseFlow ->
+                tracerouteEngine
+                    .computeTracesAndReverseFlows(
+                        ImmutableSet.of(traceAndReverseFlow.getReverseFlow()),
+                        traceAndReverseFlow.getNewFirewallSessions(),
+                        false)
+                    .get(traceAndReverseFlow.getReverseFlow())
+                    .stream())
             .collect(ImmutableList.toImmutableList());
 
     return reverseTraces.stream()
-        .anyMatch(
-            traceAndReverseFlow -> {
-              Trace reverseTrace = traceAndReverseFlow.getTrace();
-              List<Hop> hops = reverseTrace.getHops();
-              return !hops.isEmpty()
-                  && hops.get(hops.size() - 1).getNode().getName().equals(sourceNode)
-                  && reverseTrace.getDisposition() == FlowDisposition.ACCEPTED;
-            });
+        .anyMatch(traceAndReverseFlow -> {
+          Trace reverseTrace = traceAndReverseFlow.getTrace();
+          List<Hop> hops = reverseTrace.getHops();
+          return !hops.isEmpty()
+              && hops.get(hops.size() - 1).getNode().getName().equals(sourceNode)
+              && reverseTrace.getDisposition() == FlowDisposition.ACCEPTED;
+        });
   }
 }

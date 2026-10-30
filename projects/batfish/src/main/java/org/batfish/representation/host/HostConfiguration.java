@@ -221,9 +221,8 @@ public class HostConfiguration extends VendorConfiguration {
   @Override
   public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
     if (_underlayConfiguration != null) {
-      _hostInterfaces.forEach(
-          (name, iface) ->
-              iface.setCanonicalName(_underlayConfiguration.canonicalizeInterfaceName(name)));
+      _hostInterfaces.forEach((name, iface) ->
+          iface.setCanonicalName(_underlayConfiguration.canonicalizeInterfaceName(name)));
     } else {
       _hostInterfaces.forEach((name, iface) -> iface.setCanonicalName(name));
     }
@@ -236,12 +235,11 @@ public class HostConfiguration extends VendorConfiguration {
     // add interfaces
     _hostInterfaces
         .values()
-        .forEach(
-            hostInterface -> {
-              String canonicalName = hostInterface.getCanonicalName();
-              Interface newIface = hostInterface.toInterface(_c, _w);
-              _c.getAllInterfaces().put(canonicalName, newIface);
-            });
+        .forEach(hostInterface -> {
+          String canonicalName = hostInterface.getCanonicalName();
+          Interface newIface = hostInterface.toInterface(_c, _w);
+          _c.getAllInterfaces().put(canonicalName, newIface);
+        });
 
     // add iptables
     if (_iptablesVendorConfig != null) {
@@ -293,12 +291,11 @@ public class HostConfiguration extends VendorConfiguration {
     // create LocationInfo for each link location on the instance.
     _c.setLocationInfo(
         _c.getAllInterfaces().values().stream()
-            .flatMap(
-                iface ->
-                    Stream.of(
-                        immutableEntry(interfaceLocation(iface), hostInterfaceLocationInfo(iface)),
-                        immutableEntry(
-                            interfaceLinkLocation(iface), HOST_INTERFACE_LINK_LOCATION_INFO)))
+            .flatMap(iface ->
+                Stream.of(
+                    immutableEntry(interfaceLocation(iface), hostInterfaceLocationInfo(iface)),
+                    immutableEntry(
+                        interfaceLinkLocation(iface), HOST_INTERFACE_LINK_LOCATION_INFO)))
             .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue)));
 
     return ImmutableList.of(_c);
@@ -319,13 +316,12 @@ public class HostConfiguration extends VendorConfiguration {
       hostInterfaces =
           BatfishObjectMapper.mapper()
               .convertValue(hostInterfacesNode, new TypeReference<Map<String, HostInterface>>() {});
-      hostInterfaces.forEach(
-          (name, hostInterface) ->
-              checkArgument(
-                  name.equals(hostInterface.getName()),
-                  "Mismatch between hostInterface key '%s' and name '%s'",
-                  name,
-                  hostInterface.getName()));
+      hostInterfaces.forEach((name, hostInterface) ->
+          checkArgument(
+              name.equals(hostInterface.getName()),
+              "Mismatch between hostInterface key '%s' and name '%s'",
+              name,
+              hostInterface.getName()));
     } else {
       assert hostInterfacesNode instanceof ArrayNode;
       List<HostInterface> hostInterfacesList =

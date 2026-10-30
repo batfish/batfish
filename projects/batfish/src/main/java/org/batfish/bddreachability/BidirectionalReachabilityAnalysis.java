@@ -104,26 +104,24 @@ public final class BidirectionalReachabilityAnalysis {
       ImmutableMultimap.Builder<StateExpr, Location> builder = ImmutableMultimap.builder();
       srcIpSpaceAssignment.getEntries().stream()
           .flatMap(entry -> entry.getLocations().stream())
-          .map(
-              loc ->
-                  loc.accept(locationToStateExpr)
-                      .map(stateExpr -> Maps.immutableEntry(stateExpr, loc))
-                      .orElse(null))
+          .map(loc ->
+              loc.accept(locationToStateExpr)
+                  .map(stateExpr -> Maps.immutableEntry(stateExpr, loc))
+                  .orElse(null))
           .filter(Objects::nonNull)
           .forEach(builder::put);
       _originateStateToLocation = builder.build();
     }
 
     _forwardPassAnalysis =
-        Suppliers.memoize(
-            () ->
-                _factory.bddReachabilityAnalysis(
-                    srcIpSpaceAssignment,
-                    initialForwardHeaderSpace,
-                    forbiddenTransitNodes,
-                    requiredTransitNodes,
-                    forwardPassFinalNodes,
-                    forwardPassActions));
+        Suppliers.memoize(() ->
+            _factory.bddReachabilityAnalysis(
+                srcIpSpaceAssignment,
+                initialForwardHeaderSpace,
+                forbiddenTransitNodes,
+                requiredTransitNodes,
+                forwardPassFinalNodes,
+                forwardPassActions));
     _forwardPassForwardReachableBdds =
         Suppliers.memoize(() -> _forwardPassAnalysis.get().computeForwardReachableStates());
     _returnPassOrigBdds = Suppliers.memoize(this::computeReturnPassOrigBdds);
@@ -154,18 +152,16 @@ public final class BidirectionalReachabilityAnalysis {
   static Map<StateExpr, BDD> computeReturnPassQueryConstraints(
       BDDPacket packet, Map<StateExpr, BDD> forwardPassOriginationConstraints) {
     return forwardPassOriginationConstraints.entrySet().stream()
-        .flatMap(
-            entry -> {
-              List<StateExpr> terminationStates =
-                  originationStateToTerminationState(entry.getKey());
-              if (terminationStates == null) {
-                return Stream.of();
-              }
+        .flatMap(entry -> {
+          List<StateExpr> terminationStates = originationStateToTerminationState(entry.getKey());
+          if (terminationStates == null) {
+            return Stream.of();
+          }
 
-              BDD queryConstraint = packet.swapSourceAndDestinationFields(entry.getValue());
-              return terminationStates.stream()
-                  .map(state -> Maps.immutableEntry(state, queryConstraint));
-            })
+          BDD queryConstraint = packet.swapSourceAndDestinationFields(entry.getValue());
+          return terminationStates.stream()
+              .map(state -> Maps.immutableEntry(state, queryConstraint));
+        })
         .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue, BDD::or));
   }
 
@@ -186,29 +182,28 @@ public final class BidirectionalReachabilityAnalysis {
     LastHopOutgoingInterfaceManager lastHopMgr = _factory.getLastHopManager();
 
     return forwardReachableBdds.entrySet().stream()
-        .map(
-            entry -> {
-              StateExpr term = entry.getKey();
-              StateExpr orig = term.accept(_reversePassOriginationState);
-              if (orig == null) {
-                // not an origination state
-                return null;
-              }
+        .map(entry -> {
+          StateExpr term = entry.getKey();
+          StateExpr orig = term.accept(_reversePassOriginationState);
+          if (orig == null) {
+            // not an origination state
+            return null;
+          }
 
-              BDD termBdd = entry.getValue().and(queryBdd);
-              if (termBdd.isZero()) {
-                return null;
-              }
+          BDD termBdd = entry.getValue().and(queryBdd);
+          if (termBdd.isZero()) {
+            return null;
+          }
 
-              BDD bdd = srcManager.existsSource(termBdd);
-              if (lastHopMgr != null) {
-                bdd = lastHopMgr.existsLastHop(bdd);
-              }
-              bdd = _bddPacket.swapSourceAndDestinationFields(bdd);
-              // erase required transit nodes constraint left over from forward pass
-              bdd = bdd.exist(_factory.getRequiredTransitNodeBDD());
-              return Maps.immutableEntry(orig, bdd);
-            })
+          BDD bdd = srcManager.existsSource(termBdd);
+          if (lastHopMgr != null) {
+            bdd = lastHopMgr.existsLastHop(bdd);
+          }
+          bdd = _bddPacket.swapSourceAndDestinationFields(bdd);
+          // erase required transit nodes constraint left over from forward pass
+          bdd = bdd.exist(_factory.getRequiredTransitNodeBDD());
+          return Maps.immutableEntry(orig, bdd);
+        })
         .filter(Objects::nonNull)
         .collect(Collectors.toMap(Entry::getKey, Entry::getValue, BDD::or));
   }
@@ -275,13 +270,12 @@ public final class BidirectionalReachabilityAnalysis {
     BDD failForwardFlows = _bddPacket.swapSourceAndDestinationFields(failReturnFlows);
 
     return _originateStateToLocation.entries().stream()
-        .flatMap(
-            entry -> {
-              StateExpr origState = entry.getKey();
-              Location loc = entry.getValue();
-              BDD bdd = failForwardFlows.and(_forwardPassOriginationConstraints.get(origState));
-              return bdd.isZero() ? Stream.of() : Stream.of(Maps.immutableEntry(loc, bdd));
-            })
+        .flatMap(entry -> {
+          StateExpr origState = entry.getKey();
+          Location loc = entry.getValue();
+          BDD bdd = failForwardFlows.and(_forwardPassOriginationConstraints.get(origState));
+          return bdd.isZero() ? Stream.of() : Stream.of(Maps.immutableEntry(loc, bdd));
+        })
         .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue, BDD::or));
   }
 
@@ -291,49 +285,46 @@ public final class BidirectionalReachabilityAnalysis {
 
     Map<StateExpr, BDD> reachableQueries =
         queryConstraints.entrySet().stream()
-            .map(
-                entry -> {
-                  StateExpr key = entry.getKey();
-                  BDD queryConstraint = entry.getValue();
-                  BDD reachable = returnPassForwardReachableBdds.getOrDefault(key, _zero);
-                  BDD reachableQuery = queryConstraint.and(reachable);
-                  return reachableQuery.isZero() ? null : Maps.immutableEntry(key, reachableQuery);
-                })
+            .map(entry -> {
+              StateExpr key = entry.getKey();
+              BDD queryConstraint = entry.getValue();
+              BDD reachable = returnPassForwardReachableBdds.getOrDefault(key, _zero);
+              BDD reachableQuery = queryConstraint.and(reachable);
+              return reachableQuery.isZero() ? null : Maps.immutableEntry(key, reachableQuery);
+            })
             .filter(Objects::nonNull)
             .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 
     BDD requiredTransitNodesBdd = _factory.getRequiredTransitNodeBDD();
     BDDSourceManager srcMgr = _factory.getBDDSourceManagers().values().iterator().next();
     return _originateStateToLocation.entries().stream()
-        .map(
-            entry -> {
-              StateExpr originationState = entry.getKey();
-              Location loc = entry.getValue();
-              List<StateExpr> terminationStates =
-                  originationStateToTerminationState(originationState);
+        .map(entry -> {
+          StateExpr originationState = entry.getKey();
+          Location loc = entry.getValue();
+          List<StateExpr> terminationStates = originationStateToTerminationState(originationState);
 
-              if (terminationStates == null) {
-                return null;
-              }
+          if (terminationStates == null) {
+            return null;
+          }
 
-              BDD bdd =
-                  requiredTransitNodesBdd.and(
-                      terminationStates.stream()
-                          .map(reachableQueries::get)
-                          .filter(Objects::nonNull)
-                          .reduce(_zero, BDD::or));
+          BDD bdd =
+              requiredTransitNodesBdd.and(
+                  terminationStates.stream()
+                      .map(reachableQueries::get)
+                      .filter(Objects::nonNull)
+                      .reduce(_zero, BDD::or));
 
-              if (bdd.isZero()) {
-                return null;
-              }
+          if (bdd.isZero()) {
+            return null;
+          }
 
-              // remove non-header fields
-              bdd = srcMgr.existsSource(bdd);
-              bdd = _factory.getLastHopManager().existsLastHop(bdd);
-              bdd = bdd.exist(requiredTransitNodesBdd);
+          // remove non-header fields
+          bdd = srcMgr.existsSource(bdd);
+          bdd = _factory.getLastHopManager().existsLastHop(bdd);
+          bdd = bdd.exist(requiredTransitNodesBdd);
 
-              return Maps.immutableEntry(loc, _bddPacket.swapSourceAndDestinationFields(bdd));
-            })
+          return Maps.immutableEntry(loc, _bddPacket.swapSourceAndDestinationFields(bdd));
+        })
         .filter(Objects::nonNull)
         .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue, BDD::or));
   }

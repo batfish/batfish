@@ -351,12 +351,10 @@ public final class SrosConversions {
                 InputCommunities.instance(),
                 new org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAny(
                     members.stream()
-                        .map(
-                            m ->
-                                (org.batfish.datamodel.routing_policy.communities
-                                        .CommunitySetMatchExpr)
-                                    new org.batfish.datamodel.routing_policy.communities
-                                        .HasCommunity(m))
+                        .map(m ->
+                            (org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr)
+                                new org.batfish.datamodel.routing_policy.communities.HasCommunity(
+                                    m))
                         .collect(ImmutableList.toImmutableList()))));
       }
     }

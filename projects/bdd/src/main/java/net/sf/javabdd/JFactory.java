@@ -4224,11 +4224,10 @@ public final class JFactory extends BDDFactory implements Serializable {
     // Initialize the new nodes in parallel
     IntStream.range(oldsize, newsize)
         .parallel()
-        .forEach(
-            n -> {
-              SETLOW(n, INVALID_BDD);
-              SETNEXT(n, n + 1);
-            });
+        .forEach(n -> {
+          SETLOW(n, INVALID_BDD);
+          SETNEXT(n, n + 1);
+        });
 
     SETNEXT(bddnodesize - 1, bddfreepos);
     bddfreepos = oldsize;
@@ -4514,13 +4513,12 @@ public final class JFactory extends BDDFactory implements Serializable {
     Arrays.stream(oldTable).parallel().forEach(entry -> ret[entry.hash & mask] = entry);
     IntStream.range(0, newsize)
         .parallel()
-        .forEach(
-            i -> {
-              if (ret[i] != null) {
-                return;
-              }
-              ret[i] = constructor.get();
-            });
+        .forEach(i -> {
+          if (ret[i] != null) {
+            return;
+          }
+          ret[i] = constructor.get();
+        });
     return ret;
   }
 
@@ -4591,13 +4589,12 @@ public final class JFactory extends BDDFactory implements Serializable {
     }
     Arrays.stream(cache.table)
         .parallel()
-        .forEach(
-            entry -> {
-              int a = entry.a;
-              if (a >= 0 && LOW(a) == INVALID_BDD) {
-                entry.a = -1;
-              }
-            });
+        .forEach(entry -> {
+          int a = entry.a;
+          if (a >= 0 && LOW(a) == INVALID_BDD) {
+            entry.a = -1;
+          }
+        });
   }
 
   private void BddCache_clean_a(BddCache cache) {
@@ -4606,16 +4603,15 @@ public final class JFactory extends BDDFactory implements Serializable {
     }
     Arrays.stream(cache.table)
         .parallel()
-        .forEach(
-            entry -> {
-              int a = entry.a;
-              if (a < 0) {
-                return;
-              }
-              if (LOW(a) == INVALID_BDD || LOW(((BddCacheDataI) entry).res) == INVALID_BDD) {
-                entry.a = -1;
-              }
-            });
+        .forEach(entry -> {
+          int a = entry.a;
+          if (a < 0) {
+            return;
+          }
+          if (LOW(a) == INVALID_BDD || LOW(((BddCacheDataI) entry).res) == INVALID_BDD) {
+            entry.a = -1;
+          }
+        });
   }
 
   private void BddCache_clean_ab(BddCache cache) {
@@ -4624,18 +4620,17 @@ public final class JFactory extends BDDFactory implements Serializable {
     }
     Arrays.stream(cache.table)
         .parallel()
-        .forEach(
-            entry -> {
-              int a = entry.a;
-              if (a < 0) {
-                return;
-              }
-              if (LOW(a) == INVALID_BDD
-                  || (entry.b != 0 && LOW(entry.b) == INVALID_BDD)
-                  || LOW(((BddCacheDataI) entry).res) == INVALID_BDD) {
-                entry.a = -1;
-              }
-            });
+        .forEach(entry -> {
+          int a = entry.a;
+          if (a < 0) {
+            return;
+          }
+          if (LOW(a) == INVALID_BDD
+              || (entry.b != 0 && LOW(entry.b) == INVALID_BDD)
+              || LOW(((BddCacheDataI) entry).res) == INVALID_BDD) {
+            entry.a = -1;
+          }
+        });
   }
 
   private boolean invalidEntry(MultiOpBddCacheData entry) {
@@ -4663,14 +4658,13 @@ public final class JFactory extends BDDFactory implements Serializable {
     }
     Arrays.stream(cache.table)
         .parallel()
-        .forEach(
-            e -> {
-              MultiOpBddCacheData entry = (MultiOpBddCacheData) e;
-              if (invalidEntry(entry)) {
-                entry.a = -1;
-                entry.operands = null;
-              }
-            });
+        .forEach(e -> {
+          MultiOpBddCacheData entry = (MultiOpBddCacheData) e;
+          if (invalidEntry(entry)) {
+            entry.a = -1;
+            entry.operands = null;
+          }
+        });
   }
 
   private void bdd_setpair(bddPair pair, int oldvar, int newvar) {

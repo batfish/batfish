@@ -769,15 +769,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
       List<BooleanExpr> importPolicyCalls = new ArrayList<>();
       ig.getImportPolicies()
-          .forEach(
-              importPolicyName -> {
-                PolicyStatement importPolicy =
-                    _masterLogicalSystem.getPolicyStatements().get(importPolicyName);
-                if (importPolicy != null) {
-                  CallExpr callPolicy = new CallExpr(importPolicyName);
-                  importPolicyCalls.add(callPolicy);
-                }
-              });
+          .forEach(importPolicyName -> {
+            PolicyStatement importPolicy =
+                _masterLogicalSystem.getPolicyStatements().get(importPolicyName);
+            if (importPolicy != null) {
+              CallExpr callPolicy = new CallExpr(importPolicyName);
+              importPolicyCalls.add(callPolicy);
+            }
+          });
       If peerImportPolicyConditional = new If();
       FirstMatchChain importPolicyChain = new FirstMatchChain(importPolicyCalls);
       peerImportPolicyConditional.setGuard(importPolicyChain);
@@ -825,15 +824,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
       List<BooleanExpr> exportPolicyCalls = new ArrayList<>();
       ig.getExportPolicies()
-          .forEach(
-              exportPolicyName -> {
-                PolicyStatement exportPolicy =
-                    _masterLogicalSystem.getPolicyStatements().get(exportPolicyName);
-                if (exportPolicy != null) {
-                  CallExpr callPolicy = new CallExpr(exportPolicyName);
-                  exportPolicyCalls.add(callPolicy);
-                }
-              });
+          .forEach(exportPolicyName -> {
+            PolicyStatement exportPolicy =
+                _masterLogicalSystem.getPolicyStatements().get(exportPolicyName);
+            if (exportPolicy != null) {
+              CallExpr callPolicy = new CallExpr(exportPolicyName);
+              exportPolicyCalls.add(callPolicy);
+            }
+          });
       If peerExportPolicyConditional = new If();
       FirstMatchChain exportPolicyChain = new FirstMatchChain(exportPolicyCalls);
       peerExportPolicyConditional.setGuard(exportPolicyChain);
@@ -977,11 +975,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
       RoutingInstance routingInstance, Configuration c) {
     Optional<Interface> loopback =
         routingInstance.getInterfaces().values().stream()
-            .filter(
-                iface ->
-                    iface.isUnit()
-                        && c.getAllInterfaces().get(iface.getName()).getActive()
-                        && iface.getName().startsWith(FIRST_LOOPBACK_INTERFACE_NAME))
+            .filter(iface ->
+                iface.isUnit()
+                    && c.getAllInterfaces().get(iface.getName()).getActive()
+                    && iface.getName().startsWith(FIRST_LOOPBACK_INTERFACE_NAME))
             // should be at most one: Junos has only lo0 (no lo1) and only one unit in a
             // routing instance
             .findAny();
@@ -1013,11 +1010,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
       RoutingInstance routingInstance, Configuration c) {
     Optional<Interface> explicitPrimary =
         routingInstance.getInterfaces().values().stream()
-            .filter(
-                iface ->
-                    iface.isUnit()
-                        && firstNonNull(iface.getPrimary(), false)
-                        && c.getAllInterfaces().get(iface.getName()).getActive())
+            .filter(iface ->
+                iface.isUnit()
+                    && firstNonNull(iface.getPrimary(), false)
+                    && c.getAllInterfaces().get(iface.getName()).getActive())
             .min(
                 Comparator.comparing(
                     Interface::getName)); // there should be only one; sorting just in case
@@ -1037,22 +1033,20 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // Lexicographical sorting should suffice
     Optional<Interface> mgmtInterfaceWithAddress =
         routingInstance.getInterfaces().values().stream()
-            .filter(
-                iface ->
-                    iface.getType() == InterfaceType.MANAGEMENT_UNIT
-                        && c.getAllInterfaces().get(iface.getName()).getActive()
-                        && !iface.getAllAddresses().isEmpty())
+            .filter(iface ->
+                iface.getType() == InterfaceType.MANAGEMENT_UNIT
+                    && c.getAllInterfaces().get(iface.getName()).getActive()
+                    && !iface.getAllAddresses().isEmpty())
             .min(Comparator.comparing(Interface::getName));
     if (mgmtInterfaceWithAddress.isPresent()) {
       return mgmtInterfaceWithAddress;
     }
 
     return routingInstance.getInterfaces().values().stream()
-        .filter(
-            iface ->
-                iface.isUnit()
-                    && c.getAllInterfaces().get(iface.getName()).getActive()
-                    && !iface.getAllAddresses().isEmpty())
+        .filter(iface ->
+            iface.isUnit()
+                && c.getAllInterfaces().get(iface.getName()).getActive()
+                && !iface.getAllAddresses().isEmpty())
         .min(Comparator.comparing(Interface::getName));
   }
 
@@ -1103,21 +1097,20 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .values()
         .stream()
         .filter(route -> !route.getCommunities().isEmpty())
-        .map(
-            route -> {
-              // Create matcher that matches routes that share this route's destination network
-              PrefixExpr destNetworkMatcher = DestinationNetwork.instance();
-              PrefixSetExpr destNetwork =
-                  new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(route.getPrefix())));
-              MatchPrefixSet networkMatcher = new MatchPrefixSet(destNetworkMatcher, destNetwork);
+        .map(route -> {
+          // Create matcher that matches routes that share this route's destination network
+          PrefixExpr destNetworkMatcher = DestinationNetwork.instance();
+          PrefixSetExpr destNetwork =
+              new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(route.getPrefix())));
+          MatchPrefixSet networkMatcher = new MatchPrefixSet(destNetworkMatcher, destNetwork);
 
-              // When a matching static route is exported, set its communities
-              return new If(
-                  new Conjunction(ImmutableList.of(matchStatic, networkMatcher)),
-                  ImmutableList.of(
-                      new SetCommunities(
-                          new LiteralCommunitySet(CommunitySet.of(route.getCommunities())))));
-            })
+          // When a matching static route is exported, set its communities
+          return new If(
+              new Conjunction(ImmutableList.of(matchStatic, networkMatcher)),
+              ImmutableList.of(
+                  new SetCommunities(
+                      new LiteralCommunitySet(CommunitySet.of(route.getCommunities())))));
+        })
         .collect(ImmutableList.toImmutableList());
   }
 
@@ -1130,16 +1123,15 @@ public final class JuniperConfiguration extends VendorConfiguration {
      */
     _masterLogicalSystem
         .getNamedCommunities()
-        .forEach(
-            (name, namedCommunity) -> {
-              assert name.equals(namedCommunity.getName());
-              @Nullable CommunitySet communitySet = toCommunitySet(namedCommunity);
-              if (communitySet != null) {
-                _c.getCommunitySets().put(name, communitySet);
-              }
-              _c.getCommunityMatchExprs().put(name, toCommunityMatchExpr(namedCommunity));
-              _c.getCommunitySetMatchExprs().put(name, toCommunitySetMatchExpr(namedCommunity));
-            });
+        .forEach((name, namedCommunity) -> {
+          assert name.equals(namedCommunity.getName());
+          @Nullable CommunitySet communitySet = toCommunitySet(namedCommunity);
+          if (communitySet != null) {
+            _c.getCommunitySets().put(name, communitySet);
+          }
+          _c.getCommunityMatchExprs().put(name, toCommunityMatchExpr(namedCommunity));
+          _c.getCommunitySetMatchExprs().put(name, toCommunitySetMatchExpr(namedCommunity));
+        });
   }
 
   private static class CommunityMemberToCommunity implements CommunityMemberVisitor<Community> {
@@ -1272,15 +1264,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
       // Apply the specified export policies
       List<BooleanExpr> callExprs =
           settings.getExportPolicies().stream()
-              .map(
-                  calledPolicyName -> {
-                    PolicyStatement importPolicy =
-                        _masterLogicalSystem.getPolicyStatements().get(calledPolicyName);
-                    if (importPolicy != null) {
-                      return new CallExpr(calledPolicyName);
-                    }
-                    return null;
-                  })
+              .map(calledPolicyName -> {
+                PolicyStatement importPolicy =
+                    _masterLogicalSystem.getPolicyStatements().get(calledPolicyName);
+                if (importPolicy != null) {
+                  return new CallExpr(calledPolicyName);
+                }
+                return null;
+              })
               .filter(Objects::nonNull)
               .collect(ImmutableList.toImmutableList());
       statements.add(
@@ -1331,23 +1322,22 @@ public final class JuniperConfiguration extends VendorConfiguration {
   IsisLevel processIsisInterfaceSettings(
       RoutingInstance routingInstance, boolean level1, boolean level2) {
     return _c.getAllInterfaces(routingInstance.getName()).entrySet().stream()
-        .map(
-            e -> {
-              String ifaceName = e.getKey();
-              org.batfish.datamodel.Interface newIface = e.getValue();
-              org.batfish.datamodel.isis.IsisInterfaceSettings settings =
-                  toIsisInterfaceSettings(
-                      routingInstance.getIsisSettings(),
-                      routingInstance.getInterfaces().get(ifaceName),
-                      level1,
-                      level2,
-                      newIface.isLoopback());
-              newIface.setIsis(settings);
-              if (settings == null || newIface.isLoopback()) {
-                return null;
-              }
-              return settings.getEnabledLevels();
-            })
+        .map(e -> {
+          String ifaceName = e.getKey();
+          org.batfish.datamodel.Interface newIface = e.getValue();
+          org.batfish.datamodel.isis.IsisInterfaceSettings settings =
+              toIsisInterfaceSettings(
+                  routingInstance.getIsisSettings(),
+                  routingInstance.getInterfaces().get(ifaceName),
+                  level1,
+                  level2,
+                  newIface.isLoopback());
+          newIface.setIsis(settings);
+          if (settings == null || newIface.isLoopback()) {
+            return null;
+          }
+          return settings.getEnabledLevels();
+        })
         .filter(Objects::nonNull)
         .reduce(IsisLevel::union) // will not return null as long as parameters are not null
         .orElse(null);
@@ -1497,15 +1487,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
     ospfExportPolicyConditional.getFalseStatements().add(Statements.ExitReject.toStaticStatement());
     routingInstance
         .getOspfExportPolicies()
-        .forEach(
-            exportPolicyName -> {
-              PolicyStatement exportPolicy =
-                  _masterLogicalSystem.getPolicyStatements().get(exportPolicyName);
-              if (exportPolicy != null) {
-                CallExpr callPolicy = new CallExpr(exportPolicyName);
-                matchSomeExportPolicy.getDisjuncts().add(callPolicy);
-              }
-            });
+        .forEach(exportPolicyName -> {
+          PolicyStatement exportPolicy =
+              _masterLogicalSystem.getPolicyStatements().get(exportPolicyName);
+          if (exportPolicy != null) {
+            CallExpr callPolicy = new CallExpr(exportPolicyName);
+            matchSomeExportPolicy.getDisjuncts().add(callPolicy);
+          }
+        });
     // areas
     Map<Long, org.batfish.datamodel.ospf.OspfArea.Builder> newAreaBuilders =
         CollectionUtil.toImmutableMap(
@@ -1534,17 +1523,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
     newProc
         .getAreas()
         .values()
-        .forEach(
-            area ->
-                area.getInterfaces()
-                    .forEach(
-                        ifaceName -> {
-                          org.batfish.datamodel.Interface iface =
-                              _c.getAllInterfaces(vrfName).get(ifaceName);
-                          Interface vsIface = routingInstance.getInterfaces().get(ifaceName);
-                          finalizeOspfInterfaceSettings(
-                              iface, vsIface, newProc, area.getAreaNumber());
-                        }));
+        .forEach(area ->
+            area.getInterfaces()
+                .forEach(ifaceName -> {
+                  org.batfish.datamodel.Interface iface =
+                      _c.getAllInterfaces(vrfName).get(ifaceName);
+                  Interface vsIface = routingInstance.getInterfaces().get(ifaceName);
+                  finalizeOspfInterfaceSettings(iface, vsIface, newProc, area.getAreaNumber());
+                }));
     return newProc;
   }
 
@@ -1898,18 +1884,17 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (!route.getPolicies().isEmpty()) {
       route
           .getPolicies()
-          .forEach(
-              policyName -> {
-                PolicyStatement policy = _masterLogicalSystem.getPolicyStatements().get(policyName);
-                boolean defined = policy != null;
-                if (defined) {
-                  generationPolicy.getStatements().add(new CallStatement(policyName));
-                } else {
-                  generationPolicy
-                      .getStatements()
-                      .add(new Comment(String.format("Undefined reference to: %s", policyName)));
-                }
-              });
+          .forEach(policyName -> {
+            PolicyStatement policy = _masterLogicalSystem.getPolicyStatements().get(policyName);
+            boolean defined = policy != null;
+            if (defined) {
+              generationPolicy.getStatements().add(new CallStatement(policyName));
+            } else {
+              generationPolicy
+                  .getStatements()
+                  .add(new Comment(String.format("Undefined reference to: %s", policyName)));
+            }
+          });
     }
     return generationPolicyName;
   }
@@ -2221,25 +2206,24 @@ public final class JuniperConfiguration extends VendorConfiguration {
       String ifaceName, Map<Integer, VrrpGroup> vrrpGroups) {
     ImmutableSortedMap.Builder<Integer, org.batfish.datamodel.VrrpGroup> groupsBuilder =
         ImmutableSortedMap.naturalOrder();
-    vrrpGroups.forEach(
-        (vrid, vrrpGroup) -> {
-          Set<Ip> virtualAddresses = vrrpGroup.getVirtualAddresses();
-          if (virtualAddresses.isEmpty()) {
-            _w.fatalRedFlag(
-                "Cannot create VRRP group for vrid %d on interface '%s' because no virtual-address"
-                    + " is assigned.",
-                vrid, ifaceName);
-            return;
-          }
-          groupsBuilder.put(
-              vrid,
-              org.batfish.datamodel.VrrpGroup.builder()
-                  .setPreempt(vrrpGroup.getPreempt())
-                  .setPriority(vrrpGroup.getPriority())
-                  .setSourceAddress(vrrpGroup.getSourceAddress())
-                  .setVirtualAddresses(ifaceName, virtualAddresses)
-                  .build());
-        });
+    vrrpGroups.forEach((vrid, vrrpGroup) -> {
+      Set<Ip> virtualAddresses = vrrpGroup.getVirtualAddresses();
+      if (virtualAddresses.isEmpty()) {
+        _w.fatalRedFlag(
+            "Cannot create VRRP group for vrid %d on interface '%s' because no virtual-address"
+                + " is assigned.",
+            vrid, ifaceName);
+        return;
+      }
+      groupsBuilder.put(
+          vrid,
+          org.batfish.datamodel.VrrpGroup.builder()
+              .setPreempt(vrrpGroup.getPreempt())
+              .setPriority(vrrpGroup.getPriority())
+              .setSourceAddress(vrrpGroup.getSourceAddress())
+              .setVirtualAddresses(ifaceName, virtualAddresses)
+              .build());
+    });
     return groupsBuilder.build();
   }
 
@@ -2372,13 +2356,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     List<NatRuleSet> ruleSets =
         orderedRuleSetList.stream()
-            .filter(
-                ruleSet -> {
-                  NatPacketLocation toLocation = ruleSet.getToLocation();
-                  return name.equals(toLocation.getInterface())
-                      || (zone != null && zone.equals(toLocation.getZone()))
-                      || (routingInstance.equals(toLocation.getRoutingInstance()));
-                })
+            .filter(ruleSet -> {
+              NatPacketLocation toLocation = ruleSet.getToLocation();
+              return name.equals(toLocation.getInterface())
+                  || (zone != null && zone.equals(toLocation.getZone()))
+                  || (routingInstance.equals(toLocation.getRoutingInstance()));
+            })
             .collect(Collectors.toList());
 
     if (ruleSets.isEmpty()) {
@@ -2418,33 +2401,27 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _masterLogicalSystem
         .getInterfaces()
         .values()
-        .forEach(
-            iface ->
-                iface
-                    .getUnits()
-                    .keySet()
-                    .forEach(
-                        ifaceUnit ->
-                            builder.put(
-                                interfaceLocation(ifaceUnit), matchSrcInterface(ifaceUnit))));
+        .forEach(iface ->
+            iface
+                .getUnits()
+                .keySet()
+                .forEach(ifaceUnit ->
+                    builder.put(interfaceLocation(ifaceUnit), matchSrcInterface(ifaceUnit))));
     _masterLogicalSystem
         .getZones()
         .values()
-        .forEach(
-            zone ->
-                builder.put(
-                    zoneLocation(zone.getName()), new MatchSrcInterface(zone.getInterfaces())));
+        .forEach(zone ->
+            builder.put(zoneLocation(zone.getName()), new MatchSrcInterface(zone.getInterfaces())));
     _masterLogicalSystem
         .getRoutingInstances()
         .values()
-        .forEach(
-            routingInstance ->
-                builder.put(
-                    routingInstanceLocation(routingInstance.getName()),
-                    matchSrcInterface(
-                        routingInstance.getInterfaces().values().stream()
-                            .map(Interface::getName)
-                            .toArray(String[]::new))));
+        .forEach(routingInstance ->
+            builder.put(
+                routingInstanceLocation(routingInstance.getName()),
+                matchSrcInterface(
+                    routingInstance.getInterfaces().values().stream()
+                        .map(Interface::getName)
+                        .toArray(String[]::new))));
     return builder.build();
   }
 
@@ -2475,19 +2452,18 @@ public final class JuniperConfiguration extends VendorConfiguration {
   IpAccessList buildScreensPerZone(@Nonnull Zone zone, String aclName) {
     List<AclLineMatchExpr> matches =
         zone.getScreens().stream()
-            .map(
-                screenName -> {
-                  Screen screen = _masterLogicalSystem.getScreens().get(screenName);
-                  String screenAclName = ACL_NAME_SCREEN + screenName;
-                  IpAccessList screenAcl = _c.getIpAccessLists().get(screenAclName);
-                  if (screenAcl == null) {
-                    screenAcl = buildScreen(screen, screenAclName);
-                    if (screenAcl != null) {
-                      _c.getIpAccessLists().put(screenAclName, screenAcl);
-                    }
-                  }
-                  return screenAcl != null ? new PermittedByAcl(screenAcl.getName()) : null;
-                })
+            .map(screenName -> {
+              Screen screen = _masterLogicalSystem.getScreens().get(screenName);
+              String screenAclName = ACL_NAME_SCREEN + screenName;
+              IpAccessList screenAcl = _c.getIpAccessLists().get(screenAclName);
+              if (screenAcl == null) {
+                screenAcl = buildScreen(screen, screenAclName);
+                if (screenAcl != null) {
+                  _c.getIpAccessLists().put(screenAclName, screenAcl);
+                }
+              }
+              return screenAcl != null ? new PermittedByAcl(screenAcl.getName()) : null;
+            })
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
 
@@ -2880,14 +2856,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
 
     return lines.stream()
-        .map(
-            l ->
-                new ExprAclLine(
-                    l.getAction(),
-                    and(l.getMatchCondition(), conjunctMatchExpr),
-                    l.getName(),
-                    l.getTraceElement(),
-                    l.getVendorStructureId().orElse(null)))
+        .map(l ->
+            new ExprAclLine(
+                l.getAction(),
+                and(l.getMatchCondition(), conjunctMatchExpr),
+                l.getName(),
+                l.getTraceElement(),
+                l.getVendorStructureId().orElse(null)))
         .collect(ImmutableList.toImmutableList());
   }
 
@@ -2940,10 +2915,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     AclLineMatchExpr matchSrcInterface =
         filter
             .getFromZone()
-            .map(
-                zoneName ->
-                    new MatchSrcInterface(
-                        _masterLogicalSystem.getZones().get(zoneName).getInterfaces()))
+            .map(zoneName ->
+                new MatchSrcInterface(
+                    _masterLogicalSystem.getZones().get(zoneName).getInterfaces()))
             .orElse(null);
 
     // In the forwarding pipeline, the returned ACL has a logical AND of srcInterface filter and
@@ -3030,28 +3004,26 @@ public final class JuniperConfiguration extends VendorConfiguration {
   private Map<String, IpSpace> toIpSpaces(String bookName, AddressBook book) {
     Map<String, IpSpace> ipSpaces = new TreeMap<>();
     book.getEntries()
-        .forEach(
-            (n, entry) -> {
-              String entryName = bookName + "~" + n;
+        .forEach((n, entry) -> {
+          String entryName = bookName + "~" + n;
 
-              // If this address book references other entries, add them to an AclIpSpace
-              if (!entry.getEntries().isEmpty()) {
-                AclIpSpace.Builder aclIpSpaceBuilder = AclIpSpace.builder();
-                entry
-                    .getEntries()
-                    .keySet()
-                    .forEach(
-                        name -> {
-                          String subEntryName = bookName + "~" + name;
-                          aclIpSpaceBuilder.thenPermitting(new IpSpaceReference(subEntryName));
-                        });
-                ipSpaces.put(entryName, aclIpSpaceBuilder.build());
-              } else {
-                ipSpaces.put(
-                    entryName,
-                    IpWildcardSetIpSpace.builder().including(entry.getIpWildcards(_w)).build());
-              }
-            });
+          // If this address book references other entries, add them to an AclIpSpace
+          if (!entry.getEntries().isEmpty()) {
+            AclIpSpace.Builder aclIpSpaceBuilder = AclIpSpace.builder();
+            entry
+                .getEntries()
+                .keySet()
+                .forEach(name -> {
+                  String subEntryName = bookName + "~" + name;
+                  aclIpSpaceBuilder.thenPermitting(new IpSpaceReference(subEntryName));
+                });
+            ipSpaces.put(entryName, aclIpSpaceBuilder.build());
+          } else {
+            ipSpaces.put(
+                entryName,
+                IpWildcardSetIpSpace.builder().including(entry.getIpWildcards(_w)).build());
+          }
+        });
     return ipSpaces;
   }
 
@@ -3107,10 +3079,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
             .filter(Objects::nonNull)
             // Filter out the primary rib for this rib group, since it's special and bypasses the
             // policy
-            .filter(
-                rib ->
-                    !(rib.getRibName().equals(RibId.DEFAULT_RIB_NAME)
-                        && rib.getVrfName().equals(vrfName)))
+            .filter(rib ->
+                !(rib.getRibName().equals(RibId.DEFAULT_RIB_NAME)
+                    && rib.getVrfName().equals(vrfName)))
             .collect(ImmutableList.toImmutableList());
 
     RibId exportRib =
@@ -3218,29 +3189,28 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 groupingBy(FwFrom::getField, () -> new EnumMap<>(Field.class), Collectors.toList()))
             .entrySet()
             .stream()
-            .map(
-                e -> {
-                  Field field = e.getKey();
-                  List<FwFrom> froms = e.getValue();
-                  List<AclLineMatchExpr> inner =
-                      froms.stream()
-                          .map(fwFromDisjunct -> fwFromDisjunct.toAclLineMatchExpr(this, _c, _w))
-                          .collect(ImmutableList.toImmutableList());
-                  switch (field) {
-                    case DESTINATION_EXCEPT:
-                    case FRAGMENT_OFFSET_EXCEPT:
-                    case ICMP_CODE_EXCEPT:
-                    case ICMP_TYPE_EXCEPT:
-                    case PACKET_LENGTH_EXCEPT:
-                    case SOURCE_EXCEPT:
-                    case TTL_EXCEPT:
-                      // FOO_EXCEPT is already compiled to a list of (Not(MatchFoo),
-                      // so combining them needs an AND.
-                      return and(inner);
-                    default:
-                      return or(inner);
-                  }
-                })
+            .map(e -> {
+              Field field = e.getKey();
+              List<FwFrom> froms = e.getValue();
+              List<AclLineMatchExpr> inner =
+                  froms.stream()
+                      .map(fwFromDisjunct -> fwFromDisjunct.toAclLineMatchExpr(this, _c, _w))
+                      .collect(ImmutableList.toImmutableList());
+              switch (field) {
+                case DESTINATION_EXCEPT:
+                case FRAGMENT_OFFSET_EXCEPT:
+                case ICMP_CODE_EXCEPT:
+                case ICMP_TYPE_EXCEPT:
+                case PACKET_LENGTH_EXCEPT:
+                case SOURCE_EXCEPT:
+                case TTL_EXCEPT:
+                  // FOO_EXCEPT is already compiled to a list of (Not(MatchFoo),
+                  // so combining them needs an AND.
+                  return and(inner);
+                default:
+                  return or(inner);
+              }
+            })
             .collect(ImmutableList.toImmutableList());
     return and(conjuncts, traceElement);
   }
@@ -3596,10 +3566,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
   static RouteFilterList toRouteFilterList(PrefixList prefixList, String vendorConfigFilename) {
     List<org.batfish.datamodel.RouteFilterLine> lines =
         prefixList.getPrefixes().stream()
-            .map(
-                prefix ->
-                    new org.batfish.datamodel.RouteFilterLine(
-                        LineAction.PERMIT, prefix, SubRange.singleton(prefix.getPrefixLength())))
+            .map(prefix ->
+                new org.batfish.datamodel.RouteFilterLine(
+                    LineAction.PERMIT, prefix, SubRange.singleton(prefix.getPrefixLength())))
             .collect(ImmutableList.toImmutableList());
     return new RouteFilterList(
         prefixList.getName(),
@@ -3679,29 +3648,24 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _masterLogicalSystem.getIkeProposals().clear();
     _masterLogicalSystem.getIkeProposals().putAll(ls.getIkeProposals());
     ls.getInterfaces()
-        .forEach(
-            (ifaceName, lsMasterIface) -> {
-              Interface masterPhysicalInterface =
-                  _masterLogicalSystem.getInterfaces().get(ifaceName);
-              if (masterPhysicalInterface == null) {
-                // the physical interface is not mentioned globally, so just copy the whole thing
-                // from the logical system
-                _masterLogicalSystem.getInterfaces().put(ifaceName, lsMasterIface);
-                return;
-              }
-              // copy units from logical system
-              masterPhysicalInterface.getUnits().putAll(lsMasterIface.getUnits());
-              // delete unassigned units
-              masterPhysicalInterface
-                  .getUnits()
-                  .keySet()
-                  .retainAll(lsMasterIface.getUnits().keySet());
-              // reset parent on copied units to master physical interface
-              masterPhysicalInterface
-                  .getUnits()
-                  .values()
-                  .forEach(unit -> unit.setParent(masterPhysicalInterface));
-            });
+        .forEach((ifaceName, lsMasterIface) -> {
+          Interface masterPhysicalInterface = _masterLogicalSystem.getInterfaces().get(ifaceName);
+          if (masterPhysicalInterface == null) {
+            // the physical interface is not mentioned globally, so just copy the whole thing
+            // from the logical system
+            _masterLogicalSystem.getInterfaces().put(ifaceName, lsMasterIface);
+            return;
+          }
+          // copy units from logical system
+          masterPhysicalInterface.getUnits().putAll(lsMasterIface.getUnits());
+          // delete unassigned units
+          masterPhysicalInterface.getUnits().keySet().retainAll(lsMasterIface.getUnits().keySet());
+          // reset parent on copied units to master physical interface
+          masterPhysicalInterface
+              .getUnits()
+              .values()
+              .forEach(unit -> unit.setParent(masterPhysicalInterface));
+        });
     // delete unassigned interfaces
     _masterLogicalSystem.getInterfaces().keySet().retainAll(ls.getInterfaces().keySet());
     // TODO: review SRX logical-systems zone semantics
@@ -3795,20 +3759,17 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // Convert AddressBooks to IpSpaces
     _masterLogicalSystem
         .getAddressBooks()
-        .forEach(
-            (name, addressBook) -> {
-              Map<String, IpSpace> ipspaces = toIpSpaces(name, addressBook);
-              _c.getIpSpaces().putAll(ipspaces);
-              ipspaces
-                  .keySet()
-                  .forEach(
-                      ipSpaceName ->
-                          _c.getIpSpaceMetadata()
-                              .put(
-                                  ipSpaceName,
-                                  new IpSpaceMetadata(
-                                      ipSpaceName, ADDRESS_BOOK.getDescription(), null)));
-            });
+        .forEach((name, addressBook) -> {
+          Map<String, IpSpace> ipspaces = toIpSpaces(name, addressBook);
+          _c.getIpSpaces().putAll(ipspaces);
+          ipspaces
+              .keySet()
+              .forEach(ipSpaceName ->
+                  _c.getIpSpaceMetadata()
+                      .put(
+                          ipSpaceName,
+                          new IpSpaceMetadata(ipSpaceName, ADDRESS_BOOK.getDescription(), null)));
+        });
 
     // Preprocess filters to do things like handle IPv6, combine filter input-/output-lists
     preprocessFilters();
@@ -3857,10 +3818,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // convert conditions to TrackMethod objects
     _masterLogicalSystem
         .getConditions()
-        .forEach(
-            (conditionName, condition) ->
-                _c.getTrackingGroups()
-                    .put(computeConditionTrackName(conditionName), toTrackMethod(condition)));
+        .forEach((conditionName, condition) ->
+            _c.getTrackingGroups()
+                .put(computeConditionTrackName(conditionName), toTrackMethod(condition)));
 
     // convert policy-statements to RoutingPolicy objects
     for (Entry<String, PolicyStatement> e : _masterLogicalSystem.getPolicyStatements().entrySet()) {
@@ -3893,10 +3853,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _masterLogicalSystem
         .getIkeProposals()
         .values()
-        .forEach(
-            ikeProposal ->
-                _c.getIkePhase1Proposals()
-                    .put(ikeProposal.getName(), toIkePhase1Proposal(ikeProposal)));
+        .forEach(ikeProposal ->
+            _c.getIkePhase1Proposals()
+                .put(ikeProposal.getName(), toIkePhase1Proposal(ikeProposal)));
 
     ImmutableSortedMap.Builder<String, IkePhase1Key> ikePhase1KeysBuilder =
         ImmutableSortedMap.naturalOrder();
@@ -3916,11 +3875,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
         ImmutableSortedMap.naturalOrder();
     _masterLogicalSystem
         .getIpsecProposals()
-        .forEach(
-            (ipsecProposalName, ipsecProposal) -> {
-              ipsecPhase2ProposalsBuilder.put(
-                  ipsecProposalName, toIpsecPhase2Proposal(ipsecProposal));
-            });
+        .forEach((ipsecProposalName, ipsecProposal) -> {
+          ipsecPhase2ProposalsBuilder.put(ipsecProposalName, toIpsecPhase2Proposal(ipsecProposal));
+        });
     _c.setIpsecPhase2Proposals(ipsecPhase2ProposalsBuilder.build());
 
     // convert ipsec policies
@@ -3951,12 +3908,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
         _c.getIpSpaces().putAll(ipSpaces);
         ipSpaces
             .keySet()
-            .forEach(
-                ipSpaceName ->
-                    _c.getIpSpaceMetadata()
-                        .put(
-                            ipSpaceName,
-                            new IpSpaceMetadata(ipSpaceName, ADDRESS_BOOK.getDescription(), null)));
+            .forEach(ipSpaceName ->
+                _c.getIpSpaceMetadata()
+                    .put(
+                        ipSpaceName,
+                        new IpSpaceMetadata(ipSpaceName, ADDRESS_BOOK.getDescription(), null)));
       }
     }
 
@@ -4175,10 +4131,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     Stream.concat(
             Stream.of(_masterLogicalSystem.getDefaultRoutingInstance()),
             _masterLogicalSystem.getRoutingInstances().values().stream())
-        .forEach(
-            ri ->
-                ri.getBridgeDomains()
-                    .forEach((bdName, bd) -> applyBridgeDomainVlanId(bd, irbVlanIds)));
+        .forEach(ri ->
+            ri.getBridgeDomains().forEach((bdName, bd) -> applyBridgeDomainVlanId(bd, irbVlanIds)));
   }
 
   private void applyBridgeDomainVlanId(BridgeDomain bd, Map<String, Integer> irbVlanIds) {
@@ -4834,35 +4788,34 @@ public final class JuniperConfiguration extends VendorConfiguration {
               iface
                   .getUnits()
                   .values()
-                  .forEach(
-                      unit -> {
-                        unit.inheritUnsetFields();
-                        org.batfish.datamodel.Interface newUnitInterface = toInterface(unit);
-                        if (newUnitInterface == null) {
-                          return;
-                        }
-                        String name = newUnitInterface.getName();
-                        // set IRB VLAN ID if assigned
-                        newUnitInterface.setVlan(irbVlanIds.get(name));
-                        if (unit.getType() == InterfaceType.IRB_UNIT
-                            && newUnitInterface.getVlan() == null) {
-                          // TODO: May still be active if part of a bridge, though maybe it still
-                          //       needs a vlan.
-                          _w.redFlagf("Deactivating %s because it has no assigned vlan", name);
-                          newUnitInterface.deactivate(InactiveReason.INCOMPLETE);
-                        }
+                  .forEach(unit -> {
+                    unit.inheritUnsetFields();
+                    org.batfish.datamodel.Interface newUnitInterface = toInterface(unit);
+                    if (newUnitInterface == null) {
+                      return;
+                    }
+                    String name = newUnitInterface.getName();
+                    // set IRB VLAN ID if assigned
+                    newUnitInterface.setVlan(irbVlanIds.get(name));
+                    if (unit.getType() == InterfaceType.IRB_UNIT
+                        && newUnitInterface.getVlan() == null) {
+                      // TODO: May still be active if part of a bridge, though maybe it still
+                      //       needs a vlan.
+                      _w.redFlagf("Deactivating %s because it has no assigned vlan", name);
+                      newUnitInterface.deactivate(InactiveReason.INCOMPLETE);
+                    }
 
-                        // Don't create bind dependency for 'irb.XXX' interfcaes, since there isn't
-                        // really an 'irb' interface
-                        if (!name.startsWith("irb")) {
-                          String bindInterface =
-                              firstNonNull(
-                                  unit.getDemuxUnderlyingInterface(), newParentIface.getName());
-                          newUnitInterface.addDependency(
-                              new Dependency(bindInterface, DependencyType.BIND));
-                        }
-                        resolveInterfacePointers(unit.getName(), unit, newUnitInterface);
-                      });
+                    // Don't create bind dependency for 'irb.XXX' interfcaes, since there isn't
+                    // really an 'irb' interface
+                    if (!name.startsWith("irb")) {
+                      String bindInterface =
+                          firstNonNull(
+                              unit.getDemuxUnderlyingInterface(), newParentIface.getName());
+                      newUnitInterface.addDependency(
+                          new Dependency(bindInterface, DependencyType.BIND));
+                    }
+                    resolveInterfacePointers(unit.getName(), unit, newUnitInterface);
+                  });
             });
 
     /*
@@ -4873,30 +4826,29 @@ public final class JuniperConfiguration extends VendorConfiguration {
             _masterLogicalSystem.getInterfaces().values().stream(),
             _nodeDevices.values().stream()
                 .flatMap(nodeDevice -> nodeDevice.getInterfaces().values().stream()))
-        .forEach(
-            iface -> {
-              if (iface.get8023adInterface() != null) {
-                org.batfish.datamodel.Interface viIface =
-                    _c.getAllInterfaces().get(iface.get8023adInterface());
-                if (viIface == null) {
-                  return;
-                }
-                viIface.addDependency(new Dependency(iface.getName(), DependencyType.AGGREGATE));
-              }
-              /*
-               * TODO: reth interfaces are NOT aggregates in pure form, but for now approximate them
-               * as such. Full support requires chassis clusters and redundancy group support.
-               * https://www.juniper.net/documentation/en_US/junos/topics/topic-map/security-chassis-cluster-redundant-ethernet-interfaces.html
-               */
-              if (iface.getRedundantParentInterface() != null) {
-                org.batfish.datamodel.Interface viIface =
-                    _c.getAllInterfaces().get(iface.getRedundantParentInterface());
-                if (viIface == null) {
-                  return;
-                }
-                viIface.addDependency(new Dependency(iface.getName(), DependencyType.AGGREGATE));
-              }
-            });
+        .forEach(iface -> {
+          if (iface.get8023adInterface() != null) {
+            org.batfish.datamodel.Interface viIface =
+                _c.getAllInterfaces().get(iface.get8023adInterface());
+            if (viIface == null) {
+              return;
+            }
+            viIface.addDependency(new Dependency(iface.getName(), DependencyType.AGGREGATE));
+          }
+          /*
+           * TODO: reth interfaces are NOT aggregates in pure form, but for now approximate them
+           * as such. Full support requires chassis clusters and redundancy group support.
+           * https://www.juniper.net/documentation/en_US/junos/topics/topic-map/security-chassis-cluster-redundant-ethernet-interfaces.html
+           */
+          if (iface.getRedundantParentInterface() != null) {
+            org.batfish.datamodel.Interface viIface =
+                _c.getAllInterfaces().get(iface.getRedundantParentInterface());
+            if (viIface == null) {
+              return;
+            }
+            viIface.addDependency(new Dependency(iface.getName(), DependencyType.AGGREGATE));
+          }
+        });
 
     Nat snat = _masterLogicalSystem.getNatSource();
     Nat staticNat = _masterLogicalSystem.getNatStatic();
@@ -4928,26 +4880,25 @@ public final class JuniperConfiguration extends VendorConfiguration {
             _nodeDevices.values().stream()
                 .flatMap(nodeDevice -> nodeDevice.getInterfaces().values().stream()))
         .flatMap(i -> i.getUnits().values().stream())
-        .forEach(
-            unit -> {
-              org.batfish.datamodel.Interface newUnitInterface =
-                  _c.getAllInterfaces().get(unit.getName());
-              if (newUnitInterface == null) {
-                // This can happen if the interface is used but not defined
-                return;
-              }
-              Transformation srcTransformation =
-                  buildOutgoingTransformation(
-                      unit, snat, sourceNatRuleSetList, matchFromLocationExprs, null);
-              Transformation staticTransformation =
-                  buildOutgoingTransformation(
-                      unit,
-                      reversedStaticNat,
-                      reversedStaticNatRuleSetList,
-                      matchFromLocationExprs,
-                      srcTransformation);
-              newUnitInterface.setOutgoingTransformation(staticTransformation);
-            });
+        .forEach(unit -> {
+          org.batfish.datamodel.Interface newUnitInterface =
+              _c.getAllInterfaces().get(unit.getName());
+          if (newUnitInterface == null) {
+            // This can happen if the interface is used but not defined
+            return;
+          }
+          Transformation srcTransformation =
+              buildOutgoingTransformation(
+                  unit, snat, sourceNatRuleSetList, matchFromLocationExprs, null);
+          Transformation staticTransformation =
+              buildOutgoingTransformation(
+                  unit,
+                  reversedStaticNat,
+                  reversedStaticNatRuleSetList,
+                  matchFromLocationExprs,
+                  srcTransformation);
+          newUnitInterface.setOutgoingTransformation(staticTransformation);
+        });
   }
 
   /** Assigns management interfaces to the dedicated management routing instance. */
@@ -5285,11 +5236,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // `next policy` similarly suppresses accept/reject at runtime, but it does terminate
     // policy evaluation (returning the route to BGP processing), so it is the terminal action.
     return allThens.stream()
-        .filter(
-            then ->
-                then instanceof PsThenAccept
-                    || then instanceof PsThenReject
-                    || then instanceof PsThenNextPolicy)
+        .filter(then ->
+            then instanceof PsThenAccept
+                || then instanceof PsThenReject
+                || then instanceof PsThenNextPolicy)
         .findFirst();
   }
 

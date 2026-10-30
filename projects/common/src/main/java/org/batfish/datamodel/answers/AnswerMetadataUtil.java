@@ -59,14 +59,13 @@ public final class AnswerMetadataUtil {
     aggregations.stream()
         .map(columnAggregation -> computeColumnAggregation(table, columnAggregation, logger))
         .filter(Objects::nonNull)
-        .forEach(
-            columnAggregationResult ->
-                columnAggregations
-                    .computeIfAbsent(
-                        columnAggregationResult.getColumn(), c -> new EnumMap<>(Aggregation.class))
-                    .computeIfAbsent(
-                        columnAggregationResult.getAggregation(),
-                        a -> columnAggregationResult.getValue()));
+        .forEach(columnAggregationResult ->
+            columnAggregations
+                .computeIfAbsent(
+                    columnAggregationResult.getColumn(), c -> new EnumMap<>(Aggregation.class))
+                .computeIfAbsent(
+                    columnAggregationResult.getAggregation(),
+                    a -> columnAggregationResult.getValue()));
     return CollectionUtil.toImmutableMap(
         columnAggregations,
         Entry::getKey,
@@ -130,13 +129,10 @@ public final class AnswerMetadataUtil {
     ImmutableList.Builder<ColumnAggregation> columnAggregationsBuilder = ImmutableList.builder();
     table.getMetadata().getColumnMetadata().stream()
         .map(ColumnMetadata::getName)
-        .forEach(
-            column ->
-                Arrays.stream(Aggregation.values())
-                    .forEach(
-                        aggregation ->
-                            columnAggregationsBuilder.add(
-                                new ColumnAggregation(aggregation, column))));
+        .forEach(column ->
+            Arrays.stream(Aggregation.values())
+                .forEach(aggregation ->
+                    columnAggregationsBuilder.add(new ColumnAggregation(aggregation, column))));
     Map<String, Map<Aggregation, Object>> columnAggregationResults =
         computeColumnAggregations(table, columnAggregationsBuilder.build(), logger);
     Set<String> emptyColumns = computeEmptyColumns(table);

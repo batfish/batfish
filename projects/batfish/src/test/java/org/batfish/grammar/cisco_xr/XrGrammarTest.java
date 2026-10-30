@@ -2708,11 +2708,10 @@ public final class XrGrammarTest {
     Ipv4AccessList acl = vc.getIpv4Acls().get(aclName);
     Iterator<Ipv4AccessListLine> i = acl.getLines().values().iterator();
     acl.getLines()
-        .forEach(
-            (seq, line) ->
-                assertThat(
-                    line.getServiceSpecifier(),
-                    instanceOf(SimpleExtendedAccessListServiceSpecifier.class)));
+        .forEach((seq, line) ->
+            assertThat(
+                line.getServiceSpecifier(),
+                instanceOf(SimpleExtendedAccessListServiceSpecifier.class)));
     Ipv4AccessListLine line;
     {
       line = i.next();

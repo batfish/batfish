@@ -193,10 +193,9 @@ public class InsertDeleteApplicator extends PaloAltoParserBaseListener implement
     assert lastWord != null;
     subtree
         .getSubtrees()
-        .forEach(
-            t -> {
-              _statementsByTree.removeAll(t);
-            });
+        .forEach(t -> {
+          _statementsByTree.removeAll(t);
+        });
     assert subtree.getParent() != null;
     subtree.getParent().deleteSubtree(lastWord);
   }

@@ -621,38 +621,35 @@ public final class AsaConfiguration extends VendorConfiguration {
   }
 
   private void applyVrrp(Configuration c) {
-    _vrrpGroups.forEach(
-        (ifaceName, vrrpInterface) -> {
-          org.batfish.datamodel.Interface iface = c.getAllInterfaces().get(ifaceName);
-          if (iface != null) {
-            vrrpInterface
-                .getVrrpGroups()
-                .forEach(
-                    (vrid, vrrpGroup) -> {
-                      org.batfish.datamodel.VrrpGroup.Builder newGroup =
-                          org.batfish.datamodel.VrrpGroup.builder();
-                      newGroup.setPreempt(vrrpGroup.getPreempt());
-                      newGroup.setPriority(vrrpGroup.getPriority());
-                      ConcreteInterfaceAddress ifaceAddress = iface.getConcreteAddress();
-                      if (ifaceAddress != null) {
-                        newGroup.setSourceAddress(ifaceAddress);
-                        Ip virtualAddress = vrrpGroup.getVirtualAddress();
-                        if (virtualAddress != null) {
-                          newGroup.setVirtualAddresses(ifaceName, virtualAddress);
-                        } else {
-                          _w.redFlag(
-                              "No virtual address set for VRRP on interface: '" + ifaceName + "'");
-                        }
-                      } else {
-                        _w.redFlag(
-                            "Could not determine prefix length of VRRP address on interface '"
-                                + ifaceName
-                                + "' due to missing prefix");
-                      }
-                      iface.addVrrpGroup(vrid, newGroup.build());
-                    });
-          }
-        });
+    _vrrpGroups.forEach((ifaceName, vrrpInterface) -> {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get(ifaceName);
+      if (iface != null) {
+        vrrpInterface
+            .getVrrpGroups()
+            .forEach((vrid, vrrpGroup) -> {
+              org.batfish.datamodel.VrrpGroup.Builder newGroup =
+                  org.batfish.datamodel.VrrpGroup.builder();
+              newGroup.setPreempt(vrrpGroup.getPreempt());
+              newGroup.setPriority(vrrpGroup.getPriority());
+              ConcreteInterfaceAddress ifaceAddress = iface.getConcreteAddress();
+              if (ifaceAddress != null) {
+                newGroup.setSourceAddress(ifaceAddress);
+                Ip virtualAddress = vrrpGroup.getVirtualAddress();
+                if (virtualAddress != null) {
+                  newGroup.setVirtualAddresses(ifaceName, virtualAddress);
+                } else {
+                  _w.redFlag("No virtual address set for VRRP on interface: '" + ifaceName + "'");
+                }
+              } else {
+                _w.redFlag(
+                    "Could not determine prefix length of VRRP address on interface '"
+                        + ifaceName
+                        + "' due to missing prefix");
+              }
+              iface.addVrrpGroup(vrid, newGroup.build());
+            });
+      }
+    });
   }
 
   private boolean containsIpAccessList(String eaListName, String mapName) {
@@ -1356,36 +1353,31 @@ public final class AsaConfiguration extends VendorConfiguration {
 
     // create origination prefilter from listed advertised networks
     proc.getIpNetworks()
-        .forEach(
-            (prefix, bgpNetwork) -> {
-              Conjunction exportNetworkConditions = new Conjunction();
-              PrefixSpace space = new PrefixSpace();
-              space.addPrefix(prefix);
-              newBgpProcess.addToOriginationSpace(space);
-              exportNetworkConditions
-                  .getConjuncts()
-                  .add(
-                      new MatchPrefixSet(
-                          DestinationNetwork.instance(), new ExplicitPrefixSet(space)));
-              exportNetworkConditions
-                  .getConjuncts()
-                  .add(
-                      new Not(
-                          new MatchProtocol(
-                              RoutingProtocol.BGP,
-                              RoutingProtocol.IBGP,
-                              RoutingProtocol.AGGREGATE)));
-              String mapName = bgpNetwork.getRouteMapName();
-              if (mapName != null && _routeMaps.containsKey(mapName)) {
-                exportNetworkConditions.getConjuncts().add(new CallExpr(mapName));
-              }
-              redistributionPolicy.addStatement(
-                  new If(
-                      exportNetworkConditions,
-                      ImmutableList.of(
-                          new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
-                          Statements.ExitAccept.toStaticStatement())));
-            });
+        .forEach((prefix, bgpNetwork) -> {
+          Conjunction exportNetworkConditions = new Conjunction();
+          PrefixSpace space = new PrefixSpace();
+          space.addPrefix(prefix);
+          newBgpProcess.addToOriginationSpace(space);
+          exportNetworkConditions
+              .getConjuncts()
+              .add(new MatchPrefixSet(DestinationNetwork.instance(), new ExplicitPrefixSet(space)));
+          exportNetworkConditions
+              .getConjuncts()
+              .add(
+                  new Not(
+                      new MatchProtocol(
+                          RoutingProtocol.BGP, RoutingProtocol.IBGP, RoutingProtocol.AGGREGATE)));
+          String mapName = bgpNetwork.getRouteMapName();
+          if (mapName != null && _routeMaps.containsKey(mapName)) {
+            exportNetworkConditions.getConjuncts().add(new CallExpr(mapName));
+          }
+          redistributionPolicy.addStatement(
+              new If(
+                  exportNetworkConditions,
+                  ImmutableList.of(
+                      new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
+                      Statements.ExitAccept.toStaticStatement())));
+        });
 
     // Finalize redistribution policy and attach to process
     redistributionPolicy.addStatement(Statements.ExitReject.toStaticStatement()).build();
@@ -1919,10 +1911,9 @@ public final class AsaConfiguration extends VendorConfiguration {
     SortedSet<AsaNat> objectNats =
         nats.stream()
             .filter(nat -> nat.getSection() == Section.OBJECT)
-            .filter(
-                nat ->
-                    nat.getOutsideInterface().equals(AsaNat.ANY_INTERFACE)
-                        || nat.getOutsideInterface().equals(ifaceName))
+            .filter(nat ->
+                nat.getOutsideInterface().equals(AsaNat.ANY_INTERFACE)
+                    || nat.getOutsideInterface().equals(ifaceName))
             .collect(Collectors.toCollection(TreeSet::new));
 
     newIface.setIncomingTransformation(
@@ -2034,22 +2025,21 @@ public final class AsaConfiguration extends VendorConfiguration {
   private @Nonnull List<ExprAclLine> getAsaInterSecurityLevelDenyAclLines(int level) {
     return _interfacesBySecurityLevel.keySet().stream()
         .filter(l -> l < level)
-        .map(
-            l -> {
-              List<String> denySrcInterfaces =
-                  _interfacesBySecurityLevel.get(l).stream()
-                      .filter(inIface -> inIface.getIncomingFilter() == null)
-                      .map(this::getNewInterfaceName)
-                      .collect(Collectors.toList());
-              if (denySrcInterfaces.isEmpty()) {
-                return null;
-              }
-              return ExprAclLine.rejecting()
-                  .setName("Traffic from security level " + l + " without inbound filter")
-                  .setTraceElement(asaRejectLowerSecurityLevelTraceElement(l))
-                  .setMatchCondition(new MatchSrcInterface(denySrcInterfaces))
-                  .build();
-            })
+        .map(l -> {
+          List<String> denySrcInterfaces =
+              _interfacesBySecurityLevel.get(l).stream()
+                  .filter(inIface -> inIface.getIncomingFilter() == null)
+                  .map(this::getNewInterfaceName)
+                  .collect(Collectors.toList());
+          if (denySrcInterfaces.isEmpty()) {
+            return null;
+          }
+          return ExprAclLine.rejecting()
+              .setName("Traffic from security level " + l + " without inbound filter")
+              .setTraceElement(asaRejectLowerSecurityLevelTraceElement(l))
+              .setMatchCondition(new MatchSrcInterface(denySrcInterfaces))
+              .build();
+        })
         .filter(Objects::nonNull)
         .collect(Collectors.toList());
   }
@@ -2255,28 +2245,25 @@ public final class AsaConfiguration extends VendorConfiguration {
       newAreaInterfacesBuilder.add(ifaceName);
       finalizeInterfaceOspfSettings(iface, vsIface, proc, areaNum);
     }
-    areaInterfacesBuilders.forEach(
-        (areaNum, interfacesBuilder) ->
-            areas.get(areaNum).addInterfaces(interfacesBuilder.build()));
+    areaInterfacesBuilders.forEach((areaNum, interfacesBuilder) ->
+        areas.get(areaNum).addInterfaces(interfacesBuilder.build()));
     proc.getNssas()
-        .forEach(
-            (areaId, nssaSettings) -> {
-              if (!areas.containsKey(areaId)) {
-                return;
-              }
-              areas.get(areaId).setStubType(StubType.NSSA);
-              areas.get(areaId).setNssaSettings(toNssaSettings(nssaSettings));
-            });
+        .forEach((areaId, nssaSettings) -> {
+          if (!areas.containsKey(areaId)) {
+            return;
+          }
+          areas.get(areaId).setStubType(StubType.NSSA);
+          areas.get(areaId).setNssaSettings(toNssaSettings(nssaSettings));
+        });
 
     proc.getStubs()
-        .forEach(
-            (areaId, stubSettings) -> {
-              if (!areas.containsKey(areaId)) {
-                return;
-              }
-              areas.get(areaId).setStubType(StubType.STUB);
-              areas.get(areaId).setStubSettings(toStubSettings(stubSettings));
-            });
+        .forEach((areaId, stubSettings) -> {
+          if (!areas.containsKey(areaId)) {
+            return;
+          }
+          areas.get(areaId).setStubType(StubType.STUB);
+          areas.get(areaId).setStubSettings(toStubSettings(stubSettings));
+        });
 
     // create summarization filters for inter-area routes
     for (Entry<Long, Map<Prefix, OspfAreaSummary>> e1 : proc.getSummaries().entrySet()) {
@@ -2864,85 +2851,77 @@ public final class AsaConfiguration extends VendorConfiguration {
      * - Associate ASA Object NATs with their object (needed for sorting)
      * - Removes ASA Object NATs that were created without a valid network object
      */
-    _networkObjectInfos.forEach(
-        (name, info) -> {
-          if (_networkObjects.containsKey(name)) {
-            _networkObjects.get(name).setInfo(info);
-          }
-        });
-    _nats.removeIf(
-        nat -> {
-          if (nat.getSection() != Section.OBJECT) {
-            return false;
-          }
-          String objectName = ((NetworkObjectAddressSpecifier) nat.getRealSource()).getName();
-          NetworkObject object = _networkObjects.get(objectName);
-          if (object == null) {
-            // Network object has a NAT but no addresses
-            _w.redFlag("Invalid reference for object NAT " + objectName + ".");
-            return true;
-          }
-          if (object.getStart() == null) {
-            // Unsupported network object type, already warned
-            return true;
-          }
-          nat.setRealSourceObject(object);
-          return false;
-        });
+    _networkObjectInfos.forEach((name, info) -> {
+      if (_networkObjects.containsKey(name)) {
+        _networkObjects.get(name).setInfo(info);
+      }
+    });
+    _nats.removeIf(nat -> {
+      if (nat.getSection() != Section.OBJECT) {
+        return false;
+      }
+      String objectName = ((NetworkObjectAddressSpecifier) nat.getRealSource()).getName();
+      NetworkObject object = _networkObjects.get(objectName);
+      if (object == null) {
+        // Network object has a NAT but no addresses
+        _w.redFlag("Invalid reference for object NAT " + objectName + ".");
+        return true;
+      }
+      if (object.getStart() == null) {
+        // Unsupported network object type, already warned
+        return true;
+      }
+      nat.setRealSourceObject(object);
+      return false;
+    });
 
     // convert each NetworkObject and NetworkObjectGroup to IpSpace
     _networkObjectGroups.forEach(
         (name, networkObjectGroup) -> c.getIpSpaces().put(name, toIpSpace(networkObjectGroup)));
     _networkObjectGroups
         .keySet()
-        .forEach(
-            name ->
-                c.getIpSpaceMetadata()
-                    .put(
-                        name,
-                        new IpSpaceMetadata(
-                            name, AsaStructureType.NETWORK_OBJECT_GROUP.getDescription(), null)));
+        .forEach(name ->
+            c.getIpSpaceMetadata()
+                .put(
+                    name,
+                    new IpSpaceMetadata(
+                        name, AsaStructureType.NETWORK_OBJECT_GROUP.getDescription(), null)));
     _networkObjects.forEach(
         (name, networkObject) -> c.getIpSpaces().put(name, networkObject.toIpSpace()));
     _networkObjects
         .keySet()
-        .forEach(
-            name ->
-                c.getIpSpaceMetadata()
-                    .put(
-                        name,
-                        new IpSpaceMetadata(
-                            name, AsaStructureType.NETWORK_OBJECT.getDescription(), null)));
+        .forEach(name ->
+            c.getIpSpaceMetadata()
+                .put(
+                    name,
+                    new IpSpaceMetadata(
+                        name, AsaStructureType.NETWORK_OBJECT.getDescription(), null)));
 
     // convert each IcmpTypeGroup to IpAccessList
-    _icmpTypeObjectGroups.forEach(
-        (name, icmpTypeObjectGroups) ->
-            c.getIpAccessLists()
-                .put(
-                    computeIcmpObjectGroupAclName(name),
-                    toIpAccessList(icmpTypeObjectGroups, _icmpTypeObjectGroups)));
+    _icmpTypeObjectGroups.forEach((name, icmpTypeObjectGroups) ->
+        c.getIpAccessLists()
+            .put(
+                computeIcmpObjectGroupAclName(name),
+                toIpAccessList(icmpTypeObjectGroups, _icmpTypeObjectGroups)));
 
     // convert each ProtocolObjectGroup to IpAccessList
-    _protocolObjectGroups.forEach(
-        (name, protocolObjectGroup) ->
-            c.getIpAccessLists()
-                .put(
-                    computeProtocolObjectGroupAclName(name),
-                    toIpAccessList(protocolObjectGroup, _protocolObjectGroups)));
+    _protocolObjectGroups.forEach((name, protocolObjectGroup) ->
+        c.getIpAccessLists()
+            .put(
+                computeProtocolObjectGroupAclName(name),
+                toIpAccessList(protocolObjectGroup, _protocolObjectGroups)));
 
     // convert each ServiceObject and ServiceObjectGroup to IpAccessList
-    _serviceObjectGroups.forEach(
-        (name, serviceObjectGroup) ->
-            c.getIpAccessLists()
-                .put(
-                    computeServiceObjectGroupAclName(name),
-                    toIpAccessList(serviceObjectGroup, _serviceObjects, _serviceObjectGroups)));
-    _serviceObjects.forEach(
-        (name, serviceObject) ->
-            c.getIpAccessLists()
-                .put(
-                    computeServiceObjectAclName(name),
-                    toIpAccessList(serviceObject, _serviceObjects, _serviceObjectGroups)));
+    _serviceObjectGroups.forEach((name, serviceObjectGroup) ->
+        c.getIpAccessLists()
+            .put(
+                computeServiceObjectGroupAclName(name),
+                toIpAccessList(serviceObjectGroup, _serviceObjects, _serviceObjectGroups)));
+    _serviceObjects.forEach((name, serviceObject) ->
+        c.getIpAccessLists()
+            .put(
+                computeServiceObjectAclName(name),
+                toIpAccessList(serviceObject, _serviceObjects, _serviceObjectGroups)));
 
     // TODO: convert route maps that are used for PBR to PacketPolicies
 
@@ -2961,19 +2940,18 @@ public final class AsaConfiguration extends VendorConfiguration {
     _securityZones.forEach((name, securityZone) -> c.getZones().put(name, new Zone(name)));
 
     // populate zone interfaces based on IOS security zones
-    _interfaces.forEach(
-        (ifaceName, iface) -> {
-          String zoneName = iface.getSecurityZone();
-          if (zoneName == null) {
-            return;
-          }
-          Zone zone = c.getZones().get(zoneName);
-          if (zone == null) {
-            return;
-          }
-          zone.setInterfaces(
-              ImmutableSet.<String>builder().addAll(zone.getInterfaces()).add(ifaceName).build());
-        });
+    _interfaces.forEach((ifaceName, iface) -> {
+      String zoneName = iface.getSecurityZone();
+      if (zoneName == null) {
+        return;
+      }
+      Zone zone = c.getZones().get(zoneName);
+      if (zone == null) {
+        return;
+      }
+      zone.setInterfaces(
+          ImmutableSet.<String>builder().addAll(zone.getInterfaces()).add(ifaceName).build());
+    });
 
     _interfacesBySecurityLevel =
         _interfaces.values().stream()
@@ -2986,33 +2964,31 @@ public final class AsaConfiguration extends VendorConfiguration {
                     MultimapBuilder.hashKeys().arrayListValues()::build));
 
     // create and populate zones based on ASA security levels
-    _interfacesBySecurityLevel.forEach(
-        (level, iface) -> {
-          String zoneName = computeASASecurityLevelZoneName(level);
-          Zone zone = c.getZones().computeIfAbsent(zoneName, Zone::new);
-          zone.setInterfaces(
-              ImmutableSet.<String>builder()
-                  .addAll(zone.getInterfaces())
-                  .add(getNewInterfaceName(iface))
-                  .build());
-          _securityLevels.putIfAbsent(zoneName, level);
-        });
+    _interfacesBySecurityLevel.forEach((level, iface) -> {
+      String zoneName = computeASASecurityLevelZoneName(level);
+      Zone zone = c.getZones().computeIfAbsent(zoneName, Zone::new);
+      zone.setInterfaces(
+          ImmutableSet.<String>builder()
+              .addAll(zone.getInterfaces())
+              .add(getNewInterfaceName(iface))
+              .build());
+      _securityLevels.putIfAbsent(zoneName, level);
+    });
 
     // create zone policies
     createZoneAcls(c);
 
     // convert interfaces
-    _interfaces.forEach(
-        (ifaceName, iface) -> {
-          // Handle renaming interfaces for ASA devices
-          String newIfaceName = getNewInterfaceName(iface);
-          org.batfish.datamodel.Interface newInterface = toInterface(newIfaceName, iface, c);
-          String vrfName = iface.getVrf();
-          if (vrfName == null) {
-            throw new BatfishException("Missing vrf name for iface: '" + iface.getName() + "'");
-          }
-          c.getAllInterfaces().put(newIfaceName, newInterface);
-        });
+    _interfaces.forEach((ifaceName, iface) -> {
+      // Handle renaming interfaces for ASA devices
+      String newIfaceName = getNewInterfaceName(iface);
+      org.batfish.datamodel.Interface newInterface = toInterface(newIfaceName, iface, c);
+      String vrfName = iface.getVrf();
+      if (vrfName == null) {
+        throw new BatfishException("Missing vrf name for iface: '" + iface.getName() + "'");
+      }
+      c.getAllInterfaces().put(newIfaceName, newInterface);
+    });
 
     /*
      * Second pass over the interfaces to set dependency pointers correctly for:
@@ -3022,80 +2998,78 @@ public final class AsaConfiguration extends VendorConfiguration {
      * - tunnel interfaces
      * TODO: VLAN interfaces
      */
-    _interfaces.forEach(
-        (ifaceName, iface) -> {
-          // Portchannels
-          if (iface.getChannelGroup() != null) {
-            String chGroup = getNewInterfaceName(iface.getChannelGroup());
-            if (chGroup != null) {
-              org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(chGroup);
-              if (viIface != null) {
-                viIface.addDependency(new Dependency(ifaceName, DependencyType.AGGREGATE));
+    _interfaces.forEach((ifaceName, iface) -> {
+      // Portchannels
+      if (iface.getChannelGroup() != null) {
+        String chGroup = getNewInterfaceName(iface.getChannelGroup());
+        if (chGroup != null) {
+          org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(chGroup);
+          if (viIface != null) {
+            viIface.addDependency(new Dependency(ifaceName, DependencyType.AGGREGATE));
+          }
+        }
+      }
+      // subinterfaces
+      Matcher m = INTERFACE_WITH_SUBINTERFACE.matcher(iface.getName());
+      if (m.matches()) {
+        String parentInterfaceName = m.group(1);
+        Interface parentInterface = _interfaces.get(parentInterfaceName);
+        if (parentInterface != null) {
+          String newParentInterfaceName = getNewInterfaceName(parentInterfaceName);
+          org.batfish.datamodel.Interface viIface =
+              c.getAllInterfaces().get(getNewInterfaceName(iface));
+          if (viIface != null) {
+            viIface.addDependency(new Dependency(newParentInterfaceName, DependencyType.BIND));
+          }
+        }
+      }
+      // Redundant Interfaces
+      {
+        org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(ifaceName);
+        if (viIface != null && viIface.getInterfaceType() == InterfaceType.REDUNDANT) {
+          iface.getMemberInterfaces().stream()
+              .map(c.getAllInterfaces()::get)
+              .filter(Objects::nonNull)
+              .forEach(memberViIface ->
+                  viIface.addDependency(
+                      new Dependency(memberViIface.getName(), DependencyType.AGGREGATE)));
+        }
+      }
+      // Tunnels
+      Tunnel tunnel = iface.getTunnel();
+      if (tunnel != null) {
+        org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(ifaceName);
+        if (viIface != null) {
+          // Add dependency
+          if (isRealInterfaceName(tunnel.getSourceInterfaceName())) {
+            String parentIfaceName = canonicalizeInterfaceName(tunnel.getSourceInterfaceName());
+            viIface.addDependency(new Dependency(parentIfaceName, DependencyType.BIND));
+            // Also set tunnel config while we're at at it.
+            // Step one: determine IP address of parent interface
+            @Nullable
+            Ip parentIp =
+                Optional.ofNullable(c.getActiveInterfaces().get(parentIfaceName))
+                    .map(org.batfish.datamodel.Interface::getConcreteAddress)
+                    .map(ConcreteInterfaceAddress::getIp)
+                    .orElse(null);
+            // Step 2: create tunnel configs for non-IPsec tunnels. IPsec handled separately.
+            if (tunnel.getMode() != TunnelMode.IPSEC_IPV4) {
+              // Ensure we have both src and dst IPs, otherwise don't convert
+              if (tunnel.getDestination() != null
+                  && (tunnel.getSourceAddress() != null || parentIp != null)) {
+                viIface.setTunnelConfig(
+                    TunnelConfiguration.builder()
+                        .setSourceAddress(firstNonNull(tunnel.getSourceAddress(), parentIp))
+                        .setDestinationAddress(tunnel.getDestination())
+                        .build());
+              } else {
+                _w.redFlagf("Could not determine src/dst IPs for tunnel %s", iface.getName());
               }
             }
           }
-          // subinterfaces
-          Matcher m = INTERFACE_WITH_SUBINTERFACE.matcher(iface.getName());
-          if (m.matches()) {
-            String parentInterfaceName = m.group(1);
-            Interface parentInterface = _interfaces.get(parentInterfaceName);
-            if (parentInterface != null) {
-              String newParentInterfaceName = getNewInterfaceName(parentInterfaceName);
-              org.batfish.datamodel.Interface viIface =
-                  c.getAllInterfaces().get(getNewInterfaceName(iface));
-              if (viIface != null) {
-                viIface.addDependency(new Dependency(newParentInterfaceName, DependencyType.BIND));
-              }
-            }
-          }
-          // Redundant Interfaces
-          {
-            org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(ifaceName);
-            if (viIface != null && viIface.getInterfaceType() == InterfaceType.REDUNDANT) {
-              iface.getMemberInterfaces().stream()
-                  .map(c.getAllInterfaces()::get)
-                  .filter(Objects::nonNull)
-                  .forEach(
-                      memberViIface ->
-                          viIface.addDependency(
-                              new Dependency(memberViIface.getName(), DependencyType.AGGREGATE)));
-            }
-          }
-          // Tunnels
-          Tunnel tunnel = iface.getTunnel();
-          if (tunnel != null) {
-            org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(ifaceName);
-            if (viIface != null) {
-              // Add dependency
-              if (isRealInterfaceName(tunnel.getSourceInterfaceName())) {
-                String parentIfaceName = canonicalizeInterfaceName(tunnel.getSourceInterfaceName());
-                viIface.addDependency(new Dependency(parentIfaceName, DependencyType.BIND));
-                // Also set tunnel config while we're at at it.
-                // Step one: determine IP address of parent interface
-                @Nullable
-                Ip parentIp =
-                    Optional.ofNullable(c.getActiveInterfaces().get(parentIfaceName))
-                        .map(org.batfish.datamodel.Interface::getConcreteAddress)
-                        .map(ConcreteInterfaceAddress::getIp)
-                        .orElse(null);
-                // Step 2: create tunnel configs for non-IPsec tunnels. IPsec handled separately.
-                if (tunnel.getMode() != TunnelMode.IPSEC_IPV4) {
-                  // Ensure we have both src and dst IPs, otherwise don't convert
-                  if (tunnel.getDestination() != null
-                      && (tunnel.getSourceAddress() != null || parentIp != null)) {
-                    viIface.setTunnelConfig(
-                        TunnelConfiguration.builder()
-                            .setSourceAddress(firstNonNull(tunnel.getSourceAddress(), parentIp))
-                            .setDestinationAddress(tunnel.getDestination())
-                            .build());
-                  } else {
-                    _w.redFlagf("Could not determine src/dst IPs for tunnel %s", iface.getName());
-                  }
-                }
-              }
-            }
-          }
-        });
+        }
+      }
+    });
 
     // copy tracking groups
     c.getTrackingGroups().putAll(_trackingGroups);
@@ -3105,9 +3079,8 @@ public final class AsaConfiguration extends VendorConfiguration {
         .flatMap(group -> group.getTrackActions().keySet().stream())
         .distinct()
         .filter(_trackingGroups::containsKey)
-        .forEach(
-            id ->
-                c.getTrackingGroups().put(generatedNegatedTrackMethodId(id), negatedReference(id)));
+        .forEach(id ->
+            c.getTrackingGroups().put(generatedNegatedTrackMethodId(id), negatedReference(id)));
 
     // apply vrrp settings to interfaces
     applyVrrp(c);
@@ -3133,35 +3106,31 @@ public final class AsaConfiguration extends VendorConfiguration {
     // RSA pub named keys to IKE phase 1 key and IKE phase 1 policy
     _cryptoNamedRsaPubKeys
         .values()
-        .forEach(
-            namedRsaPubKey -> {
-              IkePhase1Key ikePhase1Key = toIkePhase1Key(namedRsaPubKey);
-              ikePhase1KeysBuilder.put(getRsaPubKeyGeneratedName(namedRsaPubKey), ikePhase1Key);
+        .forEach(namedRsaPubKey -> {
+          IkePhase1Key ikePhase1Key = toIkePhase1Key(namedRsaPubKey);
+          ikePhase1KeysBuilder.put(getRsaPubKeyGeneratedName(namedRsaPubKey), ikePhase1Key);
 
-              IkePhase1Policy ikePhase1Policy =
-                  toIkePhase1Policy(namedRsaPubKey, this, ikePhase1Key);
-              c.getIkePhase1Policies().put(ikePhase1Policy.getName(), ikePhase1Policy);
-            });
-
-    // standalone ISAKMP keys to IKE phase 1 key and IKE phase 1 policy
-    _isakmpKeys.forEach(
-        isakmpKey -> {
-          IkePhase1Key ikePhase1Key = toIkePhase1Key(isakmpKey);
-          ikePhase1KeysBuilder.put(getIsakmpKeyGeneratedName(isakmpKey), ikePhase1Key);
-
-          IkePhase1Policy ikePhase1Policy = toIkePhase1Policy(isakmpKey, this, ikePhase1Key);
+          IkePhase1Policy ikePhase1Policy = toIkePhase1Policy(namedRsaPubKey, this, ikePhase1Key);
           c.getIkePhase1Policies().put(ikePhase1Policy.getName(), ikePhase1Policy);
         });
+
+    // standalone ISAKMP keys to IKE phase 1 key and IKE phase 1 policy
+    _isakmpKeys.forEach(isakmpKey -> {
+      IkePhase1Key ikePhase1Key = toIkePhase1Key(isakmpKey);
+      ikePhase1KeysBuilder.put(getIsakmpKeyGeneratedName(isakmpKey), ikePhase1Key);
+
+      IkePhase1Policy ikePhase1Policy = toIkePhase1Policy(isakmpKey, this, ikePhase1Key);
+      c.getIkePhase1Policies().put(ikePhase1Policy.getName(), ikePhase1Policy);
+    });
 
     c.setIkePhase1Keys(ikePhase1KeysBuilder.build());
 
     // ISAKMP profiles to IKE phase 1 policies
     _isakmpProfiles
         .values()
-        .forEach(
-            isakmpProfile ->
-                c.getIkePhase1Policies()
-                    .put(isakmpProfile.getName(), toIkePhase1Policy(isakmpProfile, this, c, _w)));
+        .forEach(isakmpProfile ->
+            c.getIkePhase1Policies()
+                .put(isakmpProfile.getName(), toIkePhase1Policy(isakmpProfile, this, c, _w)));
 
     // convert ipsec transform sets
     ImmutableSortedMap.Builder<String, IpsecPhase2Proposal> ipsecPhase2ProposalsBuilder =
@@ -3205,90 +3174,88 @@ public final class AsaConfiguration extends VendorConfiguration {
     c.setIpsecPeerConfigs(ipsecPeerConfigBuilder.build());
 
     // convert routing processes
-    _vrfs.forEach(
-        (vrfName, vrf) -> {
-          org.batfish.datamodel.Vrf newVrf = c.getVrfs().get(vrfName);
+    _vrfs.forEach((vrfName, vrf) -> {
+      org.batfish.datamodel.Vrf newVrf = c.getVrfs().get(vrfName);
 
-          // description
-          newVrf.setDescription(vrf.getDescription());
+      // description
+      newVrf.setDescription(vrf.getDescription());
 
-          // add snmp trap servers to main list
-          if (newVrf.getSnmpServer() != null) {
-            c.getSnmpTrapServers().addAll(newVrf.getSnmpServer().getHosts().keySet());
-          }
+      // add snmp trap servers to main list
+      if (newVrf.getSnmpServer() != null) {
+        c.getSnmpTrapServers().addAll(newVrf.getSnmpServer().getHosts().keySet());
+      }
 
-          // convert static routes
-          for (StaticRoute staticRoute : vrf.getStaticRoutes()) {
-            newVrf.getStaticRoutes().add(AsaConversions.toStaticRoute(staticRoute));
-          }
+      // convert static routes
+      for (StaticRoute staticRoute : vrf.getStaticRoutes()) {
+        newVrf.getStaticRoutes().add(AsaConversions.toStaticRoute(staticRoute));
+      }
 
-          // convert rip process
-          RipProcess ripProcess = vrf.getRipProcess();
-          if (ripProcess != null) {
-            org.batfish.datamodel.RipProcess newRipProcess = toRipProcess(ripProcess, vrfName, c);
-            newVrf.setRipProcess(newRipProcess);
-          }
+      // convert rip process
+      RipProcess ripProcess = vrf.getRipProcess();
+      if (ripProcess != null) {
+        org.batfish.datamodel.RipProcess newRipProcess = toRipProcess(ripProcess, vrfName, c);
+        newVrf.setRipProcess(newRipProcess);
+      }
 
-          // Convert OSPF processes.
-          newVrf.setOspfProcesses(
-              vrf.getOspfProcesses().values().stream()
-                  .map(proc -> toOspfProcess(proc, vrfName, c, this))
-                  .filter(Objects::nonNull));
+      // Convert OSPF processes.
+      newVrf.setOspfProcesses(
+          vrf.getOspfProcesses().values().stream()
+              .map(proc -> toOspfProcess(proc, vrfName, c, this))
+              .filter(Objects::nonNull));
 
-          // convert eigrp processes
-          vrf.getEigrpProcesses().values().stream()
-              .map(proc -> AsaConversions.toEigrpProcess(proc, vrfName, c, this))
-              .filter(Objects::nonNull)
-              .forEach(newVrf::addEigrpProcess);
+      // convert eigrp processes
+      vrf.getEigrpProcesses().values().stream()
+          .map(proc -> AsaConversions.toEigrpProcess(proc, vrfName, c, this))
+          .filter(Objects::nonNull)
+          .forEach(newVrf::addEigrpProcess);
 
-          // convert isis process
-          IsisProcess isisProcess = vrf.getIsisProcess();
-          if (isisProcess != null) {
-            org.batfish.datamodel.isis.IsisProcess newIsisProcess =
-                AsaConversions.toIsisProcess(isisProcess, c, this);
-            newVrf.setIsisProcess(newIsisProcess);
-          }
+      // convert isis process
+      IsisProcess isisProcess = vrf.getIsisProcess();
+      if (isisProcess != null) {
+        org.batfish.datamodel.isis.IsisProcess newIsisProcess =
+            AsaConversions.toIsisProcess(isisProcess, c, this);
+        newVrf.setIsisProcess(newIsisProcess);
+      }
 
-          // convert bgp process
-          BgpProcess bgpProcess = vrf.getBgpProcess();
-          if (bgpProcess != null) {
-            org.batfish.datamodel.BgpProcess newBgpProcess = toBgpProcess(c, bgpProcess, vrfName);
-            newVrf.setBgpProcess(newBgpProcess);
-          } else if (vrf.getIpv4UnicastAddressFamily() != null
-              && !vrf.getIpv4UnicastAddressFamily().getRouteTargetImport().isEmpty()) {
-            /*
-             * Despite no BGP config this vrf is leaked into. Make a dummy BGP process.
-             */
-            assert newVrf.getBgpProcess() == null;
-            newVrf.setBgpProcess(bgpProcessBuilder().setRouterId(Ip.ZERO).build());
-          }
-        });
+      // convert bgp process
+      BgpProcess bgpProcess = vrf.getBgpProcess();
+      if (bgpProcess != null) {
+        org.batfish.datamodel.BgpProcess newBgpProcess = toBgpProcess(c, bgpProcess, vrfName);
+        newVrf.setBgpProcess(newBgpProcess);
+      } else if (vrf.getIpv4UnicastAddressFamily() != null
+          && !vrf.getIpv4UnicastAddressFamily().getRouteTargetImport().isEmpty()) {
+        /*
+         * Despite no BGP config this vrf is leaked into. Make a dummy BGP process.
+         */
+        assert newVrf.getBgpProcess() == null;
+        newVrf.setBgpProcess(bgpProcessBuilder().setRouterId(Ip.ZERO).build());
+      }
+    });
     /*
      * Another pass over interfaces to push final settings to VI interfaces.
      * (e.g. has OSPF settings but no associated OSPF process, common in show run all)
      */
-    _interfaces.forEach(
-        (key, vsIface) -> {
-          // Check alias first to handle ASA using alias as VI interface name
-          String ifaceName = firstNonNull(vsIface.getAlias(), key);
-          org.batfish.datamodel.Interface iface = c.getAllInterfaces().get(ifaceName);
-          if (iface == null) {
-            // Should never get here
-            return;
-          } else if (iface.getOspfAreaName() != null) {
-            // Already configured
-            return;
-          }
-          // Not part of an OSPF area, but has settings
-          if (vsIface.getOspfArea() != null
-              || vsIface.getOspfCost() != null
-              || vsIface.getOspfPassive() != null
-              || vsIface.getOspfNetworkType() != null
-              || vsIface.getOspfDeadInterval() != null
-              || vsIface.getOspfHelloInterval() != null) {
-            finalizeInterfaceOspfSettings(iface, vsIface, null, null);
-          }
-        });
+    _interfaces.forEach((key, vsIface) -> {
+      // Check alias first to handle ASA using alias as VI interface name
+      String ifaceName = firstNonNull(vsIface.getAlias(), key);
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get(ifaceName);
+      if (iface == null) {
+        // Should never get here
+        return;
+      } else if (iface.getOspfAreaName() != null) {
+        // Already configured
+        return;
+      }
+      // Not part of an OSPF area, but has settings
+      if (vsIface.getOspfArea() != null
+          || vsIface.getOspfCost() != null
+          || vsIface.getOspfPassive() != null
+          || vsIface.getOspfNetworkType() != null
+          || vsIface.getOspfDeadInterval() != null
+          || vsIface.getOspfHelloInterval() != null) {
+        finalizeInterfaceOspfSettings(iface, vsIface, null, null);
+      }
+    });
 
     convertVrfLeakingConfig(_vrfs.values(), c);
 
@@ -3588,95 +3555,87 @@ public final class AsaConfiguration extends VendorConfiguration {
   }
 
   private void createInspectClassMapAcls(Configuration c) {
-    _inspectClassMaps.forEach(
-        (inspectClassMapName, inspectClassMap) -> {
-          String inspectClassMapAclName = computeInspectClassMapAclName(inspectClassMapName);
-          MatchSemantics matchSemantics = inspectClassMap.getMatchSemantics();
-          List<AclLineMatchExpr> matchConditions =
-              inspectClassMap.getMatches().stream()
-                  .map(
-                      inspectClassMapMatch ->
-                          inspectClassMapMatch.toAclLineMatchExpr(this, c, matchSemantics, _w))
-                  .collect(ImmutableList.toImmutableList());
-          AclLineMatchExpr matchClassMap =
-              switch (matchSemantics) {
-                case MATCH_ALL -> and(matchConditions);
-                case MATCH_ANY -> or(matchConditions);
-              };
-          IpAccessList.builder()
-              .setOwner(c)
-              .setName(inspectClassMapAclName)
-              .setLines(
-                  ImmutableList.of(
-                      ExprAclLine.accepting().setMatchCondition(matchClassMap).build()))
-              .setSourceName(inspectClassMapName)
-              .setSourceType(AsaStructureType.INSPECT_CLASS_MAP.getDescription())
-              .build();
-        });
+    _inspectClassMaps.forEach((inspectClassMapName, inspectClassMap) -> {
+      String inspectClassMapAclName = computeInspectClassMapAclName(inspectClassMapName);
+      MatchSemantics matchSemantics = inspectClassMap.getMatchSemantics();
+      List<AclLineMatchExpr> matchConditions =
+          inspectClassMap.getMatches().stream()
+              .map(inspectClassMapMatch ->
+                  inspectClassMapMatch.toAclLineMatchExpr(this, c, matchSemantics, _w))
+              .collect(ImmutableList.toImmutableList());
+      AclLineMatchExpr matchClassMap =
+          switch (matchSemantics) {
+            case MATCH_ALL -> and(matchConditions);
+            case MATCH_ANY -> or(matchConditions);
+          };
+      IpAccessList.builder()
+          .setOwner(c)
+          .setName(inspectClassMapAclName)
+          .setLines(
+              ImmutableList.of(ExprAclLine.accepting().setMatchCondition(matchClassMap).build()))
+          .setSourceName(inspectClassMapName)
+          .setSourceType(AsaStructureType.INSPECT_CLASS_MAP.getDescription())
+          .build();
+    });
   }
 
   private void createInspectPolicyMapAcls(Configuration c) {
-    _inspectPolicyMaps.forEach(
-        (inspectPolicyMapName, inspectPolicyMap) -> {
-          String inspectPolicyMapAclName = computeInspectPolicyMapAclName(inspectPolicyMapName);
-          ImmutableList.Builder<AclLine> policyMapAclLines = ImmutableList.builder();
-          inspectPolicyMap
-              .getInspectClasses()
-              .forEach(
-                  (inspectClassName, inspectPolicyMapInspectClass) -> {
-                    PolicyMapClassAction action = inspectPolicyMapInspectClass.getAction();
-                    if (action == null) {
-                      return;
-                    }
-                    String inspectClassMapAclName = computeInspectClassMapAclName(inspectClassName);
-                    if (!c.getIpAccessLists().containsKey(inspectClassMapAclName)) {
-                      return;
-                    }
-                    AclLineMatchExpr matchCondition = new PermittedByAcl(inspectClassMapAclName);
-                    switch (action) {
-                      case DROP ->
-                          policyMapAclLines.add(
-                              ExprAclLine.rejecting()
-                                  .setMatchCondition(matchCondition)
-                                  .setName(
-                                      String.format(
-                                          "Drop if matched by class-map: '%s'", inspectClassName))
-                                  .build());
-                      case INSPECT ->
-                          policyMapAclLines.add(
-                              ExprAclLine.accepting()
-                                  .setMatchCondition(matchCondition)
-                                  .setName(
-                                      String.format(
-                                          "Inspect if matched by class-map: '%s'",
-                                          inspectClassName))
-                                  .build());
-                      case PASS ->
-                          policyMapAclLines.add(
-                              ExprAclLine.accepting()
-                                  .setMatchCondition(matchCondition)
-                                  .setName(
-                                      String.format(
-                                          "Pass if matched by class-map: '%s'", inspectClassName))
-                                  .build());
-                    }
-                  });
-          policyMapAclLines.add(
-              ExprAclLine.builder()
-                  .setAction(inspectPolicyMap.getClassDefaultAction())
-                  .setMatchCondition(TrueExpr.INSTANCE)
-                  .setName(
-                      String.format(
-                          "class-default action: %s", inspectPolicyMap.getClassDefaultAction()))
-                  .build());
-          IpAccessList.builder()
-              .setOwner(c)
-              .setName(inspectPolicyMapAclName)
-              .setLines(policyMapAclLines.build())
-              .setSourceName(inspectPolicyMapName)
-              .setSourceType(AsaStructureType.INSPECT_POLICY_MAP.getDescription())
-              .build();
-        });
+    _inspectPolicyMaps.forEach((inspectPolicyMapName, inspectPolicyMap) -> {
+      String inspectPolicyMapAclName = computeInspectPolicyMapAclName(inspectPolicyMapName);
+      ImmutableList.Builder<AclLine> policyMapAclLines = ImmutableList.builder();
+      inspectPolicyMap
+          .getInspectClasses()
+          .forEach((inspectClassName, inspectPolicyMapInspectClass) -> {
+            PolicyMapClassAction action = inspectPolicyMapInspectClass.getAction();
+            if (action == null) {
+              return;
+            }
+            String inspectClassMapAclName = computeInspectClassMapAclName(inspectClassName);
+            if (!c.getIpAccessLists().containsKey(inspectClassMapAclName)) {
+              return;
+            }
+            AclLineMatchExpr matchCondition = new PermittedByAcl(inspectClassMapAclName);
+            switch (action) {
+              case DROP ->
+                  policyMapAclLines.add(
+                      ExprAclLine.rejecting()
+                          .setMatchCondition(matchCondition)
+                          .setName(
+                              String.format("Drop if matched by class-map: '%s'", inspectClassName))
+                          .build());
+              case INSPECT ->
+                  policyMapAclLines.add(
+                      ExprAclLine.accepting()
+                          .setMatchCondition(matchCondition)
+                          .setName(
+                              String.format(
+                                  "Inspect if matched by class-map: '%s'", inspectClassName))
+                          .build());
+              case PASS ->
+                  policyMapAclLines.add(
+                      ExprAclLine.accepting()
+                          .setMatchCondition(matchCondition)
+                          .setName(
+                              String.format("Pass if matched by class-map: '%s'", inspectClassName))
+                          .build());
+            }
+          });
+      policyMapAclLines.add(
+          ExprAclLine.builder()
+              .setAction(inspectPolicyMap.getClassDefaultAction())
+              .setMatchCondition(TrueExpr.INSTANCE)
+              .setName(
+                  String.format(
+                      "class-default action: %s", inspectPolicyMap.getClassDefaultAction()))
+              .build());
+      IpAccessList.builder()
+          .setOwner(c)
+          .setName(inspectPolicyMapAclName)
+          .setLines(policyMapAclLines.build())
+          .setSourceName(inspectPolicyMapName)
+          .setSourceType(AsaStructureType.INSPECT_POLICY_MAP.getDescription())
+          .build();
+    });
   }
 
   private void createZoneAcls(Configuration c) {
@@ -3688,24 +3647,23 @@ public final class AsaConfiguration extends VendorConfiguration {
             zoneByNameEntry -> new MatchSrcInterface(zoneByNameEntry.getValue().getInterfaces()));
 
     c.getZones().values().stream()
-        .map(
-            zone -> {
-              // Don't bother if zone is empty
-              SortedSet<String> interfaces = zone.getInterfaces();
-              if (interfaces.isEmpty()) {
-                return null;
-              }
-              String zoneName = zone.getName();
-              if (_securityLevels.containsKey(zoneName)) {
-                // ASA security level
-                return createAsaSecurityLevelZoneAcl(zone);
-              } else if (_securityZones.containsKey(zoneName)) {
-                // IOS security zone
-                return createIosSecurityZoneAcl(zone, matchSrcInterfaceBySrcZone, c);
-              }
-              // shouldn't reach here
-              return null;
-            })
+        .map(zone -> {
+          // Don't bother if zone is empty
+          SortedSet<String> interfaces = zone.getInterfaces();
+          if (interfaces.isEmpty()) {
+            return null;
+          }
+          String zoneName = zone.getName();
+          if (_securityLevels.containsKey(zoneName)) {
+            // ASA security level
+            return createAsaSecurityLevelZoneAcl(zone);
+          } else if (_securityZones.containsKey(zoneName)) {
+            // IOS security zone
+            return createIosSecurityZoneAcl(zone, matchSrcInterfaceBySrcZone, c);
+          }
+          // shouldn't reach here
+          return null;
+        })
         .filter(Objects::nonNull)
         .forEach(acl -> c.getIpAccessLists().put(acl.getName(), acl));
   }
@@ -3760,15 +3718,10 @@ public final class AsaConfiguration extends VendorConfiguration {
     // zoneName refers to dstZone
     Map<String, SecurityZonePair> zonePairsBySrcZoneName = _securityZonePairs.get(zoneName);
     if (zonePairsBySrcZoneName != null) {
-      zonePairsBySrcZoneName.forEach(
-          (srcZoneName, zonePair) ->
-              createZonePairAcl(
-                      c,
-                      matchSrcInterfaceBySrcZone.get(srcZoneName),
-                      zoneName,
-                      srcZoneName,
-                      zonePair)
-                  .ifPresent(zonePolicies::add));
+      zonePairsBySrcZoneName.forEach((srcZoneName, zonePair) ->
+          createZonePairAcl(
+                  c, matchSrcInterfaceBySrcZone.get(srcZoneName), zoneName, srcZoneName, zonePair)
+              .ifPresent(zonePolicies::add));
     }
 
     // Security level policies
@@ -3852,17 +3805,16 @@ public final class AsaConfiguration extends VendorConfiguration {
     List<ExprAclLine> lines =
         _interfacesBySecurityLevel.keySet().stream()
             .filter(l -> l > level)
-            .map(
-                l ->
-                    ExprAclLine.accepting()
-                        .setName("Traffic from security level " + l)
-                        .setTraceElement(asaPermitHigherSecurityLevelTrafficTraceElement(l))
-                        .setMatchCondition(
-                            new MatchSrcInterface(
-                                _interfacesBySecurityLevel.get(l).stream()
-                                    .map(this::getNewInterfaceName)
-                                    .collect(Collectors.toList())))
-                        .build())
+            .map(l ->
+                ExprAclLine.accepting()
+                    .setName("Traffic from security level " + l)
+                    .setTraceElement(asaPermitHigherSecurityLevelTrafficTraceElement(l))
+                    .setMatchCondition(
+                        new MatchSrcInterface(
+                            _interfacesBySecurityLevel.get(l).stream()
+                                .map(this::getNewInterfaceName)
+                                .collect(Collectors.toList())))
+                    .build())
             .collect(Collectors.toList());
 
     // Allow outbound traffic from interfaces with lower security levels if that interface has an
@@ -3870,21 +3822,19 @@ public final class AsaConfiguration extends VendorConfiguration {
     lines.addAll(
         _interfacesBySecurityLevel.keySet().stream()
             .filter(l -> l < level)
-            .map(
-                l ->
-                    ExprAclLine.accepting()
-                        .setName("Traffic from security level " + l + " with inbound filter")
-                        .setTraceElement(asaPermitLowerSecurityLevelTraceElement(l))
-                        .setMatchCondition(
-                            new MatchSrcInterface(
-                                _interfacesBySecurityLevel.get(l).stream()
-                                    .filter(iface -> iface.getIncomingFilter() != null)
-                                    .map(this::getNewInterfaceName)
-                                    .collect(Collectors.toList())))
-                        .build())
-            .filter(
-                line ->
-                    !((MatchSrcInterface) line.getMatchCondition()).getSrcInterfaces().isEmpty())
+            .map(l ->
+                ExprAclLine.accepting()
+                    .setName("Traffic from security level " + l + " with inbound filter")
+                    .setTraceElement(asaPermitLowerSecurityLevelTraceElement(l))
+                    .setMatchCondition(
+                        new MatchSrcInterface(
+                            _interfacesBySecurityLevel.get(l).stream()
+                                .filter(iface -> iface.getIncomingFilter() != null)
+                                .map(this::getNewInterfaceName)
+                                .collect(Collectors.toList())))
+                    .build())
+            .filter(line ->
+                !((MatchSrcInterface) line.getMatchCondition()).getSrcInterfaces().isEmpty())
             .collect(Collectors.toList()));
 
     return lines;
@@ -3977,15 +3927,14 @@ public final class AsaConfiguration extends VendorConfiguration {
       // check EIGRP policies
       // distribute lists
       if (vrf.getEigrpProcesses().values().stream()
-          .flatMap(
-              eigrpProcess ->
-                  Streams.concat(
-                      Stream.of(
-                              eigrpProcess.getInboundGlobalDistributeList(),
-                              eigrpProcess.getOutboundGlobalDistributeList())
-                          .filter(Objects::nonNull),
-                      eigrpProcess.getInboundInterfaceDistributeLists().values().stream(),
-                      eigrpProcess.getOutboundInterfaceDistributeLists().values().stream()))
+          .flatMap(eigrpProcess ->
+              Streams.concat(
+                  Stream.of(
+                          eigrpProcess.getInboundGlobalDistributeList(),
+                          eigrpProcess.getOutboundGlobalDistributeList())
+                      .filter(Objects::nonNull),
+                  eigrpProcess.getInboundInterfaceDistributeLists().values().stream(),
+                  eigrpProcess.getOutboundInterfaceDistributeLists().values().stream()))
           .anyMatch(distributeList -> distributeList.getFilterName().equals(aclName))) {
         return true;
       }
@@ -4082,17 +4031,15 @@ public final class AsaConfiguration extends VendorConfiguration {
 
     _keyrings.values().stream()
         .filter(keyring -> !keyring.getLocalInterfaceName().equals(UNSET_LOCAL_INTERFACE))
-        .forEach(
-            keyring ->
-                keyring.setLocalAddress(ifaceNameToPrimaryIp.get(keyring.getLocalInterfaceName())));
+        .forEach(keyring ->
+            keyring.setLocalAddress(ifaceNameToPrimaryIp.get(keyring.getLocalInterfaceName())));
 
     _isakmpProfiles.values().stream()
         .filter(
             isakmpProfile -> !isakmpProfile.getLocalInterfaceName().equals(UNSET_LOCAL_INTERFACE))
-        .forEach(
-            isakmpProfile ->
-                isakmpProfile.setLocalAddress(
-                    ifaceNameToPrimaryIp.get(isakmpProfile.getLocalInterfaceName())));
+        .forEach(isakmpProfile ->
+            isakmpProfile.setLocalAddress(
+                ifaceNameToPrimaryIp.get(isakmpProfile.getLocalInterfaceName())));
   }
 
   /** Resolves the addresses of the interfaces used in sourceInterfaceName of Tunnel interfaces */
@@ -4161,13 +4108,9 @@ public final class AsaConfiguration extends VendorConfiguration {
 
   private void convertCommunityLists(Configuration c) {
     // create CommunitySetMatchExpr for route-map match community
-    _standardCommunityLists.forEach(
-        (name, ipCommunityListStandard) ->
-            c.getCommunitySetMatchExprs()
-                .put(name, toCommunitySetMatchExpr(ipCommunityListStandard)));
-    _expandedCommunityLists.forEach(
-        (name, ipCommunityListExpanded) ->
-            c.getCommunitySetMatchExprs()
-                .put(name, toCommunitySetMatchExpr(ipCommunityListExpanded)));
+    _standardCommunityLists.forEach((name, ipCommunityListStandard) ->
+        c.getCommunitySetMatchExprs().put(name, toCommunitySetMatchExpr(ipCommunityListStandard)));
+    _expandedCommunityLists.forEach((name, ipCommunityListExpanded) ->
+        c.getCommunitySetMatchExprs().put(name, toCommunitySetMatchExpr(ipCommunityListExpanded)));
   }
 }

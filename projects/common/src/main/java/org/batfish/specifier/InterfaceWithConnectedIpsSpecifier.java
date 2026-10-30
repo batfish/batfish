@@ -64,9 +64,8 @@ public final class InterfaceWithConnectedIpsSpecifier implements InterfaceSpecif
     return ctxt.getConfigs().values().stream()
         .filter(c -> nodes.contains(c.getHostname()))
         .flatMap(c -> c.getAllInterfaces().values().stream().filter(Interface::getActive))
-        .filter(
-            i ->
-                i.getAllConcreteAddresses().stream().anyMatch(this::interfaceAddressMatchesIpSpace))
+        .filter(i ->
+            i.getAllConcreteAddresses().stream().anyMatch(this::interfaceAddressMatchesIpSpace))
         .map(NodeInterfacePair::of)
         .collect(ImmutableSet.toImmutableSet());
   }

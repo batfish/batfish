@@ -1425,9 +1425,8 @@ public class Client extends AbstractClient implements IClient {
     for (String questionName : sourceMap.keySet()) {
       sourceMap
           .get(questionName)
-          .forEach(
-              questionContent ->
-                  updateLoadedQuestionsInfo(questionName, questionContent, destinationMap, ae));
+          .forEach(questionContent ->
+              updateLoadedQuestionsInfo(questionName, questionContent, destinationMap, ae));
     }
   }
 

@@ -159,9 +159,8 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
     @Nonnull
     SortedSet<Ip> getAffectedNextHopIps(Stream<Prefix> changedPrefixes) {
       TreeSet<Ip> affected = new TreeSet<>(_mixedNhips);
-      changedPrefixes.forEach(
-          prefix ->
-              affected.addAll(_nhips.subSet(prefix.getStartIp(), true, prefix.getEndIp(), true)));
+      changedPrefixes.forEach(prefix ->
+          affected.addAll(_nhips.subSet(prefix.getStartIp(), true, prefix.getEndIp(), true)));
       return affected;
     }
 
@@ -375,33 +374,32 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
     RibDelta.Builder<Bgpv4Route> multipathDelta = RibDelta.builder();
     _resolvabilityEnforcer
         .getAffectedNextHopIps(mainRibDelta.getPrefixes())
-        .forEach(
-            nhip -> {
-              boolean resolvable = isResolvable(nhip);
-              if (_resolvabilityEnforcer.allRoutesConsistentWith(nhip, resolvable)) {
-                // Re-(de)activating would be a no-op, e.g. the changed prefix is shadowed by a
-                // more specific main RIB route for this NHIP.
-                return;
-              }
-              for (Bgpv4Route affectedRoute : _resolvabilityEnforcer.getRoutesWithNhip(nhip)) {
-                MultipathRibDelta<Bgpv4Route> delta;
-                if (resolvable) {
-                  delta = super.multipathMergeRouteGetDelta(affectedRoute);
-                } else {
-                  // Note this step removes affectedRoute from resolvability enforcer due to super
-                  // class calling this class's removeRouteGetDelta
-                  delta = super.multipathRemoveRouteGetDelta(affectedRoute);
-                  // Re-add affected route to resolvability enforcer so it can potentially be
-                  // reactivated by a future main RIB update
-                  // TODO: fix call chain so we don't have to re-add
-                  _resolvabilityEnforcer.addBgpRoute(affectedRoute);
-                }
-                bestPathDelta.from(delta.getBestPathDelta());
-                multipathDelta.from(delta.getMultipathDelta());
-              }
-              // Set after the loop: removing a route may have cleared this NHIP's record.
-              _resolvabilityEnforcer.setResolvable(nhip, resolvable);
-            });
+        .forEach(nhip -> {
+          boolean resolvable = isResolvable(nhip);
+          if (_resolvabilityEnforcer.allRoutesConsistentWith(nhip, resolvable)) {
+            // Re-(de)activating would be a no-op, e.g. the changed prefix is shadowed by a
+            // more specific main RIB route for this NHIP.
+            return;
+          }
+          for (Bgpv4Route affectedRoute : _resolvabilityEnforcer.getRoutesWithNhip(nhip)) {
+            MultipathRibDelta<Bgpv4Route> delta;
+            if (resolvable) {
+              delta = super.multipathMergeRouteGetDelta(affectedRoute);
+            } else {
+              // Note this step removes affectedRoute from resolvability enforcer due to super
+              // class calling this class's removeRouteGetDelta
+              delta = super.multipathRemoveRouteGetDelta(affectedRoute);
+              // Re-add affected route to resolvability enforcer so it can potentially be
+              // reactivated by a future main RIB update
+              // TODO: fix call chain so we don't have to re-add
+              _resolvabilityEnforcer.addBgpRoute(affectedRoute);
+            }
+            bestPathDelta.from(delta.getBestPathDelta());
+            multipathDelta.from(delta.getMultipathDelta());
+          }
+          // Set after the loop: removing a route may have cleared this NHIP's record.
+          _resolvabilityEnforcer.setResolvable(nhip, resolvable);
+        });
     return new MultipathRibDelta<>(bestPathDelta.build(), multipathDelta.build());
   }
 

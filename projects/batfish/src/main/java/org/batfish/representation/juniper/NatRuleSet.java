@@ -104,12 +104,8 @@ public final class NatRuleSet implements Serializable, Comparable<NatRuleSet> {
       }
 
       return rulesTransformation(nat, addressBookEntryMap, interfaceIp, andThen, orElse, warnings)
-          .map(
-              rulesTransformation ->
-                  when(matchFromLocation)
-                      .setAndThen(rulesTransformation)
-                      .setOrElse(orElse)
-                      .build());
+          .map(rulesTransformation ->
+              when(matchFromLocation).setAndThen(rulesTransformation).setOrElse(orElse).build());
     }
 
     if (nat.getType() == Type.STATIC) {

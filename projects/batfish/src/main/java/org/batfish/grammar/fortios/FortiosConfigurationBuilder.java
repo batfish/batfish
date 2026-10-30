@@ -629,31 +629,29 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     }
 
     toAddressUUIDs(ctx.address_names(), FortiosStructureUsage.ADDRGRP_EXCLUDE_MEMBER)
-        .ifPresent(
-            addresses -> {
-              if (!checkAddrgrpMembersValidAndWarn(ctx, addresses)) {
-                return;
-              }
+        .ifPresent(addresses -> {
+          if (!checkAddrgrpMembersValidAndWarn(ctx, addresses)) {
+            return;
+          }
 
-              Set<BatfishUUID> addrs = _currentAddrgrp.getExcludeMemberUUIDs();
-              addrs.clear();
-              addrs.addAll(addresses);
-            });
+          Set<BatfishUUID> addrs = _currentAddrgrp.getExcludeMemberUUIDs();
+          addrs.clear();
+          addrs.addAll(addresses);
+        });
   }
 
   @Override
   public void exitCfaddrgrp_set_member(Cfaddrgrp_set_memberContext ctx) {
     toAddrgrpMemberUUIDs(ctx.address_names(), FortiosStructureUsage.ADDRGRP_MEMBER, false)
-        .ifPresent(
-            addresses -> {
-              if (!checkAddrgrpMembersValidAndWarn(ctx, addresses)) {
-                return;
-              }
+        .ifPresent(addresses -> {
+          if (!checkAddrgrpMembersValidAndWarn(ctx, addresses)) {
+            return;
+          }
 
-              Set<BatfishUUID> addrs = _currentAddrgrp.getMemberUUIDs();
-              addrs.clear();
-              addrs.addAll(addresses);
-            });
+          Set<BatfishUUID> addrs = _currentAddrgrp.getMemberUUIDs();
+          addrs.clear();
+          addrs.addAll(addresses);
+        });
   }
 
   @Override
@@ -664,29 +662,27 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     }
 
     toAddressUUIDs(ctx.address_names(), FortiosStructureUsage.ADDRGRP_EXCLUDE_MEMBER)
-        .ifPresent(
-            addresses -> {
-              if (!checkAddrgrpMembersValidAndWarn(ctx, addresses)) {
-                return;
-              }
+        .ifPresent(addresses -> {
+          if (!checkAddrgrpMembersValidAndWarn(ctx, addresses)) {
+            return;
+          }
 
-              Set<BatfishUUID> addrs = _currentAddrgrp.getExcludeMemberUUIDs();
-              addrs.addAll(addresses);
-            });
+          Set<BatfishUUID> addrs = _currentAddrgrp.getExcludeMemberUUIDs();
+          addrs.addAll(addresses);
+        });
   }
 
   @Override
   public void exitCfaddrgrp_append_member(Cfaddrgrp_append_memberContext ctx) {
     toAddrgrpMemberUUIDs(ctx.address_names(), FortiosStructureUsage.ADDRGRP_MEMBER, false)
-        .ifPresent(
-            addresses -> {
-              if (!checkAddrgrpMembersValidAndWarn(ctx, addresses)) {
-                return;
-              }
+        .ifPresent(addresses -> {
+          if (!checkAddrgrpMembersValidAndWarn(ctx, addresses)) {
+            return;
+          }
 
-              Set<BatfishUUID> addrs = _currentAddrgrp.getMemberUUIDs();
-              addrs.addAll(addresses);
-            });
+          Set<BatfishUUID> addrs = _currentAddrgrp.getMemberUUIDs();
+          addrs.addAll(addresses);
+        });
   }
 
   /**
@@ -935,12 +931,11 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   @Override
   public void exitCsi_set_member(Csi_set_memberContext ctx) {
     toInterfaceMembers(ctx.members)
-        .ifPresent(
-            newMembers -> {
-              Set<String> members = _currentInterface.getMembers();
-              members.clear();
-              members.addAll(newMembers);
-            });
+        .ifPresent(newMembers -> {
+          Set<String> members = _currentInterface.getMembers();
+          members.clear();
+          members.addAll(newMembers);
+        });
   }
 
   @Override
@@ -1456,120 +1451,110 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   @Override
   public void exitCfp_set_dstaddr(Cfp_set_dstaddrContext ctx) {
     toAddrgrpMemberUUIDs(ctx.addresses, FortiosStructureUsage.POLICY_DSTADDR, true)
-        .ifPresent(
-            addresses -> {
-              Set<BatfishUUID> addrs = _currentPolicy.getDstAddrUUIDs();
-              addrs.clear();
-              addrs.addAll(addresses);
-            });
+        .ifPresent(addresses -> {
+          Set<BatfishUUID> addrs = _currentPolicy.getDstAddrUUIDs();
+          addrs.clear();
+          addrs.addAll(addresses);
+        });
   }
 
   @Override
   public void exitCfp_set_srcaddr(Cfp_set_srcaddrContext ctx) {
     toAddrgrpMemberUUIDs(ctx.addresses, FortiosStructureUsage.POLICY_SRCADDR, true)
-        .ifPresent(
-            addresses -> {
-              Set<BatfishUUID> addrs = _currentPolicy.getSrcAddrUUIDs();
-              addrs.clear();
-              addrs.addAll(addresses);
-            });
+        .ifPresent(addresses -> {
+          Set<BatfishUUID> addrs = _currentPolicy.getSrcAddrUUIDs();
+          addrs.clear();
+          addrs.addAll(addresses);
+        });
   }
 
   @Override
   public void exitCfp_set_dstintf(Cfp_set_dstintfContext ctx) {
     toInterfacesAndZones(ctx.interfaces, FortiosStructureUsage.POLICY_DSTINTF, false)
-        .ifPresent(
-            i -> {
-              Set<String> ifaces = _currentPolicy.getDstIntf();
-              ifaces.clear();
-              ifaces.addAll(i.getInterfaces());
+        .ifPresent(i -> {
+          Set<String> ifaces = _currentPolicy.getDstIntf();
+          ifaces.clear();
+          ifaces.addAll(i.getInterfaces());
 
-              Set<BatfishUUID> zones = _currentPolicy.getDstIntfZoneUUIDs();
-              zones.clear();
-              zones.addAll(i.getZones());
-            });
+          Set<BatfishUUID> zones = _currentPolicy.getDstIntfZoneUUIDs();
+          zones.clear();
+          zones.addAll(i.getZones());
+        });
   }
 
   @Override
   public void exitCfp_set_srcintf(Cfp_set_srcintfContext ctx) {
     toInterfacesAndZones(ctx.interfaces, FortiosStructureUsage.POLICY_SRCINTF, true)
-        .ifPresent(
-            i -> {
-              Set<String> ifaces = _currentPolicy.getSrcIntf();
-              ifaces.clear();
-              ifaces.addAll(i.getInterfaces());
+        .ifPresent(i -> {
+          Set<String> ifaces = _currentPolicy.getSrcIntf();
+          ifaces.clear();
+          ifaces.addAll(i.getInterfaces());
 
-              Set<BatfishUUID> zones = _currentPolicy.getSrcIntfZoneUUIDs();
-              zones.clear();
-              zones.addAll(i.getZones());
-            });
+          Set<BatfishUUID> zones = _currentPolicy.getSrcIntfZoneUUIDs();
+          zones.clear();
+          zones.addAll(i.getZones());
+        });
   }
 
   @Override
   public void exitCfp_set_service(Cfp_set_serviceContext ctx) {
     toServiceGroupMemberUUIDs(ctx.services, FortiosStructureUsage.POLICY_SERVICE, true)
-        .ifPresent(
-            s -> {
-              Set<BatfishUUID> service = _currentPolicy.getServiceUUIDs();
-              service.clear();
-              service.addAll(s);
-            });
+        .ifPresent(s -> {
+          Set<BatfishUUID> service = _currentPolicy.getServiceUUIDs();
+          service.clear();
+          service.addAll(s);
+        });
   }
 
   @Override
   public void exitCfp_append_dstaddr(Cfp_append_dstaddrContext ctx) {
     toAddrgrpMemberUUIDs(ctx.addresses, FortiosStructureUsage.POLICY_DSTADDR, true)
-        .ifPresent(
-            a -> {
-              Set<BatfishUUID> addrs = _currentPolicy.getDstAddrUUIDs();
-              addrs.addAll(a);
-            });
+        .ifPresent(a -> {
+          Set<BatfishUUID> addrs = _currentPolicy.getDstAddrUUIDs();
+          addrs.addAll(a);
+        });
   }
 
   @Override
   public void exitCfp_append_srcaddr(Cfp_append_srcaddrContext ctx) {
     toAddrgrpMemberUUIDs(ctx.addresses, FortiosStructureUsage.POLICY_SRCADDR, true)
-        .ifPresent(
-            a -> {
-              Set<BatfishUUID> addrs = _currentPolicy.getSrcAddrUUIDs();
-              addrs.addAll(a);
-            });
+        .ifPresent(a -> {
+          Set<BatfishUUID> addrs = _currentPolicy.getSrcAddrUUIDs();
+          addrs.addAll(a);
+        });
   }
 
   @Override
   public void exitCfp_append_dstintf(Cfp_append_dstintfContext ctx) {
     toInterfacesAndZones(ctx.interfaces, FortiosStructureUsage.POLICY_DSTINTF, false)
-        .ifPresent(
-            i -> {
-              Set<String> ifaces = _currentPolicy.getDstIntf();
-              ifaces.addAll(i.getInterfaces());
+        .ifPresent(i -> {
+          Set<String> ifaces = _currentPolicy.getDstIntf();
+          ifaces.addAll(i.getInterfaces());
 
-              Set<BatfishUUID> zones = _currentPolicy.getDstIntfZoneUUIDs();
-              zones.addAll(i.getZones());
-            });
+          Set<BatfishUUID> zones = _currentPolicy.getDstIntfZoneUUIDs();
+          zones.addAll(i.getZones());
+        });
   }
 
   @Override
   public void exitCfp_append_srcintf(Cfp_append_srcintfContext ctx) {
     toInterfacesAndZones(ctx.interfaces, FortiosStructureUsage.POLICY_SRCINTF, true)
-        .ifPresent(
-            i -> {
-              Set<String> ifaces = _currentPolicy.getSrcIntf();
-              ifaces.addAll(i.getInterfaces());
+        .ifPresent(i -> {
+          Set<String> ifaces = _currentPolicy.getSrcIntf();
+          ifaces.addAll(i.getInterfaces());
 
-              Set<BatfishUUID> zones = _currentPolicy.getSrcIntfZoneUUIDs();
-              zones.addAll(i.getZones());
-            });
+          Set<BatfishUUID> zones = _currentPolicy.getSrcIntfZoneUUIDs();
+          zones.addAll(i.getZones());
+        });
   }
 
   @Override
   public void exitCfp_append_service(Cfp_append_serviceContext ctx) {
     toServiceGroupMemberUUIDs(ctx.services, FortiosStructureUsage.POLICY_SERVICE, true)
-        .ifPresent(
-            s -> {
-              Set<BatfishUUID> service = _currentPolicy.getServiceUUIDs();
-              service.addAll(s);
-            });
+        .ifPresent(s -> {
+          Set<BatfishUUID> service = _currentPolicy.getServiceUUIDs();
+          service.addAll(s);
+        });
   }
 
   @Override
@@ -1641,52 +1626,50 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   public void exitCfsg_set_member(Cfsg_set_memberContext ctx) {
     toServiceGroupMemberUUIDs(
             ctx.service_names(), FortiosStructureUsage.SERVICE_GROUP_MEMBER, false)
-        .ifPresent(
-            newMembers -> {
-              // See if any of the new members is invalid / the parent of the current group
-              ServiceGroup parent =
-                  getParentServiceGroup(
-                      _currentServiceGroup.getBatfishUUID(),
-                      newMembers,
-                      _c.getServiceGroups().values());
-              if (parent != null) {
-                warn(
-                    ctx,
-                    String.format(
-                        "Service group %s cannot be added to %s as it would create a cycle",
-                        parent.getName(), _currentServiceGroup.getName()));
-                return;
-              }
+        .ifPresent(newMembers -> {
+          // See if any of the new members is invalid / the parent of the current group
+          ServiceGroup parent =
+              getParentServiceGroup(
+                  _currentServiceGroup.getBatfishUUID(),
+                  newMembers,
+                  _c.getServiceGroups().values());
+          if (parent != null) {
+            warn(
+                ctx,
+                String.format(
+                    "Service group %s cannot be added to %s as it would create a cycle",
+                    parent.getName(), _currentServiceGroup.getName()));
+            return;
+          }
 
-              Set<BatfishUUID> members = _currentServiceGroup.getMemberUUIDs();
-              members.clear();
-              members.addAll(newMembers);
-            });
+          Set<BatfishUUID> members = _currentServiceGroup.getMemberUUIDs();
+          members.clear();
+          members.addAll(newMembers);
+        });
   }
 
   @Override
   public void exitCfsga_member(Cfsga_memberContext ctx) {
     toServiceGroupMemberUUIDs(
             ctx.service_names(), FortiosStructureUsage.SERVICE_GROUP_MEMBER, false)
-        .ifPresent(
-            newMembers -> {
-              // See if any of the new members is invalid / the parent of the current group
-              ServiceGroup parent =
-                  getParentServiceGroup(
-                      _currentServiceGroup.getBatfishUUID(),
-                      newMembers,
-                      _c.getServiceGroups().values());
-              if (parent != null) {
-                warn(
-                    ctx,
-                    String.format(
-                        "Service group %s cannot be added to %s as it would create a cycle",
-                        parent.getName(), _currentServiceGroup.getName()));
-                return;
-              }
+        .ifPresent(newMembers -> {
+          // See if any of the new members is invalid / the parent of the current group
+          ServiceGroup parent =
+              getParentServiceGroup(
+                  _currentServiceGroup.getBatfishUUID(),
+                  newMembers,
+                  _c.getServiceGroups().values());
+          if (parent != null) {
+            warn(
+                ctx,
+                String.format(
+                    "Service group %s cannot be added to %s as it would create a cycle",
+                    parent.getName(), _currentServiceGroup.getName()));
+            return;
+          }
 
-              _currentServiceGroup.getMemberUUIDs().addAll(newMembers);
-            });
+          _currentServiceGroup.getMemberUUIDs().addAll(newMembers);
+        });
   }
 
   @Override
@@ -1978,12 +1961,11 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   @Override
   public void exitCsz_set_interface(Csz_set_interfaceContext ctx) {
     toZoneInterfaces(ctx.interfaces)
-        .ifPresent(
-            newInterfaces -> {
-              Set<String> ifaces = _currentZone.getInterface();
-              ifaces.clear();
-              ifaces.addAll(newInterfaces);
-            });
+        .ifPresent(newInterfaces -> {
+          Set<String> ifaces = _currentZone.getInterface();
+          ifaces.clear();
+          ifaces.addAll(newInterfaces);
+        });
   }
 
   @Override
@@ -2174,10 +2156,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       return true;
     }
     return members.stream()
-        .anyMatch(
-            m ->
-                allAddrgrps.containsKey(m)
-                    && addrgrpContains(allAddrgrps.get(m), uuid, allAddrgrps));
+        .anyMatch(m ->
+            allAddrgrps.containsKey(m) && addrgrpContains(allAddrgrps.get(m), uuid, allAddrgrps));
   }
 
   /**
@@ -2220,10 +2200,9 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       return true;
     }
     return members.stream()
-        .anyMatch(
-            m ->
-                allServiceGroups.containsKey(m)
-                    && serviceGroupContains(allServiceGroups.get(m), uuid, allServiceGroups));
+        .anyMatch(m ->
+            allServiceGroups.containsKey(m)
+                && serviceGroupContains(allServiceGroups.get(m), uuid, allServiceGroups));
   }
 
   /**
@@ -2758,19 +2737,18 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
      *   That is, the backslash and the newline are both stripped.
      */
     return ctx.str_content().children.stream()
-        .map(
-            child -> {
-              if (child instanceof Double_quoted_stringContext) {
-                return toString((Double_quoted_stringContext) child);
-              } else if (child instanceof Single_quoted_stringContext) {
-                return toString((Single_quoted_stringContext) child);
-              } else {
-                assert child instanceof TerminalNode;
-                int type = ((TerminalNode) child).getSymbol().getType();
-                assert type == UNQUOTED_WORD_CHARS;
-                return ESCAPED_UNQUOTED_CHAR_PATTERN.matcher(child.getText()).replaceAll("$1");
-              }
-            })
+        .map(child -> {
+          if (child instanceof Double_quoted_stringContext) {
+            return toString((Double_quoted_stringContext) child);
+          } else if (child instanceof Single_quoted_stringContext) {
+            return toString((Single_quoted_stringContext) child);
+          } else {
+            assert child instanceof TerminalNode;
+            int type = ((TerminalNode) child).getSymbol().getType();
+            assert type == UNQUOTED_WORD_CHARS;
+            return ESCAPED_UNQUOTED_CHAR_PATTERN.matcher(child.getText()).replaceAll("$1");
+          }
+        })
         .collect(Collectors.joining(""));
   }
 

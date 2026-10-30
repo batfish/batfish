@@ -211,9 +211,8 @@ public class FortiosConfiguration extends VendorConfiguration {
                 ImmutableMap.toImmutableMap(Zone::getName, FortiosConfiguration::convertZone)));
 
     // Convert access-lists
-    _accessLists.forEach(
-        (name, accessList) ->
-            c.getRouteFilterLists().put(name, convertAccessList(accessList, _filename)));
+    _accessLists.forEach((name, accessList) ->
+        c.getRouteFilterLists().put(name, convertAccessList(accessList, _filename)));
 
     // Convert route-maps. Must happen after access-list conversion (and prefix-list conversion once
     // they are supported)
@@ -384,26 +383,25 @@ public class FortiosConfiguration extends VendorConfiguration {
       AccessList accessList, String vendorConfigFilename) {
     List<RouteFilterLine> lines =
         accessList.getRules().values().stream()
-            .map(
-                rule -> {
-                  LineAction action =
-                      rule.getActionEffective() == AccessListRule.Action.PERMIT
-                          ? LineAction.PERMIT
-                          : LineAction.DENY;
-                  if (rule.getPrefix() != null) {
-                    int prefixLength = rule.getPrefix().getPrefixLength();
-                    SubRange lengthRange =
-                        rule.getExactMatchEffective()
-                            ? SubRange.singleton(prefixLength)
-                            : new SubRange(prefixLength, Prefix.MAX_PREFIX_LENGTH);
-                    return new RouteFilterLine(action, rule.getPrefix(), lengthRange);
-                  } else {
-                    assert rule.getWildcard() != null;
-                    // Can match network of any length as long as the IP matches the wildcard
-                    return new RouteFilterLine(
-                        action, rule.getWildcard(), new SubRange(0, Prefix.MAX_PREFIX_LENGTH));
-                  }
-                })
+            .map(rule -> {
+              LineAction action =
+                  rule.getActionEffective() == AccessListRule.Action.PERMIT
+                      ? LineAction.PERMIT
+                      : LineAction.DENY;
+              if (rule.getPrefix() != null) {
+                int prefixLength = rule.getPrefix().getPrefixLength();
+                SubRange lengthRange =
+                    rule.getExactMatchEffective()
+                        ? SubRange.singleton(prefixLength)
+                        : new SubRange(prefixLength, Prefix.MAX_PREFIX_LENGTH);
+                return new RouteFilterLine(action, rule.getPrefix(), lengthRange);
+              } else {
+                assert rule.getWildcard() != null;
+                // Can match network of any length as long as the IP matches the wildcard
+                return new RouteFilterLine(
+                    action, rule.getWildcard(), new SubRange(0, Prefix.MAX_PREFIX_LENGTH));
+              }
+            })
             .collect(ImmutableList.toImmutableList());
     return new RouteFilterList(
         accessList.getName(),

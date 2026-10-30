@@ -688,19 +688,18 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
 
   private static @Nonnull String toString(WordContext ctx) {
     return ctx.word_content().children.stream()
-        .map(
-            child -> {
-              if (child instanceof Double_quoted_stringContext) {
-                return toString(((Double_quoted_stringContext) child).text);
-              } else if (child instanceof Single_quoted_stringContext) {
-                return toString(((Single_quoted_stringContext) child).text);
-              } else {
-                assert child instanceof TerminalNode;
-                int type = ((TerminalNode) child).getSymbol().getType();
-                assert type == WORD;
-                return child.getText();
-              }
-            })
+        .map(child -> {
+          if (child instanceof Double_quoted_stringContext) {
+            return toString(((Double_quoted_stringContext) child).text);
+          } else if (child instanceof Single_quoted_stringContext) {
+            return toString(((Single_quoted_stringContext) child).text);
+          } else {
+            assert child instanceof TerminalNode;
+            int type = ((TerminalNode) child).getSymbol().getType();
+            assert type == WORD;
+            return child.getText();
+          }
+        })
         .collect(Collectors.joining(""));
   }
 

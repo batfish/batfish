@@ -171,11 +171,10 @@ public class Subnet implements AwsVpcEntity, Serializable {
     List<NetworkAcl> subnetAcls =
         networkAcls.values().stream()
             .filter(acl -> acl.getVpcId().equals(vpcId))
-            .filter(
-                acl ->
-                    acl.getAssociations().stream()
-                        .map(NetworkAclAssociation::getSubnetId)
-                        .anyMatch(subnetId::equals))
+            .filter(acl ->
+                acl.getAssociations().stream()
+                    .map(NetworkAclAssociation::getSubnetId)
+                    .anyMatch(subnetId::equals))
             .collect(ImmutableList.toImmutableList());
 
     if (!subnetAcls.isEmpty()) {
@@ -263,30 +262,29 @@ public class Subnet implements AwsVpcEntity, Serializable {
     vpcConfigNode
         .getVrfs()
         .values()
-        .forEach(
-            vrf -> {
-              String interfaceSuffix = vrf.getName().equals(DEFAULT_VRF_NAME) ? "" : vrf.getName();
-              connect(
-                  awsConfiguration,
-                  cfgNode,
-                  DEFAULT_VRF_NAME,
-                  vpcConfigNode,
-                  vrf.getName(),
-                  interfaceSuffix);
+        .forEach(vrf -> {
+          String interfaceSuffix = vrf.getName().equals(DEFAULT_VRF_NAME) ? "" : vrf.getName();
+          connect(
+              awsConfiguration,
+              cfgNode,
+              DEFAULT_VRF_NAME,
+              vpcConfigNode,
+              vrf.getName(),
+              interfaceSuffix);
 
-              String subnetToVpcIfaceName = interfaceNameToRemote(vpcConfigNode, interfaceSuffix);
-              Interface subnetIfaceToVpc = cfgNode.getAllInterfaces().get(subnetToVpcIfaceName);
-              subnetIfaceToVpc.setIncomingFilter(ingressNetworkAcl);
-              subnetIfaceToVpc.setOutgoingFilter(egressNetworkAcl);
+          String subnetToVpcIfaceName = interfaceNameToRemote(vpcConfigNode, interfaceSuffix);
+          Interface subnetIfaceToVpc = cfgNode.getAllInterfaces().get(subnetToVpcIfaceName);
+          subnetIfaceToVpc.setIncomingFilter(ingressNetworkAcl);
+          subnetIfaceToVpc.setOutgoingFilter(egressNetworkAcl);
 
-              // add a static route on the vpc router for this subnet
-              addStaticRoute(
-                  vrf,
-                  toStaticRoute(
-                      _cidrBlock,
-                      interfaceNameToRemote(cfgNode, interfaceSuffix),
-                      getInterfaceLinkLocalIp(cfgNode, subnetToVpcIfaceName)));
-            });
+          // add a static route on the vpc router for this subnet
+          addStaticRoute(
+              vrf,
+              toStaticRoute(
+                  _cidrBlock,
+                  interfaceNameToRemote(cfgNode, interfaceSuffix),
+                  getInterfaceLinkLocalIp(cfgNode, subnetToVpcIfaceName)));
+        });
 
     @Nullable
     String vpnGatewayId = region.findVpnGateway(_vpcId).map(VpnGateway::getId).orElse(null);
@@ -305,9 +303,8 @@ public class Subnet implements AwsVpcEntity, Serializable {
                 Stream.of(optInternetGateway.map(InternetGateway::getId).orElse(null)),
                 Stream.of(vpnGatewayId),
                 region.getVpcEndpoints().values().stream()
-                    .filter(
-                        vpce ->
-                            vpce instanceof VpcEndpointGateway && vpce.getVpcId().equals(_vpcId))
+                    .filter(vpce ->
+                        vpce instanceof VpcEndpointGateway && vpce.getVpcId().equals(_vpcId))
                     .map(VpcEndpoint::getId))
             .filter(Objects::nonNull)
             .collect(ImmutableList.toImmutableList());
@@ -319,16 +316,15 @@ public class Subnet implements AwsVpcEntity, Serializable {
       routeTable
           .get()
           .getRoutes()
-          .forEach(
-              route ->
-                  processRoute(
-                      cfgNode,
-                      region,
-                      route,
-                      vpcConfigNode,
-                      vpcGatewayIds,
-                      awsConfiguration,
-                      warnings));
+          .forEach(route ->
+              processRoute(
+                  cfgNode,
+                  region,
+                  route,
+                  vpcConfigNode,
+                  vpcGatewayIds,
+                  awsConfiguration,
+                  warnings));
     }
 
     addNlbInstanceTargetInterfaces(
@@ -337,13 +333,11 @@ public class Subnet implements AwsVpcEntity, Serializable {
     // create LocationInfo for each link location on the node.
     cfgNode.setLocationInfo(
         cfgNode.getAllInterfaces().values().stream()
-            .flatMap(
-                iface ->
-                    Stream.of(
-                        immutableEntry(
-                            interfaceLocation(iface), subnetInterfaceLocationInfo(iface)),
-                        immutableEntry(
-                            interfaceLinkLocation(iface), subnetInterfaceLinkLocationInfo(iface))))
+            .flatMap(iface ->
+                Stream.of(
+                    immutableEntry(interfaceLocation(iface), subnetInterfaceLocationInfo(iface)),
+                    immutableEntry(
+                        interfaceLinkLocation(iface), subnetInterfaceLinkLocationInfo(iface))))
             .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue)));
 
     return cfgNode;
@@ -523,10 +517,9 @@ public class Subnet implements AwsVpcEntity, Serializable {
    */
   private static boolean isPublicSubnet(InternetGateway internetGateway, RouteTable routeTable) {
     return routeTable.getRoutes().stream()
-        .anyMatch(
-            route ->
-                route.getTargetType() == TargetType.Gateway
-                    && internetGateway.getId().equals(route.getTarget()));
+        .anyMatch(route ->
+            route.getTargetType() == TargetType.Gateway
+                && internetGateway.getId().equals(route.getTarget()));
   }
 
   /**
@@ -658,16 +651,15 @@ public class Subnet implements AwsVpcEntity, Serializable {
           return;
       }
     }
-    networks.forEach(
-        network ->
-            addStaticRoute(
-                cfgNode,
-                StaticRoute.builder()
-                    .setNetwork(network)
-                    .setNextHop(NextHop.legacyConverter(nexthopInterfaceName, nextHopIp))
-                    .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
-                    .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
-                    .build()));
+    networks.forEach(network ->
+        addStaticRoute(
+            cfgNode,
+            StaticRoute.builder()
+                .setNetwork(network)
+                .setNextHop(NextHop.legacyConverter(nexthopInterfaceName, nextHopIp))
+                .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
+                .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
+                .build()));
   }
 
   @Override

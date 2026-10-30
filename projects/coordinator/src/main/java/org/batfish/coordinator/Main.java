@@ -84,7 +84,7 @@ public class Main {
     questionTemplateDir.stream()
         .filter(Objects::nonNull)
         .filter(dir -> !dir.toString().isEmpty())
-        .forEach((dir) -> readQuestionTemplates(dir, questionTemplates));
+        .forEach(dir -> readQuestionTemplates(dir, questionTemplates));
     if (!verbose) {
       questionTemplates.keySet().removeIf(Main::isHiddenQuestionTemplate);
     }

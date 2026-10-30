@@ -53,10 +53,9 @@ public final class AwsConfigurationTestUtils {
         .flatMap(iface -> iface.getAllConcreteAddresses().stream())
         .findAny()
         .map(ConcreteInterfaceAddress::getIp)
-        .orElseThrow(
-            () ->
-                new IllegalArgumentException(
-                    "Could not find an interface with a concrete address on " + nodeName));
+        .orElseThrow(() ->
+            new IllegalArgumentException(
+                "Could not find an interface with a concrete address on " + nodeName));
   }
 
   /** Returns the IP address of the node. Assumes that the node has only one interface */

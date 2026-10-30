@@ -38,9 +38,8 @@ final class SimpleFieldsDataPlane implements DataPlane {
       Map<String, PerHostDataPlane> perHostDataPlane,
       Function<PerHostDataPlane, Map<String, T>> getter) {
     ImmutableTable.Builder<String, String, T> ret = ImmutableTable.builder();
-    perHostDataPlane.forEach(
-        (hostname, hostDataPlane) ->
-            getter.apply(hostDataPlane).forEach((key, t) -> ret.put(hostname, key, t)));
+    perHostDataPlane.forEach((hostname, hostDataPlane) ->
+        getter.apply(hostDataPlane).forEach((key, t) -> ret.put(hostname, key, t)));
     return ret.build();
   }
 

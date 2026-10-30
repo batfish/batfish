@@ -41,13 +41,11 @@ public final class XrRoutePolicyDeleteCommunityStatement extends RoutePolicySetS
   public Statement toSetStatement(CiscoXrConfiguration cc, Configuration c, Warnings w) {
     return _expr
         .accept(CommunitySetExprToCommunityMatchExpr.INSTANCE, c)
-        .map(
-            communityMatchExpr ->
-                _negated ? CommunityNot.not(communityMatchExpr) : communityMatchExpr)
-        .<Statement>map(
-            communityMatchExpr ->
-                new SetCommunities(
-                    new CommunitySetDifference(InputCommunities.instance(), communityMatchExpr)))
+        .map(communityMatchExpr ->
+            _negated ? CommunityNot.not(communityMatchExpr) : communityMatchExpr)
+        .<Statement>map(communityMatchExpr ->
+            new SetCommunities(
+                new CommunitySetDifference(InputCommunities.instance(), communityMatchExpr)))
         .orElse(INVALID);
   }
 

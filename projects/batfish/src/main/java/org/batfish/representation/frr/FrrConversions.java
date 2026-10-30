@@ -223,20 +223,19 @@ public final class FrrConversions {
     // FRR does not generate local routes for connected routes.
     c.getAllInterfaces()
         .values()
-        .forEach(
-            i -> {
-              ImmutableSortedMap.Builder<ConcreteInterfaceAddress, ConnectedRouteMetadata>
-                  metadata = ImmutableSortedMap.naturalOrder();
-              for (InterfaceAddress a : i.getAllAddresses()) {
-                if (!(a instanceof ConcreteInterfaceAddress)) {
-                  continue;
-                }
-                ConcreteInterfaceAddress address = (ConcreteInterfaceAddress) a;
-                metadata.put(
-                    address, ConnectedRouteMetadata.builder().setGenerateLocalRoute(false).build());
-              }
-              i.setAddressMetadata(metadata.build());
-            });
+        .forEach(i -> {
+          ImmutableSortedMap.Builder<ConcreteInterfaceAddress, ConnectedRouteMetadata> metadata =
+              ImmutableSortedMap.naturalOrder();
+          for (InterfaceAddress a : i.getAllAddresses()) {
+            if (!(a instanceof ConcreteInterfaceAddress)) {
+              continue;
+            }
+            ConcreteInterfaceAddress address = (ConcreteInterfaceAddress) a;
+            metadata.put(
+                address, ConnectedRouteMetadata.builder().setGenerateLocalRoute(false).build());
+          }
+          i.setAddressMetadata(metadata.build());
+        });
 
     convertStaticRoutes(c, frrConfiguration); // static routes in the FRR file
     convertBgpAsPathAccessLists(c, frrConfiguration.getBgpAsPathAccessLists());
@@ -257,14 +256,13 @@ public final class FrrConversions {
    */
   private static void addBgpUnnumberedLLAs(Configuration c, FrrConfiguration frrConfiguration) {
     c.getAllInterfaces()
-        .forEach(
-            (iname, iface) -> {
-              if (iface.getAllAddresses().isEmpty()
-                  && isUsedForBgpUnnumbered(iface.getName(), frrConfiguration.getBgpProcess())) {
-                iface.setAddress(LINK_LOCAL_ADDRESS);
-                iface.setAllAddresses(ImmutableSet.of(LINK_LOCAL_ADDRESS));
-              }
-            });
+        .forEach((iname, iface) -> {
+          if (iface.getAllAddresses().isEmpty()
+              && isUsedForBgpUnnumbered(iface.getName(), frrConfiguration.getBgpProcess())) {
+            iface.setAddress(LINK_LOCAL_ADDRESS);
+            iface.setAllAddresses(ImmutableSet.of(LINK_LOCAL_ADDRESS));
+          }
+        });
   }
 
   /**
@@ -273,26 +271,25 @@ public final class FrrConversions {
    */
   private static void addOspfUnnumberedLLAs(Configuration c) {
     c.getAllInterfaces()
-        .forEach(
-            (iname, iface) -> {
-              if (iface.getInterfaceType() != InterfaceType.LOOPBACK
-                  && iface.getOspfEnabled()
-                  && !iface.getOspfPassive()
-                  && iface.getOspfSettings().getNetworkType()
-                      == org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT
-                  && !iface.getOspfSettings().getOspfAddresses().getAddresses().isEmpty()
-                  && iface.getAllLinkLocalAddresses().isEmpty()) {
-                if (iface.getAddress() == null) {
-                  iface.setAddress(LINK_LOCAL_ADDRESS);
-                }
-                iface.setAllAddresses(
-                    ImmutableSet.<InterfaceAddress>builderWithExpectedSize(
-                            iface.getAllAddresses().size() + 1)
-                        .addAll(iface.getAllAddresses())
-                        .add(LINK_LOCAL_ADDRESS)
-                        .build());
-              }
-            });
+        .forEach((iname, iface) -> {
+          if (iface.getInterfaceType() != InterfaceType.LOOPBACK
+              && iface.getOspfEnabled()
+              && !iface.getOspfPassive()
+              && iface.getOspfSettings().getNetworkType()
+                  == org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT
+              && !iface.getOspfSettings().getOspfAddresses().getAddresses().isEmpty()
+              && iface.getAllLinkLocalAddresses().isEmpty()) {
+            if (iface.getAddress() == null) {
+              iface.setAddress(LINK_LOCAL_ADDRESS);
+            }
+            iface.setAllAddresses(
+                ImmutableSet.<InterfaceAddress>builderWithExpectedSize(
+                        iface.getAllAddresses().size() + 1)
+                    .addAll(iface.getAllAddresses())
+                    .add(LINK_LOCAL_ADDRESS)
+                    .build());
+          }
+        });
   }
 
   /**
@@ -308,13 +305,11 @@ public final class FrrConversions {
     // other vrf static routes
     frr.getVrfs()
         .values()
-        .forEach(
-            frrVrf ->
-                frrVrf
-                    .getStaticRoutes()
-                    .forEach(
-                        sr ->
-                            c.getVrfs().get(frrVrf.getName()).getStaticRoutes().add(sr.convert())));
+        .forEach(frrVrf ->
+            frrVrf
+                .getStaticRoutes()
+                .forEach(
+                    sr -> c.getVrfs().get(frrVrf.getName()).getStaticRoutes().add(sr.convert())));
   }
 
   /**
@@ -362,10 +357,8 @@ public final class FrrConversions {
       org.batfish.datamodel.BgpProcess proc,
       Map<Prefix, BgpVrfAddressFamilyAggregateNetworkConfiguration> aggregateNetworks) {
     aggregateNetworks.entrySet().stream()
-        .map(
-            aggregateByPrefixEntry ->
-                toBgpAggregate(
-                    aggregateByPrefixEntry.getKey(), aggregateByPrefixEntry.getValue(), c))
+        .map(aggregateByPrefixEntry ->
+            toBgpAggregate(aggregateByPrefixEntry.getKey(), aggregateByPrefixEntry.getValue(), c))
         .forEach(proc::addAggregate);
   }
 
@@ -432,25 +425,22 @@ public final class FrrConversions {
     // We make one VI process per VRF because our current datamodel requires it
     bgpProcess
         .getVrfs()
-        .forEach(
-            (vrfName, bgpVrf) ->
-                c.getVrfs().get(vrfName).setBgpProcess(toBgpProcess(c, frr, vrfName, bgpVrf, w)));
+        .forEach((vrfName, bgpVrf) ->
+            c.getVrfs().get(vrfName).setBgpProcess(toBgpProcess(c, frr, vrfName, bgpVrf, w)));
 
     // Create dud processes for other VRFs that use VNIs, so we can have proper RIBs
     c.getVrfs()
-        .forEach(
-            (vrfName, vrf) -> {
-              if ((!vrf.getLayer2Vnis().isEmpty()
-                      || !vrf.getLayer3Vnis().isEmpty()) // VRF has some VNI
-                  && vrf.getBgpProcess() == null // process does not already exist
-                  && c.getDefaultVrf().getBgpProcess() != null) { // there is a default BGP proc
-                vrf.setBgpProcess(
-                    bgpProcessBuilder()
-                        .setRouterId(c.getDefaultVrf().getBgpProcess().getRouterId())
-                        .setRedistributionPolicy(initDenyAllBgpRedistributionPolicy(c))
-                        .build());
-              }
-            });
+        .forEach((vrfName, vrf) -> {
+          if ((!vrf.getLayer2Vnis().isEmpty() || !vrf.getLayer3Vnis().isEmpty()) // VRF has some VNI
+              && vrf.getBgpProcess() == null // process does not already exist
+              && c.getDefaultVrf().getBgpProcess() != null) { // there is a default BGP proc
+            vrf.setBgpProcess(
+                bgpProcessBuilder()
+                    .setRouterId(c.getDefaultVrf().getBgpProcess().getRouterId())
+                    .setRedistributionPolicy(initDenyAllBgpRedistributionPolicy(c))
+                    .build());
+          }
+        });
 
     /*
      * Second pass: Add neighbors.
@@ -458,12 +448,11 @@ public final class FrrConversions {
      * that access other VRFs (e.g., EVPN)
      */
     Iterables.concat(ImmutableSet.of(bgpProcess.getDefaultVrf()), bgpProcess.getVrfs().values())
-        .forEach(
-            bgpVrf -> {
-              bgpVrf.getNeighbors().values().stream()
-                  .filter(neighbor -> !(neighbor instanceof BgpPeerGroupNeighbor))
-                  .forEach(neighbor -> addBgpNeighbor(c, vc, frr, bgpVrf, neighbor, w));
-            });
+        .forEach(bgpVrf -> {
+          bgpVrf.getNeighbors().values().stream()
+              .filter(neighbor -> !(neighbor instanceof BgpPeerGroupNeighbor))
+              .forEach(neighbor -> addBgpNeighbor(c, vc, frr, bgpVrf, neighbor, w));
+        });
   }
 
   private static @Nonnull org.batfish.datamodel.BgpProcess.Builder bgpProcessBuilder() {
@@ -565,21 +554,19 @@ public final class FrrConversions {
       }
       entry
           .getSets()
-          .forEach(
-              set -> {
-                if (set instanceof RouteMapSetMetric
-                    || set instanceof RouteMapSetIpNextHopLiteral) {
-                  w.redFlagf(
-                      "table-map %s: set %s modification not yet modeled"
-                          + " (route will be installed without modification)",
-                      tableMapName, set.getClass().getSimpleName());
-                } else {
-                  w.riskyRedFlag(
-                      "table-map %s: set %s has no effect"
-                          + " (only metric and next-hop are supported in table-map context)",
-                      tableMapName, set.getClass().getSimpleName());
-                }
-              });
+          .forEach(set -> {
+            if (set instanceof RouteMapSetMetric || set instanceof RouteMapSetIpNextHopLiteral) {
+              w.redFlagf(
+                  "table-map %s: set %s modification not yet modeled"
+                      + " (route will be installed without modification)",
+                  tableMapName, set.getClass().getSimpleName());
+            } else {
+              w.riskyRedFlag(
+                  "table-map %s: set %s has no effect"
+                      + " (only metric and next-hop are supported in table-map context)",
+                  tableMapName, set.getClass().getSimpleName());
+            }
+          });
     }
   }
 
@@ -1050,13 +1037,10 @@ public final class FrrConversions {
       return null;
     }
     return c.getAllInterfaces(vrf.getName()).values().stream()
-        .flatMap(
-            i ->
-                i.getAllConcreteAddresses().stream()
-                    .filter(
-                        addr ->
-                            addr.getPrefix().containsIp(remoteIp)
-                                && !addr.getIp().equals(remoteIp)))
+        .flatMap(i ->
+            i.getAllConcreteAddresses().stream()
+                .filter(addr ->
+                    addr.getPrefix().containsIp(remoteIp) && !addr.getIp().equals(remoteIp)))
         .findFirst()
         .map(ConcreteInterfaceAddress::getIp)
         .orElse(null);
@@ -1151,25 +1135,24 @@ public final class FrrConversions {
     ImmutableList.Builder<BooleanExpr> networkDisjuncts = ImmutableList.builder();
     Iterables.concat(
             bgpVrf.getNetworks().values(), bgpIpv4UnicastAddressFamily.getNetworks().values())
-        .forEach(
-            network -> {
-              @Nullable String routeMapName = network.getRouteMap();
-              ImmutableList.Builder<BooleanExpr> matchNetworkConjuncts = ImmutableList.builder();
-              /* Match network prefix */
-              matchNetworkConjuncts.add(
-                  new MatchPrefixSet(
-                      DestinationNetwork.instance(),
-                      new ExplicitPrefixSet(
-                          new PrefixSpace(PrefixRange.fromPrefix(network.getNetwork())))));
-              matchNetworkConjuncts.add(
-                  new Not(
-                      new MatchProtocol(
-                          RoutingProtocol.BGP, RoutingProtocol.IBGP, RoutingProtocol.AGGREGATE)));
-              if (routeMapName != null && routeMaps.containsKey(routeMapName)) {
-                matchNetworkConjuncts.add(new CallExpr(routeMapName));
-              }
-              networkDisjuncts.add(new Conjunction(matchNetworkConjuncts.build()));
-            });
+        .forEach(network -> {
+          @Nullable String routeMapName = network.getRouteMap();
+          ImmutableList.Builder<BooleanExpr> matchNetworkConjuncts = ImmutableList.builder();
+          /* Match network prefix */
+          matchNetworkConjuncts.add(
+              new MatchPrefixSet(
+                  DestinationNetwork.instance(),
+                  new ExplicitPrefixSet(
+                      new PrefixSpace(PrefixRange.fromPrefix(network.getNetwork())))));
+          matchNetworkConjuncts.add(
+              new Not(
+                  new MatchProtocol(
+                      RoutingProtocol.BGP, RoutingProtocol.IBGP, RoutingProtocol.AGGREGATE)));
+          if (routeMapName != null && routeMaps.containsKey(routeMapName)) {
+            matchNetworkConjuncts.add(new CallExpr(routeMapName));
+          }
+          networkDisjuncts.add(new Conjunction(matchNetworkConjuncts.build()));
+        });
     policyBuilder.addStatement(
         new If(
             "Add network statement routes to BGP",
@@ -1196,24 +1179,23 @@ public final class FrrConversions {
     Stream.concat(
             bgpVrf.getRedistributionPolicies().values().stream(),
             bgpIpv4UnicastAddressFamily.getRedistributionPolicies().values().stream())
-        .forEach(
-            redistributeProtocolPolicy -> {
-              // Get a match expression for the protocol to be redistributed
-              FrrRoutingProtocol protocol = redistributeProtocolPolicy.getProtocol();
-              MatchProtocol matchProtocol = new MatchProtocol(VI_PROTOCOLS_MAP.get(protocol));
-              BooleanExpr exportProtocolConditions = matchProtocol;
+        .forEach(redistributeProtocolPolicy -> {
+          // Get a match expression for the protocol to be redistributed
+          FrrRoutingProtocol protocol = redistributeProtocolPolicy.getProtocol();
+          MatchProtocol matchProtocol = new MatchProtocol(VI_PROTOCOLS_MAP.get(protocol));
+          BooleanExpr exportProtocolConditions = matchProtocol;
 
-              // Filter by redistribution route-map, if one is defined
-              String mapName = redistributeProtocolPolicy.getRouteMap();
-              if (mapName != null && routeMaps.containsKey(mapName)) {
-                exportProtocolConditions =
-                    new Conjunction(ImmutableList.of(matchProtocol, new CallExpr(mapName)));
-              }
+          // Filter by redistribution route-map, if one is defined
+          String mapName = redistributeProtocolPolicy.getRouteMap();
+          if (mapName != null && routeMaps.containsKey(mapName)) {
+            exportProtocolConditions =
+                new Conjunction(ImmutableList.of(matchProtocol, new CallExpr(mapName)));
+          }
 
-              exportProtocolConditions.setComment(
-                  String.format("Redistribute %s routes into BGP", protocol));
-              redistributionDisjuncts.add(exportProtocolConditions);
-            });
+          exportProtocolConditions.setComment(
+              String.format("Redistribute %s routes into BGP", protocol));
+          redistributionDisjuncts.add(exportProtocolConditions);
+        });
     redistributionPolicy.addStatement(
         new If(
             new Disjunction(redistributionDisjuncts.build()),
@@ -1267,20 +1249,19 @@ public final class FrrConversions {
       c.getDefaultVrf()
           .getLayer2Vnis()
           .values()
-          .forEach(
-              vxlan -> {
-                RouteDistinguisher rd =
-                    RouteDistinguisher.from(newProc.getRouterId(), vniToIndex.get(vxlan.getVni()));
-                ExtendedCommunity rt = toRouteTarget(localAs, vxlan.getVni());
-                // Advertise L2 VNIs
-                l2Vnis.add(
-                    Layer2VniConfig.builder()
-                        .setVni(vxlan.getVni())
-                        .setVrf(DEFAULT_VRF_NAME)
-                        .setRouteDistinguisher(rd)
-                        .setRouteTarget(rt)
-                        .build());
-              });
+          .forEach(vxlan -> {
+            RouteDistinguisher rd =
+                RouteDistinguisher.from(newProc.getRouterId(), vniToIndex.get(vxlan.getVni()));
+            ExtendedCommunity rt = toRouteTarget(localAs, vxlan.getVni());
+            // Advertise L2 VNIs
+            l2Vnis.add(
+                Layer2VniConfig.builder()
+                    .setVni(vxlan.getVni())
+                    .setVrf(DEFAULT_VRF_NAME)
+                    .setRouteDistinguisher(rd)
+                    .setRouteTarget(rt)
+                    .build());
+          });
     }
     BgpProcess bgpProcess = frr.getBgpProcess();
     // Advertise the L3 VNI per vrf if one is configured
@@ -1289,48 +1270,47 @@ public final class FrrConversions {
     // must be aware of the fact that it has a VNI and advertise it.
     c.getVrfs()
         .values()
-        .forEach(
-            innerVrf -> {
-              String innerVrfName = innerVrf.getName();
-              Vrf vsVrf = frr.getVrfs().get(innerVrfName);
-              if (vsVrf == null) {
-                return;
-              }
-              Integer l3Vni = vsVrf.getVni();
-              if (l3Vni == null) {
-                return;
-              }
-              if (!vniToIndex.containsKey(l3Vni)) {
-                w.redFlagf("vni %s for vrf %s does not exist", l3Vni, innerVrfName);
-                return;
-              }
-              RouteDistinguisher rd =
-                  RouteDistinguisher.from(
-                      Optional.ofNullable(c.getVrfs().get(innerVrfName).getBgpProcess())
-                          .map(org.batfish.datamodel.BgpProcess::getRouterId)
-                          .orElse(bgpVrf.getRouterId()),
-                      vniToIndex.get(l3Vni));
-              ExtendedCommunity rt = toRouteTarget(localAs, l3Vni);
-              // Grab the BgpVrf for the innerVrf, if it exists
-              @Nullable
-              BgpVrf innerBgpVrf =
-                  (innerVrfName.equals(DEFAULT_VRF_NAME)
-                      ? bgpProcess.getDefaultVrf()
-                      : bgpProcess.getVrfs().get(innerVrfName));
-              l3Vnis.add(
-                  Layer3VniConfig.builder()
-                      .setVni(l3Vni)
-                      .setVrf(innerVrfName)
-                      .setRouteDistinguisher(rd)
-                      .setRouteTarget(rt)
-                      .setImportRouteTarget(importRtPatternForAnyAs(l3Vni))
-                      .setAdvertiseV4Unicast(
-                          Optional.ofNullable(innerBgpVrf)
-                              .map(BgpVrf::getL2VpnEvpn)
-                              .map(BgpL2vpnEvpnAddressFamily::getAdvertiseIpv4Unicast)
-                              .isPresent())
-                      .build());
-            });
+        .forEach(innerVrf -> {
+          String innerVrfName = innerVrf.getName();
+          Vrf vsVrf = frr.getVrfs().get(innerVrfName);
+          if (vsVrf == null) {
+            return;
+          }
+          Integer l3Vni = vsVrf.getVni();
+          if (l3Vni == null) {
+            return;
+          }
+          if (!vniToIndex.containsKey(l3Vni)) {
+            w.redFlagf("vni %s for vrf %s does not exist", l3Vni, innerVrfName);
+            return;
+          }
+          RouteDistinguisher rd =
+              RouteDistinguisher.from(
+                  Optional.ofNullable(c.getVrfs().get(innerVrfName).getBgpProcess())
+                      .map(org.batfish.datamodel.BgpProcess::getRouterId)
+                      .orElse(bgpVrf.getRouterId()),
+                  vniToIndex.get(l3Vni));
+          ExtendedCommunity rt = toRouteTarget(localAs, l3Vni);
+          // Grab the BgpVrf for the innerVrf, if it exists
+          @Nullable
+          BgpVrf innerBgpVrf =
+              (innerVrfName.equals(DEFAULT_VRF_NAME)
+                  ? bgpProcess.getDefaultVrf()
+                  : bgpProcess.getVrfs().get(innerVrfName));
+          l3Vnis.add(
+              Layer3VniConfig.builder()
+                  .setVni(l3Vni)
+                  .setVrf(innerVrfName)
+                  .setRouteDistinguisher(rd)
+                  .setRouteTarget(rt)
+                  .setImportRouteTarget(importRtPatternForAnyAs(l3Vni))
+                  .setAdvertiseV4Unicast(
+                      Optional.ofNullable(innerBgpVrf)
+                          .map(BgpVrf::getL2VpnEvpn)
+                          .map(BgpL2vpnEvpnAddressFamily::getAdvertiseIpv4Unicast)
+                          .isPresent())
+                  .build());
+        });
 
     return EvpnAddressFamily.builder()
         .setL2Vnis(l2Vnis.build())
@@ -1381,17 +1361,16 @@ public final class FrrConversions {
     ospfProcess
         .getVrfs()
         .values()
-        .forEach(
-            ospfVrf -> {
-              org.batfish.datamodel.Vrf vrf = c.getVrfs().get(ospfVrf.getVrfName());
+        .forEach(ospfVrf -> {
+          org.batfish.datamodel.Vrf vrf = c.getVrfs().get(ospfVrf.getVrfName());
 
-              if (vrf == null) {
-                w.redFlagf("Vrf %s is not found.", ospfVrf.getVrfName());
-                return;
-              }
+          if (vrf == null) {
+            w.redFlagf("Vrf %s is not found.", ospfVrf.getVrfName());
+            return;
+          }
 
-              convertOspfVrf(c, vc, frr, ospfVrf, vrf, w);
-            });
+          convertOspfVrf(c, vc, frr, ospfVrf, vrf, w);
+        });
   }
 
   private static void convertOspfVrf(
@@ -1569,38 +1548,37 @@ public final class FrrConversions {
       Map<String, org.batfish.datamodel.Interface> viIfaces,
       String processId,
       Warnings w) {
-    viIfaces.forEach(
-        (ifaceName, iface) -> {
-          Optional<OspfInterface> ospfOpt = getOspfInterface(frr, ifaceName);
-          if (!ospfOpt.isPresent() || ospfOpt.get().getOspfArea() == null) {
-            return;
-          }
+    viIfaces.forEach((ifaceName, iface) -> {
+      Optional<OspfInterface> ospfOpt = getOspfInterface(frr, ifaceName);
+      if (!ospfOpt.isPresent() || ospfOpt.get().getOspfArea() == null) {
+        return;
+      }
 
-          OspfInterface ospfInterface = ospfOpt.get();
-          @Nullable Integer ospfCost = ospfInterface.getCost();
-          if (iface.getInterfaceType() == InterfaceType.LOOPBACK) {
-            // FRR does not include loopback cost, even if explicitly configured, in the LSA.
-            // See: https://github.com/FRRouting/frr/issues/2922
-            ospfCost = 0;
-          }
-          iface.setOspfSettings(
-              OspfInterfaceSettings.builder()
-                  .setPassive(
-                      Optional.ofNullable(ospfInterface.getPassive())
-                          .orElse(frr.getOspfProcess().getDefaultPassiveInterface()))
-                  .setAreaName(ospfInterface.getOspfArea())
-                  .setNetworkType(toOspfNetworkType(ospfInterface.getNetwork()))
-                  .setDeadInterval(
-                      Optional.ofNullable(ospfInterface.getDeadInterval())
-                          .orElse(DEFAULT_OSPF_DEAD_INTERVAL))
-                  .setHelloInterval(
-                      Optional.ofNullable(ospfInterface.getHelloInterval())
-                          .orElse(DEFAULT_OSPF_HELLO_INTERVAL))
-                  .setProcess(processId)
-                  .setCost(ospfCost)
-                  .setOspfAddresses(getOspfAddresses(vc, frr, ifaceName))
-                  .build());
-        });
+      OspfInterface ospfInterface = ospfOpt.get();
+      @Nullable Integer ospfCost = ospfInterface.getCost();
+      if (iface.getInterfaceType() == InterfaceType.LOOPBACK) {
+        // FRR does not include loopback cost, even if explicitly configured, in the LSA.
+        // See: https://github.com/FRRouting/frr/issues/2922
+        ospfCost = 0;
+      }
+      iface.setOspfSettings(
+          OspfInterfaceSettings.builder()
+              .setPassive(
+                  Optional.ofNullable(ospfInterface.getPassive())
+                      .orElse(frr.getOspfProcess().getDefaultPassiveInterface()))
+              .setAreaName(ospfInterface.getOspfArea())
+              .setNetworkType(toOspfNetworkType(ospfInterface.getNetwork()))
+              .setDeadInterval(
+                  Optional.ofNullable(ospfInterface.getDeadInterval())
+                      .orElse(DEFAULT_OSPF_DEAD_INTERVAL))
+              .setHelloInterval(
+                  Optional.ofNullable(ospfInterface.getHelloInterval())
+                      .orElse(DEFAULT_OSPF_HELLO_INTERVAL))
+              .setProcess(processId)
+              .setCost(ospfCost)
+              .setOspfAddresses(getOspfAddresses(vc, frr, ifaceName))
+              .build());
+    });
   }
 
   private static @Nonnull OspfAddresses getOspfAddresses(
@@ -1624,11 +1602,10 @@ public final class FrrConversions {
       Collection<String> vrfIfaceNames) {
     Map<Long, List<String>> areaInterfaces =
         vrfIfaceNames.stream()
-            .filter(
-                iface -> {
-                  Optional<OspfInterface> ospfOpt = getOspfInterface(vsConfig, iface);
-                  return ospfOpt.isPresent() && ospfOpt.get().getOspfArea() != null;
-                })
+            .filter(iface -> {
+              Optional<OspfInterface> ospfOpt = getOspfInterface(vsConfig, iface);
+              return ospfOpt.isPresent() && ospfOpt.get().getOspfArea() != null;
+            })
             .collect(
                 groupingBy(
                     iface -> getOspfInterface(vsConfig, iface).get().getOspfArea(),
@@ -1642,17 +1619,16 @@ public final class FrrConversions {
     ospfVrf
         .getAreas()
         .values()
-        .forEach(
-            vrfArea -> {
-              long num = vrfArea.getArea();
-              List<String> interfaces = areaInterfaces.get(num);
-              if (interfaces.isEmpty()) {
-                // No interfaces, skip area.
-                return;
-              }
-              OspfArea area = convertArea(c, ospfVrf.getVrfName(), vrfArea, interfaces);
-              areas.put(area.getAreaNumber(), area);
-            });
+        .forEach(vrfArea -> {
+          long num = vrfArea.getArea();
+          List<String> interfaces = areaInterfaces.get(num);
+          if (interfaces.isEmpty()) {
+            // No interfaces, skip area.
+            return;
+          }
+          OspfArea area = convertArea(c, ospfVrf.getVrfName(), vrfArea, interfaces);
+          areas.put(area.getAreaNumber(), area);
+        });
     return areas.build();
   }
 
@@ -1705,28 +1681,24 @@ public final class FrrConversions {
   public static void convertBgpCommunityLists(
       Configuration c, Map<String, BgpCommunityList> bgpCommunityLists) {
     // create CommunitySetMatchExpr for route-map match community
-    bgpCommunityLists.forEach(
-        (name, list) -> {
-          if (list instanceof BgpCommunityListStandard) {
-            c.getCommunitySetMatchExprs()
-                .put(name, toCommunitySetMatchExpr((BgpCommunityListStandard) list));
-          } else if (list instanceof BgpCommunityListExpanded) {
-            c.getCommunitySetMatchExprs()
-                .put(name, toCommunitySetMatchExpr((BgpCommunityListExpanded) list));
-          }
-        });
+    bgpCommunityLists.forEach((name, list) -> {
+      if (list instanceof BgpCommunityListStandard) {
+        c.getCommunitySetMatchExprs()
+            .put(name, toCommunitySetMatchExpr((BgpCommunityListStandard) list));
+      } else if (list instanceof BgpCommunityListExpanded) {
+        c.getCommunitySetMatchExprs()
+            .put(name, toCommunitySetMatchExpr((BgpCommunityListExpanded) list));
+      }
+    });
 
     // The following code-block is only for "set comm-list delete" statements.
-    bgpCommunityLists.forEach(
-        (name, list) -> {
-          if (list instanceof BgpCommunityListStandard) {
-            c.getCommunityMatchExprs()
-                .put(name, toCommunityMatchExpr((BgpCommunityListStandard) list));
-          } else if (list instanceof BgpCommunityListExpanded) {
-            c.getCommunityMatchExprs()
-                .put(name, toCommunityMatchExpr((BgpCommunityListExpanded) list));
-          }
-        });
+    bgpCommunityLists.forEach((name, list) -> {
+      if (list instanceof BgpCommunityListStandard) {
+        c.getCommunityMatchExprs().put(name, toCommunityMatchExpr((BgpCommunityListStandard) list));
+      } else if (list instanceof BgpCommunityListExpanded) {
+        c.getCommunityMatchExprs().put(name, toCommunityMatchExpr((BgpCommunityListExpanded) list));
+      }
+    });
   }
 
   @VisibleForTesting
@@ -1814,9 +1786,8 @@ public final class FrrConversions {
 
   private static void convertBgpAsPathAccessLists(
       Configuration c, Map<String, BgpAsPathAccessList> bgpAsPathAccessLists) {
-    bgpAsPathAccessLists.forEach(
-        (name, asPathAccessList) ->
-            c.getAsPathAccessLists().put(name, toAsPathAccessList(asPathAccessList)));
+    bgpAsPathAccessLists.forEach((name, asPathAccessList) ->
+        c.getAsPathAccessLists().put(name, toAsPathAccessList(asPathAccessList)));
   }
 
   @VisibleForTesting
@@ -1833,10 +1804,8 @@ public final class FrrConversions {
 
   private static void convertIpPrefixLists(
       Configuration c, Map<String, IpPrefixList> ipPrefixLists, String vendorConfigFilename) {
-    ipPrefixLists.forEach(
-        (name, ipPrefixList) ->
-            c.getRouteFilterLists()
-                .put(name, toRouteFilterList(ipPrefixList, vendorConfigFilename)));
+    ipPrefixLists.forEach((name, ipPrefixList) ->
+        c.getRouteFilterLists().put(name, toRouteFilterList(ipPrefixList, vendorConfigFilename)));
   }
 
   @VisibleForTesting

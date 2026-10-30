@@ -119,9 +119,8 @@ class PacketPolicyToBdd {
   private static List<Edge> buildEdges(
       Table<StateExpr, StateExpr, List<Transition>> transitionTable) {
     return transitionTable.cellSet().stream()
-        .map(
-            cell ->
-                new Edge(cell.getRowKey(), cell.getColumnKey(), Transitions.or(cell.getValue())))
+        .map(cell ->
+            new Edge(cell.getRowKey(), cell.getColumnKey(), Transitions.or(cell.getValue())))
         .collect(ImmutableList.toImmutableList());
   }
 

@@ -2449,11 +2449,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           ctx.hello_ms != null ? toInteger(ctx.hello_ms) : (toInteger(ctx.hello_sec) * 1000);
       holdTime = ctx.hold_ms != null ? toInteger(ctx.hold_ms) : (toInteger(ctx.hold_sec) * 1000);
     }
-    _currentHsrpGroups.forEach(
-        hsrpGroup -> {
-          hsrpGroup.setHelloTime(helloTime);
-          hsrpGroup.setHoldTime(holdTime);
-        });
+    _currentHsrpGroups.forEach(hsrpGroup -> {
+      hsrpGroup.setHelloTime(helloTime);
+      hsrpGroup.setHoldTime(holdTime);
+    });
   }
 
   @Override
@@ -2464,15 +2463,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     HsrpTrackAction trackAction = toTrackAction(ctx);
     _currentHsrpGroups.stream()
         .map(h -> h.getTrackActions())
-        .forEach(
-            trackActions -> {
-              if (_no) {
-                // 'no' command always removes setting regardless of whether details match
-                trackActions.remove(track);
-              } else {
-                trackActions.put(track, trackAction);
-              }
-            });
+        .forEach(trackActions -> {
+          if (_no) {
+            // 'no' command always removes setting regardless of whether details match
+            trackActions.remove(track);
+          } else {
+            trackActions.put(track, trackAction);
+          }
+        });
   }
 
   private @Nonnull HsrpTrackAction toTrackAction(Standby_group_trackContext ctx) {
@@ -2927,7 +2925,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentServiceObjectGroup =
           _configuration
               .getServiceObjectGroups()
-              .computeIfAbsent(name, (groupName) -> new ServiceObjectGroup(groupName, protocol));
+              .computeIfAbsent(name, groupName -> new ServiceObjectGroup(groupName, protocol));
       _configuration.getObjectGroups().put(name, _currentServiceObjectGroup);
       _configuration.defineStructure(SERVICE_OBJECT_GROUP, name, ctx);
     }
@@ -3200,7 +3198,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             .getOspfProcesses()
             .computeIfAbsent(
                 _currentOspfProcess.getName(),
-                (procName) -> {
+                procName -> {
                   OspfProcess p = new OspfProcess(procName, _format);
                   p.setRouterId(routerId);
                   return p;
@@ -3596,7 +3594,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _currentOspfProcess =
         currentVrf()
             .getOspfProcesses()
-            .computeIfAbsent(procName, (pName) -> new OspfProcess(pName, _format));
+            .computeIfAbsent(procName, pName -> new OspfProcess(pName, _format));
   }
 
   @Override
@@ -6047,13 +6045,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   /** Returns the {@link VrrpGroup}s for {@code _currentVrrpGroupNum}, creating them if needed. */
   private @Nonnull List<VrrpGroup> currentVrrpGroups() {
     return _currentInterfaces.stream()
-        .map(
-            iface ->
-                _configuration
-                    .getVrrpGroups()
-                    .computeIfAbsent(iface.getName(), n -> new VrrpInterface())
-                    .getVrrpGroups()
-                    .computeIfAbsent(_currentVrrpGroupNum, VrrpGroup::new))
+        .map(iface ->
+            _configuration
+                .getVrrpGroups()
+                .computeIfAbsent(iface.getName(), n -> new VrrpInterface())
+                .getVrrpGroups()
+                .computeIfAbsent(_currentVrrpGroupNum, VrrpGroup::new))
         .collect(ImmutableList.toImmutableList());
   }
 

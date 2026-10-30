@@ -158,15 +158,13 @@ public class RoutesAnswererUtil {
     Multiset<Row> rows = HashMultiset.create();
     Map<String, ColumnMetadata> columnMetadataMap =
         getTableMetadata(RibProtocol.MAIN).toColumnMap();
-    matchingVrfsByNode.forEach(
-        (hostname, vrfName) ->
-            Optional.ofNullable(ribs.get(hostname, vrfName))
-                .map(rib -> getMatchingPrefixRoutes(prefixMatchType, network, rib))
-                .orElse(Stream.empty())
-                .filter(route -> protocolSpec.getProtocols().contains(route.getProtocol()))
-                .forEach(
-                    route ->
-                        rows.add(abstractRouteToRow(hostname, vrfName, route, columnMetadataMap))));
+    matchingVrfsByNode.forEach((hostname, vrfName) ->
+        Optional.ofNullable(ribs.get(hostname, vrfName))
+            .map(rib -> getMatchingPrefixRoutes(prefixMatchType, network, rib))
+            .orElse(Stream.empty())
+            .filter(route -> protocolSpec.getProtocols().contains(route.getProtocol()))
+            .forEach(route ->
+                rows.add(abstractRouteToRow(hostname, vrfName, route, columnMetadataMap))));
     return rows;
   }
 
@@ -229,27 +227,24 @@ public class RoutesAnswererUtil {
       PrefixMatchType prefixMatchType) {
     Multiset<Row> rows = HashMultiset.create();
     Map<String, ColumnMetadata> columnMetadataMap = getTableMetadata(RibProtocol.BGP).toColumnMap();
-    matchingVrfsByNode.forEach(
-        (hostname, vrfName) ->
-            getMatchingRoutes(
-                    firstNonNull(bgpBestRoutes.get(hostname, vrfName), ImmutableSet.of()),
-                    firstNonNull(bgpBackupRoutes.get(hostname, vrfName), ImmutableSet.of()),
-                    network,
-                    routeStatuses,
-                    prefixMatchType)
-                .forEach(
-                    (status, routeStream) ->
-                        routeStream
-                            .filter(r -> protocolSpec.getProtocols().contains(r.getProtocol()))
-                            .forEach(
-                                route ->
-                                    rows.add(
-                                        bgpRouteToRow(
-                                            hostname,
-                                            vrfName,
-                                            route,
-                                            ImmutableSet.of(status),
-                                            columnMetadataMap)))));
+    matchingVrfsByNode.forEach((hostname, vrfName) ->
+        getMatchingRoutes(
+                firstNonNull(bgpBestRoutes.get(hostname, vrfName), ImmutableSet.of()),
+                firstNonNull(bgpBackupRoutes.get(hostname, vrfName), ImmutableSet.of()),
+                network,
+                routeStatuses,
+                prefixMatchType)
+            .forEach((status, routeStream) ->
+                routeStream
+                    .filter(r -> protocolSpec.getProtocols().contains(r.getProtocol()))
+                    .forEach(route ->
+                        rows.add(
+                            bgpRouteToRow(
+                                hostname,
+                                vrfName,
+                                route,
+                                ImmutableSet.of(status),
+                                columnMetadataMap)))));
     return rows;
   }
 
@@ -278,27 +273,24 @@ public class RoutesAnswererUtil {
     Multiset<Row> rows = HashMultiset.create();
     Map<String, ColumnMetadata> columnMetadataMap =
         getTableMetadata(RibProtocol.EVPN).toColumnMap();
-    matchingVrfsByNode.forEach(
-        (hostname, vrfName) ->
-            getMatchingRoutes(
-                    firstNonNull(evpnBestRoutes.get(hostname, vrfName), ImmutableSet.of()),
-                    firstNonNull(evpnBackupRoutes.get(hostname, vrfName), ImmutableSet.of()),
-                    network,
-                    routeStatuses,
-                    prefixMatchType)
-                .forEach(
-                    (status, routeStream) ->
-                        routeStream
-                            .filter(r -> protocolSpec.getProtocols().contains(r.getProtocol()))
-                            .forEach(
-                                route ->
-                                    rows.add(
-                                        evpnRouteToRow(
-                                            hostname,
-                                            vrfName,
-                                            route,
-                                            ImmutableSet.of(status),
-                                            columnMetadataMap)))));
+    matchingVrfsByNode.forEach((hostname, vrfName) ->
+        getMatchingRoutes(
+                firstNonNull(evpnBestRoutes.get(hostname, vrfName), ImmutableSet.of()),
+                firstNonNull(evpnBackupRoutes.get(hostname, vrfName), ImmutableSet.of()),
+                network,
+                routeStatuses,
+                prefixMatchType)
+            .forEach((status, routeStream) ->
+                routeStream
+                    .filter(r -> protocolSpec.getProtocols().contains(r.getProtocol()))
+                    .forEach(route ->
+                        rows.add(
+                            evpnRouteToRow(
+                                hostname,
+                                vrfName,
+                                route,
+                                ImmutableSet.of(status),
+                                columnMetadataMap)))));
     return rows;
   }
 
@@ -828,26 +820,23 @@ public class RoutesAnswererUtil {
         }
         FinalMainRib rib = entry.getValue();
         rib.getRoutes().stream()
-            .filter(
-                route ->
-                    (network == null || network.equals(route.getNetwork()))
-                        && protocolSpec.getProtocols().contains(route.getProtocol()))
-            .forEach(
-                route ->
-                    routesGroups
-                        .computeIfAbsent(
-                            new RouteRowKey(node, vrfName, route.getNetwork()),
-                            k -> new HashMap<>())
-                        .computeIfAbsent(
-                            new MainRibRouteRowSecondaryKey(
-                                route.getNextHop(), route.getProtocol().protocolName()),
-                            k -> new TreeSet<>())
-                        .add(
-                            RouteRowAttribute.builder()
-                                .setAdminDistance(route.getAdministrativeCost())
-                                .setMetric(route.getMetric())
-                                .setTag(route.getTag())
-                                .build()));
+            .filter(route ->
+                (network == null || network.equals(route.getNetwork()))
+                    && protocolSpec.getProtocols().contains(route.getProtocol()))
+            .forEach(route ->
+                routesGroups
+                    .computeIfAbsent(
+                        new RouteRowKey(node, vrfName, route.getNetwork()), k -> new HashMap<>())
+                    .computeIfAbsent(
+                        new MainRibRouteRowSecondaryKey(
+                            route.getNextHop(), route.getProtocol().protocolName()),
+                        k -> new TreeSet<>())
+                    .add(
+                        RouteRowAttribute.builder()
+                            .setAdminDistance(route.getAdministrativeCost())
+                            .setMetric(route.getMetric())
+                            .setTag(route.getTag())
+                            .build()));
       }
     }
     return routesGroups;
@@ -893,39 +882,30 @@ public class RoutesAnswererUtil {
       routesByStatus.put(BACKUP, bgpBackupRoutes);
     }
 
-    matchingNodes.forEach(
-        hostname ->
-            routesByStatus.forEach(
-                (status, statusRoutes) ->
-                    statusRoutes.row(hostname).entrySet().stream()
-                        .filter(vrfEntry -> compiledVrfRegex.matcher(vrfEntry.getKey()).matches())
-                        .forEach(
-                            vrfEntry ->
-                                vrfEntry.getValue().stream()
-                                    .filter(
-                                        route ->
-                                            (network == null || network.equals(route.getNetwork()))
-                                                && protocolSpec
-                                                    .getProtocols()
-                                                    .contains(route.getProtocol()))
-                                    .forEach(
-                                        route ->
-                                            routesGroups
-                                                .computeIfAbsent(
-                                                    new RouteRowKey(
-                                                        hostname,
-                                                        vrfEntry.getKey(),
-                                                        route.getNetwork()),
-                                                    k -> new HashMap<>())
-                                                .computeIfAbsent(
-                                                    new BgpRouteRowSecondaryKey(
-                                                        route.getNextHop(),
-                                                        route.getProtocol().protocolName(),
-                                                        LegacyReceivedFromToIpConverter.convert(
-                                                            route.getReceivedFrom()),
-                                                        route.getPathId()),
-                                                    k -> new TreeSet<>())
-                                                .add(bgpRouteToRowAttribute(route, status))))));
+    matchingNodes.forEach(hostname ->
+        routesByStatus.forEach((status, statusRoutes) ->
+            statusRoutes.row(hostname).entrySet().stream()
+                .filter(vrfEntry -> compiledVrfRegex.matcher(vrfEntry.getKey()).matches())
+                .forEach(vrfEntry ->
+                    vrfEntry.getValue().stream()
+                        .filter(route ->
+                            (network == null || network.equals(route.getNetwork()))
+                                && protocolSpec.getProtocols().contains(route.getProtocol()))
+                        .forEach(route ->
+                            routesGroups
+                                .computeIfAbsent(
+                                    new RouteRowKey(
+                                        hostname, vrfEntry.getKey(), route.getNetwork()),
+                                    k -> new HashMap<>())
+                                .computeIfAbsent(
+                                    new BgpRouteRowSecondaryKey(
+                                        route.getNextHop(),
+                                        route.getProtocol().protocolName(),
+                                        LegacyReceivedFromToIpConverter.convert(
+                                            route.getReceivedFrom()),
+                                        route.getPathId()),
+                                    k -> new TreeSet<>())
+                                .add(bgpRouteToRowAttribute(route, status))))));
 
     return routesGroups;
   }
@@ -970,39 +950,30 @@ public class RoutesAnswererUtil {
       routesByStatus.put(BACKUP, evpnBackupRoutes);
     }
 
-    matchingNodes.forEach(
-        hostname ->
-            routesByStatus.forEach(
-                (status, statusRoutes) ->
-                    statusRoutes.row(hostname).entrySet().stream()
-                        .filter(vrfEntry -> compiledVrfRegex.matcher(vrfEntry.getKey()).matches())
-                        .forEach(
-                            vrfEntry ->
-                                vrfEntry.getValue().stream()
-                                    .filter(
-                                        route ->
-                                            (network == null || network.equals(route.getNetwork()))
-                                                && protocolSpec
-                                                    .getProtocols()
-                                                    .contains(route.getProtocol()))
-                                    .forEach(
-                                        route ->
-                                            routesGroups
-                                                .computeIfAbsent(
-                                                    new RouteRowKey(
-                                                        hostname,
-                                                        vrfEntry.getKey(),
-                                                        route.getNetwork()),
-                                                    k -> new HashMap<>())
-                                                .computeIfAbsent(
-                                                    new EvpnRouteRowSecondaryKey(
-                                                        route.getNextHop(),
-                                                        route.getProtocol().protocolName(),
-                                                        route.getReceivedFrom(),
-                                                        route.getPathId(),
-                                                        route.getRouteDistinguisher()),
-                                                    k -> new TreeSet<>())
-                                                .add(bgpRouteToRowAttribute(route, status))))));
+    matchingNodes.forEach(hostname ->
+        routesByStatus.forEach((status, statusRoutes) ->
+            statusRoutes.row(hostname).entrySet().stream()
+                .filter(vrfEntry -> compiledVrfRegex.matcher(vrfEntry.getKey()).matches())
+                .forEach(vrfEntry ->
+                    vrfEntry.getValue().stream()
+                        .filter(route ->
+                            (network == null || network.equals(route.getNetwork()))
+                                && protocolSpec.getProtocols().contains(route.getProtocol()))
+                        .forEach(route ->
+                            routesGroups
+                                .computeIfAbsent(
+                                    new RouteRowKey(
+                                        hostname, vrfEntry.getKey(), route.getNetwork()),
+                                    k -> new HashMap<>())
+                                .computeIfAbsent(
+                                    new EvpnRouteRowSecondaryKey(
+                                        route.getNextHop(),
+                                        route.getProtocol().protocolName(),
+                                        route.getReceivedFrom(),
+                                        route.getPathId(),
+                                        route.getRouteDistinguisher()),
+                                    k -> new TreeSet<>())
+                                .add(bgpRouteToRowAttribute(route, status))))));
 
     return routesGroups;
   }
@@ -1120,41 +1091,39 @@ public class RoutesAnswererUtil {
           listDiffs.addAll(getDiffPerKey(routeRowKey, baseAttrsForRowKey, refAttrsForRowKey));
         }
       } else if (baseAttrsForRowKey != null) {
-        baseAttrsForRowKey.forEach(
-            (key, value) -> {
-              // the nested list contains list of pairs of RouteRowAttributes with fist element and
-              // second element of the pair from base and reference snapshots respectively, second
-              // element is null to account for absence of this network in the reference snapshot
-              List<List<RouteRowAttribute>> diffMatrix =
-                  value.stream()
-                      .map(routeRowAttribute -> Lists.newArrayList(routeRowAttribute, null))
-                      .collect(Collectors.toList());
-              listDiffs.add(
-                  new DiffRoutesOutput(
-                      routeRowKey,
-                      key,
-                      KeyPresenceStatus.ONLY_IN_SNAPSHOT,
-                      diffMatrix,
-                      KeyPresenceStatus.ONLY_IN_SNAPSHOT));
-            });
+        baseAttrsForRowKey.forEach((key, value) -> {
+          // the nested list contains list of pairs of RouteRowAttributes with fist element and
+          // second element of the pair from base and reference snapshots respectively, second
+          // element is null to account for absence of this network in the reference snapshot
+          List<List<RouteRowAttribute>> diffMatrix =
+              value.stream()
+                  .map(routeRowAttribute -> Lists.newArrayList(routeRowAttribute, null))
+                  .collect(Collectors.toList());
+          listDiffs.add(
+              new DiffRoutesOutput(
+                  routeRowKey,
+                  key,
+                  KeyPresenceStatus.ONLY_IN_SNAPSHOT,
+                  diffMatrix,
+                  KeyPresenceStatus.ONLY_IN_SNAPSHOT));
+        });
       } else {
-        refAttrsForRowKey.forEach(
-            (key, value) -> {
-              // the nested list contains list of pairs of RouteRowAttributes with fist element and
-              // second element of the pair from base and reference snapshots respectively, first
-              // element is null to account for absence of this network in the base snapshot
-              List<List<RouteRowAttribute>> diffMatrix =
-                  value.stream()
-                      .map(routeRowAttribute -> Lists.newArrayList(null, routeRowAttribute))
-                      .collect(Collectors.toList());
-              listDiffs.add(
-                  new DiffRoutesOutput(
-                      routeRowKey,
-                      key,
-                      KeyPresenceStatus.ONLY_IN_REFERENCE,
-                      diffMatrix,
-                      KeyPresenceStatus.ONLY_IN_REFERENCE));
-            });
+        refAttrsForRowKey.forEach((key, value) -> {
+          // the nested list contains list of pairs of RouteRowAttributes with fist element and
+          // second element of the pair from base and reference snapshots respectively, first
+          // element is null to account for absence of this network in the base snapshot
+          List<List<RouteRowAttribute>> diffMatrix =
+              value.stream()
+                  .map(routeRowAttribute -> Lists.newArrayList(null, routeRowAttribute))
+                  .collect(Collectors.toList());
+          listDiffs.add(
+              new DiffRoutesOutput(
+                  routeRowKey,
+                  key,
+                  KeyPresenceStatus.ONLY_IN_REFERENCE,
+                  diffMatrix,
+                  KeyPresenceStatus.ONLY_IN_REFERENCE));
+        });
       }
     }
     return listDiffs;

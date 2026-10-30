@@ -375,21 +375,20 @@ public class FortiosConfigurationTest {
             Address.Type.FQDN,
             Address.Type.GEOGRAPHY,
             Address.Type.MAC)
-        .forEach(
-            unsupportedType -> {
-              Address address = new Address("name", new BatfishUUID(1));
-              address.setType(unsupportedType);
-              Warnings w = new Warnings(true, true, true);
-              assertThat(toIpSpace(address, w), equalTo(EmptyIpSpace.INSTANCE));
-              assertThat(
-                  w.getRedFlagWarnings(),
-                  contains(
-                      hasText(
-                          String.format(
-                              "Addresses of type %s are unsupported and will be considered"
-                                  + " unmatchable.",
-                              unsupportedType))));
-            });
+        .forEach(unsupportedType -> {
+          Address address = new Address("name", new BatfishUUID(1));
+          address.setType(unsupportedType);
+          Warnings w = new Warnings(true, true, true);
+          assertThat(toIpSpace(address, w), equalTo(EmptyIpSpace.INSTANCE));
+          assertThat(
+              w.getRedFlagWarnings(),
+              contains(
+                  hasText(
+                      String.format(
+                          "Addresses of type %s are unsupported and will be considered"
+                              + " unmatchable.",
+                          unsupportedType))));
+        });
   }
 
   @Test

@@ -64,30 +64,25 @@ class PrefixTracerAnswerer extends Answerer {
 
     prefixTracingInfo.keySet().stream()
         .filter(nodes::contains)
-        .forEach(
-            node -> {
-              SortedMap<String, Map<Prefix, Map<String, Set<String>>>> vrfs =
-                  prefixTracingInfo.get(node);
-              vrfs.forEach(
-                  (vrf, prefixes) ->
-                      prefixes.forEach(
-                          (prefix, actions) -> {
-                            if (desiredPrefix == null || prefix.equals(desiredPrefix)) {
-                              actions.forEach(
-                                  (action, neighbors) ->
-                                      neighbors.forEach(
-                                          neighbor ->
-                                              rows.add(
-                                                  Row.builder()
-                                                      .put(COL_NODE, new Node(node))
-                                                      .put(COL_VRF, vrf)
-                                                      .put(COL_PEER, new Node(neighbor))
-                                                      .put(COL_ACTION, action)
-                                                      .put(COL_PREFIX, prefix)
-                                                      .build())));
-                            }
-                          }));
-            });
+        .forEach(node -> {
+          SortedMap<String, Map<Prefix, Map<String, Set<String>>>> vrfs =
+              prefixTracingInfo.get(node);
+          vrfs.forEach((vrf, prefixes) ->
+              prefixes.forEach((prefix, actions) -> {
+                if (desiredPrefix == null || prefix.equals(desiredPrefix)) {
+                  actions.forEach((action, neighbors) ->
+                      neighbors.forEach(neighbor ->
+                          rows.add(
+                              Row.builder()
+                                  .put(COL_NODE, new Node(node))
+                                  .put(COL_VRF, vrf)
+                                  .put(COL_PEER, new Node(neighbor))
+                                  .put(COL_ACTION, action)
+                                  .put(COL_PREFIX, prefix)
+                                  .build())));
+                }
+              }));
+        });
     return rows;
   }
 

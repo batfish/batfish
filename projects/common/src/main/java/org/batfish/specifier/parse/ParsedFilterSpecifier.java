@@ -53,11 +53,10 @@ public final class ParsedFilterSpecifier implements FilterSpecifier {
                * {@link NodeSpecifier#resolve(SpecifierContext)} outputs such keys.
                */
               .filter(n -> n.equals(_node))
-              .flatMap(
-                  n ->
-                      (new ParsedFilterSpecifier(filterWithNodeFilterAstNode.getFilterAstNode())
-                              .resolve(n, _ctxt))
-                          .stream())
+              .flatMap(n ->
+                  (new ParsedFilterSpecifier(filterWithNodeFilterAstNode.getFilterAstNode())
+                          .resolve(n, _ctxt))
+                      .stream())
               .collect(ImmutableSet.toImmutableSet());
     }
 

@@ -484,38 +484,35 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
   }
 
   private void applyVrrp(Configuration c) {
-    _vrrpGroups.forEach(
-        (ifaceName, vrrpInterface) -> {
-          org.batfish.datamodel.Interface iface = c.getAllInterfaces().get(ifaceName);
-          if (iface != null) {
-            vrrpInterface
-                .getVrrpGroups()
-                .forEach(
-                    (vrid, vrrpGroup) -> {
-                      org.batfish.datamodel.VrrpGroup.Builder newGroup =
-                          org.batfish.datamodel.VrrpGroup.builder();
-                      newGroup.setPreempt(vrrpGroup.getPreempt());
-                      newGroup.setPriority(vrrpGroup.getPriority());
-                      ConcreteInterfaceAddress ifaceAddress = iface.getConcreteAddress();
-                      if (ifaceAddress != null) {
-                        newGroup.setSourceAddress(ifaceAddress);
-                        Ip virtualAddress = vrrpGroup.getVirtualAddress();
-                        if (virtualAddress != null) {
-                          newGroup.setVirtualAddresses(ifaceName, virtualAddress);
-                        } else {
-                          _w.redFlag(
-                              "No virtual address set for VRRP on interface: '" + ifaceName + "'");
-                        }
-                      } else {
-                        _w.redFlag(
-                            "Could not determine prefix length of VRRP address on interface '"
-                                + ifaceName
-                                + "' due to missing prefix");
-                      }
-                      iface.addVrrpGroup(vrid, newGroup.build());
-                    });
-          }
-        });
+    _vrrpGroups.forEach((ifaceName, vrrpInterface) -> {
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get(ifaceName);
+      if (iface != null) {
+        vrrpInterface
+            .getVrrpGroups()
+            .forEach((vrid, vrrpGroup) -> {
+              org.batfish.datamodel.VrrpGroup.Builder newGroup =
+                  org.batfish.datamodel.VrrpGroup.builder();
+              newGroup.setPreempt(vrrpGroup.getPreempt());
+              newGroup.setPriority(vrrpGroup.getPriority());
+              ConcreteInterfaceAddress ifaceAddress = iface.getConcreteAddress();
+              if (ifaceAddress != null) {
+                newGroup.setSourceAddress(ifaceAddress);
+                Ip virtualAddress = vrrpGroup.getVirtualAddress();
+                if (virtualAddress != null) {
+                  newGroup.setVirtualAddresses(ifaceName, virtualAddress);
+                } else {
+                  _w.redFlag("No virtual address set for VRRP on interface: '" + ifaceName + "'");
+                }
+              } else {
+                _w.redFlag(
+                    "Could not determine prefix length of VRRP address on interface '"
+                        + ifaceName
+                        + "' due to missing prefix");
+              }
+              iface.addVrrpGroup(vrid, newGroup.build());
+            });
+      }
+    });
   }
 
   public Map<String, AsPathSet> getAsPathSets() {
@@ -932,37 +929,32 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
     // create origination prefilter from listed advertised networks
     proc.getIpNetworks()
-        .forEach(
-            (prefix, bgpNetwork) -> {
-              String mapName = bgpNetwork.getRouteMapName();
-              if (mapName != null) {
-                // TODO update to route-policy if valid, or delete grammar and VS
-              }
-              Conjunction exportNetworkConditions = new Conjunction();
-              PrefixSpace space = new PrefixSpace();
-              space.addPrefix(prefix);
-              newBgpProcess.addToOriginationSpace(space);
-              exportNetworkConditions
-                  .getConjuncts()
-                  .add(
-                      new MatchPrefixSet(
-                          DestinationNetwork.instance(), new ExplicitPrefixSet(space)));
-              exportNetworkConditions
-                  .getConjuncts()
-                  .add(
-                      new Not(
-                          new MatchProtocol(
-                              RoutingProtocol.BGP,
-                              RoutingProtocol.IBGP,
-                              RoutingProtocol.AGGREGATE)));
-              redistributionPolicy.addStatement(
-                  new If(
-                      "Add network statement routes to BGP",
-                      exportNetworkConditions,
-                      ImmutableList.of(
-                          new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
-                          ExitAccept.toStaticStatement())));
-            });
+        .forEach((prefix, bgpNetwork) -> {
+          String mapName = bgpNetwork.getRouteMapName();
+          if (mapName != null) {
+            // TODO update to route-policy if valid, or delete grammar and VS
+          }
+          Conjunction exportNetworkConditions = new Conjunction();
+          PrefixSpace space = new PrefixSpace();
+          space.addPrefix(prefix);
+          newBgpProcess.addToOriginationSpace(space);
+          exportNetworkConditions
+              .getConjuncts()
+              .add(new MatchPrefixSet(DestinationNetwork.instance(), new ExplicitPrefixSet(space)));
+          exportNetworkConditions
+              .getConjuncts()
+              .add(
+                  new Not(
+                      new MatchProtocol(
+                          RoutingProtocol.BGP, RoutingProtocol.IBGP, RoutingProtocol.AGGREGATE)));
+          redistributionPolicy.addStatement(
+              new If(
+                  "Add network statement routes to BGP",
+                  exportNetworkConditions,
+                  ImmutableList.of(
+                      new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
+                      ExitAccept.toStaticStatement())));
+        });
 
     // Finalize redistribution policy and attach to process
     redistributionPolicy.addStatement(Statements.ExitReject.toStaticStatement()).build();
@@ -1091,16 +1083,15 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         ImmutableSortedMap.naturalOrder();
     group
         .getInterfaceTracks()
-        .forEach(
-            (ifaceName, ifaceTrack) -> {
-              if (!_interfaces.containsKey(ifaceName)) {
-                return;
-              }
-              int decrement =
-                  firstNonNull(ifaceTrack.getDecrementPriority(), DEFAULT_HSRP_PRIORITY_DECREMENT);
-              String trackMethodName = generateVrrpOrHsrpTrackInterfaceDownIfNeeded(ifaceName, c);
-              trackActionsBuilder.put(trackMethodName, new DecrementPriority(decrement));
-            });
+        .forEach((ifaceName, ifaceTrack) -> {
+          if (!_interfaces.containsKey(ifaceName)) {
+            return;
+          }
+          int decrement =
+              firstNonNull(ifaceTrack.getDecrementPriority(), DEFAULT_HSRP_PRIORITY_DECREMENT);
+          String trackMethodName = generateVrrpOrHsrpTrackInterfaceDownIfNeeded(ifaceName, c);
+          trackActionsBuilder.put(trackMethodName, new DecrementPriority(decrement));
+        });
     ret.setTrackActions(trackActionsBuilder.build());
     // TODO: auth, timers
     return ret.build();
@@ -1129,9 +1120,8 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     }
 
     return v4.getGroups().values().stream()
-        .map(
-            group ->
-                new SimpleImmutableEntry<>(group.getNumber(), toHsrpGroup(group, sourceAddress, c)))
+        .map(group ->
+            new SimpleImmutableEntry<>(group.getNumber(), toHsrpGroup(group, sourceAddress, c)))
         .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
   }
 
@@ -1730,9 +1720,8 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     // policies for redistributing routes
     ospfExportStatements.addAll(
         proc.getRedistributionPolicies().values().stream()
-            .map(
-                policy ->
-                    convertOspfRedistributionPolicy(policy, proc, c.getRoutingPolicies().keySet()))
+            .map(policy ->
+                convertOspfRedistributionPolicy(policy, proc, c.getRoutingPolicies().keySet()))
             .collect(Collectors.toList()));
 
     return newProcess;
@@ -2054,13 +2043,12 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     }
 
     // convert as-path-sets to vendor independent format
-    _asPathSets.forEach(
-        (name, asPathSet) -> {
-          c.getAsPathMatchExprs()
-              .put(computeDedupedAsPathMatchExprName(name), toAsPathMatchExpr(asPathSet, true));
-          c.getAsPathMatchExprs()
-              .put(computeOriginalAsPathMatchExprName(name), toAsPathMatchExpr(asPathSet, false));
-        });
+    _asPathSets.forEach((name, asPathSet) -> {
+      c.getAsPathMatchExprs()
+          .put(computeDedupedAsPathMatchExprName(name), toAsPathMatchExpr(asPathSet, true));
+      c.getAsPathMatchExprs()
+          .put(computeOriginalAsPathMatchExprName(name), toAsPathMatchExpr(asPathSet, false));
+    });
 
     convertCommunitySets(c);
     convertExtcommunitySetRts(c);
@@ -2098,15 +2086,12 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         (name, networkObjectGroup) -> c.getIpSpaces().put(name, toIpSpace(networkObjectGroup)));
     _networkObjectGroups
         .keySet()
-        .forEach(
-            name ->
-                c.getIpSpaceMetadata()
-                    .put(
-                        name,
-                        new IpSpaceMetadata(
-                            name,
-                            CiscoXrStructureType.NETWORK_OBJECT_GROUP.getDescription(),
-                            null)));
+        .forEach(name ->
+            c.getIpSpaceMetadata()
+                .put(
+                    name,
+                    new IpSpaceMetadata(
+                        name, CiscoXrStructureType.NETWORK_OBJECT_GROUP.getDescription(), null)));
 
     // convert RoutePolicy to RoutingPolicy
     for (RoutePolicy routePolicy : _routePolicies.values()) {
@@ -2115,79 +2100,77 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     }
 
     // convert interfaces
-    _interfaces.forEach(
-        (ifaceName, iface) -> {
-          org.batfish.datamodel.Interface newInterface =
-              toInterface(ifaceName, iface, c.getIpAccessLists(), c);
-          String vrfName = iface.getVrf();
-          if (vrfName == null) {
-            throw new BatfishException("Missing vrf name for iface: '" + ifaceName + "'");
-          }
-          c.getAllInterfaces().put(ifaceName, newInterface);
-        });
+    _interfaces.forEach((ifaceName, iface) -> {
+      org.batfish.datamodel.Interface newInterface =
+          toInterface(ifaceName, iface, c.getIpAccessLists(), c);
+      String vrfName = iface.getVrf();
+      if (vrfName == null) {
+        throw new BatfishException("Missing vrf name for iface: '" + ifaceName + "'");
+      }
+      c.getAllInterfaces().put(ifaceName, newInterface);
+    });
     /*
      * Second pass over the interfaces to set dependency pointers correctly for Bundle-Ether
      * and tunnel interfaces
      * TODO: VLAN interfaces
      */
-    _interfaces.forEach(
-        (ifaceName, iface) -> {
-          // Physical interface -> Bundle-Ether for its Bundle ID
-          Integer bundleId = iface.getBundleId();
-          if (bundleId != null) {
-            String bundleName = String.format("Bundle-Ether%d", bundleId);
-            org.batfish.datamodel.Interface bundleIface = c.getAllInterfaces().get(bundleName);
-            if (bundleIface != null) {
-              bundleIface.addDependency(new Dependency(ifaceName, DependencyType.AGGREGATE));
-            }
+    _interfaces.forEach((ifaceName, iface) -> {
+      // Physical interface -> Bundle-Ether for its Bundle ID
+      Integer bundleId = iface.getBundleId();
+      if (bundleId != null) {
+        String bundleName = String.format("Bundle-Ether%d", bundleId);
+        org.batfish.datamodel.Interface bundleIface = c.getAllInterfaces().get(bundleName);
+        if (bundleIface != null) {
+          bundleIface.addDependency(new Dependency(ifaceName, DependencyType.AGGREGATE));
+        }
+      }
+      // All subinterfaces
+      Matcher m = INTERFACE_WITH_SUBINTERFACE.matcher(iface.getName());
+      if (m.matches()) {
+        String parentInterfaceName = m.group(1);
+        Interface parentInterface = _interfaces.get(parentInterfaceName);
+        if (parentInterface != null) {
+          org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(ifaceName);
+          if (viIface != null) {
+            viIface.addDependency(new Dependency(parentInterfaceName, DependencyType.BIND));
           }
-          // All subinterfaces
-          Matcher m = INTERFACE_WITH_SUBINTERFACE.matcher(iface.getName());
-          if (m.matches()) {
-            String parentInterfaceName = m.group(1);
-            Interface parentInterface = _interfaces.get(parentInterfaceName);
-            if (parentInterface != null) {
-              org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(ifaceName);
-              if (viIface != null) {
-                viIface.addDependency(new Dependency(parentInterfaceName, DependencyType.BIND));
+        }
+      }
+      // Tunnels
+      Tunnel tunnel = iface.getTunnel();
+      if (tunnel != null) {
+        org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(ifaceName);
+        if (viIface != null) {
+          // Add dependency
+          if (isRealInterfaceName(tunnel.getSourceInterfaceName())) {
+            String parentIfaceName = canonicalizeInterfaceName(tunnel.getSourceInterfaceName());
+            viIface.addDependency(new Dependency(parentIfaceName, DependencyType.BIND));
+            // Also set tunnel config while we're at at it.
+            // Step one: determine IP address of parent interface
+            @Nullable
+            Ip parentIp =
+                Optional.ofNullable(c.getActiveInterfaces().get(parentIfaceName))
+                    .map(org.batfish.datamodel.Interface::getConcreteAddress)
+                    .map(ConcreteInterfaceAddress::getIp)
+                    .orElse(null);
+            // Step 2: create tunnel configs for non-IPsec tunnels. IPsec handled separately.
+            if (tunnel.getMode() != TunnelMode.IPSEC_IPV4) {
+              // Ensure we have both src and dst IPs, otherwise don't convert
+              if (tunnel.getDestination() != null
+                  && (tunnel.getSourceAddress() != null || parentIp != null)) {
+                viIface.setTunnelConfig(
+                    TunnelConfiguration.builder()
+                        .setSourceAddress(firstNonNull(tunnel.getSourceAddress(), parentIp))
+                        .setDestinationAddress(tunnel.getDestination())
+                        .build());
+              } else {
+                _w.redFlagf("Could not determine src/dst IPs for tunnel %s", iface.getName());
               }
             }
           }
-          // Tunnels
-          Tunnel tunnel = iface.getTunnel();
-          if (tunnel != null) {
-            org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(ifaceName);
-            if (viIface != null) {
-              // Add dependency
-              if (isRealInterfaceName(tunnel.getSourceInterfaceName())) {
-                String parentIfaceName = canonicalizeInterfaceName(tunnel.getSourceInterfaceName());
-                viIface.addDependency(new Dependency(parentIfaceName, DependencyType.BIND));
-                // Also set tunnel config while we're at at it.
-                // Step one: determine IP address of parent interface
-                @Nullable
-                Ip parentIp =
-                    Optional.ofNullable(c.getActiveInterfaces().get(parentIfaceName))
-                        .map(org.batfish.datamodel.Interface::getConcreteAddress)
-                        .map(ConcreteInterfaceAddress::getIp)
-                        .orElse(null);
-                // Step 2: create tunnel configs for non-IPsec tunnels. IPsec handled separately.
-                if (tunnel.getMode() != TunnelMode.IPSEC_IPV4) {
-                  // Ensure we have both src and dst IPs, otherwise don't convert
-                  if (tunnel.getDestination() != null
-                      && (tunnel.getSourceAddress() != null || parentIp != null)) {
-                    viIface.setTunnelConfig(
-                        TunnelConfiguration.builder()
-                            .setSourceAddress(firstNonNull(tunnel.getSourceAddress(), parentIp))
-                            .setDestinationAddress(tunnel.getDestination())
-                            .build());
-                  } else {
-                    _w.redFlagf("Could not determine src/dst IPs for tunnel %s", iface.getName());
-                  }
-                }
-              }
-            }
-          }
-        });
+        }
+      }
+    });
 
     convertVrfLeakingConfig(_vrfs.values(), c);
 
@@ -2218,35 +2201,31 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     // RSA pub named keys to IKE phase 1 key and IKE phase 1 policy
     _cryptoNamedRsaPubKeys
         .values()
-        .forEach(
-            namedRsaPubKey -> {
-              IkePhase1Key ikePhase1Key = toIkePhase1Key(namedRsaPubKey);
-              ikePhase1KeysBuilder.put(getRsaPubKeyGeneratedName(namedRsaPubKey), ikePhase1Key);
+        .forEach(namedRsaPubKey -> {
+          IkePhase1Key ikePhase1Key = toIkePhase1Key(namedRsaPubKey);
+          ikePhase1KeysBuilder.put(getRsaPubKeyGeneratedName(namedRsaPubKey), ikePhase1Key);
 
-              IkePhase1Policy ikePhase1Policy =
-                  toIkePhase1Policy(namedRsaPubKey, this, ikePhase1Key);
-              c.getIkePhase1Policies().put(ikePhase1Policy.getName(), ikePhase1Policy);
-            });
-
-    // standalone ISAKMP keys to IKE phase 1 key and IKE phase 1 policy
-    _isakmpKeys.forEach(
-        isakmpKey -> {
-          IkePhase1Key ikePhase1Key = toIkePhase1Key(isakmpKey);
-          ikePhase1KeysBuilder.put(getIsakmpKeyGeneratedName(isakmpKey), ikePhase1Key);
-
-          IkePhase1Policy ikePhase1Policy = toIkePhase1Policy(isakmpKey, this, ikePhase1Key);
+          IkePhase1Policy ikePhase1Policy = toIkePhase1Policy(namedRsaPubKey, this, ikePhase1Key);
           c.getIkePhase1Policies().put(ikePhase1Policy.getName(), ikePhase1Policy);
         });
+
+    // standalone ISAKMP keys to IKE phase 1 key and IKE phase 1 policy
+    _isakmpKeys.forEach(isakmpKey -> {
+      IkePhase1Key ikePhase1Key = toIkePhase1Key(isakmpKey);
+      ikePhase1KeysBuilder.put(getIsakmpKeyGeneratedName(isakmpKey), ikePhase1Key);
+
+      IkePhase1Policy ikePhase1Policy = toIkePhase1Policy(isakmpKey, this, ikePhase1Key);
+      c.getIkePhase1Policies().put(ikePhase1Policy.getName(), ikePhase1Policy);
+    });
 
     c.setIkePhase1Keys(ikePhase1KeysBuilder.build());
 
     // ISAKMP profiles to IKE phase 1 policies
     _isakmpProfiles
         .values()
-        .forEach(
-            isakmpProfile ->
-                c.getIkePhase1Policies()
-                    .put(isakmpProfile.getName(), toIkePhase1Policy(isakmpProfile, this, c, _w)));
+        .forEach(isakmpProfile ->
+            c.getIkePhase1Policies()
+                .put(isakmpProfile.getName(), toIkePhase1Policy(isakmpProfile, this, c, _w)));
 
     // convert ipsec transform sets
     ImmutableSortedMap.Builder<String, IpsecPhase2Proposal> ipsecPhase2ProposalsBuilder =
@@ -2290,61 +2269,60 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     c.setIpsecPeerConfigs(ipsecPeerConfigBuilder.build());
 
     // convert routing processes
-    _vrfs.forEach(
-        (vrfName, vrf) -> {
-          org.batfish.datamodel.Vrf newVrf = c.getVrfs().get(vrfName);
+    _vrfs.forEach((vrfName, vrf) -> {
+      org.batfish.datamodel.Vrf newVrf = c.getVrfs().get(vrfName);
 
-          // description
-          newVrf.setDescription(vrf.getDescription());
+      // description
+      newVrf.setDescription(vrf.getDescription());
 
-          // add snmp trap servers to main list
-          if (newVrf.getSnmpServer() != null) {
-            c.getSnmpTrapServers().addAll(newVrf.getSnmpServer().getHosts().keySet());
-          }
+      // add snmp trap servers to main list
+      if (newVrf.getSnmpServer() != null) {
+        c.getSnmpTrapServers().addAll(newVrf.getSnmpServer().getHosts().keySet());
+      }
 
-          // convert static routes
-          for (StaticRoute staticRoute : vrf.getStaticRoutes()) {
-            newVrf.getStaticRoutes().add(CiscoXrConversions.toStaticRoute(staticRoute));
-          }
+      // convert static routes
+      for (StaticRoute staticRoute : vrf.getStaticRoutes()) {
+        newVrf.getStaticRoutes().add(CiscoXrConversions.toStaticRoute(staticRoute));
+      }
 
-          // convert rip process
-          RipProcess ripProcess = vrf.getRipProcess();
-          if (ripProcess != null) {
-            org.batfish.datamodel.RipProcess newRipProcess = toRipProcess(ripProcess, vrfName, c);
-            newVrf.setRipProcess(newRipProcess);
-          }
+      // convert rip process
+      RipProcess ripProcess = vrf.getRipProcess();
+      if (ripProcess != null) {
+        org.batfish.datamodel.RipProcess newRipProcess = toRipProcess(ripProcess, vrfName, c);
+        newVrf.setRipProcess(newRipProcess);
+      }
 
-          // Convert OSPF processes.
-          newVrf.setOspfProcesses(
-              vrf.getOspfProcesses().values().stream()
-                  .map(proc -> toOspfProcess(proc, vrfName, c, this))
-                  .filter(Objects::nonNull));
+      // Convert OSPF processes.
+      newVrf.setOspfProcesses(
+          vrf.getOspfProcesses().values().stream()
+              .map(proc -> toOspfProcess(proc, vrfName, c, this))
+              .filter(Objects::nonNull));
 
-          // convert eigrp processes
-          vrf.getEigrpProcesses().values().stream()
-              .map(proc -> CiscoXrConversions.toEigrpProcess(proc, vrfName, c, this))
-              .filter(Objects::nonNull)
-              .forEach(newVrf::addEigrpProcess);
+      // convert eigrp processes
+      vrf.getEigrpProcesses().values().stream()
+          .map(proc -> CiscoXrConversions.toEigrpProcess(proc, vrfName, c, this))
+          .filter(Objects::nonNull)
+          .forEach(newVrf::addEigrpProcess);
 
-          // convert isis process
-          IsisProcess isisProcess = vrf.getIsisProcess();
-          if (isisProcess != null) {
-            org.batfish.datamodel.isis.IsisProcess newIsisProcess =
-                CiscoXrConversions.toIsisProcess(isisProcess, this);
-            newVrf.setIsisProcess(newIsisProcess);
-          }
+      // convert isis process
+      IsisProcess isisProcess = vrf.getIsisProcess();
+      if (isisProcess != null) {
+        org.batfish.datamodel.isis.IsisProcess newIsisProcess =
+            CiscoXrConversions.toIsisProcess(isisProcess, this);
+        newVrf.setIsisProcess(newIsisProcess);
+      }
 
-          ///////////////////////////////////////////////
-          // BEGIN Convert BGP process for various vendors
-          // Hybrid
-          BgpProcess bgpProcess = vrf.getBgpProcess();
-          if (bgpProcess != null) {
-            org.batfish.datamodel.BgpProcess newBgpProcess = toBgpProcess(c, bgpProcess, vrfName);
-            newVrf.setBgpProcess(newBgpProcess);
-          }
-          // END Convert BGP process for various vendors
-          ///////////////////////////////////////////////
-        });
+      ///////////////////////////////////////////////
+      // BEGIN Convert BGP process for various vendors
+      // Hybrid
+      BgpProcess bgpProcess = vrf.getBgpProcess();
+      if (bgpProcess != null) {
+        org.batfish.datamodel.BgpProcess newBgpProcess = toBgpProcess(c, bgpProcess, vrfName);
+        newVrf.setBgpProcess(newBgpProcess);
+      }
+      // END Convert BGP process for various vendors
+      ///////////////////////////////////////////////
+    });
 
     // Define the Null0 interface if it has been referenced. Otherwise, these show as undefined
     // references.
@@ -2367,36 +2345,34 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
   }
 
   private void convertCommunitySets(Configuration c) {
-    _communitySets.forEach(
-        (name, communitySet) -> {
-          c.getCommunitySetMatchExprs()
-              .put(
-                  computeCommunitySetMatchAnyName(name),
-                  convertMatchesAnyToCommunitySetMatchExpr(communitySet, c));
-          c.getCommunitySetMatchExprs()
-              .put(
-                  computeCommunitySetMatchEveryName(name),
-                  convertMatchesEveryToCommunitySetMatchExpr(communitySet, c));
-          c.getCommunityMatchExprs().put(name, toCommunityMatchExpr(communitySet, c));
-          c.getCommunitySetExprs().put(name, toCommunitySetExpr(communitySet, c));
-        });
+    _communitySets.forEach((name, communitySet) -> {
+      c.getCommunitySetMatchExprs()
+          .put(
+              computeCommunitySetMatchAnyName(name),
+              convertMatchesAnyToCommunitySetMatchExpr(communitySet, c));
+      c.getCommunitySetMatchExprs()
+          .put(
+              computeCommunitySetMatchEveryName(name),
+              convertMatchesEveryToCommunitySetMatchExpr(communitySet, c));
+      c.getCommunityMatchExprs().put(name, toCommunityMatchExpr(communitySet, c));
+      c.getCommunitySetExprs().put(name, toCommunitySetExpr(communitySet, c));
+    });
   }
 
   private void convertExtcommunitySetRts(Configuration c) {
-    _extcommunitySetRts.forEach(
-        (name, extcommunitySetRt) -> {
-          String qualifiedName = computeExtcommunitySetRtName(name);
-          c.getCommunitySetMatchExprs()
-              .put(
-                  computeCommunitySetMatchAnyName(qualifiedName),
-                  convertMatchesAnyToCommunitySetMatchExpr(extcommunitySetRt, c));
-          c.getCommunitySetMatchExprs()
-              .put(
-                  computeCommunitySetMatchEveryName(qualifiedName),
-                  convertMatchesEveryToCommunitySetMatchExpr(extcommunitySetRt, c));
-          c.getCommunityMatchExprs().put(qualifiedName, toCommunityMatchExpr(extcommunitySetRt, c));
-          c.getCommunitySetExprs().put(qualifiedName, toCommunitySetExpr(extcommunitySetRt, c));
-        });
+    _extcommunitySetRts.forEach((name, extcommunitySetRt) -> {
+      String qualifiedName = computeExtcommunitySetRtName(name);
+      c.getCommunitySetMatchExprs()
+          .put(
+              computeCommunitySetMatchAnyName(qualifiedName),
+              convertMatchesAnyToCommunitySetMatchExpr(extcommunitySetRt, c));
+      c.getCommunitySetMatchExprs()
+          .put(
+              computeCommunitySetMatchEveryName(qualifiedName),
+              convertMatchesEveryToCommunitySetMatchExpr(extcommunitySetRt, c));
+      c.getCommunityMatchExprs().put(qualifiedName, toCommunityMatchExpr(extcommunitySetRt, c));
+      c.getCommunitySetExprs().put(qualifiedName, toCommunitySetExpr(extcommunitySetRt, c));
+    });
   }
 
   /**
@@ -2414,10 +2390,8 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         .flatMap(area -> area.getInterfaceSettings().values().stream())
         .map(OspfInterfaceSettings::getOspfSettings)
         .map(OspfSettings::getDistributeListIn)
-        .filter(
-            distList ->
-                distList != null
-                    && distList.getFilterType() == DistributeListFilterType.ACCESS_LIST)
+        .filter(distList ->
+            distList != null && distList.getFilterType() == DistributeListFilterType.ACCESS_LIST)
         .map(DistributeList::getFilterName)
         .collect(ImmutableSet.toImmutableSet());
   }
@@ -2438,17 +2412,15 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
     _keyrings.values().stream()
         .filter(keyring -> !keyring.getLocalInterfaceName().equals(UNSET_LOCAL_INTERFACE))
-        .forEach(
-            keyring ->
-                keyring.setLocalAddress(ifaceNameToPrimaryIp.get(keyring.getLocalInterfaceName())));
+        .forEach(keyring ->
+            keyring.setLocalAddress(ifaceNameToPrimaryIp.get(keyring.getLocalInterfaceName())));
 
     _isakmpProfiles.values().stream()
         .filter(
             isakmpProfile -> !isakmpProfile.getLocalInterfaceName().equals(UNSET_LOCAL_INTERFACE))
-        .forEach(
-            isakmpProfile ->
-                isakmpProfile.setLocalAddress(
-                    ifaceNameToPrimaryIp.get(isakmpProfile.getLocalInterfaceName())));
+        .forEach(isakmpProfile ->
+            isakmpProfile.setLocalAddress(
+                ifaceNameToPrimaryIp.get(isakmpProfile.getLocalInterfaceName())));
   }
 
   /** Resolves the addresses of the interfaces used in sourceInterfaceName of Tunnel interfaces */

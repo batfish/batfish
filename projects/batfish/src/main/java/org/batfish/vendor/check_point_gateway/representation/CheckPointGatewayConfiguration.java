@@ -300,26 +300,25 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
   private void convertObjects(Map<Uid, NamedManagementObject> objs) {
     AddressSpaceToIpSpace addressSpaceToIpSpace = new AddressSpaceToIpSpace(objs);
     objs.values()
-        .forEach(
-            obj -> {
-              if (obj instanceof UnknownTypedManagementObject) {
-                UnknownTypedManagementObject utmo = (UnknownTypedManagementObject) obj;
-                _w.redFlagf(
-                    "Batfish does not handle converting objects of type %s. These objects will"
-                        + " be ignored.",
-                    utmo.getType());
-                return;
-              }
+        .forEach(obj -> {
+          if (obj instanceof UnknownTypedManagementObject) {
+            UnknownTypedManagementObject utmo = (UnknownTypedManagementObject) obj;
+            _w.redFlagf(
+                "Batfish does not handle converting objects of type %s. These objects will"
+                    + " be ignored.",
+                utmo.getType());
+            return;
+          }
 
-              if (obj instanceof AddressSpace) {
-                AddressSpace addressSpace = (AddressSpace) obj;
-                IpSpace ipSpace = addressSpace.accept(addressSpaceToIpSpace);
-                _c.getIpSpaces().put(obj.getName(), ipSpace);
+          if (obj instanceof AddressSpace) {
+            AddressSpace addressSpace = (AddressSpace) obj;
+            IpSpace ipSpace = addressSpace.accept(addressSpaceToIpSpace);
+            _c.getIpSpaces().put(obj.getName(), ipSpace);
 
-                IpSpaceMetadata metadata = toIpSpaceMetadata(addressSpace);
-                _c.getIpSpaceMetadata().put(obj.getName(), metadata);
-              }
-            });
+            IpSpaceMetadata metadata = toIpSpaceMetadata(addressSpace);
+            _c.getIpSpaceMetadata().put(obj.getName(), metadata);
+          }
+        });
   }
 
   /**
@@ -403,39 +402,36 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     // to the egress iface IP.
     _c.getActiveInterfaces()
         .values()
-        .forEach(
-            iface -> {
-              // Incoming filter is ignored when packet policy is present, so apply it explicitly
-              String incomingFilter =
-                  Optional.ofNullable(iface.getIncomingFilter())
-                      .map(IpAccessList::getName)
-                      .orElse(null);
-              iface.setIncomingFilter(null);
-              PacketPolicy policy = incomingFiltersToPacketPolicies.get(incomingFilter);
-              if (policy == null) {
-                ImmutableList.Builder<Statement> ifacePolicyStatements = ImmutableList.builder();
-                if (incomingFilter != null) {
-                  ifacePolicyStatements.add(new ApplyFilter(incomingFilter));
-                }
-                ifacePolicyStatements.addAll(generalStatements);
-                String packetPolicyName = packetPolicyName(incomingFilter);
-                policy =
-                    new PacketPolicy(
-                        packetPolicyName, ifacePolicyStatements.build(), returnFibLookup);
-                _c.getPacketPolicies().put(packetPolicyName, policy);
-                incomingFiltersToPacketPolicies.put(incomingFilter, policy);
-              }
-              iface.setPacketPolicy(policy.getName());
-              // Build outgoing transformation to correctly translate HIDE_BEHIND_GATEWAY src
-              if (iface.getConcreteAddress() != null) {
-                Transformation outgoing =
-                    when(matchSrc(HIDE_BEHIND_GATEWAY_IP))
-                        .apply(
-                            TransformationStep.assignSourceIp(iface.getConcreteAddress().getIp()))
-                        .build();
-                iface.setOutgoingTransformation(outgoing);
-              }
-            });
+        .forEach(iface -> {
+          // Incoming filter is ignored when packet policy is present, so apply it explicitly
+          String incomingFilter =
+              Optional.ofNullable(iface.getIncomingFilter())
+                  .map(IpAccessList::getName)
+                  .orElse(null);
+          iface.setIncomingFilter(null);
+          PacketPolicy policy = incomingFiltersToPacketPolicies.get(incomingFilter);
+          if (policy == null) {
+            ImmutableList.Builder<Statement> ifacePolicyStatements = ImmutableList.builder();
+            if (incomingFilter != null) {
+              ifacePolicyStatements.add(new ApplyFilter(incomingFilter));
+            }
+            ifacePolicyStatements.addAll(generalStatements);
+            String packetPolicyName = packetPolicyName(incomingFilter);
+            policy =
+                new PacketPolicy(packetPolicyName, ifacePolicyStatements.build(), returnFibLookup);
+            _c.getPacketPolicies().put(packetPolicyName, policy);
+            incomingFiltersToPacketPolicies.put(incomingFilter, policy);
+          }
+          iface.setPacketPolicy(policy.getName());
+          // Build outgoing transformation to correctly translate HIDE_BEHIND_GATEWAY src
+          if (iface.getConcreteAddress() != null) {
+            Transformation outgoing =
+                when(matchSrc(HIDE_BEHIND_GATEWAY_IP))
+                    .apply(TransformationStep.assignSourceIp(iface.getConcreteAddress().getIp()))
+                    .build();
+            iface.setOutgoingTransformation(outgoing);
+          }
+        });
   }
 
   private static String packetPolicyName(@Nullable String incomingFilter) {
@@ -525,11 +521,10 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
 
     // First match any manual rules. If a manual rule is matched, no other rules can be matched,
     // regardless of what translations the manual rule applies, so return.
-    manualRules.forEach(
-        rule ->
-            getManualRuleStatement(
-                    rule, serviceToMatchExpr, addressSpaceToMatchExpr, objects, returnFibLookup)
-                .ifPresent(statements::add));
+    manualRules.forEach(rule ->
+        getManualRuleStatement(
+                rule, serviceToMatchExpr, addressSpaceToMatchExpr, objects, returnFibLookup)
+            .ifPresent(statements::add));
 
     // Convert automatic NAT rules
     if (!autoHideNatObjects.isEmpty() || !autoStaticNatObjects.isEmpty()) {
@@ -539,11 +534,10 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     }
 
     // Low priority rules come after automatic rules
-    manualLowPriorityRules.forEach(
-        rule ->
-            getManualRuleStatement(
-                    rule, serviceToMatchExpr, addressSpaceToMatchExpr, objects, returnFibLookup)
-                .ifPresent(statements::add));
+    manualLowPriorityRules.forEach(rule ->
+        getManualRuleStatement(
+                rule, serviceToMatchExpr, addressSpaceToMatchExpr, objects, returnFibLookup)
+            .ifPresent(statements::add));
 
     return statements.build();
   }
@@ -563,11 +557,10 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     }
     Optional<Transformation> transformation = manualRuleTransformation(rule, objects, warnings);
     // warning already filed
-    return transformation.map(
-        value ->
-            new If(
-                new PacketMatchExpr(matchCondition.get()),
-                ImmutableList.of(new ApplyTransformation(value), returnFibLookup)));
+    return transformation.map(value ->
+        new If(
+            new PacketMatchExpr(matchCondition.get()),
+            ImmutableList.of(new ApplyTransformation(value), returnFibLookup)));
   }
 
   /** Generate a statement handling all automatic NAT rule transformations. */
@@ -581,9 +574,8 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     // While we have the NAT hide settings, check if any hide behind gateway, and warn if any
     // interfaces are missing an IP because this will cause the source translation to be wrong.
     if (autoHideNatObjects.stream()
-            .anyMatch(
-                hideRule ->
-                    hideRule.getNatSettings().getHideBehind() instanceof NatHideBehindGateway)
+            .anyMatch(hideRule ->
+                hideRule.getNatSettings().getHideBehind() instanceof NatHideBehindGateway)
         && _c.getActiveInterfaces().values().stream()
             .anyMatch(iface -> iface.getConcreteAddress() == null)) {
       warnings.redFlag(
@@ -635,11 +627,10 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     // translations (including match conditions) and apply this transformation unconditionally.
     List<Transformation> autoStaticDstTransformations =
         autoStaticNatObjects.stream()
-            .map(
-                hasNatSettings ->
-                    when(matchAutomaticStaticRule(hasNatSettings, false))
-                        .apply(automaticStaticRuleTransformationStep(hasNatSettings, false))
-                        .build())
+            .map(hasNatSettings ->
+                when(matchAutomaticStaticRule(hasNatSettings, false))
+                    .apply(automaticStaticRuleTransformationStep(hasNatSettings, false))
+                    .build())
             .collect(ImmutableList.toImmutableList());
     mergeTransformations(autoStaticDstTransformations)
         .ifPresent(t -> statements.add(new ApplyTransformation(t)));
@@ -744,15 +735,14 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
       StaticRoute route, Map<String, Interface> interfaces) {
     return route.getNexthops().values().stream()
         .filter(nh -> nexthopIsValid(nh.getNexthopTarget(), interfaces))
-        .map(
-            nh ->
-                org.batfish.datamodel.StaticRoute.builder()
-                    .setNetwork(route.getDestination())
-                    .setNextHop(toNextHop(nh.getNexthopTarget()))
-                    // Unset priority is preferred over other priorities
-                    .setAdministrativeCost(firstNonNull(nh.getPriority(), 0))
-                    .setRecursive(false)
-                    .build());
+        .map(nh ->
+            org.batfish.datamodel.StaticRoute.builder()
+                .setNetwork(route.getDestination())
+                .setNextHop(toNextHop(nh.getNexthopTarget()))
+                // Unset priority is preferred over other priorities
+                .setAdministrativeCost(firstNonNull(nh.getPriority(), 0))
+                .setRecursive(false)
+                .build());
   }
 
   /**
@@ -861,22 +851,21 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     }
 
     getBondingGroup(ifaceName)
-        .ifPresent(
-            bg -> {
-              newIface.setChannelGroupMembers(bg.getInterfaces());
-              newIface.setDependencies(
-                  bg.getInterfaces().stream()
-                      .map(member -> new Dependency(member, DependencyType.AGGREGATE))
-                      .collect(ImmutableSet.toImmutableSet()));
+        .ifPresent(bg -> {
+          newIface.setChannelGroupMembers(bg.getInterfaces());
+          newIface.setDependencies(
+              bg.getInterfaces().stream()
+                  .map(member -> new Dependency(member, DependencyType.AGGREGATE))
+                  .collect(ImmutableSet.toImmutableSet()));
 
-              if (bg.getModeEffective() == Mode.ACTIVE_BACKUP) {
-                _w.redFlagf(
-                    "Bonding group mode active-backup is not yet supported in Batfish."
-                        + " Deactivating interface %s.",
-                    ifaceName);
-                newIface.setAdminUp(false);
-              }
-            });
+          if (bg.getModeEffective() == Mode.ACTIVE_BACKUP) {
+            _w.redFlagf(
+                "Bonding group mode active-backup is not yet supported in Batfish."
+                    + " Deactivating interface %s.",
+                ifaceName);
+            newIface.setAdminUp(false);
+          }
+        });
 
     // TODO confirm AccessRule interaction with NAT
     newIface.setIncomingFilter(_c.getIpAccessLists().get(INTERFACE_ACL_NAME));

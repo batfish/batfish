@@ -196,23 +196,22 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
   private void populatePortsInterfaceProperties(Configuration c) {
     _portsConfiguration
         .getPortSettings()
-        .forEach(
-            (ifaceName, portSettings) -> {
-              org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(ifaceName);
-              if (viIface == null) { // ports file may have undefined interfaces
-                return;
-              }
-              boolean isDisabled = Boolean.FALSE.equals(portSettings.getDisabled());
-              if (isDisabled) {
-                viIface.adminDown();
-              }
+        .forEach((ifaceName, portSettings) -> {
+          org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(ifaceName);
+          if (viIface == null) { // ports file may have undefined interfaces
+            return;
+          }
+          boolean isDisabled = Boolean.FALSE.equals(portSettings.getDisabled());
+          if (isDisabled) {
+            viIface.adminDown();
+          }
 
-              if (portSettings.getSpeed() != null) {
-                double speed = portSettings.getSpeed() * SPEED_CONVERSION_FACTOR;
-                viIface.setSpeed(speed);
-                viIface.setBandwidth(speed);
-              }
-            });
+          if (portSettings.getSpeed() != null) {
+            double speed = portSettings.getSpeed() * SPEED_CONVERSION_FACTOR;
+            viIface.setSpeed(speed);
+            viIface.setBandwidth(speed);
+          }
+        });
   }
 
   public Optional<String> getVrfForVlan(@Nullable Integer bridgeAccessVlan) {
@@ -231,14 +230,13 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
   void initPostUpRoutes(Configuration c) {
     _interfacesConfiguration.getInterfaces().values().stream()
         .filter(CumulusConcatenatedConfiguration::isValidVIInterface)
-        .forEach(
-            iface -> {
-              if (!c.getAllInterfaces().get(iface.getName()).getActive()) {
-                return;
-              }
-              org.batfish.datamodel.Vrf vrf = getOrCreateVrf(c, iface.getVrf());
-              iface.getPostUpIpRoutes().forEach(sr -> vrf.getStaticRoutes().add(sr.convert()));
-            });
+        .forEach(iface -> {
+          if (!c.getAllInterfaces().get(iface.getName()).getActive()) {
+            return;
+          }
+          org.batfish.datamodel.Vrf vrf = getOrCreateVrf(c, iface.getVrf());
+          iface.getPostUpIpRoutes().forEach(sr -> vrf.getStaticRoutes().add(sr.convert()));
+        });
   }
 
   private void populateFrrInterfaceProperties(Configuration c) {
@@ -667,59 +665,57 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
     // Put all valid VXLAN VNIs into appropriate VRF
     vc.getVxlans()
         .values()
-        .forEach(
-            vxlan -> {
-              if (vxlan.getId() == null || vxlan.getBridgeAccessVlan() == null) {
-                // Not a valid VNI configuration
-                w.redFlagf(
-                    "Vxlan %s is not configured properly: %s is not defined",
-                    vxlan.getName(), vxlan.getId() == null ? "vxlan id" : "bridge access vlan");
-                return;
-              }
-              // Cumulus documents complex conditions for when clag-anycast address is a valid
-              // source:
-              // https://docs.cumulusnetworks.com/cumulus-linux/Network-Virtualization/VXLAN-Active-Active-Mode/#active-active-vtep-anycast-ip-behavior
-              // In testing, we couldn't reproduce that behavior and the address was always active.
-              // We go with that assumption here until we can reproduce the exact behavior.
-              Ip localIp =
-                  Stream.of(
-                          loopbackClagVxlanAnycastIp,
-                          vxlan.getLocalTunnelip(),
-                          loopbackVxlanLocalTunnelIp)
-                      .filter(Objects::nonNull)
-                      .findFirst()
-                      .orElse(null);
-              if (localIp == null) {
-                w.redFlagf("Local tunnel IP for vxlan %s is not configured", vxlan.getName());
-                return;
-              }
-              @Nullable String vrfName = vniToVrf.get(vxlan.getId());
-              if (vrfName != null) {
-                // This is an L3 VNI.
-                Optional.ofNullable(c.getVrfs().get(vrfName))
-                    .ifPresent(
-                        vrf ->
-                            vrf.addLayer3Vni(
-                                Layer3Vni.builder()
-                                    .setVni(vxlan.getId())
-                                    .setSourceAddress(localIp)
-                                    .setUdpPort(NamedPort.VXLAN.number())
-                                    .setSrcVrf(DEFAULT_VRF_NAME)
-                                    .build()));
-              } else {
-                // This is an L2 VNI.
-                c.getDefaultVrf()
-                    .addLayer2Vni(
-                        Layer2Vni.builder()
+        .forEach(vxlan -> {
+          if (vxlan.getId() == null || vxlan.getBridgeAccessVlan() == null) {
+            // Not a valid VNI configuration
+            w.redFlagf(
+                "Vxlan %s is not configured properly: %s is not defined",
+                vxlan.getName(), vxlan.getId() == null ? "vxlan id" : "bridge access vlan");
+            return;
+          }
+          // Cumulus documents complex conditions for when clag-anycast address is a valid
+          // source:
+          // https://docs.cumulusnetworks.com/cumulus-linux/Network-Virtualization/VXLAN-Active-Active-Mode/#active-active-vtep-anycast-ip-behavior
+          // In testing, we couldn't reproduce that behavior and the address was always active.
+          // We go with that assumption here until we can reproduce the exact behavior.
+          Ip localIp =
+              Stream.of(
+                      loopbackClagVxlanAnycastIp,
+                      vxlan.getLocalTunnelip(),
+                      loopbackVxlanLocalTunnelIp)
+                  .filter(Objects::nonNull)
+                  .findFirst()
+                  .orElse(null);
+          if (localIp == null) {
+            w.redFlagf("Local tunnel IP for vxlan %s is not configured", vxlan.getName());
+            return;
+          }
+          @Nullable String vrfName = vniToVrf.get(vxlan.getId());
+          if (vrfName != null) {
+            // This is an L3 VNI.
+            Optional.ofNullable(c.getVrfs().get(vrfName))
+                .ifPresent(vrf ->
+                    vrf.addLayer3Vni(
+                        Layer3Vni.builder()
                             .setVni(vxlan.getId())
-                            .setVlan(vxlan.getBridgeAccessVlan())
                             .setSourceAddress(localIp)
                             .setUdpPort(NamedPort.VXLAN.number())
-                            .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
                             .setSrcVrf(DEFAULT_VRF_NAME)
-                            .build());
-              }
-            });
+                            .build()));
+          } else {
+            // This is an L2 VNI.
+            c.getDefaultVrf()
+                .addLayer2Vni(
+                    Layer2Vni.builder()
+                        .setVni(vxlan.getId())
+                        .setVlan(vxlan.getBridgeAccessVlan())
+                        .setSourceAddress(localIp)
+                        .setUdpPort(NamedPort.VXLAN.number())
+                        .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
+                        .setSrcVrf(DEFAULT_VRF_NAME)
+                        .build());
+          }
+        });
   }
 
   private static @Nonnull org.batfish.datamodel.Vrf getOrCreateVrf(
@@ -819,22 +815,20 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
     Map<Integer, List<InterfacesInterface>> clagBondsById = new HashMap<>();
     _interfacesConfiguration.getInterfaces().values().stream()
         .filter(bond -> bond.getClagId() != null) // bond interface
-        .forEach(
-            clagBond ->
-                clagBondsById
-                    .computeIfAbsent(clagBond.getClagId(), id -> new LinkedList<>())
-                    .add(clagBond));
-    clagBondsById.forEach(
-        (id, clagBonds) -> {
-          if (clagBonds.size() > 1) {
-            _w.redFlagf(
-                "clag-id %d is erroneously configured on more than one bond: %s",
-                id,
-                clagBonds.stream()
-                    .map(InterfacesInterface::getName)
-                    .collect(ImmutableList.toImmutableList()));
-          }
-        });
+        .forEach(clagBond ->
+            clagBondsById
+                .computeIfAbsent(clagBond.getClagId(), id -> new LinkedList<>())
+                .add(clagBond));
+    clagBondsById.forEach((id, clagBonds) -> {
+      if (clagBonds.size() > 1) {
+        _w.redFlagf(
+            "clag-id %d is erroneously configured on more than one bond: %s",
+            id,
+            clagBonds.stream()
+                .map(InterfacesInterface::getName)
+                .collect(ImmutableList.toImmutableList()));
+      }
+    });
   }
 
   public @Nonnull CumulusInterfacesConfiguration getInterfacesConfiguration() {

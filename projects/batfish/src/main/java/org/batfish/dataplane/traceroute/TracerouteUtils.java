@@ -87,14 +87,13 @@ public final class TracerouteUtils {
   static List<RouteInfo> fibEntriesToRouteInfos(Set<FibEntry> fibEntries) {
     return fibEntries.stream()
         .map(FibEntry::getTopLevelRoute)
-        .map(
-            route ->
-                new RouteInfo(
-                    route.getProtocol(),
-                    route.getNetwork(),
-                    route.getNextHop(),
-                    route.getAdministrativeCost(),
-                    route.getMetric()))
+        .map(route ->
+            new RouteInfo(
+                route.getProtocol(),
+                route.getNetwork(),
+                route.getNextHop(),
+                route.getAdministrativeCost(),
+                route.getMetric()))
         .distinct()
         .sorted(
             comparing(RouteInfo::getNetwork)
@@ -239,31 +238,28 @@ public final class TracerouteUtils {
 
     ImmutableMultimap.Builder<NodeInterfacePair, FirewallSessionTraceInfo> builder =
         ImmutableMultimap.builder();
-    sessions.forEach(
-        session ->
-            session
-                .getSessionScope()
-                .accept(
-                    new SessionScopeVisitor<Void>() {
-                      @Override
-                      public Void visitIncomingSessionScope(
-                          IncomingSessionScope incomingSessionScope) {
-                        incomingSessionScope
-                            .getIncomingInterfaces()
-                            .forEach(
-                                incomingIface ->
-                                    builder.put(
-                                        NodeInterfacePair.of(session.getHostname(), incomingIface),
-                                        session));
-                        return null;
-                      }
+    sessions.forEach(session ->
+        session
+            .getSessionScope()
+            .accept(
+                new SessionScopeVisitor<Void>() {
+                  @Override
+                  public Void visitIncomingSessionScope(IncomingSessionScope incomingSessionScope) {
+                    incomingSessionScope
+                        .getIncomingInterfaces()
+                        .forEach(incomingIface ->
+                            builder.put(
+                                NodeInterfacePair.of(session.getHostname(), incomingIface),
+                                session));
+                    return null;
+                  }
 
-                      @Override
-                      public Void visitOriginatingSessionScope(
-                          OriginatingSessionScope originatingSessionScope) {
-                        return null;
-                      }
-                    }));
+                  @Override
+                  public Void visitOriginatingSessionScope(
+                      OriginatingSessionScope originatingSessionScope) {
+                    return null;
+                  }
+                }));
     return builder.build();
   }
 
@@ -275,28 +271,25 @@ public final class TracerouteUtils {
 
     Map<String, ImmutableMultimap.Builder<String, FirewallSessionTraceInfo>> builder =
         new HashMap<>();
-    sessions.forEach(
-        session ->
-            session
-                .getSessionScope()
-                .accept(
-                    new SessionScopeVisitor<Void>() {
-                      @Override
-                      public Void visitIncomingSessionScope(
-                          IncomingSessionScope incomingSessionScope) {
-                        return null;
-                      }
+    sessions.forEach(session ->
+        session
+            .getSessionScope()
+            .accept(
+                new SessionScopeVisitor<Void>() {
+                  @Override
+                  public Void visitIncomingSessionScope(IncomingSessionScope incomingSessionScope) {
+                    return null;
+                  }
 
-                      @Override
-                      public Void visitOriginatingSessionScope(
-                          OriginatingSessionScope originatingSessionScope) {
-                        builder
-                            .computeIfAbsent(
-                                session.getHostname(), k -> ImmutableMultimap.builder())
-                            .put(originatingSessionScope.getOriginatingVrf(), session);
-                        return null;
-                      }
-                    }));
+                  @Override
+                  public Void visitOriginatingSessionScope(
+                      OriginatingSessionScope originatingSessionScope) {
+                    builder
+                        .computeIfAbsent(session.getHostname(), k -> ImmutableMultimap.builder())
+                        .put(originatingSessionScope.getOriginatingVrf(), session);
+                    return null;
+                  }
+                }));
     return builder.entrySet().stream()
         .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().build()));
   }

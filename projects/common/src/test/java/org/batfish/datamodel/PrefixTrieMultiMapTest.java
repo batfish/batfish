@@ -518,14 +518,13 @@ public class PrefixTrieMultiMapTest {
     // for this test, getOverlappingEntries should always return entries whose value is a singleton
     // set containing the key. call it, check that invariant, and then return the keys.
     Function<String, Set<Prefix>> getOverlappingKeys =
-        (prefixStr) -> {
+        prefixStr -> {
           Prefix prefix = Prefix.parse(prefixStr);
           return trie.getOverlappingEntries(toRangeSet(prefix))
-              .map(
-                  entry -> {
-                    assertThat(entry.getValue(), equalTo(ImmutableSet.of(entry.getKey())));
-                    return entry.getKey();
-                  })
+              .map(entry -> {
+                assertThat(entry.getValue(), equalTo(ImmutableSet.of(entry.getKey())));
+                return entry.getKey();
+              })
               .collect(ImmutableSet.toImmutableSet());
         };
 
@@ -613,10 +612,9 @@ public class PrefixTrieMultiMapTest {
     boolean intersectsPrefixSpace(PrefixSpace space) {
       return _map.entrySet().stream()
           .filter(e -> !e.getValue().isEmpty())
-          .anyMatch(
-              e ->
-                  space.getPrefixRanges().stream()
-                      .anyMatch(r -> r.includesPrefixRange(PrefixRange.fromPrefix(e.getKey()))));
+          .anyMatch(e ->
+              space.getPrefixRanges().stream()
+                  .anyMatch(r -> r.includesPrefixRange(PrefixRange.fromPrefix(e.getKey()))));
     }
 
     Set<Prefix> overlappingKeys(RangeSet<Ip> ips) {

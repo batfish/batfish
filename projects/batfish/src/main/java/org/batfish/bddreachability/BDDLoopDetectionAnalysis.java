@@ -104,14 +104,13 @@ public class BDDLoopDetectionAnalysis {
      * Identify which of the candidates are actually on loops
      */
     Map<StateExpr, BDD> loopBDDs = new HashMap<>();
-    reachableInNRounds.forEach(
-        (state, bdd) -> {
-          if (confirmLoop(state, bdd)) {
-            loopBDDs.put(state, bdd);
-          } else {
-            bdd.free();
-          }
-        });
+    reachableInNRounds.forEach((state, bdd) -> {
+      if (confirmLoop(state, bdd)) {
+        loopBDDs.put(state, bdd);
+      } else {
+        bdd.free();
+      }
+    });
 
     /*
      * Run backward to find the ingress locations/headerspaces that lead to loops. The fixpoint
@@ -139,32 +138,30 @@ public class BDDLoopDetectionAnalysis {
   private Map<StateExpr, BDD> propagate(Map<StateExpr, BDD> bdds) {
     BDDFactory factory = _bddPacket.getFactory();
     Map<StateExpr, BDD> newReachableInNRounds = new HashMap<>();
-    bdds.forEach(
-        (source, sourceBdd) ->
-            _forwardEdgeTable
-                .row(source)
-                .forEach(
-                    (target, transition) -> {
-                      long priorBDDs = factory.numOutstandingBDDs();
-                      BDD transited = transition.transitForward(sourceBdd);
-                      assert factory.numOutstandingBDDs() - priorBDDs == 1
-                          : "Leak of size "
-                              + (factory.numOutstandingBDDs() - priorBDDs - 1)
-                              + " transiting "
-                              + source
-                              + " -> "
-                              + target;
-                      if (transited.isZero()) {
-                        transited.free();
-                        return;
-                      }
-                      BDD targetBdd = newReachableInNRounds.get(target);
-                      if (targetBdd == null) {
-                        newReachableInNRounds.put(target, transited);
-                      } else {
-                        targetBdd.orWith(transited);
-                      }
-                    }));
+    bdds.forEach((source, sourceBdd) ->
+        _forwardEdgeTable
+            .row(source)
+            .forEach((target, transition) -> {
+              long priorBDDs = factory.numOutstandingBDDs();
+              BDD transited = transition.transitForward(sourceBdd);
+              assert factory.numOutstandingBDDs() - priorBDDs == 1
+                  : "Leak of size "
+                      + (factory.numOutstandingBDDs() - priorBDDs - 1)
+                      + " transiting "
+                      + source
+                      + " -> "
+                      + target;
+              if (transited.isZero()) {
+                transited.free();
+                return;
+              }
+              BDD targetBdd = newReachableInNRounds.get(target);
+              if (targetBdd == null) {
+                newReachableInNRounds.put(target, transited);
+              } else {
+                targetBdd.orWith(transited);
+              }
+            }));
     return newReachableInNRounds;
   }
 

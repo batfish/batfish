@@ -51,15 +51,13 @@ public class BgpProcessConfigurationAnswerer extends Answerer {
         .add(new ColumnMetadata(COL_ROUTER_ID, Schema.IP, "Router ID", true, false))
         .addAll(
             propertySpecifier.getMatchingProperties().stream()
-                .map(
-                    prop ->
-                        new ColumnMetadata(
-                            getColumnName(prop),
-                            BgpProcessPropertySpecifier.getPropertyDescriptor(prop).getSchema(),
-                            BgpProcessPropertySpecifier.getPropertyDescriptor(prop)
-                                .getDescription(),
-                            false,
-                            true))
+                .map(prop ->
+                    new ColumnMetadata(
+                        getColumnName(prop),
+                        BgpProcessPropertySpecifier.getPropertyDescriptor(prop).getSchema(),
+                        BgpProcessPropertySpecifier.getPropertyDescriptor(prop).getDescription(),
+                        false,
+                        true))
                 .collect(Collectors.toList()))
         .build();
   }
@@ -113,49 +111,47 @@ public class BgpProcessConfigurationAnswerer extends Answerer {
 
     nodeSpecifier
         .resolve(ctxt)
-        .forEach(
-            nodeName -> {
-              ctxt.getConfigs()
-                  .get(nodeName)
-                  .getVrfs()
-                  .values()
-                  .forEach(
-                      vrf -> {
-                        BgpProcess bgpProcess = vrf.getBgpProcess();
-                        if (bgpProcess == null) {
-                          return;
-                        }
-                        RowBuilder rowBuilder =
-                            Row.builder(columnMetadata)
-                                .put(COL_NODE, new Node(nodeName))
-                                .put(COL_VRF, vrf.getName())
-                                .put(COL_ROUTER_ID, bgpProcess.getRouterId());
+        .forEach(nodeName -> {
+          ctxt.getConfigs()
+              .get(nodeName)
+              .getVrfs()
+              .values()
+              .forEach(vrf -> {
+                BgpProcess bgpProcess = vrf.getBgpProcess();
+                if (bgpProcess == null) {
+                  return;
+                }
+                RowBuilder rowBuilder =
+                    Row.builder(columnMetadata)
+                        .put(COL_NODE, new Node(nodeName))
+                        .put(COL_VRF, vrf.getName())
+                        .put(COL_ROUTER_ID, bgpProcess.getRouterId());
 
-                        for (String property : propertySpecifier.getMatchingProperties()) {
-                          PropertyDescriptor<BgpProcess> propertyDescriptor =
-                              BgpProcessPropertySpecifier.getPropertyDescriptor(property);
-                          try {
-                            PropertySpecifier.fillProperty(
-                                propertyDescriptor, bgpProcess, property, rowBuilder);
-                          } catch (ClassCastException e) {
-                            throw new BatfishException(
-                                String.format(
-                                    "Type mismatch between property value ('%s') and Schema ('%s')"
-                                        + " for property '%s' for BGP process '%s->%s-%s': %s",
-                                    propertyDescriptor.getGetter().apply(bgpProcess),
-                                    propertyDescriptor.getSchema(),
-                                    property,
-                                    nodeName,
-                                    vrf.getName(),
-                                    bgpProcess,
-                                    e.getMessage()),
-                                e);
-                          }
-                        }
+                for (String property : propertySpecifier.getMatchingProperties()) {
+                  PropertyDescriptor<BgpProcess> propertyDescriptor =
+                      BgpProcessPropertySpecifier.getPropertyDescriptor(property);
+                  try {
+                    PropertySpecifier.fillProperty(
+                        propertyDescriptor, bgpProcess, property, rowBuilder);
+                  } catch (ClassCastException e) {
+                    throw new BatfishException(
+                        String.format(
+                            "Type mismatch between property value ('%s') and Schema ('%s')"
+                                + " for property '%s' for BGP process '%s->%s-%s': %s",
+                            propertyDescriptor.getGetter().apply(bgpProcess),
+                            propertyDescriptor.getSchema(),
+                            property,
+                            nodeName,
+                            vrf.getName(),
+                            bgpProcess,
+                            e.getMessage()),
+                        e);
+                  }
+                }
 
-                        rows.add(rowBuilder.build());
-                      });
-            });
+                rows.add(rowBuilder.build());
+              });
+        });
 
     return rows.build();
   }

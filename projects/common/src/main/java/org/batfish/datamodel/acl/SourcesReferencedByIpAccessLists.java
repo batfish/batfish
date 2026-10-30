@@ -58,11 +58,10 @@ public final class SourcesReferencedByIpAccessLists {
               namedAcls,
               Entry::getKey,
               entry ->
-                  new NonRecursiveSupplier<>(
-                      () -> {
-                        visit(entry.getValue());
-                        return null;
-                      }));
+                  new NonRecursiveSupplier<>(() -> {
+                    visit(entry.getValue());
+                    return null;
+                  }));
       _referencedSources = ImmutableSet.builder();
     }
 

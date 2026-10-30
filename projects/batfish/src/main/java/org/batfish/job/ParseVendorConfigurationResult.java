@@ -98,11 +98,10 @@ public class ParseVendorConfigurationResult
       ParseVendorConfigurationAnswerElement answerElement) {
     appendHistory(logger);
     String jobKey = jobFilenamesToString(_fileResults.keySet());
-    _fileResults.forEach(
-        (filename, fileResult) -> {
-          answerElement.getParseStatus().put(filename, fileResult.getParseStatus());
-          answerElement.getFileFormats().put(filename, _format);
-        });
+    _fileResults.forEach((filename, fileResult) -> {
+      answerElement.getParseStatus().put(filename, fileResult.getParseStatus());
+      answerElement.getFileFormats().put(filename, _format);
+    });
     if (_vc != null) {
       String hostname = _vc.getHostname();
       if (vendorConfigurations.containsKey(hostname)) {
@@ -129,15 +128,14 @@ public class ParseVendorConfigurationResult
       if (!_warnings.isEmpty()) {
         answerElement.getWarnings().put(jobKey, _warnings);
       }
-      _fileResults.forEach(
-          (name, result) -> {
-            if (!result.getWarnings().isEmpty()) {
-              answerElement.getWarnings().put(name, result.getWarnings());
-            }
-            if (!result.getParseTreeSentences().isEmpty()) {
-              answerElement.getParseTrees().put(name, result.getParseTreeSentences());
-            }
-          });
+      _fileResults.forEach((name, result) -> {
+        if (!result.getWarnings().isEmpty()) {
+          answerElement.getWarnings().put(name, result.getWarnings());
+        }
+        if (!result.getParseTreeSentences().isEmpty()) {
+          answerElement.getParseTrees().put(name, result.getParseTreeSentences());
+        }
+      });
     } else if (_fileResults.values().stream()
         .anyMatch(fileResult -> fileResult.getParseStatus() == ParseStatus.FAILED)) {
       assert _failureCause != null; // status == FAILED, failureCause must be non-null

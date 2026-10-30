@@ -543,12 +543,11 @@ public final class CheckpointNatConversionsTest {
                   ORIG_UID,
                   ORIG_UID,
                   UID))
-          .forEach(
-              rule -> {
-                Warnings warnings = new Warnings(true, true, true);
-                assertFalse(shouldConvertAutomaticRule(rule, objs, warnings));
-                assertThat(warnings.getRedFlagWarnings(), empty());
-              });
+          .forEach(rule -> {
+            Warnings warnings = new Warnings(true, true, true);
+            assertFalse(shouldConvertAutomaticRule(rule, objs, warnings));
+            assertThat(warnings.getRedFlagWarnings(), empty());
+          });
     }
     {
       // Rule that should be converted

@@ -74,10 +74,9 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
       NodeRoleDimension roleDimension =
           _batfish
               .getNodeRoleDimension(question.getRoleDimension())
-              .orElseThrow(
-                  () ->
-                      new BatfishException(
-                          "No role dimension found for " + question.getRoleDimension()));
+              .orElseThrow(() ->
+                  new BatfishException(
+                      "No role dimension found for " + question.getRoleDimension()));
 
       SortedMap<String, SortedSet<String>> roleNodeMap =
           roleDimension.createRoleNodesMap(includeNodes);

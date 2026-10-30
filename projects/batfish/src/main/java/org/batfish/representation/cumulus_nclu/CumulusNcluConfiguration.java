@@ -168,24 +168,21 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             .map(Entry::getKey);
     Stream<String> matchingInterfaceNames =
         _interfaces.entrySet().stream()
-            .filter(
-                interfaceEntry ->
-                    Objects.equals(interfaceEntry.getValue().getVrf(), assignedVrfName))
+            .filter(interfaceEntry ->
+                Objects.equals(interfaceEntry.getValue().getVrf(), assignedVrfName))
             .map(Entry::getKey);
     Stream<String> matchingVlanNames =
         _vlans.entrySet().stream()
-            .filter(
-                interfaceEntry ->
-                    Objects.equals(interfaceEntry.getValue().getVrf(), assignedVrfName))
+            .filter(interfaceEntry ->
+                Objects.equals(interfaceEntry.getValue().getVrf(), assignedVrfName))
             .map(Entry::getKey);
     Stream<String> matchingVrfLoopbackNames = Stream.of(assignedVrfName);
     Streams.concat(
             matchingBondNames, matchingInterfaceNames, matchingVlanNames, matchingVrfLoopbackNames)
         .map(_c.getAllInterfaces()::get)
-        .forEach(
-            iface -> {
-              iface.setVrf(vrf);
-            });
+        .forEach(iface -> {
+          iface.setVrf(vrf);
+        });
   }
 
   private void convertBondInterfaces() {
@@ -200,12 +197,11 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             .collect(ImmutableSortedSet.toImmutableSortedSet(naturalOrder())));
     // Add all unassigned interfaces to default VRF
     _c.getAllInterfaces()
-        .forEach(
-            (ifaceName, iface) -> {
-              if (iface.getVrf() == null) {
-                iface.setVrf(defaultVrf);
-              }
-            });
+        .forEach((ifaceName, iface) -> {
+          if (iface.getVrf() == null) {
+            iface.setVrf(defaultVrf);
+          }
+        });
     _c.getVrfs().put(DEFAULT_VRF_NAME, defaultVrf);
   }
 
@@ -254,32 +250,28 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     // create physical interfaces
     _interfaces.values().stream()
         .filter(i -> i.getType() == CumulusInterfaceType.PHYSICAL)
-        .forEach(
-            physicalInterface ->
-                _c.getAllInterfaces()
-                    .put(physicalInterface.getName(), toInterface(physicalInterface)));
+        .forEach(physicalInterface ->
+            _c.getAllInterfaces().put(physicalInterface.getName(), toInterface(physicalInterface)));
     // create VI interface for every superinterface of a physical subinterface not explicitly
     // configured
     _interfaces.values().stream()
         .filter(i -> i.getType() == CumulusInterfaceType.PHYSICAL_SUBINTERFACE)
         .map(Interface::getSuperInterfaceName)
         .filter(Predicates.not(_interfaces::containsKey))
-        .forEach(
-            superInterfaceName ->
-                _c.getAllInterfaces()
-                    .put(
-                        superInterfaceName,
-                        toInterface(
-                            new Interface(
-                                superInterfaceName, CumulusInterfaceType.PHYSICAL, null, null))));
+        .forEach(superInterfaceName ->
+            _c.getAllInterfaces()
+                .put(
+                    superInterfaceName,
+                    toInterface(
+                        new Interface(
+                            superInterfaceName, CumulusInterfaceType.PHYSICAL, null, null))));
   }
 
   private void convertSubinterfaces() {
     _interfaces.values().stream()
-        .filter(
-            i ->
-                i.getType() == CumulusInterfaceType.BOND_SUBINTERFACE
-                    || i.getType() == CumulusInterfaceType.PHYSICAL_SUBINTERFACE)
+        .filter(i ->
+            i.getType() == CumulusInterfaceType.BOND_SUBINTERFACE
+                || i.getType() == CumulusInterfaceType.PHYSICAL_SUBINTERFACE)
         .map(i -> toInterface(i, i.getSuperInterfaceName()))
         .forEach(newIface -> _c.getAllInterfaces().put(newIface.getName(), newIface));
   }
@@ -701,19 +693,17 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     Map<Integer, List<Bond>> clagBondsById = new HashMap<>();
     _bonds.values().stream()
         .filter(bond -> bond.getClagId() != null)
-        .forEach(
-            clagBond ->
-                clagBondsById
-                    .computeIfAbsent(clagBond.getClagId(), id -> new LinkedList<>())
-                    .add(clagBond));
-    clagBondsById.forEach(
-        (id, clagBonds) -> {
-          if (clagBonds.size() > 1) {
-            _w.redFlagf(
-                "clag-id %d is erroneously configured on more than one bond: %s",
-                id, clagBonds.stream().map(Bond::getName).collect(ImmutableList.toImmutableList()));
-          }
-        });
+        .forEach(clagBond ->
+            clagBondsById
+                .computeIfAbsent(clagBond.getClagId(), id -> new LinkedList<>())
+                .add(clagBond));
+    clagBondsById.forEach((id, clagBonds) -> {
+      if (clagBonds.size() > 1) {
+        _w.redFlagf(
+            "clag-id %d is erroneously configured on more than one bond: %s",
+            id, clagBonds.stream().map(Bond::getName).collect(ImmutableList.toImmutableList()));
+      }
+    });
   }
 
   public @Nullable Vrf getVrf(String vrfName) {

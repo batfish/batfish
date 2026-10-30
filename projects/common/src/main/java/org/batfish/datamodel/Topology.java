@@ -49,11 +49,10 @@ public final class Topology implements Serializable {
       Iterable<Edge> edges) {
     Map<NodeInterfacePair, ImmutableSortedSet.Builder<NodeInterfacePair>> builders =
         new HashMap<>();
-    edges.forEach(
-        edge ->
-            builders
-                .computeIfAbsent(edge.getTail(), k -> ImmutableSortedSet.naturalOrder())
-                .add(edge.getHead()));
+    edges.forEach(edge ->
+        builders
+            .computeIfAbsent(edge.getTail(), k -> ImmutableSortedSet.naturalOrder())
+            .add(edge.getHead()));
     return CollectionUtil.toImmutableSortedMap(
         builders, Entry::getKey, entry -> entry.getValue().build());
   }
@@ -92,13 +91,12 @@ public final class Topology implements Serializable {
       @Nonnull Set<NodeInterfacePair> blacklistInterfaces) {
     return new Topology(
         _edges.stream()
-            .filter(
-                edge ->
-                    !blacklistEdges.contains(edge)
-                        && !blacklistNodes.contains(edge.getNode1())
-                        && !blacklistNodes.contains(edge.getNode2())
-                        && !blacklistInterfaces.contains(edge.getTail())
-                        && !blacklistInterfaces.contains(edge.getHead()))
+            .filter(edge ->
+                !blacklistEdges.contains(edge)
+                    && !blacklistNodes.contains(edge.getNode1())
+                    && !blacklistNodes.contains(edge.getNode2())
+                    && !blacklistInterfaces.contains(edge.getTail())
+                    && !blacklistInterfaces.contains(edge.getHead()))
             .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural())));
   }
 

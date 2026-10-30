@@ -70,11 +70,10 @@ public final class LastHopOutgoingInterfaceManager implements Serializable {
     // Nodes that can have sessions (and thus need to track last hop outgoing interface).
     Set<String> sessionNodes =
         configs.values().stream()
-            .filter(
-                config ->
-                    config.getAllInterfaces().values().stream()
-                        .filter(Interface::getActive)
-                        .anyMatch(iface -> iface.getFirewallSessionInterfaceInfo() != null))
+            .filter(config ->
+                config.getAllInterfaces().values().stream()
+                    .filter(Interface::getActive)
+                    .anyMatch(iface -> iface.getFirewallSessionInterfaceInfo() != null))
             .map(Configuration::getHostname)
             .collect(ImmutableSet.toImmutableSet());
 

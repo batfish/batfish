@@ -338,23 +338,21 @@ public class CheckpointNatConversions {
             .orElse(null);
     return natRulebase.getRulebase().stream()
         // Convert to stream of all rules
-        .flatMap(
-            ruleOrSection ->
-                new NatRuleOrSectionVisitor<Stream<NatRule>>() {
-                  @Override
-                  public Stream<NatRule> visitNatRule(NatRule natRule) {
-                    return Stream.of(natRule);
-                  }
+        .flatMap(ruleOrSection ->
+            new NatRuleOrSectionVisitor<Stream<NatRule>>() {
+              @Override
+              public Stream<NatRule> visitNatRule(NatRule natRule) {
+                return Stream.of(natRule);
+              }
 
-                  @Override
-                  public Stream<NatRule> visitNatSection(NatSection natSection) {
-                    return natSection.getRulebase().stream();
-                  }
-                }.visit(ruleOrSection))
+              @Override
+              public Stream<NatRule> visitNatSection(NatSection natSection) {
+                return natSection.getRulebase().stream();
+              }
+            }.visit(ruleOrSection))
         .filter(NatRule::isEnabled)
-        .filter(
-            natRule ->
-                appliesToGateway(natRule.getInstallOn(), policyTargetsUid, domainAndGateway));
+        .filter(natRule ->
+            appliesToGateway(natRule.getInstallOn(), policyTargetsUid, domainAndGateway));
   }
 
   /**

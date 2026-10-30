@@ -115,11 +115,10 @@ public final class SearchFiltersAnswerer extends Answerer {
         Stream.of(result.getDecreasedFlow(), result.getIncreasedFlow())
             .filter(Optional::isPresent)
             .map(Optional::get)
-            .forEach(
-                flow -> {
-                  baseTable.addRow(testFiltersRow(snapshot, hostname, aclName, flow));
-                  refTable.addRow(testFiltersRow(reference, hostname, aclName, flow));
-                });
+            .forEach(flow -> {
+              baseTable.addRow(testFiltersRow(snapshot, hostname, aclName, flow));
+              refTable.addRow(testFiltersRow(reference, hostname, aclName, flow));
+            });
       }
     }
 

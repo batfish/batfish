@@ -230,16 +230,15 @@ public final class IspModelingUtils {
       Map<String, Configuration> configurations, Map<Long, IspModel> asnToIspInfo) {
     ImmutableList.Builder<String> conflicts = ImmutableList.builder();
 
-    asnToIspInfo.forEach(
-        (asn, ispInfo) -> {
-          String hostname = ispInfo.getHostname();
-          if (configurations.containsKey(hostname)) {
-            conflicts.add(
-                String.format(
-                    "ISP hostname %s for ASN %d conflicts with a node name in the snapshot",
-                    hostname, asn));
-          }
-        });
+    asnToIspInfo.forEach((asn, ispInfo) -> {
+      String hostname = ispInfo.getHostname();
+      if (configurations.containsKey(hostname)) {
+        conflicts.add(
+            String.format(
+                "ISP hostname %s for ASN %d conflicts with a node name in the snapshot",
+                hostname, asn));
+      }
+    });
     return conflicts.build();
   }
 
@@ -275,22 +274,21 @@ public final class IspModelingUtils {
     ImmutableSet.Builder<IspPeering> ispPeerings = ImmutableSet.builder();
     ispConfigurations.stream()
         .flatMap(ispConfig -> ispConfig.getIspPeeringInfos().stream())
-        .forEach(
-            peeringInfo -> {
-              if (!ispModels.containsKey(peeringInfo.getPeer1().getAsn())) {
-                warnings.redFlagf(
-                    "ISP Modeling: Could not find ISP with ASN %s, specified for ISP peering",
-                    peeringInfo.getPeer1().getAsn());
-                return;
-              }
-              if (!ispModels.containsKey(peeringInfo.getPeer2().getAsn())) {
-                warnings.redFlagf(
-                    "ISP Modeling: Could not find ISP with ASN %s, specified for ISP peering",
-                    peeringInfo.getPeer2().getAsn());
-                return;
-              }
-              ispPeerings.add(IspPeering.create(peeringInfo));
-            });
+        .forEach(peeringInfo -> {
+          if (!ispModels.containsKey(peeringInfo.getPeer1().getAsn())) {
+            warnings.redFlagf(
+                "ISP Modeling: Could not find ISP with ASN %s, specified for ISP peering",
+                peeringInfo.getPeer1().getAsn());
+            return;
+          }
+          if (!ispModels.containsKey(peeringInfo.getPeer2().getAsn())) {
+            warnings.redFlagf(
+                "ISP Modeling: Could not find ISP with ASN %s, specified for ISP peering",
+                peeringInfo.getPeer2().getAsn());
+            return;
+          }
+          ispPeerings.add(IspPeering.create(peeringInfo));
+        });
 
     return ispPeerings.build();
   }
@@ -332,12 +330,10 @@ public final class IspModelingUtils {
       for (BgpPeerInfo bgpPeerInfo : ispConfiguration.getBgpPeerInfos()) {
         getSnapshotConnectionForBgpPeerInfo(
                 bgpPeerInfo, allowedIspIps, allowedIspAsns, configurations, warnings)
-            .ifPresent(
-                sc ->
-                    asnToRemotes
-                        .computeIfAbsent(
-                            sc.getBgpPeer().getLocalAsn(), k -> ImmutableList.builder())
-                        .add(sc));
+            .ifPresent(sc ->
+                asnToRemotes
+                    .computeIfAbsent(sc.getBgpPeer().getLocalAsn(), k -> ImmutableList.builder())
+                    .add(sc));
       }
     }
 
@@ -421,16 +417,11 @@ public final class IspModelingUtils {
         snapshotHost.getVrfs().values().stream()
             .map(Vrf::getBgpProcess)
             .filter(Objects::nonNull)
-            .flatMap(
-                bgpProcess ->
-                    StreamSupport.stream(bgpProcess.getAllPeerConfigs().spliterator(), false))
-            .filter(
-                bgpPeerConfig ->
-                    isValidBgpPeerForBorderInterfaceInfo(
-                        bgpPeerConfig,
-                        snapshotIface.getAllConcreteAddresses(),
-                        remoteIps,
-                        remoteAsns))
+            .flatMap(bgpProcess ->
+                StreamSupport.stream(bgpProcess.getAllPeerConfigs().spliterator(), false))
+            .filter(bgpPeerConfig ->
+                isValidBgpPeerForBorderInterfaceInfo(
+                    bgpPeerConfig, snapshotIface.getAllConcreteAddresses(), remoteIps, remoteAsns))
             .collect(Collectors.toList());
 
     if (validBgpPeers.isEmpty()) {
@@ -731,17 +722,15 @@ public final class IspModelingUtils {
 
     asnToIspModel
         .values()
-        .forEach(
-            ispModel ->
-                createIspNode(ispModel, logger)
-                    .ifPresent(
-                        ispConfiguration -> {
-                          Set<Layer1Edge> layer1Edges =
-                              connectIspToSnapshot(ispModel, ispConfiguration, logger);
+        .forEach(ispModel ->
+            createIspNode(ispModel, logger)
+                .ifPresent(ispConfiguration -> {
+                  Set<Layer1Edge> layer1Edges =
+                      connectIspToSnapshot(ispModel, ispConfiguration, logger);
 
-                          modeledNodes.addConfiguration(ispConfiguration);
-                          layer1Edges.forEach(modeledNodes::addLayer1Edge);
-                        }));
+                  modeledNodes.addConfiguration(ispConfiguration);
+                  layer1Edges.forEach(modeledNodes::addLayer1Edge);
+                }));
 
     // not proceeding if no ISPs were created
     if (modeledNodes.getConfigurations().isEmpty()) {
@@ -757,33 +746,30 @@ public final class IspModelingUtils {
 
       modeledNodes.getConfigurations().values().stream()
           .filter(c -> c != internet)
-          .forEach(
-              c -> {
-                long ispAsn = getAsnOfIspNode(c);
-                if (asnToIspModel.get(ispAsn).getRole() == Role.TRANSIT) {
-                  Set<Layer1Edge> layer1Edges =
-                      connectIspToInternet(ispAsn, asnToIspModel.get(ispAsn), c, internet);
-                  layer1Edges.forEach(modeledNodes::addLayer1Edge);
-                }
-              });
+          .forEach(c -> {
+            long ispAsn = getAsnOfIspNode(c);
+            if (asnToIspModel.get(ispAsn).getRole() == Role.TRANSIT) {
+              Set<Layer1Edge> layer1Edges =
+                  connectIspToInternet(ispAsn, asnToIspModel.get(ispAsn), c, internet);
+              layer1Edges.forEach(modeledNodes::addLayer1Edge);
+            }
+          });
     }
 
-    ispPeerings.forEach(
-        ispPeering -> {
-          IspModel ispModel1 = asnToIspModel.get(ispPeering.getAsn1());
-          IspModel ispModel2 = asnToIspModel.get(ispPeering.getAsn2());
-          Configuration ispConfiguration1 =
-              modeledNodes.getConfigurations().get(ispModel1.getHostname());
-          Configuration ispConfiguration2 =
-              modeledNodes.getConfigurations().get(ispModel2.getHostname());
-          if (ispConfiguration1 == null || ispConfiguration2 == null) {
-            return;
-          }
-          Set<Layer1Edge> layer1Edges =
-              connectPeerIsps(
-                  ispPeering, ispModel1, ispModel2, ispConfiguration1, ispConfiguration2);
-          layer1Edges.forEach(modeledNodes::addLayer1Edge);
-        });
+    ispPeerings.forEach(ispPeering -> {
+      IspModel ispModel1 = asnToIspModel.get(ispPeering.getAsn1());
+      IspModel ispModel2 = asnToIspModel.get(ispPeering.getAsn2());
+      Configuration ispConfiguration1 =
+          modeledNodes.getConfigurations().get(ispModel1.getHostname());
+      Configuration ispConfiguration2 =
+          modeledNodes.getConfigurations().get(ispModel2.getHostname());
+      if (ispConfiguration1 == null || ispConfiguration2 == null) {
+        return;
+      }
+      Set<Layer1Edge> layer1Edges =
+          connectPeerIsps(ispPeering, ispModel1, ispModel2, ispConfiguration1, ispConfiguration2);
+      layer1Edges.forEach(modeledNodes::addLayer1Edge);
+    });
 
     return modeledNodes;
   }
@@ -888,13 +874,12 @@ public final class IspModelingUtils {
                         .build())
                 .addAll(
                     INTERNET_NULL_ROUTED_PREFIXES.stream()
-                        .map(
-                            prefix ->
-                                StaticRoute.builder()
-                                    .setNetwork(prefix)
-                                    .setNextHopInterface(NULL_INTERFACE_NAME)
-                                    .setAdministrativeCost(1)
-                                    .build())
+                        .map(prefix ->
+                            StaticRoute.builder()
+                                .setNetwork(prefix)
+                                .setNextHopInterface(NULL_INTERFACE_NAME)
+                                .setAdministrativeCost(1)
+                                .build())
                         .collect(ImmutableSet.toImmutableSet()))
                 .build());
 
@@ -937,13 +922,12 @@ public final class IspModelingUtils {
         .setStaticRoutes(
             ImmutableSortedSet.copyOf(
                 ispModel.getAdditionalPrefixesToInternet().stream()
-                    .map(
-                        prefix ->
-                            StaticRoute.builder()
-                                .setNetwork(prefix)
-                                .setNextHopInterface(NULL_INTERFACE_NAME)
-                                .setAdministrativeCost(HIGH_ADMINISTRATIVE_COST)
-                                .build())
+                    .map(prefix ->
+                        StaticRoute.builder()
+                            .setNetwork(prefix)
+                            .setNextHopInterface(NULL_INTERFACE_NAME)
+                            .setAdministrativeCost(HIGH_ADMINISTRATIVE_COST)
+                            .build())
                     .collect(ImmutableSet.toImmutableSet())));
 
     PrefixSpace prefixSpace = new PrefixSpace();
@@ -1047,11 +1031,10 @@ public final class IspModelingUtils {
             ispModel.getSnapshotConnections().stream()
                 .flatMap(sc -> sc.getInterfaces().stream())
                 .map(IspInterface::getAddress)
-                .map(
-                    addr ->
-                        addr instanceof ConcreteInterfaceAddress
-                            ? ((ConcreteInterfaceAddress) addr).getIp()
-                            : LINK_LOCAL_IP)
+                .map(addr ->
+                    addr instanceof ConcreteInterfaceAddress
+                        ? ((ConcreteInterfaceAddress) addr).getIp()
+                        : LINK_LOCAL_IP)
                 .min(Ip::compareTo)
                 .orElse(Ip.ZERO),
             ispConfiguration.getDefaultVrf());
@@ -1084,35 +1067,33 @@ public final class IspModelingUtils {
 
     ispModel
         .getSnapshotConnections()
-        .forEach(
-            snapshotConnection -> {
-              snapshotConnection
-                  .getInterfaces()
-                  .forEach(
-                      iface -> {
-                        Interface ispInterface =
-                            Interface.builder()
-                                .setOwner(ispConfiguration)
-                                .setName(iface.getName())
-                                .setVrf(ispConfiguration.getDefaultVrf())
-                                .setAddress(iface.getAddress())
-                                .setIncomingFilter(fromNetwork)
-                                .setOutgoingFilter(toNetwork)
-                                .setType(InterfaceType.PHYSICAL)
-                                .setEncapsulationVlan(iface.getVlanTag())
-                                .setSwitchport(false)
-                                .setSwitchportMode(SwitchportMode.NONE)
-                                .build();
-                        Layer1Node ispL1 =
-                            new Layer1Node(ispConfiguration.getHostname(), ispInterface.getName());
-                        layer1Edges.add(new Layer1Edge(ispL1, iface.getLayer1Remote()));
-                        layer1Edges.add(new Layer1Edge(iface.getLayer1Remote(), ispL1));
-                      });
-              addBgpPeerToIsp(
-                  snapshotConnection.getBgpPeer(),
-                  ispConfiguration.getDefaultVrf().getBgpProcess(),
-                  ispModel.getRole());
-            });
+        .forEach(snapshotConnection -> {
+          snapshotConnection
+              .getInterfaces()
+              .forEach(iface -> {
+                Interface ispInterface =
+                    Interface.builder()
+                        .setOwner(ispConfiguration)
+                        .setName(iface.getName())
+                        .setVrf(ispConfiguration.getDefaultVrf())
+                        .setAddress(iface.getAddress())
+                        .setIncomingFilter(fromNetwork)
+                        .setOutgoingFilter(toNetwork)
+                        .setType(InterfaceType.PHYSICAL)
+                        .setEncapsulationVlan(iface.getVlanTag())
+                        .setSwitchport(false)
+                        .setSwitchportMode(SwitchportMode.NONE)
+                        .build();
+                Layer1Node ispL1 =
+                    new Layer1Node(ispConfiguration.getHostname(), ispInterface.getName());
+                layer1Edges.add(new Layer1Edge(ispL1, iface.getLayer1Remote()));
+                layer1Edges.add(new Layer1Edge(iface.getLayer1Remote(), ispL1));
+              });
+          addBgpPeerToIsp(
+              snapshotConnection.getBgpPeer(),
+              ispConfiguration.getDefaultVrf().getBgpProcess(),
+              ispModel.getRole());
+        });
 
     return layer1Edges.build();
   }

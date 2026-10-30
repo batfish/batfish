@@ -81,9 +81,8 @@ public final class WorkResource {
   public @Nonnull List<WorkStatus> listIncompleteWork(
       @QueryParam(QP_TYPE) @Nullable WorkType workType) {
     return Main.getWorkMgr().listIncompleteWork(_network, _snapshot, workType).stream()
-        .map(
-            work ->
-                new WorkStatus(work.getWorkItem(), work.getStatus(), work.getLastTaskCheckResult()))
+        .map(work ->
+            new WorkStatus(work.getWorkItem(), work.getStatus(), work.getLastTaskCheckResult()))
         .collect(ImmutableList.toImmutableList());
   }
 

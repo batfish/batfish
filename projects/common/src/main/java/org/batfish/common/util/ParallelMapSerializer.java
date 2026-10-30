@@ -30,23 +30,21 @@ public final class ParallelMapSerializer {
     // collect in its source's order.
     List<String> keys = new ArrayList<>(byKey.size());
     List<Object> values = new ArrayList<>(byKey.size());
-    byKey.forEach(
-        (key, value) -> {
-          keys.add(key);
-          values.add(value);
-        });
+    byKey.forEach((key, value) -> {
+      keys.add(key);
+      values.add(value);
+    });
     List<byte[]> chunks =
         values.parallelStream()
-            .map(
-                value -> {
-                  ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-                  try (ObjectOutputStream chunk = new ObjectOutputStream(bytes)) {
-                    chunk.writeObject(value);
-                  } catch (IOException e) {
-                    throw new UncheckedIOException(e);
-                  }
-                  return bytes.toByteArray();
-                })
+            .map(value -> {
+              ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+              try (ObjectOutputStream chunk = new ObjectOutputStream(bytes)) {
+                chunk.writeObject(value);
+              } catch (IOException e) {
+                throw new UncheckedIOException(e);
+              }
+              return bytes.toByteArray();
+            })
             .collect(Collectors.toList());
     out.writeInt(chunks.size());
     for (int i = 0; i < chunks.size(); i++) {
@@ -71,17 +69,16 @@ public final class ParallelMapSerializer {
     }
     List<V> values =
         chunks.parallelStream()
-            .map(
-                chunk -> {
-                  try (ObjectInputStream chunkIn =
-                      new ObjectInputStream(new ByteArrayInputStream(chunk))) {
-                    return (V) chunkIn.readObject();
-                  } catch (IOException e) {
-                    throw new UncheckedIOException(e);
-                  } catch (ClassNotFoundException e) {
-                    throw new IllegalStateException(e);
-                  }
-                })
+            .map(chunk -> {
+              try (ObjectInputStream chunkIn =
+                  new ObjectInputStream(new ByteArrayInputStream(chunk))) {
+                return (V) chunkIn.readObject();
+              } catch (IOException e) {
+                throw new UncheckedIOException(e);
+              } catch (ClassNotFoundException e) {
+                throw new IllegalStateException(e);
+              }
+            })
             .collect(Collectors.toList());
     Map<String, V> result = new LinkedHashMap<>(count * 2);
     for (int i = 0; i < count; i++) {

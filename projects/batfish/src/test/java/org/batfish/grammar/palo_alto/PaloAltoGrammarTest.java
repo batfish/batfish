@@ -2793,13 +2793,12 @@ public final class PaloAltoGrammarTest {
     String emptyToNonEmptyFilterName = zoneToZoneFilter(emptyZoneObjName, zoneObjName);
     String nonEmptyToEmptyFilterName = zoneToZoneFilter(zoneObjName, emptyZoneObjName);
     ImmutableList.of(emptyIntrazoneFilterName, emptyToNonEmptyFilterName, nonEmptyToEmptyFilterName)
-        .forEach(
-            filterName -> {
-              IpAccessList filter = c.getIpAccessLists().get(filterName);
-              assertThat(
-                  filter.getLines(),
-                  contains(hasTraceElement(emptyZoneRejectTraceElement(vsysName, emptyZoneName))));
-            });
+        .forEach(filterName -> {
+          IpAccessList filter = c.getIpAccessLists().get(filterName);
+          assertThat(
+              filter.getLines(),
+              contains(hasTraceElement(emptyZoneRejectTraceElement(vsysName, emptyZoneName))));
+        });
   }
 
   @Test

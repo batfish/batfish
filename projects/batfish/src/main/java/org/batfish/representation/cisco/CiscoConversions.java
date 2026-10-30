@@ -282,14 +282,13 @@ public class CiscoConversions {
           // convert all entries of the referred dynamic crypto map
           dynamicCryptoMapSet
               .getCryptoMapEntries()
-              .forEach(
-                  cryptoMap ->
-                      convertCryptoMapEntry(
-                          c,
-                          cryptoMap,
-                          String.format("%s:%s", nameSeqNum, cryptoMap.getSequenceNumber()),
-                          cryptoMapEntry.getName(),
-                          w));
+              .forEach(cryptoMap ->
+                  convertCryptoMapEntry(
+                      c,
+                      cryptoMap,
+                      String.format("%s:%s", nameSeqNum, cryptoMap.getSequenceNumber()),
+                      cryptoMapEntry.getName(),
+                      w));
         }
       } else {
         convertCryptoMapEntry(c, cryptoMapEntry, nameSeqNum, cryptoMapEntry.getName(), w);
@@ -496,10 +495,9 @@ public class CiscoConversions {
       interfaceNameToInterface
           .getValue()
           .getAllAddresses()
-          .forEach(
-              interfaceAddress -> {
-                ipToIfaceNameMap.put(interfaceAddress.getIp(), interfaceNameToInterface.getKey());
-              });
+          .forEach(interfaceAddress -> {
+            ipToIfaceNameMap.put(interfaceAddress.getIp(), interfaceNameToInterface.getKey());
+          });
     }
     return ipToIfaceNameMap;
   }
@@ -512,11 +510,10 @@ public class CiscoConversions {
     // setting empty string as interface name if cannot find the IP
     keyrings.values().stream()
         .filter(keyring -> keyring.getLocalAddress() != null)
-        .forEach(
-            keyring ->
-                keyring.setLocalInterfaceName(
-                    firstNonNull(
-                        iptoIfaceName.get(keyring.getLocalAddress()), INVALID_LOCAL_INTERFACE)));
+        .forEach(keyring ->
+            keyring.setLocalInterfaceName(
+                firstNonNull(
+                    iptoIfaceName.get(keyring.getLocalAddress()), INVALID_LOCAL_INTERFACE)));
   }
 
   /**
@@ -528,12 +525,10 @@ public class CiscoConversions {
 
     isakpProfiles.values().stream()
         .filter(isakmpProfile -> isakmpProfile.getLocalAddress() != null)
-        .forEach(
-            isakmpProfile ->
-                isakmpProfile.setLocalInterfaceName(
-                    firstNonNull(
-                        iptoIfaceName.get(isakmpProfile.getLocalAddress()),
-                        INVALID_LOCAL_INTERFACE)));
+        .forEach(isakmpProfile ->
+            isakmpProfile.setLocalInterfaceName(
+                firstNonNull(
+                    iptoIfaceName.get(isakmpProfile.getLocalAddress()), INVALID_LOCAL_INTERFACE)));
   }
 
   /** Resolves the interface names of the addresses used as source addresses in {@link Tunnel}s */
@@ -670,10 +665,9 @@ public class CiscoConversions {
 
     ikePhase1Policy.setIkePhase1Proposals(
         oldConfig.getIsakmpPolicies().values().stream()
-            .filter(
-                isakmpPolicy ->
-                    isakmpPolicy.getAuthenticationMethod()
-                        == IkeAuthenticationMethod.RSA_ENCRYPTED_NONCES)
+            .filter(isakmpPolicy ->
+                isakmpPolicy.getAuthenticationMethod()
+                    == IkeAuthenticationMethod.RSA_ENCRYPTED_NONCES)
             .map(isakmpPolicy -> isakmpPolicy.getName().toString())
             .collect(ImmutableList.toImmutableList()));
     if (rsaPubKey.getAddress() != null) {
@@ -693,10 +687,8 @@ public class CiscoConversions {
 
     ikePhase1Policy.setIkePhase1Proposals(
         oldConfig.getIsakmpPolicies().values().stream()
-            .filter(
-                isakmpPolicy ->
-                    isakmpPolicy.getAuthenticationMethod()
-                        == IkeAuthenticationMethod.PRE_SHARED_KEYS)
+            .filter(isakmpPolicy ->
+                isakmpPolicy.getAuthenticationMethod() == IkeAuthenticationMethod.PRE_SHARED_KEYS)
             .map(isakmpPolicy -> isakmpPolicy.getName().toString())
             .collect(ImmutableList.toImmutableList()));
     ikePhase1Policy.setRemoteIdentity(isakmpKey.getAddress());
@@ -787,15 +779,14 @@ public class CiscoConversions {
             : CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED_LINE;
     List<AclLine> lines =
         eaList.getLines().stream()
-            .map(
-                l ->
-                    toIpAccessListLine(l, objectGroups)
-                        .setVendorStructureId(
-                            new VendorStructureId(
-                                filename,
-                                lineType.getDescription(),
-                                aclLineStructureName(aclName, l.getName())))
-                        .build())
+            .map(l ->
+                toIpAccessListLine(l, objectGroups)
+                    .setVendorStructureId(
+                        new VendorStructureId(
+                            filename,
+                            lineType.getDescription(),
+                            aclLineStructureName(aclName, l.getName())))
+                    .build())
             .collect(ImmutableList.toImmutableList());
     String sourceType =
         isStandard
@@ -1346,10 +1337,9 @@ public class CiscoConversions {
   static RouteFilterList toRouteFilterList(PrefixList list, String vendorConfigFilename) {
     List<RouteFilterLine> newLines =
         list.getLines().values().stream()
-            .map(
-                l ->
-                    new RouteFilterLine(
-                        l.getAction(), IpWildcard.create(l.getPrefix()), l.getLengthRange()))
+            .map(l ->
+                new RouteFilterLine(
+                    l.getAction(), IpWildcard.create(l.getPrefix()), l.getLengthRange()))
             .collect(ImmutableList.toImmutableList());
     return new RouteFilterList(
         list.getName(),
@@ -1880,19 +1870,18 @@ public class CiscoConversions {
 
   static void convertIpSlas(Map<Integer, IpSla> slas, Configuration c) {
     IpSlaConverter converter = new IpSlaConverter(c);
-    slas.forEach(
-        (slaNum, sla) -> {
-          String name = generatedIpSlaTrackMethodName(slaNum);
-          TrackMethod method;
-          if (!(sla.getLivesForever() && sla.getStartsEventually())) {
-            // We assume "infinite" time has passed since the configuration was applied.
-            // So either the sla expired, or it never started.
-            method = alwaysFalse();
-          } else {
-            method = converter.visit(sla);
-          }
-          c.getTrackingGroups().put(name, method);
-        });
+    slas.forEach((slaNum, sla) -> {
+      String name = generatedIpSlaTrackMethodName(slaNum);
+      TrackMethod method;
+      if (!(sla.getLivesForever() && sla.getStartsEventually())) {
+        // We assume "infinite" time has passed since the configuration was applied.
+        // So either the sla expired, or it never started.
+        method = alwaysFalse();
+      } else {
+        method = converter.visit(sla);
+      }
+      c.getTrackingGroups().put(name, method);
+    });
   }
 
   private static class IpSlaConverter implements IpSlaVisitor<TrackMethod> {

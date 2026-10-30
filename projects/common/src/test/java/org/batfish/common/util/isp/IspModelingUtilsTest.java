@@ -671,13 +671,12 @@ public class IspModelingUtilsTest {
         equalTo(
             ImmutableSortedSet.copyOf(
                 ispModel.getAdditionalPrefixesToInternet().stream()
-                    .map(
-                        prefix ->
-                            StaticRoute.testBuilder()
-                                .setNetwork(prefix)
-                                .setNextHopInterface(NULL_INTERFACE_NAME)
-                                .setAdministrativeCost(HIGH_ADMINISTRATIVE_COST)
-                                .build())
+                    .map(prefix ->
+                        StaticRoute.testBuilder()
+                            .setNetwork(prefix)
+                            .setNextHopInterface(NULL_INTERFACE_NAME)
+                            .setAdministrativeCost(HIGH_ADMINISTRATIVE_COST)
+                            .build())
                     .collect(ImmutableSet.toImmutableSet()))));
 
     PrefixSpace prefixSpace = new PrefixSpace();
@@ -1281,13 +1280,12 @@ public class IspModelingUtilsTest {
                                         .build())
                                 .addAll(
                                     INTERNET_NULL_ROUTED_PREFIXES.stream()
-                                        .map(
-                                            prefix ->
-                                                StaticRoute.testBuilder()
-                                                    .setNetwork(prefix)
-                                                    .setNextHopInterface(NULL_INTERFACE_NAME)
-                                                    .setAdministrativeCost(1)
-                                                    .build())
+                                        .map(prefix ->
+                                            StaticRoute.testBuilder()
+                                                .setNetwork(prefix)
+                                                .setNextHopInterface(NULL_INTERFACE_NAME)
+                                                .setAdministrativeCost(1)
+                                                .build())
                                         .collect(ImmutableSet.toImmutableSet()))
                                 .build())),
                     hasBgpProcess(

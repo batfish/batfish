@@ -57,18 +57,17 @@ public class SnapshotBddStressTests {
       Map<String, BDDSourceManager> srcMgrs = BDDSourceManager.forNetwork(_pkt, _configs);
       _configs
           .values()
-          .forEach(
-              cfg -> {
-                IpAccessListToBddImpl ipAccessListToBdd =
-                    new IpAccessListToBddImpl(
-                        _pkt,
-                        srcMgrs.get(cfg.getHostname()),
-                        cfg.getIpAccessLists(),
-                        cfg.getIpSpaces());
-                cfg.getIpAccessLists().values().stream()
-                    .map(ipAccessListToBdd::toBdd)
-                    .forEach(BDD::free);
-              });
+          .forEach(cfg -> {
+            IpAccessListToBddImpl ipAccessListToBdd =
+                new IpAccessListToBddImpl(
+                    _pkt,
+                    srcMgrs.get(cfg.getHostname()),
+                    cfg.getIpAccessLists(),
+                    cfg.getIpSpaces());
+            cfg.getIpAccessLists().values().stream()
+                .map(ipAccessListToBdd::toBdd)
+                .forEach(BDD::free);
+          });
       System.out.println(System.currentTimeMillis() - t);
     }
   }

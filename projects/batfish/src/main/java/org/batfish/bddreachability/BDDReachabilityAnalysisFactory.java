@@ -543,69 +543,65 @@ public final class BDDReachabilityAnalysisFactory {
       Map<StateExpr, BDD> rootBdds) {
     return rootBdds.entrySet().stream()
         .filter(entry -> entry.getKey() instanceof OriginateInterfaceLink)
-        .map(
-            entry -> {
-              OriginateInterfaceLink originateInterfaceLink =
-                  (OriginateInterfaceLink) entry.getKey();
-              String hostname = originateInterfaceLink.getHostname();
-              String iface = originateInterfaceLink.getInterface();
-              PreInInterface preInInterface = new PreInInterface(hostname, iface);
+        .map(entry -> {
+          OriginateInterfaceLink originateInterfaceLink = (OriginateInterfaceLink) entry.getKey();
+          String hostname = originateInterfaceLink.getHostname();
+          String iface = originateInterfaceLink.getInterface();
+          PreInInterface preInInterface = new PreInInterface(hostname, iface);
 
-              BDD rootBdd = entry.getValue();
+          BDD rootBdd = entry.getValue();
 
-              return new Edge(
-                  originateInterfaceLink,
-                  preInInterface,
-                  compose(
-                      constraint(rootBdd),
-                      addNoLastHopConstraint(_lastHopMgr, hostname, iface),
-                      addSourceInterfaceConstraint(_bddSourceManagers.get(hostname), iface)));
-            });
+          return new Edge(
+              originateInterfaceLink,
+              preInInterface,
+              compose(
+                  constraint(rootBdd),
+                  addNoLastHopConstraint(_lastHopMgr, hostname, iface),
+                  addSourceInterfaceConstraint(_bddSourceManagers.get(hostname), iface)));
+        });
   }
 
   @VisibleForTesting
   Stream<Edge> generateRootEdges_OriginateVrf_PostInVrf(Map<StateExpr, BDD> rootBdds) {
     return rootBdds.entrySet().stream()
         .filter(entry -> entry.getKey() instanceof OriginateVrf)
-        .map(
-            entry -> {
-              OriginateVrf originateVrf = (OriginateVrf) entry.getKey();
-              String hostname = originateVrf.getHostname();
-              String vrf = originateVrf.getVrf();
-              PostInVrf postInVrf = new PostInVrf(hostname, vrf);
-              BDD rootBdd = entry.getValue();
-              // Keep this edge's transition in sync with transition of session-matching edge,
-              // defined in SessionScopeFibLookupSessionEdges#visitOriginatingSessionScope.
-              return new Edge(
-                  originateVrf,
-                  postInVrf,
-                  compose(
-                      addOriginatingFromDeviceConstraint(_bddSourceManagers.get(hostname)),
-                      addOutgoingOriginalFlowFiltersConstraint(
-                          _bddOutgoingOriginalFlowFilterManagers.get(hostname)),
-                      constraint(rootBdd)));
-            });
+        .map(entry -> {
+          OriginateVrf originateVrf = (OriginateVrf) entry.getKey();
+          String hostname = originateVrf.getHostname();
+          String vrf = originateVrf.getVrf();
+          PostInVrf postInVrf = new PostInVrf(hostname, vrf);
+          BDD rootBdd = entry.getValue();
+          // Keep this edge's transition in sync with transition of session-matching edge,
+          // defined in SessionScopeFibLookupSessionEdges#visitOriginatingSessionScope.
+          return new Edge(
+              originateVrf,
+              postInVrf,
+              compose(
+                  addOriginatingFromDeviceConstraint(_bddSourceManagers.get(hostname)),
+                  addOutgoingOriginalFlowFiltersConstraint(
+                      _bddOutgoingOriginalFlowFilterManagers.get(hostname)),
+                  constraint(rootBdd)));
+        });
   }
 
   @VisibleForTesting
   Stream<Edge> generateRootEdges_OriginateInterface_PostInVrf(Map<StateExpr, BDD> rootBdds) {
     return rootBdds.entrySet().stream()
         .filter(e -> e.getKey() instanceof OriginateInterface)
-        .map(
-            e -> {
-              OriginateInterface state = (OriginateInterface) e.getKey();
-              String vrf = _interfacesToVrfsMap.get(state.getHostname()).get(state.getInterface());
-              PostInVrf postInVrf = new PostInVrf(state.getHostname(), vrf);
-              String hostname = state.getHostname();
-              return new Edge(
-                  state,
-                  postInVrf,
-                  compose(
-                      addOriginatingFromDeviceConstraint(_bddSourceManagers.get(hostname)),
-                      addOutgoingOriginalFlowFiltersConstraint(
-                          _bddOutgoingOriginalFlowFilterManagers.get(hostname)),
-                      constraint(e.getValue())));
-            });
+        .map(e -> {
+          OriginateInterface state = (OriginateInterface) e.getKey();
+          String vrf = _interfacesToVrfsMap.get(state.getHostname()).get(state.getInterface());
+          PostInVrf postInVrf = new PostInVrf(state.getHostname(), vrf);
+          String hostname = state.getHostname();
+          return new Edge(
+              state,
+              postInVrf,
+              compose(
+                  addOriginatingFromDeviceConstraint(_bddSourceManagers.get(hostname)),
+                  addOutgoingOriginalFlowFiltersConstraint(
+                      _bddOutgoingOriginalFlowFilterManagers.get(hostname)),
+                  constraint(e.getValue())));
+        });
   }
 
   /** Generate edges to each disposition. Depends on final nodes. */
@@ -674,16 +670,15 @@ public final class BDDReachabilityAnalysisFactory {
          * that doesn't exist in _configs.
          */
         .filter(_configs::containsKey)
-        .map(
-            node ->
-                new Edge(
-                    new NodeDropNoRoute(node),
-                    DropNoRoute.INSTANCE,
-                    removeNodeSpecificConstraints(
-                        node,
-                        _lastHopMgr,
-                        _bddOutgoingOriginalFlowFilterManagers.get(node),
-                        _bddSourceManagers.get(node))));
+        .map(node ->
+            new Edge(
+                new NodeDropNoRoute(node),
+                DropNoRoute.INSTANCE,
+                removeNodeSpecificConstraints(
+                    node,
+                    _lastHopMgr,
+                    _bddOutgoingOriginalFlowFilterManagers.get(node),
+                    _bddSourceManagers.get(node))));
   }
 
   private static Stream<Edge> generateRules_NodeDropNullRoute_DropNullRoute(
@@ -701,13 +696,12 @@ public final class BDDReachabilityAnalysisFactory {
         .filter(Objects::nonNull) // remove finalNodes that don't exist on this network
         .flatMap(Configuration::activeL3Interfaces)
         .filter(Interface::canSendIpTraffic)
-        .map(
-            iface -> {
-              String node = iface.getOwner().getHostname();
-              String ifaceName = iface.getName();
-              return new Edge(
-                  nodeInterfaceDispositionConstructor.apply(node, ifaceName), dispositionNode);
-            });
+        .map(iface -> {
+          String node = iface.getOwner().getHostname();
+          String ifaceName = iface.getName();
+          return new Edge(
+              nodeInterfaceDispositionConstructor.apply(node, ifaceName), dispositionNode);
+        });
   }
 
   private Stream<Edge> generateRules_NodeInterfaceNeighborUnreachable_NeighborUnreachable(
@@ -738,42 +732,40 @@ public final class BDDReachabilityAnalysisFactory {
     return getAllL3Interfaces()
         .filter(Interface::canReceiveIpTraffic)
         .filter(iface -> iface.getPostTransformationIncomingFilter() != null)
-        .map(
-            i -> {
-              IpAccessList acl = i.getPostTransformationIncomingFilter();
-              String node = i.getOwner().getHostname();
-              String iface = i.getName();
+        .map(i -> {
+          IpAccessList acl = i.getPostTransformationIncomingFilter();
+          String node = i.getOwner().getHostname();
+          String iface = i.getName();
 
-              BDD aclDenyBDD = ignorableAclDenyBDD(node, acl);
-              return new Edge(
-                  new PostInInterface(node, iface),
-                  new NodeDropAclIn(node),
-                  compose(
-                      constraint(aclDenyBDD),
-                      removeNodeSpecificConstraints(
-                          node,
-                          _lastHopMgr,
-                          _bddOutgoingOriginalFlowFilterManagers.get(node),
-                          _bddSourceManagers.get(node))));
-            });
+          BDD aclDenyBDD = ignorableAclDenyBDD(node, acl);
+          return new Edge(
+              new PostInInterface(node, iface),
+              new NodeDropAclIn(node),
+              compose(
+                  constraint(aclDenyBDD),
+                  removeNodeSpecificConstraints(
+                      node,
+                      _lastHopMgr,
+                      _bddOutgoingOriginalFlowFilterManagers.get(node),
+                      _bddSourceManagers.get(node))));
+        });
   }
 
   private Stream<Edge> generateRules_PostInInterface_PostInVrf() {
     return getAllL3Interfaces()
         .filter(Interface::canReceiveIpTraffic)
-        .map(
-            iface -> {
-              IpAccessList acl = iface.getPostTransformationIncomingFilter();
-              String nodeName = iface.getOwner().getHostname();
-              String vrfName = iface.getVrfName();
-              String ifaceName = iface.getName();
+        .map(iface -> {
+          IpAccessList acl = iface.getPostTransformationIncomingFilter();
+          String nodeName = iface.getOwner().getHostname();
+          String vrfName = iface.getVrfName();
+          String ifaceName = iface.getName();
 
-              PostInInterface preState = new PostInInterface(nodeName, ifaceName);
-              PostInVrf postState = new PostInVrf(nodeName, vrfName);
+          PostInInterface preState = new PostInInterface(nodeName, ifaceName);
+          PostInVrf postState = new PostInVrf(nodeName, vrfName);
 
-              BDD inAclBDD = ignorableAclPermitBDD(nodeName, acl);
-              return new Edge(preState, postState, constraint(inAclBDD));
-            });
+          BDD inAclBDD = ignorableAclPermitBDD(nodeName, acl);
+          return new Edge(preState, postState, constraint(inAclBDD));
+        });
   }
 
   @VisibleForTesting
@@ -781,87 +773,83 @@ public final class BDDReachabilityAnalysisFactory {
     return getAllL3Interfaces()
         .filter(Interface::canReceiveIpTraffic)
         .filter(iface -> iface.getPacketPolicyName() == null && iface.getIncomingFilter() != null)
-        .map(
-            i -> {
-              String node = i.getOwner().getHostname();
-              String iface = i.getName();
+        .map(i -> {
+          String node = i.getOwner().getHostname();
+          String iface = i.getName();
 
-              return new Edge(
-                  new PreInInterface(node, iface),
-                  new NodeDropAclIn(node),
-                  compose(
-                      constraint(ignorableAclDenyBDD(node, i.getIncomingFilter())),
-                      removeNodeSpecificConstraints(
-                          node,
-                          _lastHopMgr,
-                          _bddOutgoingOriginalFlowFilterManagers.get(node),
-                          _bddSourceManagers.get(node))));
-            });
+          return new Edge(
+              new PreInInterface(node, iface),
+              new NodeDropAclIn(node),
+              compose(
+                  constraint(ignorableAclDenyBDD(node, i.getIncomingFilter())),
+                  removeNodeSpecificConstraints(
+                      node,
+                      _lastHopMgr,
+                      _bddOutgoingOriginalFlowFilterManagers.get(node),
+                      _bddSourceManagers.get(node))));
+        });
   }
 
   @VisibleForTesting
   Stream<Edge> generateRules_PreInInterface_PacketPolicy() {
     return _configs.values().stream()
-        .flatMap(
-            config -> {
-              String nodeName = config.getHostname();
-              Map<String, IpsRoutedOutInterfaces> ipsRoutedOutInterfaces = new HashMap<>();
-              IpAccessListToBdd ipAccessListToBdd = ipAccessListToBddForNode(config);
-              Transition addOutgoingOriginalFlowFiltersConstraint =
-                  addOutgoingOriginalFlowFiltersConstraint(
-                      _bddOutgoingOriginalFlowFilterManagers.get(nodeName));
-              Multimap<String, String> convertedPolicies = HashMultimap.create();
-              return config
-                  .activeL3Interfaces()
-                  .filter(Interface::canReceiveIpTraffic)
-                  .filter(iface -> iface.getPacketPolicyName() != null)
-                  .flatMap(
-                      iface -> {
-                        String vrfName = iface.getVrfName();
-                        String ifaceName = iface.getName();
-                        String policyName = iface.getPacketPolicyName();
+        .flatMap(config -> {
+          String nodeName = config.getHostname();
+          Map<String, IpsRoutedOutInterfaces> ipsRoutedOutInterfaces = new HashMap<>();
+          IpAccessListToBdd ipAccessListToBdd = ipAccessListToBddForNode(config);
+          Transition addOutgoingOriginalFlowFiltersConstraint =
+              addOutgoingOriginalFlowFiltersConstraint(
+                  _bddOutgoingOriginalFlowFilterManagers.get(nodeName));
+          Multimap<String, String> convertedPolicies = HashMultimap.create();
+          return config
+              .activeL3Interfaces()
+              .filter(Interface::canReceiveIpTraffic)
+              .filter(iface -> iface.getPacketPolicyName() != null)
+              .flatMap(iface -> {
+                String vrfName = iface.getVrfName();
+                String ifaceName = iface.getName();
+                String policyName = iface.getPacketPolicyName();
 
-                        Edge enterPolicyEdge =
-                            new Edge(
-                                new PreInInterface(nodeName, ifaceName),
-                                new PacketPolicyStatement(nodeName, vrfName, policyName, 0),
-                                addOutgoingOriginalFlowFiltersConstraint);
+                Edge enterPolicyEdge =
+                    new Edge(
+                        new PreInInterface(nodeName, ifaceName),
+                        new PacketPolicyStatement(nodeName, vrfName, policyName, 0),
+                        addOutgoingOriginalFlowFiltersConstraint);
 
-                        if (!convertedPolicies.put(vrfName, policyName)) {
-                          // the policy edges have been generated already
-                          // only need to generate this edge into the policy.
-                          return Stream.of(enterPolicyEdge);
-                        }
+                if (!convertedPolicies.put(vrfName, policyName)) {
+                  // the policy edges have been generated already
+                  // only need to generate this edge into the policy.
+                  return Stream.of(enterPolicyEdge);
+                }
 
-                        long t = System.currentTimeMillis();
-                        PacketPolicyToBdd.BddPacketPolicy bddPacketPolicy =
-                            PacketPolicyToBdd.evaluate(
-                                nodeName,
-                                vrfName,
-                                config.getPacketPolicies().get(policyName),
-                                ipAccessListToBdd,
-                                ipsRoutedOutInterfaces.computeIfAbsent(
-                                    vrfName,
-                                    (key) ->
-                                        _ipsRoutesOutInterfacesFactory.getIpsRoutedOutInterfaces(
-                                            nodeName, vrfName)));
-                        t = System.currentTimeMillis() - t;
-                        LOGGER.debug(
-                            "converted packet policy on {}/{} to BDD: {}ms", nodeName, vrfName, t);
+                long t = System.currentTimeMillis();
+                PacketPolicyToBdd.BddPacketPolicy bddPacketPolicy =
+                    PacketPolicyToBdd.evaluate(
+                        nodeName,
+                        vrfName,
+                        config.getPacketPolicies().get(policyName),
+                        ipAccessListToBdd,
+                        ipsRoutedOutInterfaces.computeIfAbsent(
+                            vrfName,
+                            key ->
+                                _ipsRoutesOutInterfacesFactory.getIpsRoutedOutInterfaces(
+                                    nodeName, vrfName)));
+                t = System.currentTimeMillis() - t;
+                LOGGER.debug("converted packet policy on {}/{} to BDD: {}ms", nodeName, vrfName, t);
 
-                        PacketPolicyActionToEdges actionToEdges =
-                            new PacketPolicyActionToEdges(nodeName, policyName, vrfName);
-                        return Streams.concat(
-                            // enter PacketPolicy start state
-                            Stream.of(enterPolicyEdge),
-                            // all the internal packet policy edges
-                            bddPacketPolicy.getEdges().stream(),
-                            // stitch action states back into the main graph
-                            bddPacketPolicy.getActions().stream()
-                                .map(PacketPolicyAction::getAction)
-                                .flatMap(actionToEdges::visit));
-                      });
-            });
+                PacketPolicyActionToEdges actionToEdges =
+                    new PacketPolicyActionToEdges(nodeName, policyName, vrfName);
+                return Streams.concat(
+                    // enter PacketPolicy start state
+                    Stream.of(enterPolicyEdge),
+                    // all the internal packet policy edges
+                    bddPacketPolicy.getEdges().stream(),
+                    // stitch action states back into the main graph
+                    bddPacketPolicy.getActions().stream()
+                        .map(PacketPolicyAction::getAction)
+                        .flatMap(actionToEdges::visit));
+              });
+        });
   }
 
   private @Nonnull BDD aclDenyBDD(String node, @Nullable IpAccessList acl) {
@@ -886,25 +874,24 @@ public final class BDDReachabilityAnalysisFactory {
         .filter(Interface::canReceiveIpTraffic)
         // Policy-based routing edges handled elsewhere
         .filter(iface -> iface.getPacketPolicyName() == null)
-        .map(
-            iface -> {
-              IpAccessList acl = iface.getIncomingFilter();
-              String nodeName = iface.getOwner().getHostname();
-              String ifaceName = iface.getName();
+        .map(iface -> {
+          IpAccessList acl = iface.getIncomingFilter();
+          String nodeName = iface.getOwner().getHostname();
+          String ifaceName = iface.getName();
 
-              PreInInterface preState = new PreInInterface(nodeName, ifaceName);
-              PostInInterface postState = new PostInInterface(nodeName, ifaceName);
+          PreInInterface preState = new PreInInterface(nodeName, ifaceName);
+          PostInInterface postState = new PostInInterface(nodeName, ifaceName);
 
-              BDD inAclBDD = ignorableAclPermitBDD(nodeName, acl);
+          BDD inAclBDD = ignorableAclPermitBDD(nodeName, acl);
 
-              Transition transition =
-                  compose(
-                      constraint(inAclBDD),
-                      addOutgoingOriginalFlowFiltersConstraint(
-                          _bddOutgoingOriginalFlowFilterManagers.get(nodeName)),
-                      _bddIncomingTransformations.get(nodeName).get(ifaceName));
-              return new Edge(preState, postState, transition);
-            });
+          Transition transition =
+              compose(
+                  constraint(inAclBDD),
+                  addOutgoingOriginalFlowFiltersConstraint(
+                      _bddOutgoingOriginalFlowFilterManagers.get(nodeName)),
+                  _bddIncomingTransformations.get(nodeName).get(ifaceName));
+          return new Edge(preState, postState, transition);
+        });
   }
 
   /**
@@ -921,63 +908,60 @@ public final class BDDReachabilityAnalysisFactory {
       return Stream.of();
     }
     return _topologyEdges.stream()
-        .flatMap(
-            edge -> {
-              String node1 = edge.getNode1();
-              String iface1 = edge.getInt1();
-              String node2 = edge.getNode2();
-              String iface2 = edge.getInt2();
+        .flatMap(edge -> {
+          String node1 = edge.getNode1();
+          String iface1 = edge.getInt1();
+          String node2 = edge.getNode2();
+          String iface2 = edge.getInt2();
 
-              Interface i1 = _configs.get(node1).getAllInterfaces().get(iface1);
-              assert i1.canSendIpTraffic();
-              IpAccessList preNatAcl = i1.getPreTransformationOutgoingFilter();
-              BDD denyPreNat = ignorableAclDenyBDD(node1, preNatAcl);
+          Interface i1 = _configs.get(node1).getAllInterfaces().get(iface1);
+          assert i1.canSendIpTraffic();
+          IpAccessList preNatAcl = i1.getPreTransformationOutgoingFilter();
+          BDD denyPreNat = ignorableAclDenyBDD(node1, preNatAcl);
 
-              if (denyPreNat.isZero()) {
-                return Stream.of();
-              }
-              return Stream.of(
-                  new Edge(
-                      new PreOutEdge(node1, iface1, node2, iface2),
-                      new NodeDropAclOut(node1),
-                      compose(
-                          constraint(denyPreNat),
-                          removeNodeSpecificConstraints(
-                              node1,
-                              _lastHopMgr,
-                              _bddOutgoingOriginalFlowFilterManagers.get(node1),
-                              _bddSourceManagers.get(node1)))));
-            });
+          if (denyPreNat.isZero()) {
+            return Stream.of();
+          }
+          return Stream.of(
+              new Edge(
+                  new PreOutEdge(node1, iface1, node2, iface2),
+                  new NodeDropAclOut(node1),
+                  compose(
+                      constraint(denyPreNat),
+                      removeNodeSpecificConstraints(
+                          node1,
+                          _lastHopMgr,
+                          _bddOutgoingOriginalFlowFilterManagers.get(node1),
+                          _bddSourceManagers.get(node1)))));
+        });
   }
 
   private Stream<Edge> generateRules_PreOutEdge_PreOutEdgePostNat() {
     return _topologyEdges.stream()
-        .flatMap(
-            edge -> {
-              String node1 = edge.getNode1();
-              String iface1 = edge.getInt1();
-              String node2 = edge.getNode2();
-              String iface2 = edge.getInt2();
+        .flatMap(edge -> {
+          String node1 = edge.getNode1();
+          String iface1 = edge.getInt1();
+          String node2 = edge.getNode2();
+          String iface2 = edge.getInt2();
 
-              Interface i1 = _configs.get(node1).getAllInterfaces().get(iface1);
-              assert i1.canSendIpTraffic();
-              IpAccessList preNatAcl = i1.getPreTransformationOutgoingFilter();
+          Interface i1 = _configs.get(node1).getAllInterfaces().get(iface1);
+          assert i1.canSendIpTraffic();
+          IpAccessList preNatAcl = i1.getPreTransformationOutgoingFilter();
 
-              BDD aclPermit = ignorableAclPermitBDD(node1, preNatAcl);
-              if (aclPermit.isZero()) {
-                return Stream.of();
-              }
+          BDD aclPermit = ignorableAclPermitBDD(node1, preNatAcl);
+          if (aclPermit.isZero()) {
+            return Stream.of();
+          }
 
-              PreOutEdge preState = new PreOutEdge(node1, iface1, node2, iface2);
-              PreOutEdgePostNat postState = new PreOutEdgePostNat(node1, iface1, node2, iface2);
-              return Stream.of(
-                  new Edge(
-                      preState,
-                      postState,
-                      compose(
-                          constraint(aclPermit),
-                          _bddOutgoingTransformations.get(node1).get(iface1))));
-            });
+          PreOutEdge preState = new PreOutEdge(node1, iface1, node2, iface2);
+          PreOutEdgePostNat postState = new PreOutEdgePostNat(node1, iface1, node2, iface2);
+          return Stream.of(
+              new Edge(
+                  preState,
+                  postState,
+                  compose(
+                      constraint(aclPermit), _bddOutgoingTransformations.get(node1).get(iface1))));
+        });
   }
 
   @VisibleForTesting
@@ -986,71 +970,69 @@ public final class BDDReachabilityAnalysisFactory {
       return Stream.of();
     }
     return _topologyEdges.stream()
-        .flatMap(
-            edge -> {
-              String node1 = edge.getNode1();
-              String iface1 = edge.getInt1();
-              String node2 = edge.getNode2();
-              String iface2 = edge.getInt2();
+        .flatMap(edge -> {
+          String node1 = edge.getNode1();
+          String iface1 = edge.getInt1();
+          String node2 = edge.getNode2();
+          String iface2 = edge.getInt2();
 
-              Interface i1 = _configs.get(node1).getAllInterfaces().get(iface1);
-              assert i1.canSendIpTraffic();
-              IpAccessList acl = i1.getOutgoingFilter();
-              BDD aclDenyBDD = ignorableAclDenyBDD(node1, acl);
+          Interface i1 = _configs.get(node1).getAllInterfaces().get(iface1);
+          assert i1.canSendIpTraffic();
+          IpAccessList acl = i1.getOutgoingFilter();
+          BDD aclDenyBDD = ignorableAclDenyBDD(node1, acl);
 
-              BDDOutgoingOriginalFlowFilterManager originalFlowFilterMgr =
-                  _bddOutgoingOriginalFlowFilterManagers.get(node1);
-              BDD originalFlowAclDenyBdd =
-                  originalFlowFilterMgr.deniedByOriginalFlowEgressFilter(iface1);
-              BDD denyBdd = aclDenyBDD.or(originalFlowAclDenyBdd);
-              return denyBdd.isZero()
-                  ? Stream.of()
-                  : Stream.of(
-                      new Edge(
-                          new PreOutEdgePostNat(node1, iface1, node2, iface2),
-                          new NodeDropAclOut(node1),
-                          compose(
-                              constraint(denyBdd),
-                              removeNodeSpecificConstraints(
-                                  node1,
-                                  _lastHopMgr,
-                                  _bddOutgoingOriginalFlowFilterManagers.get(node1),
-                                  _bddSourceManagers.get(node1)))));
-            });
+          BDDOutgoingOriginalFlowFilterManager originalFlowFilterMgr =
+              _bddOutgoingOriginalFlowFilterManagers.get(node1);
+          BDD originalFlowAclDenyBdd =
+              originalFlowFilterMgr.deniedByOriginalFlowEgressFilter(iface1);
+          BDD denyBdd = aclDenyBDD.or(originalFlowAclDenyBdd);
+          return denyBdd.isZero()
+              ? Stream.of()
+              : Stream.of(
+                  new Edge(
+                      new PreOutEdgePostNat(node1, iface1, node2, iface2),
+                      new NodeDropAclOut(node1),
+                      compose(
+                          constraint(denyBdd),
+                          removeNodeSpecificConstraints(
+                              node1,
+                              _lastHopMgr,
+                              _bddOutgoingOriginalFlowFilterManagers.get(node1),
+                              _bddSourceManagers.get(node1)))));
+        });
   }
 
   @VisibleForTesting
   Stream<Edge> generateRules_PreOutEdgePostNat_PreInInterface() {
     return _topologyEdges.stream()
-        .map(
-            edge -> {
-              String node1 = edge.getNode1();
-              String iface1 = edge.getInt1();
-              String node2 = edge.getNode2();
-              String iface2 = edge.getInt2();
+        .map(edge -> {
+          String node1 = edge.getNode1();
+          String iface1 = edge.getInt1();
+          String node2 = edge.getNode2();
+          String iface2 = edge.getInt2();
 
-              Interface i1 = _configs.get(node1).getAllInterfaces().get(iface1);
-              assert i1.canSendIpTraffic();
-              BDD aclPermitBDD = ignorableAclPermitBDD(node1, i1.getOutgoingFilter());
+          Interface i1 = _configs.get(node1).getAllInterfaces().get(iface1);
+          assert i1.canSendIpTraffic();
+          BDD aclPermitBDD = ignorableAclPermitBDD(node1, i1.getOutgoingFilter());
 
-              BDDOutgoingOriginalFlowFilterManager originalFlowFilterMgr =
-                  _bddOutgoingOriginalFlowFilterManagers.get(node1);
-              BDD originalFlowAclPermitBdd =
-                  originalFlowFilterMgr.permittedByOriginalFlowEgressFilter(iface1);
+          BDDOutgoingOriginalFlowFilterManager originalFlowFilterMgr =
+              _bddOutgoingOriginalFlowFilterManagers.get(node1);
+          BDD originalFlowAclPermitBdd =
+              originalFlowFilterMgr.permittedByOriginalFlowEgressFilter(iface1);
 
-              return new Edge(
-                  new PreOutEdgePostNat(node1, iface1, node2, iface2),
-                  new PreInInterface(node2, iface2),
-                  compose(
-                      constraint(aclPermitBDD.and(originalFlowAclPermitBdd)),
-                      removeNodeSpecificConstraints(
-                          node1,
-                          _lastHopMgr,
-                          _bddOutgoingOriginalFlowFilterManagers.get(node1),
-                          _bddSourceManagers.get(node1)),
-                      addSourceInterfaceConstraint(_bddSourceManagers.get(node2), iface2),
-                      addLastHopConstraint(_lastHopMgr, node1, iface1, node2, iface2)));
-            });
+          return new Edge(
+              new PreOutEdgePostNat(node1, iface1, node2, iface2),
+              new PreInInterface(node2, iface2),
+              compose(
+                  constraint(aclPermitBDD.and(originalFlowAclPermitBdd)),
+                  removeNodeSpecificConstraints(
+                      node1,
+                      _lastHopMgr,
+                      _bddOutgoingOriginalFlowFilterManagers.get(node1),
+                      _bddSourceManagers.get(node1)),
+                  addSourceInterfaceConstraint(_bddSourceManagers.get(node2), iface2),
+                  addLastHopConstraint(_lastHopMgr, node1, iface1, node2, iface2)));
+        });
   }
 
   @VisibleForTesting
@@ -1060,201 +1042,186 @@ public final class BDDReachabilityAnalysisFactory {
     }
 
     return _configs.entrySet().stream()
-        .flatMap(
-            nodeEntry -> {
-              String node = nodeEntry.getKey();
-              BDDOutgoingOriginalFlowFilterManager originalFlowFilterMgr =
-                  _bddOutgoingOriginalFlowFilterManagers.get(node);
-              return nodeEntry.getValue().getVrfs().entrySet().stream()
-                  .flatMap(
-                      vrfEntry -> {
-                        StateExpr postState = new NodeDropAclOut(node);
-                        return nodeEntry
-                            .getValue()
-                            .activeL3Interfaces()
-                            .filter(Interface::canSendIpTraffic)
-                            .filter(
-                                iface ->
-                                    iface.getOutgoingOriginalFlowFilter() != null
-                                        || iface.getPreTransformationOutgoingFilter() != null
-                                        || iface.getOutgoingFilter() != null)
-                            .flatMap(
-                                iface -> {
-                                  String ifaceName = iface.getName();
-                                  BDD denyOriginalFlowBdd =
-                                      originalFlowFilterMgr.deniedByOriginalFlowEgressFilter(
-                                          ifaceName);
-                                  BDD denyPreAclBDD =
-                                      ignorableAclDenyBDD(
-                                          node, iface.getPreTransformationOutgoingFilter());
-                                  BDD denyPostAclBDD =
-                                      ignorableAclDenyBDD(node, iface.getOutgoingFilter());
-                                  Transition transformation =
-                                      _bddOutgoingTransformations.get(node).get(ifaceName);
+        .flatMap(nodeEntry -> {
+          String node = nodeEntry.getKey();
+          BDDOutgoingOriginalFlowFilterManager originalFlowFilterMgr =
+              _bddOutgoingOriginalFlowFilterManagers.get(node);
+          return nodeEntry.getValue().getVrfs().entrySet().stream()
+              .flatMap(vrfEntry -> {
+                StateExpr postState = new NodeDropAclOut(node);
+                return nodeEntry
+                    .getValue()
+                    .activeL3Interfaces()
+                    .filter(Interface::canSendIpTraffic)
+                    .filter(iface ->
+                        iface.getOutgoingOriginalFlowFilter() != null
+                            || iface.getPreTransformationOutgoingFilter() != null
+                            || iface.getOutgoingFilter() != null)
+                    .flatMap(iface -> {
+                      String ifaceName = iface.getName();
+                      BDD denyOriginalFlowBdd =
+                          originalFlowFilterMgr.deniedByOriginalFlowEgressFilter(ifaceName);
+                      BDD denyPreAclBDD =
+                          ignorableAclDenyBDD(node, iface.getPreTransformationOutgoingFilter());
+                      BDD denyPostAclBDD = ignorableAclDenyBDD(node, iface.getOutgoingFilter());
+                      Transition transformation =
+                          _bddOutgoingTransformations.get(node).get(ifaceName);
 
-                                  // DENIED_OUT can be due to any of:
-                                  // - denied by the outgoingOriginalFlowFilter
-                                  // - denied by the pre-Transformation ACL
-                                  // - transformed and denied by the post-Transformation ACL
-                                  Transition deniedFlows =
-                                      branch(
-                                          // branch on whether denied before transformation
-                                          denyOriginalFlowBdd.or(denyPreAclBDD),
-                                          // deny all flows denied by pre-trans ACLs
-                                          IDENTITY,
-                                          // for flows permitted by first two ACLs, transform and
-                                          // then apply the post-trans ACL. deny any that are denied
-                                          // by the post-trans ACL.
-                                          compose(transformation, constraint(denyPostAclBDD)));
+                      // DENIED_OUT can be due to any of:
+                      // - denied by the outgoingOriginalFlowFilter
+                      // - denied by the pre-Transformation ACL
+                      // - transformed and denied by the post-Transformation ACL
+                      Transition deniedFlows =
+                          branch(
+                              // branch on whether denied before transformation
+                              denyOriginalFlowBdd.or(denyPreAclBDD),
+                              // deny all flows denied by pre-trans ACLs
+                              IDENTITY,
+                              // for flows permitted by first two ACLs, transform and
+                              // then apply the post-trans ACL. deny any that are denied
+                              // by the post-trans ACL.
+                              compose(transformation, constraint(denyPostAclBDD)));
 
-                                  // Clear any node-specific constraints before exiting the node.
-                                  Transition transition =
-                                      compose(
-                                          deniedFlows,
-                                          removeNodeSpecificConstraints(
-                                              node,
-                                              _lastHopMgr,
-                                              _bddOutgoingOriginalFlowFilterManagers.get(node),
-                                              _bddSourceManagers.get(node)));
+                      // Clear any node-specific constraints before exiting the node.
+                      Transition transition =
+                          compose(
+                              deniedFlows,
+                              removeNodeSpecificConstraints(
+                                  node,
+                                  _lastHopMgr,
+                                  _bddOutgoingOriginalFlowFilterManagers.get(node),
+                                  _bddSourceManagers.get(node)));
 
-                                  return Stream.of(
-                                          new PreOutInterfaceDeliveredToSubnet(node, ifaceName),
-                                          new PreOutInterfaceExitsNetwork(node, ifaceName),
-                                          new PreOutInterfaceInsufficientInfo(node, ifaceName),
-                                          new PreOutInterfaceNeighborUnreachable(node, ifaceName))
-                                      .map(preState -> new Edge(preState, postState, transition));
-                                });
-                      });
-            });
+                      return Stream.of(
+                              new PreOutInterfaceDeliveredToSubnet(node, ifaceName),
+                              new PreOutInterfaceExitsNetwork(node, ifaceName),
+                              new PreOutInterfaceInsufficientInfo(node, ifaceName),
+                              new PreOutInterfaceNeighborUnreachable(node, ifaceName))
+                          .map(preState -> new Edge(preState, postState, transition));
+                    });
+              });
+        });
   }
 
   private @Nonnull Stream<Edge> generateRules_VrfAccept_NodeAccept() {
     return _ifaceAcceptBDDs.entrySet().stream()
-        .flatMap(
-            nodeEntry -> {
-              String hostname = nodeEntry.getKey();
-              Transition removeNodeSpecificConstraints =
-                  removeNodeSpecificConstraints(
-                      hostname,
-                      _lastHopMgr,
-                      _bddOutgoingOriginalFlowFilterManagers.get(hostname),
-                      _bddSourceManagers.get(hostname));
-              StateExpr nodeAccept = new NodeAccept(hostname);
-              return nodeEntry.getValue().keySet().stream() // vrf names
-                  .map(
-                      vrf ->
-                          new Edge(
-                              new VrfAccept(hostname, vrf),
-                              nodeAccept,
-                              removeNodeSpecificConstraints));
-            });
+        .flatMap(nodeEntry -> {
+          String hostname = nodeEntry.getKey();
+          Transition removeNodeSpecificConstraints =
+              removeNodeSpecificConstraints(
+                  hostname,
+                  _lastHopMgr,
+                  _bddOutgoingOriginalFlowFilterManagers.get(hostname),
+                  _bddSourceManagers.get(hostname));
+          StateExpr nodeAccept = new NodeAccept(hostname);
+          return nodeEntry.getValue().keySet().stream() // vrf names
+              .map(vrf ->
+                  new Edge(
+                      new VrfAccept(hostname, vrf), nodeAccept, removeNodeSpecificConstraints));
+        });
   }
 
   @VisibleForTesting
   Stream<Edge> generateRules_PreOutInterfaceDisposition_SetupSessionDisposition() {
     return getAllL3Interfaces()
         .filter(Interface::canSendIpTraffic)
-        .flatMap(
-            iface -> {
-              String node = iface.getOwner().getHostname();
-              String ifaceName = iface.getName();
-              BDD permitBeforeNatBDD =
-                  ignorableAclPermitBDD(node, iface.getPreTransformationOutgoingFilter());
-              BDD permitAfterNatBDD = ignorableAclPermitBDD(node, iface.getOutgoingFilter());
-              Transition outgoingTransformation =
-                  _bddOutgoingTransformations.get(node).get(ifaceName);
+        .flatMap(iface -> {
+          String node = iface.getOwner().getHostname();
+          String ifaceName = iface.getName();
+          BDD permitBeforeNatBDD =
+              ignorableAclPermitBDD(node, iface.getPreTransformationOutgoingFilter());
+          BDD permitAfterNatBDD = ignorableAclPermitBDD(node, iface.getOutgoingFilter());
+          Transition outgoingTransformation = _bddOutgoingTransformations.get(node).get(ifaceName);
 
-              if (permitBeforeNatBDD.isZero() || permitAfterNatBDD.isZero()) {
-                return Stream.of();
-              }
+          if (permitBeforeNatBDD.isZero() || permitAfterNatBDD.isZero()) {
+            return Stream.of();
+          }
 
-              BDDOutgoingOriginalFlowFilterManager originalFlowFilterMgr =
-                  _bddOutgoingOriginalFlowFilterManagers.get(node);
-              BDD permitOriginalFlowBdd =
-                  originalFlowFilterMgr.permittedByOriginalFlowEgressFilter(ifaceName);
+          BDDOutgoingOriginalFlowFilterManager originalFlowFilterMgr =
+              _bddOutgoingOriginalFlowFilterManagers.get(node);
+          BDD permitOriginalFlowBdd =
+              originalFlowFilterMgr.permittedByOriginalFlowEgressFilter(ifaceName);
 
-              /* 1. pre-transformation filter
-               * 2. outgoingOriginalFlowFilter (also constrains to interface)
-               *    can be applied in any order, so do it before transformation for
-               *    less forward work.
-               * 3. outgoing transformation
-               * 4. post-transformation filter
-               */
-              Transition sessionTransition =
-                  compose(
-                      constraint(permitBeforeNatBDD.and(permitOriginalFlowBdd)),
-                      outgoingTransformation,
-                      constraint(permitAfterNatBDD));
+          /* 1. pre-transformation filter
+           * 2. outgoingOriginalFlowFilter (also constrains to interface)
+           *    can be applied in any order, so do it before transformation for
+           *    less forward work.
+           * 3. outgoing transformation
+           * 4. post-transformation filter
+           */
+          Transition sessionTransition =
+              compose(
+                  constraint(permitBeforeNatBDD.and(permitOriginalFlowBdd)),
+                  outgoingTransformation,
+                  constraint(permitAfterNatBDD));
 
-              if (sessionTransition == ZERO) {
-                return Stream.of();
-              }
+          if (sessionTransition == ZERO) {
+            return Stream.of();
+          }
 
-              /* For failure dispostions we don't setup sessions. So do 1-4 above, then:
-               * 5. erase node-specific constraints
-               */
-              Transition nonSessionTransition =
-                  compose(
-                      sessionTransition,
-                      removeNodeSpecificConstraints(
-                          node, _lastHopMgr, originalFlowFilterMgr, _bddSourceManagers.get(node)));
+          /* For failure dispostions we don't setup sessions. So do 1-4 above, then:
+           * 5. erase node-specific constraints
+           */
+          Transition nonSessionTransition =
+              compose(
+                  sessionTransition,
+                  removeNodeSpecificConstraints(
+                      node, _lastHopMgr, originalFlowFilterMgr, _bddSourceManagers.get(node)));
 
-              return Stream.of(
-                  new Edge(
-                      new PreOutInterfaceDeliveredToSubnet(node, ifaceName),
-                      new SetupSessionDeliveredToSubnet(node, ifaceName),
-                      sessionTransition),
-                  new Edge(
-                      new PreOutInterfaceExitsNetwork(node, ifaceName),
-                      new SetupSessionExitsNetwork(node, ifaceName),
-                      sessionTransition),
-                  new Edge(
-                      new PreOutInterfaceInsufficientInfo(node, ifaceName),
-                      // skip setup session for II
-                      new NodeInterfaceInsufficientInfo(node, ifaceName),
-                      nonSessionTransition),
-                  new Edge(
-                      new PreOutInterfaceNeighborUnreachable(node, ifaceName),
-                      // skip setup session for NU
-                      new NodeInterfaceNeighborUnreachable(node, ifaceName),
-                      nonSessionTransition));
-            });
+          return Stream.of(
+              new Edge(
+                  new PreOutInterfaceDeliveredToSubnet(node, ifaceName),
+                  new SetupSessionDeliveredToSubnet(node, ifaceName),
+                  sessionTransition),
+              new Edge(
+                  new PreOutInterfaceExitsNetwork(node, ifaceName),
+                  new SetupSessionExitsNetwork(node, ifaceName),
+                  sessionTransition),
+              new Edge(
+                  new PreOutInterfaceInsufficientInfo(node, ifaceName),
+                  // skip setup session for II
+                  new NodeInterfaceInsufficientInfo(node, ifaceName),
+                  nonSessionTransition),
+              new Edge(
+                  new PreOutInterfaceNeighborUnreachable(node, ifaceName),
+                  // skip setup session for NU
+                  new NodeInterfaceNeighborUnreachable(node, ifaceName),
+                  nonSessionTransition));
+        });
   }
 
   @VisibleForTesting
   Stream<Edge> generateRules_SetupSessionDisposition_NodeInterfaceDisposition() {
     return _configs.values().stream()
-        .flatMap(
-            c -> {
-              String node = c.getHostname();
+        .flatMap(c -> {
+          String node = c.getHostname();
 
-              Transition transition =
-                  removeNodeSpecificConstraints(
-                      node,
-                      _lastHopMgr,
-                      _bddOutgoingOriginalFlowFilterManagers.get(node),
-                      _bddSourceManagers.get(node));
+          Transition transition =
+              removeNodeSpecificConstraints(
+                  node,
+                  _lastHopMgr,
+                  _bddOutgoingOriginalFlowFilterManagers.get(node),
+                  _bddSourceManagers.get(node));
 
-              /* We only setup sessions for successful ARP failure dispositions (i.e.
-               * DeliveredToSubnet and ExitsNetwork).
-               * see generateRules_PreOutInterfaceDisposition_SetupSessionDisposition
-               */
-              return c.activeInterfaces()
-                  .filter(Interface::canSendIpTraffic)
-                  .flatMap(
-                      iface -> {
-                        String ifaceName = iface.getName();
-                        return Stream.of(
-                            new Edge(
-                                new SetupSessionDeliveredToSubnet(node, ifaceName),
-                                new NodeInterfaceDeliveredToSubnet(node, ifaceName),
-                                transition),
-                            new Edge(
-                                new SetupSessionExitsNetwork(node, ifaceName),
-                                new NodeInterfaceExitsNetwork(node, ifaceName),
-                                transition));
-                      });
-            });
+          /* We only setup sessions for successful ARP failure dispositions (i.e.
+           * DeliveredToSubnet and ExitsNetwork).
+           * see generateRules_PreOutInterfaceDisposition_SetupSessionDisposition
+           */
+          return c.activeInterfaces()
+              .filter(Interface::canSendIpTraffic)
+              .flatMap(iface -> {
+                String ifaceName = iface.getName();
+                return Stream.of(
+                    new Edge(
+                        new SetupSessionDeliveredToSubnet(node, ifaceName),
+                        new NodeInterfaceDeliveredToSubnet(node, ifaceName),
+                        transition),
+                    new Edge(
+                        new SetupSessionExitsNetwork(node, ifaceName),
+                        new NodeInterfaceExitsNetwork(node, ifaceName),
+                        transition));
+              });
+        });
   }
 
   public BDDReachabilityAnalysis bddReachabilityAnalysis(IpSpaceAssignment srcIpSpaceAssignment) {
@@ -1585,13 +1552,11 @@ public final class BDDReachabilityAnalysisFactory {
       BDDInteger var = getIpSpaceToBDD(ipField).getBDDInteger();
       BDD bdd =
           assignIpAddressFromPool.getIpRanges().asRanges().stream()
-              .map(
-                  range -> {
-                    assert range.lowerBoundType() == BoundType.CLOSED
-                        && range.upperBoundType() == BoundType.CLOSED;
-                    return var.range(
-                        range.lowerEndpoint().asLong(), range.upperEndpoint().asLong());
-                  })
+              .map(range -> {
+                assert range.lowerBoundType() == BoundType.CLOSED
+                    && range.upperBoundType() == BoundType.CLOSED;
+                return var.range(range.lowerEndpoint().asLong(), range.upperEndpoint().asLong());
+              })
               .reduce(var.getFactory().zero(), BDD::or);
       _ipRanges.merge(ipField, bdd, BDD::or);
       return null;
@@ -1669,11 +1634,10 @@ public final class BDDReachabilityAnalysisFactory {
     c.activeL3Interfaces()
         // Transformations in interfaces can only be reached on transiting traffic
         .filter(i -> i.canSendIpTraffic() || i.canReceiveIpTraffic())
-        .forEach(
-            iface -> {
-              visitTransformationSteps(iface.getIncomingTransformation(), rangeComputer);
-              visitTransformationSteps(iface.getOutgoingTransformation(), rangeComputer);
-            });
+        .forEach(iface -> {
+          visitTransformationSteps(iface.getIncomingTransformation(), rangeComputer);
+          visitTransformationSteps(iface.getOutgoingTransformation(), rangeComputer);
+        });
     // Transformations can live in packet policies. Packet policies can be large and reused across
     // interfaces, so only visit each once.
     c.activeL3Interfaces()
@@ -1707,10 +1671,8 @@ public final class BDDReachabilityAnalysisFactory {
     // add the global initial HeaderSpace and remove unsat entries
     Map<StateExpr, BDD> finalRootConstraints =
         rootConstraints.entrySet().stream()
-            .map(
-                entry ->
-                    Maps.immutableEntry(
-                        entry.getKey(), entry.getValue().and(initialHeaderSpaceBdd)))
+            .map(entry ->
+                Maps.immutableEntry(entry.getKey(), entry.getValue().and(initialHeaderSpaceBdd)))
             .filter(entry -> !entry.getValue().isZero())
             .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
 
@@ -1791,12 +1753,11 @@ public final class BDDReachabilityAnalysisFactory {
     }
 
     // remove any edges at which a forbidden node becomes transited.
-    return edgeStream.filter(
-        edge ->
-            !(edge.getPreState() instanceof PreOutEdgePostNat
-                && edge.getPostState() instanceof PreInInterface
-                && forbiddenTransitNodes.contains(
-                    ((PreOutEdgePostNat) edge.getPreState()).getSrcNode())));
+    return edgeStream.filter(edge ->
+        !(edge.getPreState() instanceof PreOutEdgePostNat
+            && edge.getPostState() instanceof PreInInterface
+            && forbiddenTransitNodes.contains(
+                ((PreOutEdgePostNat) edge.getPreState()).getSrcNode())));
   }
 
   /**
@@ -1815,22 +1776,21 @@ public final class BDDReachabilityAnalysisFactory {
     BDD transited = _requiredTransitNodeBDD;
     BDD notTransited = _requiredTransitNodeBDD.not();
 
-    return edgeStream.map(
-        edge -> {
-          if (edge.getPreState() instanceof PreOutEdgePostNat
-              && edge.getPostState() instanceof PreInInterface) {
-            String hostname = ((PreOutEdgePostNat) edge.getPreState()).getSrcNode();
-            return requiredTransitNodes.contains(hostname) ? adaptEdgeSetTransitedBit(edge) : edge;
-          } else if (edge.getPreState() instanceof OriginateVrf
-              || edge.getPreState() instanceof OriginateInterface
-              || edge.getPreState() instanceof OriginateInterfaceLink) {
-            return andThen(edge, notTransited);
-          } else if (edge.getPostState() instanceof Query) {
-            return andThen(edge, transited);
-          } else {
-            return edge;
-          }
-        });
+    return edgeStream.map(edge -> {
+      if (edge.getPreState() instanceof PreOutEdgePostNat
+          && edge.getPostState() instanceof PreInInterface) {
+        String hostname = ((PreOutEdgePostNat) edge.getPreState()).getSrcNode();
+        return requiredTransitNodes.contains(hostname) ? adaptEdgeSetTransitedBit(edge) : edge;
+      } else if (edge.getPreState() instanceof OriginateVrf
+          || edge.getPreState() instanceof OriginateInterface
+          || edge.getPreState() instanceof OriginateInterfaceLink) {
+        return andThen(edge, notTransited);
+      } else if (edge.getPostState() instanceof Query) {
+        return andThen(edge, transited);
+      } else {
+        return edge;
+      }
+    });
   }
 
   public Map<String, BDDOutgoingOriginalFlowFilterManager>
@@ -1891,12 +1851,11 @@ public final class BDDReachabilityAnalysisFactory {
           new PacketPolicyAction(_nodeName, _ingressVrfName, _policyName, fibLookup);
       Stream<Edge> interfaceAcceptEdges =
           _ifaceAcceptBDDs.get(_nodeName).get(_ingressVrfName).entrySet().stream()
-              .map(
-                  ifaceAcceptBddEntry ->
-                      new Edge(
-                          actionState,
-                          new InterfaceAccept(_nodeName, ifaceAcceptBddEntry.getKey()),
-                          ifaceAcceptBddEntry.getValue()));
+              .map(ifaceAcceptBddEntry ->
+                  new Edge(
+                      actionState,
+                      new InterfaceAccept(_nodeName, ifaceAcceptBddEntry.getKey()),
+                      ifaceAcceptBddEntry.getValue()));
       BDD acceptedBdd = _vrfAcceptBDDs.get(_nodeName).get(_ingressVrfName);
       String lookupVrf = _vrfExprNameExtractor.visit(fibLookup.getVrfExpr());
       BDD routableBDD = _routableBDDs.get(_nodeName).get(lookupVrf);

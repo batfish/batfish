@@ -132,13 +132,10 @@ public class RoutesAnswererTest {
         return MockDataPlane.builder()
             .setRibs(
                 Arrays.stream(configs)
-                    .flatMap(
-                        c ->
-                            c.getVrfs().values().stream()
-                                .map(
-                                    vrf ->
-                                        new AbstractMap.SimpleImmutableEntry<>(
-                                            c.getHostname(), vrf)))
+                    .flatMap(c ->
+                        c.getVrfs().values().stream()
+                            .map(vrf ->
+                                new AbstractMap.SimpleImmutableEntry<>(c.getHostname(), vrf)))
                     .collect(
                         ImmutableTable.toImmutableTable(
                             Entry::getKey,
@@ -663,12 +660,11 @@ public class RoutesAnswererTest {
     // columns in the differential result (snapshot and reference).
     IntStream.range(keyColumns.size(), nonDiffColumns.size())
         .mapToObj(nonDiffColumns::get)
-        .forEach(
-            c -> {
-              expectedNonDiffColumns.add(c);
-              expectedDiffColumns.add(COL_BASE_PREFIX + c);
-              expectedDiffColumns.add(COL_DELTA_PREFIX + c);
-            });
+        .forEach(c -> {
+          expectedNonDiffColumns.add(c);
+          expectedDiffColumns.add(COL_BASE_PREFIX + c);
+          expectedDiffColumns.add(COL_DELTA_PREFIX + c);
+        });
 
     assertThat(nonDiffColumns, equalTo(expectedNonDiffColumns.build()));
     assertThat(diffColumns, equalTo(expectedDiffColumns.build()));
@@ -700,12 +696,11 @@ public class RoutesAnswererTest {
     // columns in the differential result (snapshot and reference).
     IntStream.range(keyColumns.size(), nonDiffColumns.size())
         .mapToObj(nonDiffColumns::get)
-        .forEach(
-            c -> {
-              expectedNonDiffColumns.add(c);
-              expectedDiffColumns.add(COL_BASE_PREFIX + c);
-              expectedDiffColumns.add(COL_DELTA_PREFIX + c);
-            });
+        .forEach(c -> {
+          expectedNonDiffColumns.add(c);
+          expectedDiffColumns.add(COL_BASE_PREFIX + c);
+          expectedDiffColumns.add(COL_DELTA_PREFIX + c);
+        });
 
     assertThat(nonDiffColumns, equalTo(expectedNonDiffColumns.build()));
     assertThat(diffColumns, equalTo(expectedDiffColumns.build()));
@@ -737,12 +732,11 @@ public class RoutesAnswererTest {
     // columns in the differential result (snapshot and reference).
     IntStream.range(keyColumns.size(), nonDiffColumns.size())
         .mapToObj(nonDiffColumns::get)
-        .forEach(
-            c -> {
-              expectedNonDiffColumns.add(c);
-              expectedDiffColumns.add(COL_BASE_PREFIX + c);
-              expectedDiffColumns.add(COL_DELTA_PREFIX + c);
-            });
+        .forEach(c -> {
+          expectedNonDiffColumns.add(c);
+          expectedDiffColumns.add(COL_BASE_PREFIX + c);
+          expectedDiffColumns.add(COL_DELTA_PREFIX + c);
+        });
 
     assertThat(nonDiffColumns, equalTo(expectedNonDiffColumns.build()));
     assertThat(diffColumns, equalTo(expectedDiffColumns.build()));

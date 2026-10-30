@@ -78,17 +78,16 @@ public final class FinalMainRib implements Serializable {
     Prefix[] curPrefix = new Prefix[] {null};
     routes
         .sequential() // forEach is not threadsafe
-        .forEach(
-            r -> {
-              if (curPrefix[0] == null) {
-                curPrefix[0] = r.getNetwork();
-              } else if (!r.getNetwork().equals(curPrefix[0])) {
-                ret.putAll(curPrefix[0], curRoutes);
-                curPrefix[0] = r.getNetwork();
-                curRoutes.clear();
-              }
-              curRoutes.add(r);
-            });
+        .forEach(r -> {
+          if (curPrefix[0] == null) {
+            curPrefix[0] = r.getNetwork();
+          } else if (!r.getNetwork().equals(curPrefix[0])) {
+            ret.putAll(curPrefix[0], curRoutes);
+            curPrefix[0] = r.getNetwork();
+            curRoutes.clear();
+          }
+          curRoutes.add(r);
+        });
     if (!curRoutes.isEmpty()) {
       ret.putAll(curPrefix[0], curRoutes);
     }

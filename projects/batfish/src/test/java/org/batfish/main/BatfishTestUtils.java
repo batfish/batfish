@@ -406,16 +406,14 @@ public class BatfishTestUtils {
       StorageProvider storage,
       NetworkSnapshot snapshot) {
     if (filesBytes != null) {
-      filesBytes.forEach(
-          (filename, bytes) -> {
-            String key =
-                keyPrefix.isEmpty() ? filename : String.format("%s/%s", keyPrefix, filename);
-            try {
-              storage.storeSnapshotInputObject(new ByteArrayInputStream(bytes), key, snapshot);
-            } catch (IOException e) {
-              throw new UncheckedIOException(e);
-            }
-          });
+      filesBytes.forEach((filename, bytes) -> {
+        String key = keyPrefix.isEmpty() ? filename : String.format("%s/%s", keyPrefix, filename);
+        try {
+          storage.storeSnapshotInputObject(new ByteArrayInputStream(bytes), key, snapshot);
+        } catch (IOException e) {
+          throw new UncheckedIOException(e);
+        }
+      });
     }
   }
 

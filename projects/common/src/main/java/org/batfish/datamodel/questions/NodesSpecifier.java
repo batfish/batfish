@@ -138,10 +138,9 @@ public class NodesSpecifier {
     List<AutocompleteSuggestion> suggestions =
         Arrays.stream(Type.values())
             .filter(type -> type.toString().startsWith(finalQuery.toUpperCase()))
-            .map(
-                type ->
-                    new AutocompleteSuggestion(
-                        type.toString() + ":", true, "Select nodes by " + type.toString()))
+            .map(type ->
+                new AutocompleteSuggestion(
+                    type.toString() + ":", true, "Select nodes by " + type.toString()))
             .collect(Collectors.toList());
 
     // for reading code below, remember splitting "PRE:" or "PRE" yields ["PRE"]
@@ -175,12 +174,11 @@ public class NodesSpecifier {
           List<AutocompleteSuggestion> roleSuggestions =
               dimension.roleNamesFor(nodes).stream()
                   .filter(role -> role.startsWith(rolePrefix))
-                  .map(
-                      role ->
-                          new AutocompleteSuggestion(
-                              "ROLE:" + dimension.getName() + ":" + role,
-                              false,
-                              "All nodes that belong to this role"))
+                  .map(role ->
+                      new AutocompleteSuggestion(
+                          "ROLE:" + dimension.getName() + ":" + role,
+                          false,
+                          "All nodes that belong to this role"))
                   .collect(Collectors.toList());
           if (!roleSuggestions.isEmpty()) {
             suggestions.add(
@@ -196,12 +194,9 @@ public class NodesSpecifier {
         suggestions.addAll(
             nodeRoleData.toNodeRoleDimensions().values().stream()
                 .filter(dim -> dim.getName().startsWith(roleDimPrefix))
-                .map(
-                    dim ->
-                        new AutocompleteSuggestion(
-                            "ROLE:" + dim.getName() + ":",
-                            true,
-                            "Select nodes using this dimension"))
+                .map(dim ->
+                    new AutocompleteSuggestion(
+                        "ROLE:" + dim.getName() + ":", true, "Select nodes using this dimension"))
                 .collect(ImmutableSet.toImmutableSet()));
       }
     }

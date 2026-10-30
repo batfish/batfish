@@ -122,15 +122,14 @@ public final class Layer2Topology implements Serializable {
   public static @Nonnull Layer2Topology fromDomains(Collection<Set<Layer2Node>> domains) {
     return new Layer2Topology(
         domains.stream()
-            .flatMap(
-                domain -> {
-                  if (domain.isEmpty()) {
-                    return Stream.of();
-                  }
-                  Layer2Node repr =
-                      domain.stream().max(Comparator.comparingInt(Layer2Node::hashCode)).get();
-                  return domain.stream().map(node -> Maps.immutableEntry(node, repr));
-                })
+            .flatMap(domain -> {
+              if (domain.isEmpty()) {
+                return Stream.of();
+              }
+              Layer2Node repr =
+                  domain.stream().max(Comparator.comparingInt(Layer2Node::hashCode)).get();
+              return domain.stream().map(node -> Maps.immutableEntry(node, repr));
+            })
             .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue)));
   }
 

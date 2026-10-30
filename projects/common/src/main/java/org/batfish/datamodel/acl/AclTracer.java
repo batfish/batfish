@@ -321,30 +321,28 @@ public final class AclTracer extends AclLineEvaluator {
   public Boolean visitAndMatchExpr(AndMatchExpr andMatchExpr) {
     setTraceElement(andMatchExpr.getTraceElement());
     return andMatchExpr.getConjuncts().stream()
-        .allMatch(
-            c -> {
-              _tracer.newSubTrace();
-              Boolean result = c.accept(this);
-              _tracer.endSubTrace();
-              return result;
-            });
+        .allMatch(c -> {
+          _tracer.newSubTrace();
+          Boolean result = c.accept(this);
+          _tracer.endSubTrace();
+          return result;
+        });
   }
 
   @Override
   public Boolean visitOrMatchExpr(OrMatchExpr orMatchExpr) {
     setTraceElement(orMatchExpr.getTraceElement());
     return orMatchExpr.getDisjuncts().stream()
-        .anyMatch(
-            d -> {
-              _tracer.newSubTrace();
-              Boolean result = d.accept(this);
-              if (result) {
-                _tracer.endSubTrace();
-              } else {
-                _tracer.discardSubTrace();
-              }
-              return result;
-            });
+        .anyMatch(d -> {
+          _tracer.newSubTrace();
+          Boolean result = d.accept(this);
+          if (result) {
+            _tracer.endSubTrace();
+          } else {
+            _tracer.discardSubTrace();
+          }
+          return result;
+        });
   }
 
   @Override

@@ -77,11 +77,10 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
 
         List<AclLine> newRules =
             prerouting.getLines().stream()
-                .filter(
-                    l -> {
-                      String iface = _lineInInterfaces.get(l);
-                      return iface == null || i.getName().equals(iface);
-                    })
+                .filter(l -> {
+                  String iface = _lineInInterfaces.get(l);
+                  return iface == null || i.getName().equals(iface);
+                })
                 .collect(Collectors.toList());
 
         // TODO: ipv6
@@ -108,11 +107,10 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
 
         List<AclLine> newRules =
             postrouting.getLines().stream()
-                .filter(
-                    l -> {
-                      String iface = _lineOutInterfaces.get(l);
-                      return iface == null || i.getName().equals(iface);
-                    })
+                .filter(l -> {
+                  String iface = _lineOutInterfaces.get(l);
+                  return iface == null || i.getName().equals(iface);
+                })
                 .collect(Collectors.toList());
 
         // TODO: ipv6
@@ -216,13 +214,10 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
               .setName(rule.getName())
               .build();
 
-      inInterfaceMatches.forEach(
-          match ->
-              lineInInterfaces.put(aclLine, vc.canonicalizeInterfaceName(match.toInterfaceName())));
-      outInterfaceMatches.forEach(
-          match ->
-              lineOutInterfaces.put(
-                  aclLine, vc.canonicalizeInterfaceName(match.toInterfaceName())));
+      inInterfaceMatches.forEach(match ->
+          lineInInterfaces.put(aclLine, vc.canonicalizeInterfaceName(match.toInterfaceName())));
+      outInterfaceMatches.forEach(match ->
+          lineOutInterfaces.put(aclLine, vc.canonicalizeInterfaceName(match.toInterfaceName())));
 
       if (anyInterface) {
         lineInInterfaces.put(aclLine, null);

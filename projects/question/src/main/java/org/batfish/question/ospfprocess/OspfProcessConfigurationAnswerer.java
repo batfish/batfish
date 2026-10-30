@@ -122,25 +122,18 @@ public final class OspfProcessConfigurationAnswerer extends Answerer {
     Multiset<Row> rows = HashMultiset.create();
     nodeSpecifier
         .resolve(ctxt)
-        .forEach(
-            nodeName -> {
-              ctxt.getConfigs()
-                  .get(nodeName)
-                  .getVrfs()
-                  .values()
-                  .forEach(
-                      vrf -> {
-                        for (OspfProcess ospfProcess : vrf.getOspfProcesses().values()) {
-                          rows.add(
-                              getRow(
-                                  nodeName,
-                                  vrf.getName(),
-                                  ospfProcess,
-                                  properties,
-                                  columnMetadata));
-                        }
-                      });
-            });
+        .forEach(nodeName -> {
+          ctxt.getConfigs()
+              .get(nodeName)
+              .getVrfs()
+              .values()
+              .forEach(vrf -> {
+                for (OspfProcess ospfProcess : vrf.getOspfProcesses().values()) {
+                  rows.add(
+                      getRow(nodeName, vrf.getName(), ospfProcess, properties, columnMetadata));
+                }
+              });
+        });
     return rows;
   }
 

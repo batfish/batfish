@@ -113,36 +113,35 @@ public final class Annotate {
     }
 
     filePaths.parallelStream()
-        .forEach(
-            inputFile -> {
-              LOGGER.debug("Reading: {}", inputFile);
-              String inputText;
-              try {
-                inputText = Files.readString(inputFile, UTF_8);
-                // Append newline if not present (same behavior as decodeStreamAndAppendNewline)
-                if (!inputText.endsWith("\n")) {
-                  inputText = inputText + "\n";
-                }
-              } catch (IOException e) {
-                LOGGER.error("Failed to read: {}", inputFile, e);
-                return;
-              }
+        .forEach(inputFile -> {
+          LOGGER.debug("Reading: {}", inputFile);
+          String inputText;
+          try {
+            inputText = Files.readString(inputFile, UTF_8);
+            // Append newline if not present (same behavior as decodeStreamAndAppendNewline)
+            if (!inputText.endsWith("\n")) {
+              inputText = inputText + "\n";
+            }
+          } catch (IOException e) {
+            LOGGER.error("Failed to read: {}", inputFile, e);
+            return;
+          }
 
-              String annotatedText = annotateText(inputFile, inputText, settings);
-              if (annotatedText != null) {
-                // Compute output path
-                Path relativePath = inputBasePath.relativize(inputFile);
-                Path outputFile = outputBasePath.resolve(relativePath);
-                // Write the file
-                try {
-                  outputFile.getParent().toFile().mkdirs();
-                  MoreFiles.asCharSink(outputFile, UTF_8).write(annotatedText);
-                  LOGGER.debug("Written: {}", outputFile);
-                } catch (IOException e) {
-                  LOGGER.error("Failed to write: {}", outputFile, e);
-                }
-              }
-            });
+          String annotatedText = annotateText(inputFile, inputText, settings);
+          if (annotatedText != null) {
+            // Compute output path
+            Path relativePath = inputBasePath.relativize(inputFile);
+            Path outputFile = outputBasePath.resolve(relativePath);
+            // Write the file
+            try {
+              outputFile.getParent().toFile().mkdirs();
+              MoreFiles.asCharSink(outputFile, UTF_8).write(annotatedText);
+              LOGGER.debug("Written: {}", outputFile);
+            } catch (IOException e) {
+              LOGGER.error("Failed to write: {}", outputFile, e);
+            }
+          }
+        });
   }
 
   /** Return annotated input text, or {@code null} if there is an error. */

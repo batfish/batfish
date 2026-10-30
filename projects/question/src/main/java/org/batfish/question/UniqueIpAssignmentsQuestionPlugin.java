@@ -83,18 +83,15 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
       // (does not take owner node into account)
       return nodes.stream()
           .flatMap(n -> question.getInterfaceSpecifier().resolve(ImmutableSet.of(n), ctxt).stream())
-          .map(
-              ifaceId ->
-                  configs.get(ifaceId.getHostname()).getAllInterfaces().get(ifaceId.getInterface()))
+          .map(ifaceId ->
+              configs.get(ifaceId.getHostname()).getAllInterfaces().get(ifaceId.getInterface()))
           // narrow to interfaces of interest
           .filter(iface -> (!question.getEnabledIpsOnly() || iface.getActive()))
           // convert to stream of Entry<Ip, NodeInterfacePair>
-          .flatMap(
-              iface ->
-                  iface.getAllConcreteAddresses().stream()
-                      .map(
-                          ifaceAdrr ->
-                              Maps.immutableEntry(ifaceAdrr.getIp(), NodeInterfacePair.of(iface))))
+          .flatMap(iface ->
+              iface.getAllConcreteAddresses().stream()
+                  .map(ifaceAdrr ->
+                      Maps.immutableEntry(ifaceAdrr.getIp(), NodeInterfacePair.of(iface))))
           // group by Ip
           .collect(Multimaps.toMultimap(Entry::getKey, Entry::getValue, TreeMultimap::create))
           // convert to stream of Entry<Ip, Set<NodeInterfacePair>>

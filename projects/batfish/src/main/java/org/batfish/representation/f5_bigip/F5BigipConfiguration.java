@@ -390,22 +390,20 @@ public class F5BigipConfiguration extends VendorConfiguration {
   private IpSpace computeAdditionalArpIps(String vlanName) {
     Stream<IpSpace> virtualDnatIps =
         _enabledVirtuals.values().stream()
-            .filter(
-                virtual ->
-                    !virtual.getVlansEnabled()
-                        || virtual.getVlans().isEmpty()
-                        || virtual.getVlans().contains(vlanName))
+            .filter(virtual ->
+                !virtual.getVlansEnabled()
+                    || virtual.getVlans().isEmpty()
+                    || virtual.getVlans().contains(vlanName))
             .flatMap(virtual -> _virtualAdditionalDnatArpIps.get(virtual.getName()).stream());
     Stream<IpSpace> virtualSnatIps =
         _enabledVirtuals.values().stream()
             .flatMap(virtual -> _virtualAdditionalSnatArpIps.get(virtual.getName()).stream());
     Stream<IpSpace> snatIps =
         _snats.values().stream()
-            .filter(
-                snat ->
-                    !snat.getVlansEnabled()
-                        || snat.getVlans().isEmpty()
-                        || snat.getVlans().contains(vlanName))
+            .filter(snat ->
+                !snat.getVlansEnabled()
+                    || snat.getVlans().isEmpty()
+                    || snat.getVlans().contains(vlanName))
             .flatMap(snat -> _snatAdditionalArpIps.get(snat.getName()).stream());
     return AclIpSpace.union(
         Streams.concat(virtualDnatIps, virtualSnatIps, snatIps)
@@ -426,21 +424,19 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
   private @Nullable Transformation computeInterfaceIncomingTransformation(String vlanName) {
     ImmutableList.Builder<SimpleTransformation> applicableTransformations = ImmutableList.builder();
-    _virtualIncomingTransformations.forEach(
-        (virtualName, transformation) -> {
-          if (appliesToVlan(_enabledVirtuals.get(virtualName), vlanName)) {
-            applicableTransformations.add(transformation);
-          }
-        });
+    _virtualIncomingTransformations.forEach((virtualName, transformation) -> {
+      if (appliesToVlan(_enabledVirtuals.get(virtualName), vlanName)) {
+        applicableTransformations.add(transformation);
+      }
+    });
     return orElseChain(applicableTransformations.build());
   }
 
   private @Nonnull Stream<SimpleTransformation> computeInterfaceOutgoingSnatTransformations(
       String vlanName) {
     return _snatTransformations.entrySet().stream()
-        .filter(
-            snatTransformationEntry ->
-                appliesToVlan(_snats.get(snatTransformationEntry.getKey()), vlanName))
+        .filter(snatTransformationEntry ->
+            appliesToVlan(_snats.get(snatTransformationEntry.getKey()), vlanName))
         .map(Entry::getValue);
   }
 
@@ -591,10 +587,9 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return new ApplyAny(
         pool.getMembers().values().stream()
             .filter(member -> member.getAddress() != null) // IPv4 members only
-            .map(
-                member ->
-                    computeVirtualIncomingPoolMemberTransformation(
-                        member, translateAddress, translatePort))
+            .map(member ->
+                computeVirtualIncomingPoolMemberTransformation(
+                    member, translateAddress, translatePort))
             .collect(ImmutableList.toImmutableList()));
   }
 
@@ -943,34 +938,29 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
   private void initInterfaceIncomingFilterLines() {
     _interfaceIncomingFilterLines = new HashMap<>();
-    _virtualAddressRejectIcmpHeaders.forEach(
-        (virtualAddressName, matchedHeaders) -> {
-          ExprAclLine line =
-              ExprAclLine.rejecting()
-                  .setMatchCondition(new MatchHeaderSpace(matchedHeaders))
-                  .setName(
-                      String.format(
-                          "virtual-address %s { icmp-echo disabled }", virtualAddressName))
-                  .build();
-          _vlans.keySet().stream()
-              .forEach(
-                  vlanName ->
-                      _interfaceIncomingFilterLines
-                          .computeIfAbsent(vlanName, n -> ImmutableList.builder())
-                          .add(line));
-        });
-    _virtualMatchedHeaders.forEach(
-        (virtualName, matchedHeaders) -> {
-          Virtual virtual = _enabledVirtuals.get(virtualName);
-          ExprAclLine line = toIpAccessListLine(virtualName, matchedHeaders, virtual.getReject());
-          _vlans.keySet().stream()
-              .filter(vlanName -> appliesToVlan(virtual, vlanName))
-              .forEach(
-                  vlanName ->
-                      _interfaceIncomingFilterLines
-                          .computeIfAbsent(vlanName, n -> ImmutableList.builder())
-                          .add(line));
-        });
+    _virtualAddressRejectIcmpHeaders.forEach((virtualAddressName, matchedHeaders) -> {
+      ExprAclLine line =
+          ExprAclLine.rejecting()
+              .setMatchCondition(new MatchHeaderSpace(matchedHeaders))
+              .setName(
+                  String.format("virtual-address %s { icmp-echo disabled }", virtualAddressName))
+              .build();
+      _vlans.keySet().stream()
+          .forEach(vlanName ->
+              _interfaceIncomingFilterLines
+                  .computeIfAbsent(vlanName, n -> ImmutableList.builder())
+                  .add(line));
+    });
+    _virtualMatchedHeaders.forEach((virtualName, matchedHeaders) -> {
+      Virtual virtual = _enabledVirtuals.get(virtualName);
+      ExprAclLine line = toIpAccessListLine(virtualName, matchedHeaders, virtual.getReject());
+      _vlans.keySet().stream()
+          .filter(vlanName -> appliesToVlan(virtual, vlanName))
+          .forEach(vlanName ->
+              _interfaceIncomingFilterLines
+                  .computeIfAbsent(vlanName, n -> ImmutableList.builder())
+                  .add(line));
+    });
   }
 
   private void initSnatTransformations() {
@@ -980,10 +970,9 @@ public class F5BigipConfiguration extends VendorConfiguration {
     // transformations
     ImmutableSortedMap.Builder<String, SimpleTransformation> snatTransformations =
         ImmutableSortedMap.reverseOrder();
-    _snats.forEach(
-        (snatName, snat) ->
-            computeSnatTransformation(snat)
-                .ifPresent(transformation -> snatTransformations.put(snatName, transformation)));
+    _snats.forEach((snatName, snat) ->
+        computeSnatTransformation(snat)
+            .ifPresent(transformation -> snatTransformations.put(snatName, transformation)));
     _snatTransformations = snatTransformations.build();
 
     // additional ARP IPs
@@ -1000,11 +989,9 @@ public class F5BigipConfiguration extends VendorConfiguration {
     // incoming transformations
     ImmutableSortedMap.Builder<String, HeaderSpace> virtualMatchedHeaders =
         ImmutableSortedMap.naturalOrder();
-    _enabledVirtuals.forEach(
-        (virtualName, virtual) ->
-            computeVirtualMatchedHeaders(virtual)
-                .ifPresent(
-                    matchedHeaders -> virtualMatchedHeaders.put(virtualName, matchedHeaders)));
+    _enabledVirtuals.forEach((virtualName, virtual) ->
+        computeVirtualMatchedHeaders(virtual)
+            .ifPresent(matchedHeaders -> virtualMatchedHeaders.put(virtualName, matchedHeaders)));
     _virtualMatchedHeaders = virtualMatchedHeaders.build();
   }
 
@@ -1012,12 +999,10 @@ public class F5BigipConfiguration extends VendorConfiguration {
     // incoming transformations
     ImmutableSortedMap.Builder<String, HeaderSpace> virtualAddressRejectIcmpHeaders =
         ImmutableSortedMap.naturalOrder();
-    _virtualAddresses.forEach(
-        (virtualAddressName, virtualAddress) ->
-            computeVirtualAddressRejectIcmpHeaders(virtualAddress)
-                .ifPresent(
-                    matchedHeaders ->
-                        virtualAddressRejectIcmpHeaders.put(virtualAddressName, matchedHeaders)));
+    _virtualAddresses.forEach((virtualAddressName, virtualAddress) ->
+        computeVirtualAddressRejectIcmpHeaders(virtualAddress)
+            .ifPresent(matchedHeaders ->
+                virtualAddressRejectIcmpHeaders.put(virtualAddressName, matchedHeaders)));
     _virtualAddressRejectIcmpHeaders = virtualAddressRejectIcmpHeaders.build();
   }
 
@@ -1028,12 +1013,10 @@ public class F5BigipConfiguration extends VendorConfiguration {
     // incoming transformations
     ImmutableSortedMap.Builder<String, SimpleTransformation> virtualIncomingTransformations =
         ImmutableSortedMap.reverseOrder();
-    _enabledVirtuals.forEach(
-        (virtualName, virtual) ->
-            computeVirtualIncomingTransformation(virtual)
-                .ifPresent(
-                    transformation ->
-                        virtualIncomingTransformations.put(virtualName, transformation)));
+    _enabledVirtuals.forEach((virtualName, virtual) ->
+        computeVirtualIncomingTransformation(virtual)
+            .ifPresent(
+                transformation -> virtualIncomingTransformations.put(virtualName, transformation)));
     _virtualIncomingTransformations = virtualIncomingTransformations.build();
     _virtualAdditionalDnatArpIps =
         toImmutableMap(_enabledVirtuals, Entry::getKey, e -> computeVirtualDnatIps(e.getValue()));
@@ -1041,12 +1024,10 @@ public class F5BigipConfiguration extends VendorConfiguration {
     // outgoing transformations
     ImmutableSortedMap.Builder<String, SimpleTransformation> virtualOutgoingTransformations =
         ImmutableSortedMap.reverseOrder();
-    _enabledVirtuals.forEach(
-        (virtualName, virtual) ->
-            computeVirtualOutgoingTransformation(virtual)
-                .ifPresent(
-                    transformation ->
-                        virtualOutgoingTransformations.put(virtualName, transformation)));
+    _enabledVirtuals.forEach((virtualName, virtual) ->
+        computeVirtualOutgoingTransformation(virtual)
+            .ifPresent(
+                transformation -> virtualOutgoingTransformations.put(virtualName, transformation)));
     _virtualOutgoingTransformations = virtualOutgoingTransformations.build();
     _virtualAdditionalSnatArpIps =
         toImmutableMap(_enabledVirtuals, Entry::getKey, e -> computeVirtualSnatIps(e.getValue()));
@@ -1270,14 +1251,13 @@ public class F5BigipConfiguration extends VendorConfiguration {
     vlan.getInterfaces().keySet().stream()
         .map(ifaceName -> _c.getAllInterfaces().get(ifaceName))
         .filter(notNull())
-        .forEach(
-            iface -> {
-              iface.setSwitchport(true);
-              iface.setSwitchportMode(SwitchportMode.TRUNK);
-              // TODO: something else for configs with no concept of native VLAN
-              iface.setNativeVlan(null);
-              iface.setAllowedVlans(iface.getAllowedVlans().union(IntegerSpace.of(tag)));
-            });
+        .forEach(iface -> {
+          iface.setSwitchport(true);
+          iface.setSwitchportMode(SwitchportMode.TRUNK);
+          // TODO: something else for configs with no concept of native VLAN
+          iface.setNativeVlan(null);
+          iface.setAllowedVlans(iface.getAllowedVlans().union(IntegerSpace.of(tag)));
+        });
   }
 
   @Override
@@ -1575,11 +1555,9 @@ public class F5BigipConfiguration extends VendorConfiguration {
     // Warn about entries missing an action.
     routeMap.getEntries().values().stream()
         .filter(entry -> entry.getAction() == null)
-        .forEach(
-            entry ->
-                _w.redFlagf(
-                    "route-map: '%s' entry '%d' has no action",
-                    routeMap.getName(), entry.getNum()));
+        .forEach(entry ->
+            _w.redFlagf(
+                "route-map: '%s' entry '%d' has no action", routeMap.getName(), entry.getNum()));
     routeMap.getEntries().values().stream()
         .filter(entry -> entry.getAction() != null)
         .map(entry -> toRoutingPolicyStatement(entry))
@@ -1809,35 +1787,31 @@ public class F5BigipConfiguration extends VendorConfiguration {
     _accessLists.values().forEach(this::addIpAccessList);
 
     // Convert access-lists referenced by route-maps to RouteFilterLists
-    _accessLists.forEach(
-        (name, acl) -> {
-          if (!isReferencedByRouteMap(name)) {
-            return;
-          }
-          RouteFilterList rfl = toRouteFilterList(acl, _filename);
-          _c.getRouteFilterLists().put(rfl.getName(), rfl);
-        });
+    _accessLists.forEach((name, acl) -> {
+      if (!isReferencedByRouteMap(name)) {
+        return;
+      }
+      RouteFilterList rfl = toRouteFilterList(acl, _filename);
+      _c.getRouteFilterLists().put(rfl.getName(), rfl);
+    });
 
     // Add interfaces
-    _interfaces.forEach(
-        (name, iface) -> {
-          org.batfish.datamodel.Interface newIface = toInterface(iface);
-          _c.getAllInterfaces().put(name, newIface);
-        });
+    _interfaces.forEach((name, iface) -> {
+      org.batfish.datamodel.Interface newIface = toInterface(iface);
+      _c.getAllInterfaces().put(name, newIface);
+    });
 
     // Add trunks
-    _trunks.forEach(
-        (name, trunk) -> {
-          org.batfish.datamodel.Interface newIface = toInterface(trunk);
-          _c.getAllInterfaces().put(name, newIface);
-        });
+    _trunks.forEach((name, trunk) -> {
+      org.batfish.datamodel.Interface newIface = toInterface(trunk);
+      _c.getAllInterfaces().put(name, newIface);
+    });
 
     // Add VLAN interfaces
-    _vlans.forEach(
-        (name, vlan) -> {
-          org.batfish.datamodel.Interface newIface = toInterface(vlan);
-          _c.getAllInterfaces().put(name, newIface);
-        });
+    _vlans.forEach((name, vlan) -> {
+      org.batfish.datamodel.Interface newIface = toInterface(vlan);
+      _c.getAllInterfaces().put(name, newIface);
+    });
     // Process vlans:
     _vlans.values().forEach(this::processVlanSettings);
 
@@ -1845,13 +1819,12 @@ public class F5BigipConfiguration extends VendorConfiguration {
     _selves.values().forEach(this::processSelf);
 
     // Convert valid IPv4 prefix-lists to RouteFilterLists
-    _prefixLists.forEach(
-        (name, prefixList) -> {
-          RouteFilterList converted = toRouteFilterList(prefixList, _w, _filename);
-          if (converted != null) {
-            _c.getRouteFilterLists().put(name, converted);
-          }
-        });
+    _prefixLists.forEach((name, prefixList) -> {
+      RouteFilterList converted = toRouteFilterList(prefixList, _w, _filename);
+      if (converted != null) {
+        _c.getRouteFilterLists().put(name, converted);
+      }
+    });
 
     // Warn about invalid prefix-lists
     _prefixLists.values().forEach(this::warnInvalidPrefixList);
@@ -2003,35 +1976,34 @@ public class F5BigipConfiguration extends VendorConfiguration {
     long areaId = area.getId();
     _selves
         .values()
-        .forEach(
-            self -> {
-              Optional<Prefix> prefixOpt =
-                  Optional.ofNullable(self.getAddress())
-                      .map(ConcreteInterfaceAddress::getPrefix)
-                      .filter(prefixes::contains);
-              if (!prefixOpt.isPresent()) {
-                // no address or prefix not included in area
-                return;
-              }
-              String vlanName = self.getVlan();
-              if (!_vlans.containsKey(vlanName)) {
-                // vlan doesn't exist
-                return;
-              }
+        .forEach(self -> {
+          Optional<Prefix> prefixOpt =
+              Optional.ofNullable(self.getAddress())
+                  .map(ConcreteInterfaceAddress::getPrefix)
+                  .filter(prefixes::contains);
+          if (!prefixOpt.isPresent()) {
+            // no address or prefix not included in area
+            return;
+          }
+          String vlanName = self.getVlan();
+          if (!_vlans.containsKey(vlanName)) {
+            // vlan doesn't exist
+            return;
+          }
 
-              String imishName = computeImishName(vlanName);
-              boolean passive = proc.getPassiveInterfaces().contains(imishName);
+          String imishName = computeImishName(vlanName);
+          boolean passive = proc.getPassiveInterfaces().contains(imishName);
 
-              // Add to this area.
-              interfaces.add(vlanName);
-              OspfInterface ospf =
-                  Optional.ofNullable(_imishInterfaces.get(imishName))
-                      .map(ImishInterface::getOspf)
-                      // If interface being added has no explicit OSPF configuration, use defaults
-                      .orElseGet(() -> new OspfInterface());
-              finalizeInterfaceOspfSettings(
-                  vlanName, areaId, processName, ospf, proc.getNeighbors(), passive);
-            });
+          // Add to this area.
+          interfaces.add(vlanName);
+          OspfInterface ospf =
+              Optional.ofNullable(_imishInterfaces.get(imishName))
+                  .map(ImishInterface::getOspf)
+                  // If interface being added has no explicit OSPF configuration, use defaults
+                  .orElseGet(() -> new OspfInterface());
+          finalizeInterfaceOspfSettings(
+              vlanName, areaId, processName, ospf, proc.getNeighbors(), passive);
+        });
     return interfaces.build();
   }
 

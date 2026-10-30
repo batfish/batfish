@@ -127,10 +127,8 @@ final class InterfaceNoMatchMessages implements NoMatchMessages {
           _referenceLibrary.getReferenceBook(interfaceGroupInterfaceAstNode.getReferenceBook());
       if (refBook.isPresent()) {
         if (refBook.get().getInterfaceGroups().stream()
-            .anyMatch(
-                r ->
-                    r.getName()
-                        .equalsIgnoreCase(interfaceGroupInterfaceAstNode.getInterfaceGroup()))) {
+            .anyMatch(r ->
+                r.getName().equalsIgnoreCase(interfaceGroupInterfaceAstNode.getInterfaceGroup()))) {
           return ImmutableList.of();
         } else {
           return ImmutableList.of(

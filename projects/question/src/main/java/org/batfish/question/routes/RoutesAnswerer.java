@@ -1003,11 +1003,10 @@ public class RoutesAnswerer extends Answerer {
       Map<String, Configuration> configs, Set<String> matchingNodes, String vrfRegex) {
     Predicate<String> vrfPredicate = Pattern.compile(vrfRegex).asPredicate();
     ImmutableMultimap.Builder<String, String> vrfsByNode = ImmutableMultimap.builder();
-    matchingNodes.forEach(
-        nodeName ->
-            configs.get(nodeName).getVrfs().keySet().stream()
-                .filter(vrfPredicate)
-                .forEach(vrfName -> vrfsByNode.put(nodeName, vrfName)));
+    matchingNodes.forEach(nodeName ->
+        configs.get(nodeName).getVrfs().keySet().stream()
+            .filter(vrfPredicate)
+            .forEach(vrfName -> vrfsByNode.put(nodeName, vrfName)));
     return vrfsByNode.build();
   }
 }

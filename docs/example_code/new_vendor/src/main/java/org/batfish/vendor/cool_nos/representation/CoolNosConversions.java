@@ -12,9 +12,8 @@ public final class CoolNosConversions {
 
   static void convertStaticRoutes(CoolNosConfiguration vc, Configuration c) {
     vc.getStaticRoutes()
-        .forEach(
-            (prefix, route) ->
-                c.getDefaultVrf().getStaticRoutes().add(toStaticRoute(prefix, route)));
+        .forEach((prefix, route) ->
+            c.getDefaultVrf().getStaticRoutes().add(toStaticRoute(prefix, route)));
   }
 
   private static @Nonnull org.batfish.datamodel.StaticRoute toStaticRoute(

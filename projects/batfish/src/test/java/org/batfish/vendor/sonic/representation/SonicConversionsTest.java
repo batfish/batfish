@@ -232,14 +232,13 @@ public class SonicConversionsTest {
         Configuration.builder().setHostname("host").setConfigurationFormat(SONIC).build();
     Vrf vrf = Vrf.builder().setOwner(c).setName(DEFAULT_VRF_NAME).build();
     ImmutableList.of("Ethernet0", "Ethernet1")
-        .forEach(
-            ifaceName ->
-                TestInterface.builder()
-                    .setName("Ethernet0")
-                    .setOwner(c)
-                    .setVrf(vrf)
-                    .setType(InterfaceType.PHYSICAL)
-                    .build());
+        .forEach(ifaceName ->
+            TestInterface.builder()
+                .setName("Ethernet0")
+                .setOwner(c)
+                .setVrf(vrf)
+                .setType(InterfaceType.PHYSICAL)
+                .build());
     Warnings w = new Warnings(true, true, true);
     convertVlans(
         c,

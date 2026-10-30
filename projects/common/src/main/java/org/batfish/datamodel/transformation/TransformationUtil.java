@@ -58,13 +58,12 @@ public final class TransformationUtil {
           return assignIpAddressFromPool.getType() != SOURCE_NAT
               ? Stream.of()
               : assignIpAddressFromPool.getIpRanges().asRanges().stream()
-                  .flatMapToLong(
-                      ipRange -> {
-                        assert ipRange.lowerBoundType() == BoundType.CLOSED
-                            && ipRange.upperBoundType() == BoundType.CLOSED;
-                        return LongStream.range(
-                            ipRange.lowerEndpoint().asLong(), ipRange.upperEndpoint().asLong() + 1);
-                      })
+                  .flatMapToLong(ipRange -> {
+                    assert ipRange.lowerBoundType() == BoundType.CLOSED
+                        && ipRange.upperBoundType() == BoundType.CLOSED;
+                    return LongStream.range(
+                        ipRange.lowerEndpoint().asLong(), ipRange.upperEndpoint().asLong() + 1);
+                  })
                   .mapToObj(Ip::create);
         }
 

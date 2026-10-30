@@ -64,31 +64,25 @@ public class DefinedStructuresAnswerer extends Answerer {
         _batfish.loadConvertConfigurationAnswerElementOrReparse(snapshot);
 
     ccae.getDefinedStructures()
-        .forEach(
-            (filename, byStructType) -> {
-              if (!includeFiles.contains(filename)) {
+        .forEach((filename, byStructType) -> {
+          if (!includeFiles.contains(filename)) {
+            return;
+          }
+          byStructType.forEach((structType, byStructName) -> {
+            if (!includeStructureTypes.matcher(structType).matches()) {
+              return;
+            }
+            byStructName.forEach((structName, info) -> {
+              if (!includeStructureNames.matcher(structName).matches()) {
                 return;
               }
-              byStructType.forEach(
-                  (structType, byStructName) -> {
-                    if (!includeStructureTypes.matcher(structType).matches()) {
-                      return;
-                    }
-                    byStructName.forEach(
-                        (structName, info) -> {
-                          if (!includeStructureNames.matcher(structName).matches()) {
-                            return;
-                          }
-                          DefinedStructureRow row =
-                              new DefinedStructureRow(
-                                  filename,
-                                  structType,
-                                  structName,
-                                  info.getDefinitionLines().enumerate());
-                          structures.add(toRow(row));
-                        });
-                  });
+              DefinedStructureRow row =
+                  new DefinedStructureRow(
+                      filename, structType, structName, info.getDefinitionLines().enumerate());
+              structures.add(toRow(row));
             });
+          });
+        });
 
     return structures;
   }

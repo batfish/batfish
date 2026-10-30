@@ -71,15 +71,14 @@ class NodeInterfacePairsByVlanRange {
     // hostname -> VLAN range -> interfaces on hostname in VLAN range
     Map<String, Map<Range<Integer>, ImmutableSet.Builder<String>>> byNode = new HashMap<>();
     asMap()
-        .forEach(
-            (vlanRange, nis) -> {
-              for (NodeInterfacePair ni : nis) {
-                byNode
-                    .computeIfAbsent(ni.getHostname(), k -> new HashMap<>())
-                    .computeIfAbsent(vlanRange, k -> ImmutableSet.builder())
-                    .add(ni.getInterface());
-              }
-            });
+        .forEach((vlanRange, nis) -> {
+          for (NodeInterfacePair ni : nis) {
+            byNode
+                .computeIfAbsent(ni.getHostname(), k -> new HashMap<>())
+                .computeIfAbsent(vlanRange, k -> ImmutableSet.builder())
+                .add(ni.getInterface());
+          }
+        });
     return toImmutableMap(
         byNode,
         Map.Entry::getKey,

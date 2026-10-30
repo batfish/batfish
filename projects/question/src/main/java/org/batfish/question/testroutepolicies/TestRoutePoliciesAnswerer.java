@@ -109,10 +109,9 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
 
   private SortedSet<RoutingPolicyId> resolvePolicies(SpecifierContext context) {
     return _nodeSpecifier.resolve(context).stream()
-        .flatMap(
-            node ->
-                _policySpecifier.resolve(node, context).stream()
-                    .map(policy -> new RoutingPolicyId(node, policy.getName())))
+        .flatMap(node ->
+            _policySpecifier.resolve(node, context).stream()
+                .map(policy -> new RoutingPolicyId(node, policy.getName())))
         .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
   }
 
@@ -394,14 +393,12 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
 
     List<Row> rows =
         tasks.parallelStream()
-            .map(
-                key -> {
-                  Result<Bgpv4Route, Bgpv4Route> snapshotResult =
-                      getResult(context, key, _direction);
-                  Result<Bgpv4Route, Bgpv4Route> referenceResult =
-                      getResult(referenceCtx, key, _direction);
-                  return toDiffRow(snapshotResult, referenceResult);
-                })
+            .map(key -> {
+              Result<Bgpv4Route, Bgpv4Route> snapshotResult = getResult(context, key, _direction);
+              Result<Bgpv4Route, Bgpv4Route> referenceResult =
+                  getResult(referenceCtx, key, _direction);
+              return toDiffRow(snapshotResult, referenceResult);
+            })
             .filter(Objects::nonNull)
             .collect(ImmutableList.toImmutableList());
 

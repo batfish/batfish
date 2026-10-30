@@ -81,10 +81,9 @@ public enum SonicStructureUsage implements StructureUsage {
           Arrays.stream(SonicStructureUsage.values())
               .filter(cType -> cType.name().equals(frrUsage.name()))
               .findFirst()
-              .orElseThrow(
-                  () ->
-                      new NoSuchElementException(
-                          "No SonicStructureUsage exists for FrrStructureUsage " + frrUsage));
+              .orElseThrow(() ->
+                  new NoSuchElementException(
+                      "No SonicStructureUsage exists for FrrStructureUsage " + frrUsage));
       map.put(frrUsage, matchingSonicType);
     }
     return map.build();

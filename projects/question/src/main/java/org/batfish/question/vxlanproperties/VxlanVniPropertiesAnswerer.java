@@ -54,14 +54,13 @@ public final class VxlanVniPropertiesAnswerer extends Answerer {
         .add(new ColumnMetadata(COL_VNI, Schema.INTEGER, "VXLAN Segment ID", true, false))
         .addAll(
             propertySpecifier.getMatchingProperties().stream()
-                .map(
-                    prop ->
-                        new ColumnMetadata(
-                            prop,
-                            VxlanVniPropertySpecifier.getPropertyDescriptor(prop).getSchema(),
-                            VxlanVniPropertySpecifier.getPropertyDescriptor(prop).getDescription(),
-                            false,
-                            true))
+                .map(prop ->
+                    new ColumnMetadata(
+                        prop,
+                        VxlanVniPropertySpecifier.getPropertyDescriptor(prop).getSchema(),
+                        VxlanVniPropertySpecifier.getPropertyDescriptor(prop).getDescription(),
+                        false,
+                        true))
                 .collect(Collectors.toList()))
         .build();
   }
@@ -127,55 +126,54 @@ public final class VxlanVniPropertiesAnswerer extends Answerer {
     for (String nodeName : nodes) {
       allVniSettings
           .row(nodeName)
-          .forEach(
-              (vrfName, vniSet) -> {
-                for (Layer2Vni l2Vni : vniSet) {
-                  int vni = l2Vni.getVni();
-                  RowBuilder row =
-                      Row.builder(columns)
-                          .put(COL_NODE, nodeName)
-                          .put(COL_VRF, vrfName)
-                          .put(COL_VNI, vni);
-                  boolean unicast =
-                      l2Vni.getBumTransportMethod() == BumTransportMethod.UNICAST_FLOOD_GROUP;
-                  Set<Ip> bumTransportIps = l2Vni.getBumTransportIps();
-                  VxlanVniPropertiesRow vxlanVniProperties =
-                      new VxlanVniPropertiesRow(
-                          nodeName,
-                          vni,
-                          l2Vni.getVlan(),
-                          l2Vni.getSourceAddress(),
-                          unicast
+          .forEach((vrfName, vniSet) -> {
+            for (Layer2Vni l2Vni : vniSet) {
+              int vni = l2Vni.getVni();
+              RowBuilder row =
+                  Row.builder(columns)
+                      .put(COL_NODE, nodeName)
+                      .put(COL_VRF, vrfName)
+                      .put(COL_VNI, vni);
+              boolean unicast =
+                  l2Vni.getBumTransportMethod() == BumTransportMethod.UNICAST_FLOOD_GROUP;
+              Set<Ip> bumTransportIps = l2Vni.getBumTransportIps();
+              VxlanVniPropertiesRow vxlanVniProperties =
+                  new VxlanVniPropertiesRow(
+                      nodeName,
+                      vni,
+                      l2Vni.getVlan(),
+                      l2Vni.getSourceAddress(),
+                      unicast
+                          ? null
+                          : bumTransportIps.isEmpty()
                               ? null
-                              : bumTransportIps.isEmpty()
-                                  ? null
-                                  : Iterables.getOnlyElement(bumTransportIps),
-                          unicast ? bumTransportIps : null,
-                          l2Vni.getUdpPort());
+                              : Iterables.getOnlyElement(bumTransportIps),
+                      unicast ? bumTransportIps : null,
+                      l2Vni.getUdpPort());
 
-                  for (String property : propertySpecifier.getMatchingProperties()) {
-                    PropertyDescriptor<VxlanVniPropertiesRow> propertyDescriptor =
-                        VxlanVniPropertySpecifier.getPropertyDescriptor(property);
-                    try {
-                      PropertySpecifier.fillProperty(
-                          propertyDescriptor, vxlanVniProperties, property, row);
-                    } catch (ClassCastException e) {
-                      throw new BatfishException(
-                          String.format(
-                              "Type mismatch between property value ('%s') and Schema ('%s') for"
-                                  + " property '%s' for VXLAN VNI settings '%s': %s",
-                              propertyDescriptor.getGetter().apply(vxlanVniProperties),
-                              propertyDescriptor.getSchema(),
-                              property,
-                              vxlanVniProperties,
-                              e.getMessage()),
-                          e);
-                    }
-                  }
-
-                  rows.add(row.build());
+              for (String property : propertySpecifier.getMatchingProperties()) {
+                PropertyDescriptor<VxlanVniPropertiesRow> propertyDescriptor =
+                    VxlanVniPropertySpecifier.getPropertyDescriptor(property);
+                try {
+                  PropertySpecifier.fillProperty(
+                      propertyDescriptor, vxlanVniProperties, property, row);
+                } catch (ClassCastException e) {
+                  throw new BatfishException(
+                      String.format(
+                          "Type mismatch between property value ('%s') and Schema ('%s') for"
+                              + " property '%s' for VXLAN VNI settings '%s': %s",
+                          propertyDescriptor.getGetter().apply(vxlanVniProperties),
+                          propertyDescriptor.getSchema(),
+                          property,
+                          vxlanVniProperties,
+                          e.getMessage()),
+                      e);
                 }
-              });
+              }
+
+              rows.add(row.build());
+            }
+          });
     }
     return rows;
   }

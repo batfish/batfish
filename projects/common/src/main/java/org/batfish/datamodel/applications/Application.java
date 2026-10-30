@@ -28,11 +28,10 @@ public abstract class Application {
 
   protected static String stringifySubRanges(List<SubRange> subranges) {
     return subranges.stream()
-        .map(
-            subrange ->
-                subrange.isSingleValue()
-                    ? Objects.toString(subrange.getStart())
-                    : String.format("%d-%d", subrange.getStart(), subrange.getEnd()))
+        .map(subrange ->
+            subrange.isSingleValue()
+                ? Objects.toString(subrange.getStart())
+                : String.format("%d-%d", subrange.getStart(), subrange.getEnd()))
         .collect(Collectors.joining(","));
   }
 

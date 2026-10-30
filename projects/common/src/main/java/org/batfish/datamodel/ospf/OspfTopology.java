@@ -42,10 +42,8 @@ public final class OspfTopology {
       nodes.forEach(graph::addNode);
     }
     if (edges != null) {
-      edges.forEach(
-          valueEdge ->
-              graph.putEdgeValue(
-                  valueEdge.getSource(), valueEdge.getTarget(), valueEdge.getValue()));
+      edges.forEach(valueEdge ->
+          graph.putEdgeValue(valueEdge.getSource(), valueEdge.getTarget(), valueEdge.getValue()));
     }
     return new OspfTopology(graph);
   }
@@ -77,12 +75,11 @@ public final class OspfTopology {
   @JsonProperty(PROP_EDGES)
   private List<ValueEdge<OspfNeighborConfigId, OspfSessionProperties>> getEdges() {
     return _graph.edges().stream()
-        .map(
-            endpointPair ->
-                new ValueEdge<>(
-                    endpointPair.source(),
-                    endpointPair.target(),
-                    _graph.edgeValue(endpointPair.source(), endpointPair.target()).get()))
+        .map(endpointPair ->
+            new ValueEdge<>(
+                endpointPair.source(),
+                endpointPair.target(),
+                _graph.edgeValue(endpointPair.source(), endpointPair.target()).get()))
         .collect(ImmutableList.toImmutableList());
   }
 

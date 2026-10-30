@@ -139,10 +139,9 @@ public final class BDDTracer {
             .getFactory()
             .orAll(
                 outEdges.values().stream()
-                    .map(
-                        transition ->
-                            // find the subset of preStateBdd that can cross the transition
-                            preStateBdd.and(transition.transitBackward(one)))
+                    .map(transition ->
+                        // find the subset of preStateBdd that can cross the transition
+                        preStateBdd.and(transition.transitBackward(one)))
                     .collect(ImmutableList.toImmutableList()));
     return preStateBdd.diff(goSomewhere);
   }
@@ -160,13 +159,12 @@ public final class BDDTracer {
       }
 
       Map<StateExpr, Transition> outEdges = _reachabilityGraph.rowMap().get(state);
-      outEdges.forEach(
-          (postState, transition) -> {
-            BDD postStateBdd = transition.transitForward(bdd);
-            if (!postStateBdd.isZero()) {
-              detectLoopsAndGenerateTraces(postState, postStateBdd);
-            }
-          });
+      outEdges.forEach((postState, transition) -> {
+        BDD postStateBdd = transition.transitForward(bdd);
+        if (!postStateBdd.isZero()) {
+          detectLoopsAndGenerateTraces(postState, postStateBdd);
+        }
+      });
     } finally {
       _hops.pop();
     }
@@ -175,17 +173,16 @@ public final class BDDTracer {
   private void detectLoopsAndGenerateTraces(StateExpr state, BDD bdd) {
     List<BDD> loopBdds =
         _hops.stream()
-            .map(
-                prevHop -> {
-                  if (!prevHop.getState().equals(state)) {
-                    return null;
-                  }
-                  BDD loopBdd = prevHop.getBdd().and(bdd);
-                  if (loopBdd.isZero()) {
-                    return null;
-                  }
-                  return loopBdd;
-                })
+            .map(prevHop -> {
+              if (!prevHop.getState().equals(state)) {
+                return null;
+              }
+              BDD loopBdd = prevHop.getBdd().and(bdd);
+              if (loopBdd.isZero()) {
+                return null;
+              }
+              return loopBdd;
+            })
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
 

@@ -231,10 +231,9 @@ class RouteMapConvertor {
   private Set<Integer> computeContinueTargets(RouteMap routeMap) {
     return routeMap.getEntries().values().stream()
         .filter(entry -> entry.getContinue() != null)
-        .map(
-            entry ->
-                Optional.ofNullable(entry.getContinue().getNext())
-                    .orElse(_nextSeqMap.getOrDefault(entry.getNumber(), -1)))
+        .map(entry ->
+            Optional.ofNullable(entry.getContinue().getNext())
+                .orElse(_nextSeqMap.getOrDefault(entry.getNumber(), -1)))
         .filter(routeMap.getEntries().keySet()::contains)
         .collect(ImmutableSet.toImmutableSet());
   }

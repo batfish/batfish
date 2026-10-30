@@ -154,10 +154,9 @@ public class CommunityMatchExprToBDDTest {
             .getFactory()
             .orAll(
                 _arg.getTransferBDD().getCommunityAtomicPredicates().keySet().stream()
-                    .filter(
-                        c ->
-                            c.getType() == Type.REGEX
-                                || c.getLiteralValue() instanceof StandardCommunity)
+                    .filter(c ->
+                        c.getType() == Type.REGEX
+                            || c.getLiteralValue() instanceof StandardCommunity)
                     .map(this::cvarToBDD)
                     .collect(ImmutableSet.toImmutableSet()));
 

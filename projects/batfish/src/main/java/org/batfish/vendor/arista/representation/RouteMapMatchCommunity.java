@@ -31,10 +31,9 @@ public class RouteMapMatchCommunity extends RouteMapMatchLine {
     return new Disjunction(
         _listNames.stream()
             .filter(c.getCommunitySetMatchExprs()::containsKey)
-            .map(
-                name ->
-                    new MatchCommunities(
-                        InputCommunities.instance(), new CommunitySetMatchExprReference(name)))
+            .map(name ->
+                new MatchCommunities(
+                    InputCommunities.instance(), new CommunitySetMatchExprReference(name)))
             .collect(ImmutableList.toImmutableList()));
   }
 }

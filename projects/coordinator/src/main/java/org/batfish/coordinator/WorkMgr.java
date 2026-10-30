@@ -436,11 +436,10 @@ public class WorkMgr extends AbstractCoordinator {
     SnapshotId snapshotId = deletion.snapshotId();
     return _workQueueMgr.listIncompleteWork(deletion.networkId(), null, null).stream()
         .map(QueuedWork::getDetails)
-        .anyMatch(
-            details ->
-                snapshotId == null
-                    || snapshotId.equals(details.getSnapshotId())
-                    || snapshotId.equals(details.getReferenceSnapshotId()));
+        .anyMatch(details ->
+            snapshotId == null
+                || snapshotId.equals(details.getSnapshotId())
+                || snapshotId.equals(details.getReferenceSnapshotId()));
   }
 
   /**
@@ -939,18 +938,17 @@ public class WorkMgr extends AbstractCoordinator {
                   walk.filter(Files::isRegularFile).collect(ImmutableList.toImmutableList());
             }
             deepFiles.parallelStream()
-                .forEach(
-                    deepFile -> {
-                      try (InputStream srcFileStream = Files.newInputStream(deepFile)) {
-                        _storage.storeSnapshotInputObject(
-                            srcFileStream,
-                            subDir.relativize(deepFile).toString(),
-                            new NetworkSnapshot(networkId, snapshotId));
-                      } catch (IOException e) {
-                        throw new UncheckedIOException(
-                            String.format("Failed to copy: '%s'", subFile), e);
-                      }
-                    });
+                .forEach(deepFile -> {
+                  try (InputStream srcFileStream = Files.newInputStream(deepFile)) {
+                    _storage.storeSnapshotInputObject(
+                        srcFileStream,
+                        subDir.relativize(deepFile).toString(),
+                        new NetworkSnapshot(networkId, snapshotId));
+                  } catch (IOException e) {
+                    throw new UncheckedIOException(
+                        String.format("Failed to copy: '%s'", subFile), e);
+                  }
+                });
           } else {
             try (InputStream srcFileStream = Files.newInputStream(subFile)) {
               _storage.storeSnapshotInputObject(
@@ -1095,18 +1093,16 @@ public class WorkMgr extends AbstractCoordinator {
           _storage.listSnapshotInputObjectKeys(new NetworkSnapshot(networkId, baseSnapshotId))) {
         List<String> allKeys = baseInputObjectKeys.collect(Collectors.toList());
         allKeys.parallelStream()
-            .forEach(
-                key -> {
-                  try (InputStream baseObjectStream =
-                      _storage.loadSnapshotInputObject(networkId, baseSnapshotId, key)) {
-                    writeStreamToFile(baseObjectStream, newSnapshotInputsDir.resolve(key));
-                  } catch (IOException e) {
-                    throw new UncheckedIOException(
-                        String.format(
-                            "Unable to copy base snapshot input object with key: %s", key),
-                        e);
-                  }
-                });
+            .forEach(key -> {
+              try (InputStream baseObjectStream =
+                  _storage.loadSnapshotInputObject(networkId, baseSnapshotId, key)) {
+                writeStreamToFile(baseObjectStream, newSnapshotInputsDir.resolve(key));
+              } catch (IOException e) {
+                throw new UncheckedIOException(
+                    String.format("Unable to copy base snapshot input object with key: %s", key),
+                    e);
+              }
+            });
       }
       // Write user-specified files to the forked snapshot input dir, overwriting existing ones
       if (forkSnapshotBean.zipFile != null) {
@@ -1359,22 +1355,20 @@ public class WorkMgr extends AbstractCoordinator {
         _idManager.listSnapshots(networkId).stream()
             // Pair with resolved snapshot IDs so we can filter snapshot names on those that are
             // still present
-            .map(
-                snapshot ->
-                    Maps.immutableEntry(snapshot, _idManager.getSnapshotId(snapshot, networkId)))
+            .map(snapshot ->
+                Maps.immutableEntry(snapshot, _idManager.getSnapshotId(snapshot, networkId)))
             .filter(e -> e.getValue().isPresent())
-            .sorted(
-                (t1, t2) -> { // reverse sorting by creation-time, name
-                  SnapshotId snapshotId1 = t1.getValue().get();
-                  SnapshotId snapshotId2 = t2.getValue().get();
-                  String key1 =
-                      _snapshotMetadataManager.getSnapshotCreationTimeOrMin(networkId, snapshotId1)
-                          + t1.getKey();
-                  String key2 =
-                      _snapshotMetadataManager.getSnapshotCreationTimeOrMin(networkId, snapshotId2)
-                          + t2.getKey();
-                  return key2.compareTo(key1);
-                })
+            .sorted((t1, t2) -> { // reverse sorting by creation-time, name
+              SnapshotId snapshotId1 = t1.getValue().get();
+              SnapshotId snapshotId2 = t2.getValue().get();
+              String key1 =
+                  _snapshotMetadataManager.getSnapshotCreationTimeOrMin(networkId, snapshotId1)
+                      + t1.getKey();
+              String key2 =
+                  _snapshotMetadataManager.getSnapshotCreationTimeOrMin(networkId, snapshotId2)
+                      + t2.getKey();
+              return key2.compareTo(key1);
+            })
             .map(Entry::getKey)
             .collect(Collectors.toList());
     return testrigs;
@@ -1711,12 +1705,11 @@ public class WorkMgr extends AbstractCoordinator {
     } else {
       // project to desired columns
       rowStream =
-          rowStream.map(
-              rawRow -> {
-                Row row = Row.builder().putAll(rawRow, options.getColumns()).build();
-                rowIds.put(row, rowIds.get(rawRow));
-                return row;
-              });
+          rowStream.map(rawRow -> {
+            Row row = Row.builder().putAll(rawRow, options.getColumns()).build();
+            rowIds.put(row, rowIds.get(rawRow));
+            return row;
+          });
       // TableMetadata requires at least one key. For simplicity, make them all keys.
       Map<String, ColumnMetadata> columnMap =
           options.getColumns().stream()

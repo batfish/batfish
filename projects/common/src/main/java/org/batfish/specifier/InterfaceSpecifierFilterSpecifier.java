@@ -52,9 +52,8 @@ public final class InterfaceSpecifierFilterSpecifier implements FilterSpecifier 
     return _interfaceSpecifier.resolve(ImmutableSet.of(node), ctxt).stream()
         .map(NodeInterfacePair::getInterface)
         .map(ifaces::get)
-        .map(
-            iface ->
-                _type == Type.IN_FILTER ? iface.getIncomingFilter() : iface.getOutgoingFilter())
+        .map(iface ->
+            _type == Type.IN_FILTER ? iface.getIncomingFilter() : iface.getOutgoingFilter())
         .filter(Objects::nonNull)
         .collect(ImmutableSet.toImmutableSet());
   }

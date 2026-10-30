@@ -136,13 +136,12 @@ public final class CommunitySet implements Serializable {
       Caffeine.newBuilder()
           .softValues()
           .maximumSize(1 << 24)
-          .build(
-              set -> {
-                assert set instanceof ImmutableSet;
-                @SuppressWarnings("unchecked") // only ImmutableSet keys are ever inserted
-                ImmutableSet<Community> immutableSet = (ImmutableSet<Community>) set;
-                return new CommunitySet(immutableSet);
-              });
+          .build(set -> {
+            assert set instanceof ImmutableSet;
+            @SuppressWarnings("unchecked") // only ImmutableSet keys are ever inserted
+            ImmutableSet<Community> immutableSet = (ImmutableSet<Community>) set;
+            return new CommunitySet(immutableSet);
+          });
 
   /** Re-intern after deserialization. */
   @Serial

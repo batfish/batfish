@@ -159,24 +159,22 @@ final class VpcPeeringConnection implements AwsVpcEntity, Serializable {
     String ifaceNameSuffix = _vpcPeeringConnectionId;
     Utils.connect(awsConfiguration, accepterCfg, vrfName, requesterCfg, vrfName, ifaceNameSuffix);
 
-    _requesterVpcCidrBlock.forEach(
-        prefix ->
-            addStaticRoute(
-                accepterCfg.getVrfs().get(vrfName),
-                toStaticRoute(
-                    prefix,
-                    Utils.interfaceNameToRemote(requesterCfg, ifaceNameSuffix),
-                    Utils.getInterfaceLinkLocalIp(
-                        requesterCfg, Utils.interfaceNameToRemote(accepterCfg, ifaceNameSuffix)))));
-    _accepterVpcCidrBlock.forEach(
-        prefix ->
-            addStaticRoute(
-                requesterCfg.getVrfs().get(vrfName),
-                toStaticRoute(
-                    prefix,
-                    Utils.interfaceNameToRemote(accepterCfg, ifaceNameSuffix),
-                    Utils.getInterfaceLinkLocalIp(
-                        accepterCfg, Utils.interfaceNameToRemote(requesterCfg, ifaceNameSuffix)))));
+    _requesterVpcCidrBlock.forEach(prefix ->
+        addStaticRoute(
+            accepterCfg.getVrfs().get(vrfName),
+            toStaticRoute(
+                prefix,
+                Utils.interfaceNameToRemote(requesterCfg, ifaceNameSuffix),
+                Utils.getInterfaceLinkLocalIp(
+                    requesterCfg, Utils.interfaceNameToRemote(accepterCfg, ifaceNameSuffix)))));
+    _accepterVpcCidrBlock.forEach(prefix ->
+        addStaticRoute(
+            requesterCfg.getVrfs().get(vrfName),
+            toStaticRoute(
+                prefix,
+                Utils.interfaceNameToRemote(accepterCfg, ifaceNameSuffix),
+                Utils.getInterfaceLinkLocalIp(
+                    accepterCfg, Utils.interfaceNameToRemote(requesterCfg, ifaceNameSuffix)))));
   }
 
   @Nonnull

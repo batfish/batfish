@@ -41,9 +41,8 @@ public final class DispositionSpecifier {
     Builder<String, Set<FlowDisposition>> builder = ImmutableMap.builder();
     builder.putAll(_expansions);
     Arrays.asList(FlowDisposition.values())
-        .forEach(
-            disposition ->
-                builder.put(disposition.name().toLowerCase(), ImmutableSet.of(disposition)));
+        .forEach(disposition ->
+            builder.put(disposition.name().toLowerCase(), ImmutableSet.of(disposition)));
     return builder.build();
   }
 

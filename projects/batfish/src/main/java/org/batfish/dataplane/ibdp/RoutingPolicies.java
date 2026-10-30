@@ -29,10 +29,9 @@ final class RoutingPolicies {
    */
   public @Nonnull RoutingPolicy getOrThrow(String name) {
     return get(name)
-        .orElseThrow(
-            () ->
-                new IllegalStateException(
-                    String.format("Routing policy %s does not exist on node %s", name, _hostname)));
+        .orElseThrow(() ->
+            new IllegalStateException(
+                String.format("Routing policy %s does not exist on node %s", name, _hostname)));
   }
 
   static @Nonnull RoutingPolicies from(Configuration c) {

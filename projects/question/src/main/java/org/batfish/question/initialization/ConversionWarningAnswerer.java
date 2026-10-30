@@ -29,15 +29,14 @@ class ConversionWarningAnswerer extends Answerer {
     Map<String, Warnings> warnings = ccae.getWarnings();
 
     Rows rows = new Rows();
-    warnings.forEach(
-        (nodeName, nodeWarnings) -> {
-          for (Warning w : nodeWarnings.getRedFlagWarnings()) {
-            rows.add(getRow(nodeName, w));
-          }
-          for (Warning w : nodeWarnings.getUnimplementedWarnings()) {
-            rows.add(getRow(nodeName, w));
-          }
-        });
+    warnings.forEach((nodeName, nodeWarnings) -> {
+      for (Warning w : nodeWarnings.getRedFlagWarnings()) {
+        rows.add(getRow(nodeName, w));
+      }
+      for (Warning w : nodeWarnings.getUnimplementedWarnings()) {
+        rows.add(getRow(nodeName, w));
+      }
+    });
 
     TableAnswerElement answerElement = new TableAnswerElement(TABLE_METADATA);
     answerElement.postProcessAnswer(_question, rows.getData());

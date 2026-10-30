@@ -58,27 +58,26 @@ public final class InferFromFib extends SourceIpInference {
     return fib.get(dstIp).stream()
         .map(FibEntry::getAction)
         // Find forwarding interface for this FIB entry, if any
-        .map(
-            action ->
-                action.accept(
-                    new FibActionVisitor<String>() {
-                      @Override
-                      public String visitFibForward(FibForward fibForward) {
-                        return fibForward.getInterfaceName();
-                      }
+        .map(action ->
+            action.accept(
+                new FibActionVisitor<String>() {
+                  @Override
+                  public String visitFibForward(FibForward fibForward) {
+                    return fibForward.getInterfaceName();
+                  }
 
-                      @Override
-                      public String visitFibNextVrf(FibNextVrf fibNextVrf) {
-                        // TODO Can BGP peers initiate via interfaces in other VRFs? If
-                        //  so, need to return such interfaces here.
-                        return null;
-                      }
+                  @Override
+                  public String visitFibNextVrf(FibNextVrf fibNextVrf) {
+                    // TODO Can BGP peers initiate via interfaces in other VRFs? If
+                    //  so, need to return such interfaces here.
+                    return null;
+                  }
 
-                      @Override
-                      public String visitFibNullRoute(FibNullRoute fibNullRoute) {
-                        return null;
-                      }
-                    }))
+                  @Override
+                  public String visitFibNullRoute(FibNullRoute fibNullRoute) {
+                    return null;
+                  }
+                }))
         .filter(Objects::nonNull)
         .map(forwardingIfaceName -> c.getActiveInterfaces().get(forwardingIfaceName))
         .filter(Objects::nonNull)

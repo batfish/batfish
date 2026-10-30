@@ -200,14 +200,13 @@ public class Conversions {
           // convert all entries of the referred dynamic crypto map
           dynamicCryptoMapSet
               .getCryptoMapEntries()
-              .forEach(
-                  cryptoMap ->
-                      convertCryptoMapEntry(
-                          c,
-                          cryptoMap,
-                          String.format("%s:%s", nameSeqNum, cryptoMap.getSequenceNumber()),
-                          cryptoMapEntry.getName(),
-                          w));
+              .forEach(cryptoMap ->
+                  convertCryptoMapEntry(
+                      c,
+                      cryptoMap,
+                      String.format("%s:%s", nameSeqNum, cryptoMap.getSequenceNumber()),
+                      cryptoMapEntry.getName(),
+                      w));
         }
       } else {
         convertCryptoMapEntry(c, cryptoMapEntry, nameSeqNum, cryptoMapEntry.getName(), w);
@@ -225,10 +224,9 @@ public class Conversions {
       interfaceNameToInterface
           .getValue()
           .getAllAddresses()
-          .forEach(
-              interfaceAddress -> {
-                ipToIfaceNameMap.put(interfaceAddress.getIp(), interfaceNameToInterface.getKey());
-              });
+          .forEach(interfaceAddress -> {
+            ipToIfaceNameMap.put(interfaceAddress.getIp(), interfaceNameToInterface.getKey());
+          });
     }
     return ipToIfaceNameMap;
   }
@@ -241,11 +239,10 @@ public class Conversions {
     // setting empty string as interface name if cannot find the IP
     keyrings.values().stream()
         .filter(keyring -> keyring.getLocalAddress() != null)
-        .forEach(
-            keyring ->
-                keyring.setLocalInterfaceName(
-                    firstNonNull(
-                        iptoIfaceName.get(keyring.getLocalAddress()), INVALID_LOCAL_INTERFACE)));
+        .forEach(keyring ->
+            keyring.setLocalInterfaceName(
+                firstNonNull(
+                    iptoIfaceName.get(keyring.getLocalAddress()), INVALID_LOCAL_INTERFACE)));
   }
 
   /**
@@ -257,12 +254,10 @@ public class Conversions {
 
     isakpProfiles.values().stream()
         .filter(isakmpProfile -> isakmpProfile.getLocalAddress() != null)
-        .forEach(
-            isakmpProfile ->
-                isakmpProfile.setLocalInterfaceName(
-                    firstNonNull(
-                        iptoIfaceName.get(isakmpProfile.getLocalAddress()),
-                        INVALID_LOCAL_INTERFACE)));
+        .forEach(isakmpProfile ->
+            isakmpProfile.setLocalInterfaceName(
+                firstNonNull(
+                    iptoIfaceName.get(isakmpProfile.getLocalAddress()), INVALID_LOCAL_INTERFACE)));
   }
 
   /** Resolves the interface names of the addresses used as source addresses in {@link Tunnel}s */
@@ -326,10 +321,9 @@ public class Conversions {
 
     ikePhase1Policy.setIkePhase1Proposals(
         oldConfig.getIsakmpPolicies().values().stream()
-            .filter(
-                isakmpPolicy ->
-                    isakmpPolicy.getAuthenticationMethod()
-                        == IkeAuthenticationMethod.RSA_ENCRYPTED_NONCES)
+            .filter(isakmpPolicy ->
+                isakmpPolicy.getAuthenticationMethod()
+                    == IkeAuthenticationMethod.RSA_ENCRYPTED_NONCES)
             .map(isakmpPolicy -> isakmpPolicy.getName().toString())
             .collect(ImmutableList.toImmutableList()));
     if (rsaPubKey.getAddress() != null) {
@@ -349,10 +343,8 @@ public class Conversions {
 
     ikePhase1Policy.setIkePhase1Proposals(
         oldConfig.getIsakmpPolicies().values().stream()
-            .filter(
-                isakmpPolicy ->
-                    isakmpPolicy.getAuthenticationMethod()
-                        == IkeAuthenticationMethod.PRE_SHARED_KEYS)
+            .filter(isakmpPolicy ->
+                isakmpPolicy.getAuthenticationMethod() == IkeAuthenticationMethod.PRE_SHARED_KEYS)
             .map(isakmpPolicy -> isakmpPolicy.getName().toString())
             .collect(ImmutableList.toImmutableList()));
     ikePhase1Policy.setRemoteIdentity(isakmpKey.getAddress());
@@ -444,15 +436,14 @@ public class Conversions {
             : AristaStructureType.IPV4_ACCESS_LIST_EXTENDED_LINE;
     List<AclLine> lines =
         eaList.getLines().stream()
-            .map(
-                l ->
-                    toIpAccessListLine(l)
-                        .setVendorStructureId(
-                            new VendorStructureId(
-                                filename,
-                                lineType.getDescription(),
-                                aclLineStructureName(eaList.getName(), l.getName())))
-                        .build())
+            .map(l ->
+                toIpAccessListLine(l)
+                    .setVendorStructureId(
+                        new VendorStructureId(
+                            filename,
+                            lineType.getDescription(),
+                            aclLineStructureName(eaList.getName(), l.getName())))
+                    .build())
             .collect(ImmutableList.toImmutableList());
     String sourceType =
         eaList.getParent() != null
@@ -772,10 +763,9 @@ public class Conversions {
   static RouteFilterList toRouteFilterList(PrefixList list, String vendorConfigFilename) {
     List<RouteFilterLine> newLines =
         list.getLines().values().stream()
-            .map(
-                l ->
-                    new RouteFilterLine(
-                        l.getAction(), IpWildcard.create(l.getPrefix()), l.getLengthRange()))
+            .map(l ->
+                new RouteFilterLine(
+                    l.getAction(), IpWildcard.create(l.getPrefix()), l.getLengthRange()))
             .collect(ImmutableList.toImmutableList());
     return new RouteFilterList(
         list.getName(),

@@ -268,10 +268,9 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
     IpAccessList natAcl = c.getIpAccessLists().get(_aclName);
     // Expect all lines to be header space matches for NAT ACL
     if (!natAcl.getLines().stream()
-        .allMatch(
-            l ->
-                l instanceof ExprAclLine
-                    && ((ExprAclLine) l).getMatchCondition() instanceof MatchHeaderSpace)) {
+        .allMatch(l ->
+            l instanceof ExprAclLine
+                && ((ExprAclLine) l).getMatchCondition() instanceof MatchHeaderSpace)) {
       return Optional.empty();
     }
 
@@ -280,20 +279,19 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
         natAcl.getLines().stream()
             // Already checked that all lines are instances of ExprAclLine
             .map(ExprAclLine.class::cast)
-            .map(
-                line -> {
-                  HeaderSpace origHeader =
-                      ((MatchHeaderSpace) line.getMatchCondition()).getHeaderspace();
-                  HeaderSpace headerSpace =
-                      origHeader.toBuilder()
-                          .setDstIps(origHeader.getSrcIps())
-                          .setSrcIps((IpSpace) null)
-                          .build();
-                  return ExprAclLine.builder()
-                      .setAction(line.getAction())
-                      .setMatchCondition(new MatchHeaderSpace(headerSpace))
+            .map(line -> {
+              HeaderSpace origHeader =
+                  ((MatchHeaderSpace) line.getMatchCondition()).getHeaderspace();
+              HeaderSpace headerSpace =
+                  origHeader.toBuilder()
+                      .setDstIps(origHeader.getSrcIps())
+                      .setSrcIps((IpSpace) null)
                       .build();
-                })
+              return ExprAclLine.builder()
+                  .setAction(line.getAction())
+                  .setMatchCondition(new MatchHeaderSpace(headerSpace))
+                  .build();
+            })
             .collect(Collectors.toList());
     return Optional.of(
         IpAccessList.builder()

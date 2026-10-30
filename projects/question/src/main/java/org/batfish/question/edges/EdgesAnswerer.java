@@ -181,9 +181,8 @@ public class EdgesAnswerer extends Answerer {
       case LAYER1 ->
           topologyProvider
               .getLayer1LogicalTopology(snapshot)
-              .map(
-                  layer1LogicalTopology ->
-                      getLayer1Edges(includeNodes, includeRemoteNodes, layer1LogicalTopology))
+              .map(layer1LogicalTopology ->
+                  getLayer1Edges(includeNodes, includeRemoteNodes, layer1LogicalTopology))
               .orElse(ImmutableList.of());
       case USER_PROVIDED_LAYER1 ->
           // user-provided layer1 edges do not support filtering by node.
@@ -192,13 +191,12 @@ public class EdgesAnswerer extends Answerer {
           // thing to do is disable filtering.
           topologyProvider
               .getUserProvidedLayer1Topology(snapshot)
-              .map(
-                  userProvidedLayer1Topology ->
-                      (Multiset<Row>)
-                          userProvidedLayer1Topology
-                              .edgeStream()
-                              .map(EdgesAnswerer::layer1EdgeToRow)
-                              .collect(Collectors.toCollection(HashMultiset::create)))
+              .map(userProvidedLayer1Topology ->
+                  (Multiset<Row>)
+                      userProvidedLayer1Topology
+                          .edgeStream()
+                          .map(EdgesAnswerer::layer1EdgeToRow)
+                          .collect(Collectors.toCollection(HashMultiset::create)))
               .orElse(ImmutableMultiset.of());
       case LAYER3 -> getLayer3Edges(configurations, includeNodes, includeRemoteNodes, topology);
     };
@@ -208,10 +206,9 @@ public class EdgesAnswerer extends Answerer {
   static Multiset<Row> getEigrpEdges(
       Set<String> includeNodes, Set<String> includeRemoteNodes, EigrpTopology eigrpTopology) {
     return eigrpTopology.getNetwork().edges().stream()
-        .filter(
-            eigrpEdge ->
-                includeNodes.contains(eigrpEdge.getNode1().getHostname())
-                    && includeRemoteNodes.contains(eigrpEdge.getNode2().getHostname()))
+        .filter(eigrpEdge ->
+            includeNodes.contains(eigrpEdge.getNode1().getHostname())
+                && includeRemoteNodes.contains(eigrpEdge.getNode2().getHostname()))
         .map(EdgesAnswerer::eigrpEdgeToRow)
         .collect(Collectors.toCollection(HashMultiset::create));
   }
@@ -275,10 +272,9 @@ public class EdgesAnswerer extends Answerer {
       Set<String> includeNodes, Set<String> includeRemoteNodes, IsisTopology isisTopology) {
     return isisTopology.getNetwork().edges().stream()
         .filter(Objects::nonNull)
-        .filter(
-            isisEdge ->
-                includeNodes.contains(isisEdge.getNode1().getNode())
-                    && includeRemoteNodes.contains(isisEdge.getNode2().getNode()))
+        .filter(isisEdge ->
+            includeNodes.contains(isisEdge.getNode1().getNode())
+                && includeRemoteNodes.contains(isisEdge.getNode2().getNode()))
         .map(EdgesAnswerer::isisEdgeToRow)
         .collect(Collectors.toCollection(HashMultiset::create));
   }
@@ -293,10 +289,9 @@ public class EdgesAnswerer extends Answerer {
     }
     return layer1Topology
         .edgeStream()
-        .filter(
-            layer1Edge ->
-                includeNodes.contains(layer1Edge.getNode1().getHostname())
-                    && includeRemoteNodes.contains(layer1Edge.getNode2().getHostname()))
+        .filter(layer1Edge ->
+            includeNodes.contains(layer1Edge.getNode1().getHostname())
+                && includeRemoteNodes.contains(layer1Edge.getNode2().getHostname()))
         .sorted()
         .map(EdgesAnswerer::layer1EdgeToRow)
         .collect(ImmutableList.toImmutableList());
@@ -309,10 +304,9 @@ public class EdgesAnswerer extends Answerer {
       Set<String> includeRemoteNodes,
       Topology topology) {
     return topology.getEdges().stream()
-        .filter(
-            layer3Edge ->
-                includeNodes.contains(layer3Edge.getNode1())
-                    && includeRemoteNodes.contains(layer3Edge.getNode2()))
+        .filter(layer3Edge ->
+            includeNodes.contains(layer3Edge.getNode1())
+                && includeRemoteNodes.contains(layer3Edge.getNode2()))
         .sorted()
         .map(layer3edge -> layer3EdgeToRow(configurations, layer3edge))
         .collect(ImmutableList.toImmutableList());
@@ -325,23 +319,21 @@ public class EdgesAnswerer extends Answerer {
     topology
         .getGraph()
         .edges()
-        .forEach(
-            p -> {
-              OspfNeighborConfigId sourceId = p.source();
-              OspfNeighborConfigId targetId = p.target();
-              String hostname = sourceId.getHostname();
-              String remoteHostname = targetId.getHostname();
-              if (!includeNodes.contains(hostname)
-                  || !includeRemoteNodes.contains(remoteHostname)) {
-                return;
-              }
-              rows.add(
-                  getOspfEdgeRow(
-                      hostname,
-                      sourceId.getInterfaceName(),
-                      remoteHostname,
-                      targetId.getInterfaceName()));
-            });
+        .forEach(p -> {
+          OspfNeighborConfigId sourceId = p.source();
+          OspfNeighborConfigId targetId = p.target();
+          String hostname = sourceId.getHostname();
+          String remoteHostname = targetId.getHostname();
+          if (!includeNodes.contains(hostname) || !includeRemoteNodes.contains(remoteHostname)) {
+            return;
+          }
+          rows.add(
+              getOspfEdgeRow(
+                  hostname,
+                  sourceId.getInterfaceName(),
+                  remoteHostname,
+                  targetId.getInterfaceName()));
+        });
     return ImmutableList.copyOf(rows.build());
   }
 
@@ -360,20 +352,19 @@ public class EdgesAnswerer extends Answerer {
               return ipsecSession.isPresent()
                   && ipsecSession.get().getNegotiatedIpsecP2Proposal() != null;
             })
-        .forEach(
-            endpoint -> {
-              IpsecPeerConfig ipsecPeerConfigU = nf.getIpsecPeerConfig(endpoint.nodeU());
-              IpsecPeerConfig ipsecPeerConfigV = nf.getIpsecPeerConfig(endpoint.nodeV());
-              if (ipsecPeerConfigU == null || ipsecPeerConfigV == null) {
-                return;
-              }
-              rows.add(
-                  getIpsecEdge(
-                      endpoint.nodeU().getHostName(),
-                      ipsecPeerConfigU,
-                      endpoint.nodeV().getHostName(),
-                      ipsecPeerConfigV));
-            });
+        .forEach(endpoint -> {
+          IpsecPeerConfig ipsecPeerConfigU = nf.getIpsecPeerConfig(endpoint.nodeU());
+          IpsecPeerConfig ipsecPeerConfigV = nf.getIpsecPeerConfig(endpoint.nodeV());
+          if (ipsecPeerConfigU == null || ipsecPeerConfigV == null) {
+            return;
+          }
+          rows.add(
+              getIpsecEdge(
+                  endpoint.nodeU().getHostName(),
+                  ipsecPeerConfigU,
+                  endpoint.nodeV().getHostName(),
+                  ipsecPeerConfigV));
+        });
     return rows;
   }
 

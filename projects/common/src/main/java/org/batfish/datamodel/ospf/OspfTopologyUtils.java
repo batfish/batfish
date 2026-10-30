@@ -116,26 +116,21 @@ public final class OspfTopologyUtils {
                           .map(OspfAddresses::getAddresses)
                           .orElse(null),
                       iface.getAllConcreteAddresses())
-                  .forEach(
-                      concreteAddress -> {
-                        OspfNeighborConfigId id =
-                            new OspfNeighborConfigId(
-                                hostname,
-                                vrfName,
-                                iface.getOspfProcess(),
-                                ifaceName,
-                                concreteAddress);
-                        neighborsById.put(
-                            id,
-                            OspfNeighborConfig.builder()
-                                .setArea(area.getAreaNumber())
-                                .setHostname(hostname)
-                                .setInterfaceName(ifaceName)
-                                .setIp(concreteAddress.getIp())
-                                .setVrfName(vrfName)
-                                .setPassive(iface.getOspfPassive())
-                                .build());
-                      });
+                  .forEach(concreteAddress -> {
+                    OspfNeighborConfigId id =
+                        new OspfNeighborConfigId(
+                            hostname, vrfName, iface.getOspfProcess(), ifaceName, concreteAddress);
+                    neighborsById.put(
+                        id,
+                        OspfNeighborConfig.builder()
+                            .setArea(area.getAreaNumber())
+                            .setHostname(hostname)
+                            .setInterfaceName(ifaceName)
+                            .setIp(concreteAddress.getIp())
+                            .setVrfName(vrfName)
+                            .setPassive(iface.getOspfPassive())
+                            .build());
+                  });
             }
           }
           proc.setOspfNeighborConfigs(neighborsById.build());
@@ -155,23 +150,21 @@ public final class OspfTopologyUtils {
       for (Vrf vrf : config.getVrfs().values()) {
         for (OspfProcess proc : vrf.getOspfProcesses().values()) {
           proc.getOspfNeighborConfigs()
-              .forEach(
-                  (neighborId, neighbor) -> {
-                    if (neighbor.isPassive()) {
-                      return;
-                    }
-                    // Check if the interface is up
-                    Optional<Interface> iface =
-                        configurations.getInterface(
-                            config.getHostname(), neighbor.getInterfaceName());
-                    if (!iface.isPresent()) {
-                      return;
-                    }
-                    if (!iface.get().getActive()) {
-                      return;
-                    }
-                    graph.addNode(neighborId);
-                  });
+              .forEach((neighborId, neighbor) -> {
+                if (neighbor.isPassive()) {
+                  return;
+                }
+                // Check if the interface is up
+                Optional<Interface> iface =
+                    configurations.getInterface(config.getHostname(), neighbor.getInterfaceName());
+                if (!iface.isPresent()) {
+                  return;
+                }
+                if (!iface.get().getActive()) {
+                  return;
+                }
+                graph.addNode(neighborId);
+              });
         }
       }
     }
@@ -202,17 +195,16 @@ public final class OspfTopologyUtils {
             .getOspfNeighborConfigs(
                 remoteNodeInterface.getHostname(), remoteNodeInterface.getInterface())
             .get()
-            .forEach(
-                remoteConfigId -> {
-                  if (configId.getAddress().getIp().equals(remoteConfigId.getAddress().getIp())) {
-                    return;
-                  }
-                  OspfSessionStatus status =
-                      getSessionStatus(configId, remoteConfigId, networkConfigurations);
-                  if (status != OspfSessionStatus.NO_SESSION) {
-                    graph.putEdgeValue(configId, remoteConfigId, status);
-                  }
-                });
+            .forEach(remoteConfigId -> {
+              if (configId.getAddress().getIp().equals(remoteConfigId.getAddress().getIp())) {
+                return;
+              }
+              OspfSessionStatus status =
+                  getSessionStatus(configId, remoteConfigId, networkConfigurations);
+              if (status != OspfSessionStatus.NO_SESSION) {
+                graph.putEdgeValue(configId, remoteConfigId, status);
+              }
+            });
       }
     }
   }

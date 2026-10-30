@@ -96,10 +96,9 @@ public enum CumulusStructureUsage implements StructureUsage {
           Arrays.stream(CumulusStructureUsage.values())
               .filter(cType -> cType.name().equals(frrUsage.name()))
               .findFirst()
-              .orElseThrow(
-                  () ->
-                      new NoSuchElementException(
-                          "No CumulusStructureUsage exists for FrrStructureUsage " + frrUsage));
+              .orElseThrow(() ->
+                  new NoSuchElementException(
+                      "No CumulusStructureUsage exists for FrrStructureUsage " + frrUsage));
       map.put(frrUsage, matchingCumulusUsage);
     }
     return map.build();

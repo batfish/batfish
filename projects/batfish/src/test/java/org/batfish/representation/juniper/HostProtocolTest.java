@@ -55,10 +55,9 @@ public class HostProtocolTest {
     List<TraceElement> expectedChildTraceElements =
         Stream.of(HostProtocol.values())
             .filter(hp -> !unhandledProtocols.contains(hp))
-            .map(
-                hp ->
-                    TraceElement.of(
-                        String.format("Matched host-inbound-traffic protocol %s", hp.toString())))
+            .map(hp ->
+                TraceElement.of(
+                    String.format("Matched host-inbound-traffic protocol %s", hp.toString())))
             .collect(ImmutableList.toImmutableList());
 
     assertThat(

@@ -46,14 +46,13 @@ public final class ReferenceInterfaceGroupInterfaceSpecifier implements Interfac
             .orElseThrow(
                 () -> new NoSuchElementException("ReferenceBook '" + _bookName + "' not found"))
             .getInterfaceGroup(_interfaceGroupName)
-            .orElseThrow(
-                () ->
-                    new NoSuchElementException(
-                        "InterfaceGroup '"
-                            + _interfaceGroupName
-                            + "' not found in ReferenceBook '"
-                            + _bookName
-                            + "'"));
+            .orElseThrow(() ->
+                new NoSuchElementException(
+                    "InterfaceGroup '"
+                        + _interfaceGroupName
+                        + "' not found in ReferenceBook '"
+                        + _bookName
+                        + "'"));
     return nodes.stream()
         .map(n -> ctxt.getConfigs().get(n).getAllInterfaces().values())
         .flatMap(Collection::stream)

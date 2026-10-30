@@ -371,34 +371,31 @@ public final class VirtualRouter {
     _hmmRoutes.forEach(oldHmmRoute -> delta.remove(oldHmmRoute, Reason.WITHDRAW));
     ImmutableList.Builder<HmmRoute> newHmmRoutes = ImmutableList.builder();
     _c.getAllInterfaces(_vrf.getName())
-        .forEach(
-            (ifaceName, iface) -> {
-              if (!iface.getHmm()) {
-                return;
-              }
-              Set<NodeInterfacePair> neighbors =
-                  initialLayer3Topology.getNeighbors(NodeInterfacePair.of(iface));
-              for (NodeInterfacePair neighbor : neighbors) {
-                Set<Ip> neighborIps =
-                    interfaceOwners
-                        .getOrDefault(neighbor.getHostname(), ImmutableMap.of())
-                        .getOrDefault(neighbor.getInterface(), ImmutableSet.of());
-                // add an hmm route for every owned IP address on every neighbor of this interface
-                neighborIps.stream()
-                    .map(
-                        ip ->
-                            HmmRoute.builder()
-                                .setNetwork(ip.toPrefix())
-                                // TODO: set custom administrative distance
-                                .setNextHop(NextHopInterface.of(iface.getName()))
-                                .build())
-                    .forEach(
-                        hmmRoute -> {
-                          delta.add(hmmRoute);
-                          newHmmRoutes.add(hmmRoute);
-                        });
-              }
-            });
+        .forEach((ifaceName, iface) -> {
+          if (!iface.getHmm()) {
+            return;
+          }
+          Set<NodeInterfacePair> neighbors =
+              initialLayer3Topology.getNeighbors(NodeInterfacePair.of(iface));
+          for (NodeInterfacePair neighbor : neighbors) {
+            Set<Ip> neighborIps =
+                interfaceOwners
+                    .getOrDefault(neighbor.getHostname(), ImmutableMap.of())
+                    .getOrDefault(neighbor.getInterface(), ImmutableSet.of());
+            // add an hmm route for every owned IP address on every neighbor of this interface
+            neighborIps.stream()
+                .map(ip ->
+                    HmmRoute.builder()
+                        .setNetwork(ip.toPrefix())
+                        // TODO: set custom administrative distance
+                        .setNextHop(NextHopInterface.of(iface.getName()))
+                        .build())
+                .forEach(hmmRoute -> {
+                  delta.add(hmmRoute);
+                  newHmmRoutes.add(hmmRoute);
+                });
+          }
+        });
     for (RouteAdvertisement<HmmRoute> action : delta.build().getActions()) {
       if (action.isWithdrawn()) {
         _mainRibRouteDeltaBuilder.from(
@@ -427,27 +424,24 @@ public final class VirtualRouter {
     RoutingPolicy policy = _c.getRoutingPolicies().get(ribGroup.getImportPolicy());
     checkState(policy != null, "RIB group %s is missing import policy", ribGroup.getName());
     sourceRib.getRoutes().stream()
-        .map(
-            route -> {
-              AbstractRouteBuilder<?, ?> builder = route.getRoute().toBuilder();
-              boolean accept = policy.process(route, builder, IN, alwaysFalse());
-              return accept ? new AnnotatedRoute<AbstractRoute>(builder.build(), _name) : null;
-            })
+        .map(route -> {
+          AbstractRouteBuilder<?, ?> builder = route.getRoute().toBuilder();
+          boolean accept = policy.process(route, builder, IN, alwaysFalse());
+          return accept ? new AnnotatedRoute<AbstractRoute>(builder.build(), _name) : null;
+        })
         .filter(Objects::nonNull)
-        .forEach(
-            r ->
-                ribGroup
-                    .getImportRibs()
-                    .forEach(ribId -> _node.getRib(ribId).ifPresent(rib -> rib.mergeRoute(r))));
+        .forEach(r ->
+            ribGroup
+                .getImportRibs()
+                .forEach(ribId -> _node.getRib(ribId).ifPresent(rib -> rib.mergeRoute(r))));
   }
 
   /** Initialize EIGRP processes */
   private void initEigrp() {
     _eigrpProcesses =
         _vrf.getEigrpProcesses().values().stream()
-            .map(
-                eigrpProcess ->
-                    new EigrpRoutingProcess(eigrpProcess, _name, RoutingPolicies.from(_c)))
+            .map(eigrpProcess ->
+                new EigrpRoutingProcess(eigrpProcess, _name, RoutingPolicies.from(_c)))
             .collect(ImmutableMap.toImmutableMap(EigrpRoutingProcess::getAsn, Function.identity()));
     _eigrpProcesses.values().forEach(p -> p.initialize(_node));
   }
@@ -901,10 +895,8 @@ public final class VirtualRouter {
     assert iface.getActive();
     return iface.getAllConcreteAddresses().stream()
         .filter(addr -> shouldGenerateConnectedRoute(iface.getAddressMetadata().get(addr)))
-        .map(
-            addr ->
-                generateConnectedRoute(
-                    addr, iface.getName(), iface.getAddressMetadata().get(addr)));
+        .map(addr ->
+            generateConnectedRoute(addr, iface.getName(), iface.getAddressMetadata().get(addr)));
   }
 
   /**
@@ -996,21 +988,16 @@ public final class VirtualRouter {
   private static @Nonnull Stream<LocalRoute> generateLocalRoutes(@Nonnull Interface iface) {
     if (!iface.getActive()) {
       return iface.getAllConcreteAddresses().stream()
-          .map(
-              addr ->
-                  generateLocalNullRouteForDownInterface(
-                      addr, iface.getAddressMetadata().get(addr)))
+          .map(addr ->
+              generateLocalNullRouteForDownInterface(addr, iface.getAddressMetadata().get(addr)))
           .filter(Optional::isPresent)
           .map(Optional::get);
     }
     return iface.getAllConcreteAddresses().stream()
-        .filter(
-            addr ->
-                shouldGenerateLocalRoute(
-                    addr.getNetworkBits(), iface.getAddressMetadata().get(addr)))
-        .map(
-            addr ->
-                generateLocalRoute(addr, iface.getName(), iface.getAddressMetadata().get(addr)));
+        .filter(addr ->
+            shouldGenerateLocalRoute(addr.getNetworkBits(), iface.getAddressMetadata().get(addr)))
+        .map(addr ->
+            generateLocalRoute(addr, iface.getName(), iface.getAddressMetadata().get(addr)));
   }
 
   /**
@@ -1084,10 +1071,9 @@ public final class VirtualRouter {
             .setSystemId(proc.getNetAddress().getSystemIdString());
     _c.getActiveInterfaces(_vrf.getName())
         .values()
-        .forEach(
-            iface ->
-                generateAllIsisInterfaceRoutes(
-                    d1, d2, l1Admin, l2Admin, l1Settings, l2Settings, ifaceRouteBuilder, iface));
+        .forEach(iface ->
+            generateAllIsisInterfaceRoutes(
+                d1, d2, l1Admin, l2Admin, l1Settings, l2Settings, ifaceRouteBuilder, iface));
 
     // export default route for L1 neighbors on L1L2 routers that are not overloaded
     if (l1Settings != null && l2Settings != null && !proc.getOverload()) {
@@ -1144,14 +1130,13 @@ public final class VirtualRouter {
         .filter(ra -> !(ra.getRoute().getRoute() instanceof IsisRoute))
         .map(ra -> exportNonIsisRouteToIsis(ra.getRoute(), proc, isLevel1, _c))
         .filter(Objects::nonNull)
-        .forEach(
-            isisRoute -> {
-              if (isisRoute.getLevel() == IsisLevel.LEVEL_1) {
-                l1Delta.from(_isisL1Rib.mergeRouteGetDelta(isisRoute));
-              } else if (isisRoute.getLevel() == IsisLevel.LEVEL_2) {
-                l2Delta.from(_isisL2Rib.mergeRouteGetDelta(isisRoute));
-              }
-            });
+        .forEach(isisRoute -> {
+          if (isisRoute.getLevel() == IsisLevel.LEVEL_1) {
+            l1Delta.from(_isisL1Rib.mergeRouteGetDelta(isisRoute));
+          } else if (isisRoute.getLevel() == IsisLevel.LEVEL_2) {
+            l2Delta.from(_isisL2Rib.mergeRouteGetDelta(isisRoute));
+          }
+        });
   }
 
   /**
@@ -1198,9 +1183,8 @@ public final class VirtualRouter {
             : firstNonNull(ifaceLevelSettings.getCost(), IsisRoute.DEFAULT_METRIC);
     routeBuilder.setAdmin(adminCost).setLevel(level).setMetric(metric).setProtocol(isisProtocol);
     return iface.getAllConcreteAddresses().stream()
-        .map(
-            address ->
-                routeBuilder.setNetwork(address.getPrefix()).setNextHopIp(address.getIp()).build())
+        .map(address ->
+            routeBuilder.setNetwork(address.getPrefix()).setNextHopIp(address.getIp()).build())
         .collect(ImmutableSet.toImmutableSet());
   }
 
@@ -1287,50 +1271,47 @@ public final class VirtualRouter {
     }
     RibDelta.Builder<IsisRoute> l1DeltaBuilder = RibDelta.builder();
     RibDelta.Builder<IsisRoute> l2DeltaBuilder = RibDelta.builder();
-    _isisIncomingRoutes.forEach(
-        (edge, queue) -> {
-          Ip nextHopIp = edge.getNode1().getInterface(nc).getConcreteAddress().getIp();
-          Interface iface = edge.getNode2().getInterface(nc);
-          while (queue.peek() != null) {
-            RouteAdvertisement<IsisRoute> routeAdvert = queue.remove();
-            IsisRoute neighborRoute = routeAdvert.getRoute();
-            IsisLevel routeLevel = neighborRoute.getLevel();
-            IsisInterfaceLevelSettings isisLevelSettings =
-                routeLevel == IsisLevel.LEVEL_1
-                    ? iface.getIsis().getLevel1()
-                    : iface.getIsis().getLevel2();
+    _isisIncomingRoutes.forEach((edge, queue) -> {
+      Ip nextHopIp = edge.getNode1().getInterface(nc).getConcreteAddress().getIp();
+      Interface iface = edge.getNode2().getInterface(nc);
+      while (queue.peek() != null) {
+        RouteAdvertisement<IsisRoute> routeAdvert = queue.remove();
+        IsisRoute neighborRoute = routeAdvert.getRoute();
+        IsisLevel routeLevel = neighborRoute.getLevel();
+        IsisInterfaceLevelSettings isisLevelSettings =
+            routeLevel == IsisLevel.LEVEL_1
+                ? iface.getIsis().getLevel1()
+                : iface.getIsis().getLevel2();
 
-            // Do not propagate route if ISIS interface is not active at this level
-            if (isisLevelSettings.getMode() != IsisInterfaceMode.ACTIVE) {
-              continue;
-            }
-            boolean withdraw = routeAdvert.isWithdrawn();
-            int adminCost =
-                neighborRoute
-                    .getProtocol()
-                    .getDefaultAdministrativeCost(_c.getConfigurationFormat());
-            RibDelta.Builder<IsisRoute> deltaBuilder =
-                routeLevel == IsisLevel.LEVEL_1 ? l1DeltaBuilder : l2DeltaBuilder;
-            long incrementalMetric =
-                firstNonNull(isisLevelSettings.getCost(), IsisRoute.DEFAULT_METRIC);
-            IsisRoute newRoute =
-                neighborRoute.toBuilder()
-                    .setAdmin(adminCost)
-                    .setLevel(routeLevel)
-                    .setMetric(incrementalMetric + neighborRoute.getMetric())
-                    .setNextHopIp(nextHopIp)
-                    // Just imported, so set nonrouting false
-                    .setNonRouting(false)
-                    .build();
-            if (withdraw) {
-              deltaBuilder.remove(newRoute, Reason.WITHDRAW);
-            } else {
-              IsisLevelRib levelStagingRib =
-                  routeLevel == IsisLevel.LEVEL_1 ? _isisL1StagingRib : _isisL2StagingRib;
-              deltaBuilder.from(levelStagingRib.mergeRouteGetDelta(newRoute));
-            }
-          }
-        });
+        // Do not propagate route if ISIS interface is not active at this level
+        if (isisLevelSettings.getMode() != IsisInterfaceMode.ACTIVE) {
+          continue;
+        }
+        boolean withdraw = routeAdvert.isWithdrawn();
+        int adminCost =
+            neighborRoute.getProtocol().getDefaultAdministrativeCost(_c.getConfigurationFormat());
+        RibDelta.Builder<IsisRoute> deltaBuilder =
+            routeLevel == IsisLevel.LEVEL_1 ? l1DeltaBuilder : l2DeltaBuilder;
+        long incrementalMetric =
+            firstNonNull(isisLevelSettings.getCost(), IsisRoute.DEFAULT_METRIC);
+        IsisRoute newRoute =
+            neighborRoute.toBuilder()
+                .setAdmin(adminCost)
+                .setLevel(routeLevel)
+                .setMetric(incrementalMetric + neighborRoute.getMetric())
+                .setNextHopIp(nextHopIp)
+                // Just imported, so set nonrouting false
+                .setNonRouting(false)
+                .build();
+        if (withdraw) {
+          deltaBuilder.remove(newRoute, Reason.WITHDRAW);
+        } else {
+          IsisLevelRib levelStagingRib =
+              routeLevel == IsisLevel.LEVEL_1 ? _isisL1StagingRib : _isisL2StagingRib;
+          deltaBuilder.from(levelStagingRib.mergeRouteGetDelta(newRoute));
+        }
+      }
+    });
     return new SimpleEntry<>(l1DeltaBuilder.build(), l2DeltaBuilder.build());
   }
 
@@ -1464,34 +1445,33 @@ public final class VirtualRouter {
           // TODO: a little cumbersome, simplify later
           RibDelta.Builder<IsisRoute> upgradedRoutes = RibDelta.builder();
           correctedL1Delta.stream()
-              .forEach(
-                  ra -> {
-                    IsisRoute l1Route = ra.getRoute();
-                    RoutingProtocol l1Protocol = l1Route.getProtocol();
-                    RoutingProtocol upgradedProtocol;
-                    if (l1Protocol == RoutingProtocol.ISIS_L1) {
-                      upgradedProtocol = RoutingProtocol.ISIS_L2;
-                    } else if (l1Protocol == RoutingProtocol.ISIS_EL1) {
-                      upgradedProtocol = RoutingProtocol.ISIS_EL2;
-                    } else {
-                      throw new IllegalStateException(
-                          String.format("Unrecognized ISIS level 1 protocol: %s", l1Protocol));
-                    }
-                    int upgradedAdmin =
-                        upgradedProtocol.getDefaultAdministrativeCost(_c.getConfigurationFormat());
-                    Optional<IsisRoute> newRoute =
-                        convertRouteLevel1ToLevel2(ra.getRoute(), upgradedProtocol, upgradedAdmin);
-                    if (newRoute.isPresent()) {
-                      IsisRoute r = newRoute.get();
-                      if (ra.isWithdrawn()) {
-                        _isisL2StagingRib.removeRoute(r);
-                        upgradedRoutes.remove(newRoute.get(), ra.getReason());
-                      } else {
-                        _isisL2StagingRib.mergeRoute(r);
-                        upgradedRoutes.add(newRoute.get());
-                      }
-                    }
-                  });
+              .forEach(ra -> {
+                IsisRoute l1Route = ra.getRoute();
+                RoutingProtocol l1Protocol = l1Route.getProtocol();
+                RoutingProtocol upgradedProtocol;
+                if (l1Protocol == RoutingProtocol.ISIS_L1) {
+                  upgradedProtocol = RoutingProtocol.ISIS_L2;
+                } else if (l1Protocol == RoutingProtocol.ISIS_EL1) {
+                  upgradedProtocol = RoutingProtocol.ISIS_EL2;
+                } else {
+                  throw new IllegalStateException(
+                      String.format("Unrecognized ISIS level 1 protocol: %s", l1Protocol));
+                }
+                int upgradedAdmin =
+                    upgradedProtocol.getDefaultAdministrativeCost(_c.getConfigurationFormat());
+                Optional<IsisRoute> newRoute =
+                    convertRouteLevel1ToLevel2(ra.getRoute(), upgradedProtocol, upgradedAdmin);
+                if (newRoute.isPresent()) {
+                  IsisRoute r = newRoute.get();
+                  if (ra.isWithdrawn()) {
+                    _isisL2StagingRib.removeRoute(r);
+                    upgradedRoutes.remove(newRoute.get(), ra.getReason());
+                  } else {
+                    _isisL2StagingRib.mergeRoute(r);
+                    upgradedRoutes.add(newRoute.get());
+                  }
+                }
+              });
           queueDelta(queue, upgradedRoutes.build());
         }
       }
@@ -1652,20 +1632,18 @@ public final class VirtualRouter {
       RoutingPolicy policy = _c.getRoutingPolicies().get(policyName);
       filteredRoutes =
           routeAdverts
-              .map(
-                  ra -> {
-                    AnnotatedRoute<AbstractRoute> annotatedRoute = ra.getRoute();
-                    AbstractRouteBuilder<?, ?> routeBuilder = annotatedRoute.getRoute().toBuilder();
-                    if (policy.process(annotatedRoute, routeBuilder, IN, alwaysFalse())) {
-                      // Preserve original route's source VRF
-                      return ra.toBuilder()
-                          .setRoute(
-                              new AnnotatedRoute<>(
-                                  routeBuilder.build(), annotatedRoute.getSourceVrf()))
-                          .build();
-                    }
-                    return null;
-                  })
+              .map(ra -> {
+                AnnotatedRoute<AbstractRoute> annotatedRoute = ra.getRoute();
+                AbstractRouteBuilder<?, ?> routeBuilder = annotatedRoute.getRoute().toBuilder();
+                if (policy.process(annotatedRoute, routeBuilder, IN, alwaysFalse())) {
+                  // Preserve original route's source VRF
+                  return ra.toBuilder()
+                      .setRoute(
+                          new AnnotatedRoute<>(routeBuilder.build(), annotatedRoute.getSourceVrf()))
+                      .build();
+                }
+                return null;
+              })
               .filter(Objects::nonNull);
     }
 
@@ -1675,19 +1653,18 @@ public final class VirtualRouter {
   }
 
   void processCrossVrfRoutes() {
-    _crossVrfIncomingRoutes.forEach(
-        (edgeId, queue) -> {
-          while (queue.peek() != null) {
-            RouteAdvertisement<AnnotatedRoute<AbstractRoute>> ra = queue.remove();
-            // TODO: handle non-default main RIBs based on RIB specified in edgeID
-            // https://github.com/batfish/batfish/issues/3050
-            if (ra.isWithdrawn()) {
-              _mainRibRouteDeltaBuilder.from(_mainRib.removeRouteGetDelta(ra.getRoute()));
-            } else {
-              _mainRibRouteDeltaBuilder.from(_mainRib.mergeRouteGetDelta(ra.getRoute()));
-            }
-          }
-        });
+    _crossVrfIncomingRoutes.forEach((edgeId, queue) -> {
+      while (queue.peek() != null) {
+        RouteAdvertisement<AnnotatedRoute<AbstractRoute>> ra = queue.remove();
+        // TODO: handle non-default main RIBs based on RIB specified in edgeID
+        // https://github.com/batfish/batfish/issues/3050
+        if (ra.isWithdrawn()) {
+          _mainRibRouteDeltaBuilder.from(_mainRib.removeRouteGetDelta(ra.getRoute()));
+        } else {
+          _mainRibRouteDeltaBuilder.from(_mainRib.mergeRouteGetDelta(ra.getRoute()));
+        }
+      }
+    });
   }
 
   /**
@@ -1746,12 +1723,11 @@ public final class VirtualRouter {
           .append("):\n");
       _mainRibDeltaPrevRound.stream()
           .limit(max)
-          .forEach(
-              a ->
-                  sb.append("    ")
-                      .append(a.isWithdrawn() ? "DEL " : "ADD ")
-                      .append(a.getRoute())
-                      .append('\n'));
+          .forEach(a ->
+              sb.append("    ")
+                  .append(a.isWithdrawn() ? "DEL " : "ADD ")
+                  .append(a.getRoute())
+                  .append('\n'));
     }
     // The queues are allocated with the first topology; before that there is nothing queued.
     if (_isisIncomingRoutes != null
@@ -1958,22 +1934,20 @@ public final class VirtualRouter {
     Map<Integer, Layer3Vni> newLayer3Vnis = new HashMap<>(_layer3Vnis);
     vtepsByVni
         .asMap()
-        .forEach(
-            (vni, ips) -> {
-              Layer3Vni l3Vni = _layer3Vnis.get(vni);
-              if (l3Vni == null) {
-                // shouldn't happen, but skip just in case
-                LOGGER.warn(
-                    String.format(
-                        "updateLayer3Vnis: Host '%s' vrf '%s' has route(s) whose next hop is"
-                            + " unconfigured VNI %d with VTEP IP(s) %s",
-                        _c.getHostname(), getName(), vni, ips));
-                return;
-              }
-              newLayer3Vnis.put(
-                  vni,
-                  l3Vni.toBuilder().setLearnedNexthopVtepIps(ImmutableSet.copyOf(ips)).build());
-            });
+        .forEach((vni, ips) -> {
+          Layer3Vni l3Vni = _layer3Vnis.get(vni);
+          if (l3Vni == null) {
+            // shouldn't happen, but skip just in case
+            LOGGER.warn(
+                String.format(
+                    "updateLayer3Vnis: Host '%s' vrf '%s' has route(s) whose next hop is"
+                        + " unconfigured VNI %d with VTEP IP(s) %s",
+                    _c.getHostname(), getName(), vni, ips));
+            return;
+          }
+          newLayer3Vnis.put(
+              vni, l3Vni.toBuilder().setLearnedNexthopVtepIps(ImmutableSet.copyOf(ips)).build());
+        });
     _layer3Vnis = ImmutableMap.copyOf(newLayer3Vnis);
   }
 
@@ -2002,19 +1976,17 @@ public final class VirtualRouter {
   void mergeEigrpRoutesToMainRib() {
     _eigrpProcesses
         .values()
-        .forEach(
-            p ->
-                _mainRibRouteDeltaBuilder.from(
-                    importRibDelta(_mainRib, p.getUpdatesForMainRib(), _name)));
+        .forEach(p ->
+            _mainRibRouteDeltaBuilder.from(
+                importRibDelta(_mainRib, p.getUpdatesForMainRib(), _name)));
   }
 
   void mergeOspfRoutesToMainRib() {
     _ospfProcesses
         .values()
-        .forEach(
-            p ->
-                _mainRibRouteDeltaBuilder.from(
-                    importRibDelta(_mainRib, p.getUpdatesForMainRib(), _name)));
+        .forEach(p ->
+            _mainRibRouteDeltaBuilder.from(
+                importRibDelta(_mainRib, p.getUpdatesForMainRib(), _name)));
   }
 
   void mergeBgpRoutesToMainRib() {

@@ -93,10 +93,9 @@ public class ParserEnumSetTest {
         equalTo(
             Stream.concat(
                     NamedStructurePropertySpecifier.JAVA_MAP.keySet().stream()
-                        .map(
-                            val ->
-                                new ParsedAutoCompleteSuggestion(
-                                    val, query.length(), Type.ENUM_SET_VALUE)),
+                        .map(val ->
+                            new ParsedAutoCompleteSuggestion(
+                                val, query.length(), Type.ENUM_SET_VALUE)),
                     ImmutableSet.of(
                         new ParsedAutoCompleteSuggestion("/", 0, Type.ENUM_SET_REGEX),
                         new ParsedAutoCompleteSuggestion("!", 0, Type.ENUM_SET_NOT))
@@ -313,10 +312,9 @@ public class ParserEnumSetTest {
         equalTo(
             Stream.concat(
                     Arrays.stream(BgpSessionStatus.values())
-                        .map(
-                            val ->
-                                new ParsedAutoCompleteSuggestion(
-                                    val.toString(), query.length(), Type.ENUM_SET_VALUE)),
+                        .map(val ->
+                            new ParsedAutoCompleteSuggestion(
+                                val.toString(), query.length(), Type.ENUM_SET_VALUE)),
                     ImmutableSet.of(
                         new ParsedAutoCompleteSuggestion("/", 0, Type.ENUM_SET_REGEX),
                         new ParsedAutoCompleteSuggestion("!", 0, Type.ENUM_SET_NOT))

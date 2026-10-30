@@ -57,16 +57,14 @@ public class SessionScopeFibLookupSessionEdges implements SessionScopeVisitor<St
   @Override
   public Stream<Edge> visitIncomingSessionScope(IncomingSessionScope incomingSessionScope) {
     return incomingSessionScope.getIncomingInterfaces().stream()
-        .map(
-            incomingInterface ->
-                new Edge(
-                    new PreInInterface(_hostname, incomingInterface),
-                    new PostInVrfSession(
-                        _hostname, _ifaces.get(incomingInterface).getVrf().getName()),
-                    compose(
-                        constraint(_sessionFlows),
-                        _transformation,
-                        addSourceInterfaceConstraint(_srcMgr, incomingInterface))));
+        .map(incomingInterface ->
+            new Edge(
+                new PreInInterface(_hostname, incomingInterface),
+                new PostInVrfSession(_hostname, _ifaces.get(incomingInterface).getVrf().getName()),
+                compose(
+                    constraint(_sessionFlows),
+                    _transformation,
+                    addSourceInterfaceConstraint(_srcMgr, incomingInterface))));
   }
 
   @Override

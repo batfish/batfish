@@ -42,11 +42,10 @@ public final class FilterQuestionUtils {
     Map<String, Configuration> configs = specifierContext.getConfigs();
     nodes.stream()
         .map(configs::get)
-        .forEach(
-            config ->
-                filterSpecifier.resolve(config.getHostname(), specifierContext).stream()
-                    .filter(f -> !ignoreComposites || !f.isComposite())
-                    .forEach(filter -> filters.put(config.getHostname(), filter.getName())));
+        .forEach(config ->
+            filterSpecifier.resolve(config.getHostname(), specifierContext).stream()
+                .filter(f -> !ignoreComposites || !f.isComposite())
+                .forEach(filter -> filters.put(config.getHostname(), filter.getName())));
     return filters.build();
   }
 

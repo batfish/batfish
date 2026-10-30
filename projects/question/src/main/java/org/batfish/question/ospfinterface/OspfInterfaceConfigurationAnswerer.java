@@ -111,36 +111,33 @@ public final class OspfInterfaceConfigurationAnswerer extends Answerer {
       Map<String, ColumnMetadata> columnMetadata) {
 
     Multiset<Row> rows = HashMultiset.create();
-    nodes.forEach(
-        nodeName -> {
-          configurations
-              .get(nodeName)
-              .getVrfs()
-              .values()
-              .forEach(
-                  vrf -> {
-                    for (OspfProcess ospfProcess : vrf.getOspfProcesses().values()) {
-                      List<String> ifaces =
-                          ospfProcess.getAreas().values().stream()
-                              .flatMap(area -> area.getInterfaces().stream())
-                              .collect(ImmutableList.toImmutableList());
-                      for (String iface : ifaces) {
-                        Interface ifaceObject =
-                            configurations.get(nodeName).getAllInterfaces().get(iface);
-                        if (ifaceObject == null || ifaceObject.getOspfSettings() == null) {
-                          continue;
-                        }
-                        rows.add(
-                            getRow(
-                                nodeName,
-                                ospfProcess.getProcessId(),
-                                ifaceObject,
-                                properties,
-                                columnMetadata));
-                      }
-                    }
-                  });
-        });
+    nodes.forEach(nodeName -> {
+      configurations
+          .get(nodeName)
+          .getVrfs()
+          .values()
+          .forEach(vrf -> {
+            for (OspfProcess ospfProcess : vrf.getOspfProcesses().values()) {
+              List<String> ifaces =
+                  ospfProcess.getAreas().values().stream()
+                      .flatMap(area -> area.getInterfaces().stream())
+                      .collect(ImmutableList.toImmutableList());
+              for (String iface : ifaces) {
+                Interface ifaceObject = configurations.get(nodeName).getAllInterfaces().get(iface);
+                if (ifaceObject == null || ifaceObject.getOspfSettings() == null) {
+                  continue;
+                }
+                rows.add(
+                    getRow(
+                        nodeName,
+                        ospfProcess.getProcessId(),
+                        ifaceObject,
+                        properties,
+                        columnMetadata));
+              }
+            }
+          });
+    });
     return rows;
   }
 

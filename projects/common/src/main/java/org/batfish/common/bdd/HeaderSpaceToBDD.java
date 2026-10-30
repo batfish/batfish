@@ -112,19 +112,19 @@ public final class HeaderSpaceToBDD {
   }
 
   private @Nullable BDD toBDD(@Nullable Set<SubRange> ranges, ImmutableBDDInteger var) {
-    return mapAndOrAllNull(ranges, (range) -> convertSubRange(var, range));
+    return mapAndOrAllNull(ranges, range -> convertSubRange(var, range));
   }
 
   private @Nullable BDD toBDD(@Nullable Set<SubRange> ranges, BDDIcmpCode var) {
-    return mapAndOrAllNull(ranges, (range) -> convertSubRange(var.getBDDInteger(), range));
+    return mapAndOrAllNull(ranges, range -> convertSubRange(var.getBDDInteger(), range));
   }
 
   private @Nullable BDD toBDD(@Nullable Set<SubRange> ranges, BDDIcmpType var) {
-    return mapAndOrAllNull(ranges, (range) -> convertSubRange(var.getBDDInteger(), range));
+    return mapAndOrAllNull(ranges, range -> convertSubRange(var.getBDDInteger(), range));
   }
 
   private BDD toBDD(@Nullable Set<SubRange> packetLengths, BDDPacketLength packetLength) {
-    return mapAndOrAllNull(packetLengths, (range) -> toBDD(range, packetLength));
+    return mapAndOrAllNull(packetLengths, range -> toBDD(range, packetLength));
   }
 
   private static BDD toBDD(SubRange range, BDDPacketLength packetLength) {

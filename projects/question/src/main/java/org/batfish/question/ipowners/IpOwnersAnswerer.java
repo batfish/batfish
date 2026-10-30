@@ -69,30 +69,24 @@ class IpOwnersAnswerer extends Answerer {
       boolean duplicatesOnly) {
     Multiset<Row> rows = HashMultiset.create();
 
-    interfaces.forEach(
-        (hostname, interfaceSet) ->
-            interfaceSet.forEach(
-                iface ->
-                    iface.getAllConcreteAddresses().stream()
-                        .filter(
-                            address ->
-                                ipSpace.containsIp(address.getIp(), ImmutableMap.of())
-                                    && (!duplicatesOnly
-                                        || ipNodeOwners
-                                                .getOrDefault(address.getIp(), ImmutableSet.of())
-                                                .size()
-                                            > 1))
-                        .forEach(
-                            address ->
-                                rows.add(
-                                    Row.builder()
-                                        .put(COL_NODE, new Node(hostname))
-                                        .put(COL_VRFNAME, iface.getVrfName())
-                                        .put(COL_INTERFACE_NAME, iface.getName())
-                                        .put(COL_IP, address.getIp())
-                                        .put(COL_MASK, address.getNetworkBits())
-                                        .put(COL_ACTIVE, iface.getActive())
-                                        .build()))));
+    interfaces.forEach((hostname, interfaceSet) ->
+        interfaceSet.forEach(iface ->
+            iface.getAllConcreteAddresses().stream()
+                .filter(address ->
+                    ipSpace.containsIp(address.getIp(), ImmutableMap.of())
+                        && (!duplicatesOnly
+                            || ipNodeOwners.getOrDefault(address.getIp(), ImmutableSet.of()).size()
+                                > 1))
+                .forEach(address ->
+                    rows.add(
+                        Row.builder()
+                            .put(COL_NODE, new Node(hostname))
+                            .put(COL_VRFNAME, iface.getVrfName())
+                            .put(COL_INTERFACE_NAME, iface.getName())
+                            .put(COL_IP, address.getIp())
+                            .put(COL_MASK, address.getNetworkBits())
+                            .put(COL_ACTIVE, iface.getActive())
+                            .build()))));
     return rows;
   }
 

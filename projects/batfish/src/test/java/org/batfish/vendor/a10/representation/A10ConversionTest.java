@@ -280,7 +280,7 @@ public class A10ConversionTest {
     assertThat(c.getIpAccessLists(), hasKey(viAclName));
     IpAccessList viAcl = c.getIpAccessLists().get(viAclName);
     Function<Flow, List<TraceTree>> trace =
-        (flow) ->
+        flow ->
             AclTracer.trace(
                 viAcl,
                 flow,

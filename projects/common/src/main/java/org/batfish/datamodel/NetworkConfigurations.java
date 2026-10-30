@@ -136,11 +136,10 @@ public final class NetworkConfigurations {
 
   public @Nonnull Optional<OspfProcess> getOspfProcess(String hostname, String interfaceName) {
     return getInterface(hostname, interfaceName)
-        .map(
-            iface ->
-                iface.getOspfProcess() != null
-                    ? iface.getVrf().getOspfProcesses().get(iface.getOspfProcess())
-                    : null);
+        .map(iface ->
+            iface.getOspfProcess() != null
+                ? iface.getVrf().getOspfProcesses().get(iface.getOspfProcess())
+                : null);
   }
 
   public @Nonnull Optional<OspfProcess> getOspfProcess(OspfNeighborConfigId ospfConfigId) {
@@ -160,14 +159,13 @@ public final class NetworkConfigurations {
     // implementation assumes a given VNI can be present in at most one VRF.
     return get(hostname)
         .map(Configuration::getVrfs)
-        .map(
-            vrfs ->
-                vrfs.values().stream()
-                    .map(vniGetter)
-                    .map(vniSettingsMap -> vniSettingsMap.get(vni))
-                    .filter(Objects::nonNull)
-                    .findAny()
-                    .orElse(null));
+        .map(vrfs ->
+            vrfs.values().stream()
+                .map(vniGetter)
+                .map(vniSettingsMap -> vniSettingsMap.get(vni))
+                .filter(Objects::nonNull)
+                .findAny()
+                .orElse(null));
   }
 
   /** Return a VRF identified by hostname and VRF name */
@@ -184,9 +182,8 @@ public final class NetworkConfigurations {
   public @Nonnull Optional<Stream<OspfNeighborConfigId>> getOspfNeighborConfigs(
       String hostname, String interfaceName) {
     return getOspfProcess(hostname, interfaceName)
-        .map(
-            proc ->
-                proc.getOspfNeighborConfigs().keySet().stream()
-                    .filter(id -> id.getInterfaceName().equals(interfaceName)));
+        .map(proc ->
+            proc.getOspfNeighborConfigs().keySet().stream()
+                .filter(id -> id.getInterfaceName().equals(interfaceName)));
   }
 }

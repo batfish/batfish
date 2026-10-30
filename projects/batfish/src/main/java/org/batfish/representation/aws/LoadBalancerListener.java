@@ -172,11 +172,10 @@ public final class LoadBalancerListener implements AwsVpcEntity, Serializable {
       // fixed-response , or redirect .
       long count =
           defaultActions.stream()
-              .filter(
-                  da ->
-                      da.getType() == ActionType.FORWARD
-                          || da.getType() == ActionType.FIXED_RESPONSE
-                          || da.getType() == ActionType.REDIRECT)
+              .filter(da ->
+                  da.getType() == ActionType.FORWARD
+                      || da.getType() == ActionType.FIXED_RESPONSE
+                      || da.getType() == ActionType.REDIRECT)
               .count();
       checkArgument(
           count == 1L,

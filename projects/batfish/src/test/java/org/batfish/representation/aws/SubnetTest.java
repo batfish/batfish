@@ -663,14 +663,13 @@ public class SubnetTest {
         subnetCfg.getDefaultVrf().getStaticRoutes(),
         equalTo(
             prefixes.stream()
-                .map(
-                    prefix ->
-                        StaticRoute.testBuilder()
-                            .setNetwork(prefix)
-                            .setNextHopInterface(NULL_INTERFACE_NAME)
-                            .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
-                            .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
-                            .build())
+                .map(prefix ->
+                    StaticRoute.testBuilder()
+                        .setNetwork(prefix)
+                        .setNextHopInterface(NULL_INTERFACE_NAME)
+                        .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
+                        .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
+                        .build())
                 .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()))));
   }
 
@@ -827,11 +826,10 @@ public class SubnetTest {
     // Nothing should have gotten a new VRF or any interfaces
     configs
         .values()
-        .forEach(
-            cfg -> {
-              assertThat(cfg.getVrfs(), not(hasKey(NLB_INSTANCE_TARGETS_VRF_NAME)));
-              assertThat(cfg.getAllInterfaces(), anEmptyMap());
-            });
+        .forEach(cfg -> {
+          assertThat(cfg.getVrfs(), not(hasKey(NLB_INSTANCE_TARGETS_VRF_NAME)));
+          assertThat(cfg.getAllInterfaces(), anEmptyMap());
+        });
   }
 
   @Test

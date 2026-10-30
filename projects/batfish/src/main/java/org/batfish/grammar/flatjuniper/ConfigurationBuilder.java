@@ -6600,11 +6600,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitFftf_learn_vlan_id(Fftf_learn_vlan_idContext ctx) {
     toInteger(ctx, ctx.id)
-        .ifPresent(
-            vlanId -> {
-              _currentFwTerm.getFroms().add(new FwFromLearnVlanId(vlanId));
-              todo(ctx);
-            });
+        .ifPresent(vlanId -> {
+          _currentFwTerm.getFroms().add(new FwFromLearnVlanId(vlanId));
+          todo(ctx);
+        });
   }
 
   @Override
@@ -7917,26 +7916,24 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitOai_mtu(Oai_mtuContext ctx) {
     toIntegerInSpace(ctx, ctx.mtu, OSPF_MTU_RANGE, "OSPF MTU")
-        .ifPresent(
-            mtu -> {
-              _currentOspfSettings.setOspfMtu(mtu);
-              todo(ctx);
-            });
+        .ifPresent(mtu -> {
+          _currentOspfSettings.setOspfMtu(mtu);
+          todo(ctx);
+        });
   }
 
   @Override
   public void exitOai_topology(Oai_topologyContext ctx) {
     String name = toString(ctx.name);
     toIntegerInSpace(ctx, ctx.metric, OSPF_TOPOLOGY_METRIC_RANGE, "OSPF topology metric")
-        .ifPresent(
-            metric -> {
-              _currentOspfSettings.getOspfTopologyCosts().put(name, metric);
-              if (name.equals("default")) {
-                _currentOspfSettings.setOspfCost(metric);
-              } else {
-                todo(ctx);
-              }
-            });
+        .ifPresent(metric -> {
+          _currentOspfSettings.getOspfTopologyCosts().put(name, metric);
+          if (name.equals("default")) {
+            _currentOspfSettings.setOspfCost(metric);
+          } else {
+            todo(ctx);
+          }
+        });
   }
 
   @Override

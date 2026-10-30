@@ -478,12 +478,11 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   private void clearOspfPassiveInterface() {
     _frr.getInterfaces()
         .values()
-        .forEach(
-            iface -> {
-              if (iface.getOspf() != null) {
-                iface.getOspf().setPassive(null);
-              }
-            });
+        .forEach(iface -> {
+          if (iface.getOspf() != null) {
+            iface.getOspf().setPassive(null);
+          }
+        });
   }
 
   @Override
@@ -1262,7 +1261,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
           _currentBgpVrf
               .getNeighbors()
               .computeIfAbsent(
-                  listenRange.toString(), (name) -> new BgpDynamicNeighbor(name, listenRange));
+                  listenRange.toString(), name -> new BgpDynamicNeighbor(name, listenRange));
       bgpNeighborName = listenRange.toString();
     } else {
       Prefix6 listenRange = toPrefix6(ctx.prefix6());
@@ -1270,7 +1269,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
           _currentBgpVrf
               .getNeighbors()
               .computeIfAbsent(
-                  listenRange.toString(), (name) -> new BgpDynamic6Neighbor(name, listenRange));
+                  listenRange.toString(), name -> new BgpDynamic6Neighbor(name, listenRange));
       bgpNeighborName = listenRange.toString();
     }
     bgpNeighbor.setPeerGroup(ctx.name.getText());
@@ -1295,7 +1294,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     _currentBgpNeighbor =
         _currentBgpVrf
             .getNeighbors()
-            .computeIfAbsent(ip.toString(), (ipStr) -> new BgpIpNeighbor(ipStr, ip));
+            .computeIfAbsent(ip.toString(), ipStr -> new BgpIpNeighbor(ipStr, ip));
     String bgpNeighborStructName =
         bgpNeighborStructureName(ip.toString(), _currentBgpVrf.getVrfName());
     _vc.defineStructure(BGP_NEIGHBOR, bgpNeighborStructName, ctx);
@@ -1309,7 +1308,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     _currentBgpNeighbor =
         _currentBgpVrf
             .getNeighbors()
-            .computeIfAbsent(ip6.toString(), (ipStr) -> new BgpIpv6Neighbor(ipStr, ip6));
+            .computeIfAbsent(ip6.toString(), ipStr -> new BgpIpv6Neighbor(ipStr, ip6));
     String bgpNeighborStructName =
         bgpNeighborStructureName(ip6.toString(), _currentBgpVrf.getVrfName());
     _vc.defineStructure(BGP_NEIGHBOR, bgpNeighborStructName, ctx);
@@ -1584,13 +1583,12 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
 
   @Override
   public void exitRmm_community(Rmm_communityContext ctx) {
-    ctx.names.forEach(
-        name ->
-            _vc.referenceStructure(
-                BGP_COMMUNITY_LIST,
-                name.getText(),
-                ROUTE_MAP_MATCH_COMMUNITY_LIST,
-                name.getStart().getLine()));
+    ctx.names.forEach(name ->
+        _vc.referenceStructure(
+            BGP_COMMUNITY_LIST,
+            name.getText(),
+            ROUTE_MAP_MATCH_COMMUNITY_LIST,
+            name.getStart().getLine()));
 
     _currentRouteMapEntry.setMatchCommunity(
         new RouteMapMatchCommunity(
@@ -1619,10 +1617,8 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   @Override
   public void exitRmmipa_prefix_len(Rmmipa_prefix_lenContext ctx) {
     Optional<Integer> maybeLen = toInteger(ctx, ctx.len);
-    maybeLen.ifPresent(
-        len ->
-            _currentRouteMapEntry.setMatchIpAddressPrefixLen(
-                new RouteMapMatchIpAddressPrefixLen(len)));
+    maybeLen.ifPresent(len ->
+        _currentRouteMapEntry.setMatchIpAddressPrefixLen(new RouteMapMatchIpAddressPrefixLen(len)));
   }
 
   @Override

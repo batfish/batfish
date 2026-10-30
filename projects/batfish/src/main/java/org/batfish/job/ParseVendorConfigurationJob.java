@@ -783,12 +783,11 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
 
   /** Sets the ParseStatus for files for which it is not already set. */
   private void setParseStatus(ParseStatus parseStatus) {
-    _fileResults.forEach(
-        (filename, fileResult) -> {
-          if (fileResult.getParseStatus() == null) {
-            fileResult.setParseStatus(parseStatus);
-          }
-        });
+    _fileResults.forEach((filename, fileResult) -> {
+      if (fileResult.getParseStatus() == null) {
+        fileResult.setParseStatus(parseStatus);
+      }
+    });
   }
 
   public ParseVendorConfigurationResult fromResult(ParseResult result, long elapsed) {

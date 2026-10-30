@@ -60,10 +60,8 @@ public class IpCompletionRelevance implements Serializable {
    */
   public boolean matches(String[] subQueries, Ip ip) {
     return Arrays.stream(subQueries)
-        .allMatch(
-            sq ->
-                ip.toString().contains(sq)
-                    || _matchTags.stream().anyMatch(tag -> tag.contains(sq)));
+        .allMatch(sq ->
+            ip.toString().contains(sq) || _matchTags.stream().anyMatch(tag -> tag.contains(sq)));
   }
 
   /** The string to display when this relevance matches */

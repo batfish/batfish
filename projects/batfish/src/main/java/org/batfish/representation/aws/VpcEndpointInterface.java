@@ -73,10 +73,9 @@ final class VpcEndpointInterface extends VpcEndpoint {
     // find the network interface that is in this subnet and is one of our interfaces
     Optional<NetworkInterface> networkInterface =
         region.getNetworkInterfaces().values().stream()
-            .filter(
-                iface ->
-                    _networkInterfaceIds.contains(iface.getId())
-                        && iface.getSubnetId().equals(subnetId))
+            .filter(iface ->
+                _networkInterfaceIds.contains(iface.getId())
+                    && iface.getSubnetId().equals(subnetId))
             .findFirst();
     if (!networkInterface.isPresent()) {
       warnings.redFlagf(

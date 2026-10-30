@@ -237,13 +237,12 @@ public class AwsConfiguration extends VendorConfiguration {
             getActiveTargets(lbth, targetGroup, azNames, region, false, null).stream()
                 .filter(desc -> getTargetIp(desc.getTarget(), Type.INSTANCE, region) != null)
                 .map(desc -> region.getInstances().get(desc.getTarget().getId()))
-                .forEach(
-                    instance -> {
-                      assert instance.getSubnetId() != null; // guaranteed by getActiveTargets
-                      subnetsToInstanceTargets.put(instance.getSubnetId(), instance);
-                      nlbsToInstanceTargets.put(lbArn, instance);
-                      hasInstanceTarget.set(true);
-                    });
+                .forEach(instance -> {
+                  assert instance.getSubnetId() != null; // guaranteed by getActiveTargets
+                  subnetsToInstanceTargets.put(instance.getSubnetId(), instance);
+                  nlbsToInstanceTargets.put(lbArn, instance);
+                  hasInstanceTarget.set(true);
+                });
             if (hasInstanceTarget.get()) {
               lb.getAvailabilityZones().stream()
                   .map(AvailabilityZone::getSubnetId)
@@ -328,22 +327,20 @@ public class AwsConfiguration extends VendorConfiguration {
     List<BorderInterfaceInfo> borderInterfaces =
         getAccounts().stream()
             .flatMap(a -> a.getRegions().stream())
-            .flatMap(
-                r ->
-                    Streams.concat(
-                            // all types of nodes that connect to the backbone
-                            r.getInternetGateways().keySet().stream(),
-                            r.getTransitGateways().keySet().stream(),
-                            r.getVpnGateways().keySet().stream(),
-                            Stream.of(AWS_SERVICES_GATEWAY_NODE_NAME))
-                        .filter(
-                            gw ->
-                                _convertedConfiguration.getNode(gw) != null
-                                    && Objects.requireNonNull(_convertedConfiguration.getNode(gw))
-                                            .getAllInterfaces()
-                                            .get(BACKBONE_FACING_INTERFACE_NAME)
-                                        != null)
-                        .map(gw -> NodeInterfacePair.of(gw, BACKBONE_FACING_INTERFACE_NAME)))
+            .flatMap(r ->
+                Streams.concat(
+                        // all types of nodes that connect to the backbone
+                        r.getInternetGateways().keySet().stream(),
+                        r.getTransitGateways().keySet().stream(),
+                        r.getVpnGateways().keySet().stream(),
+                        Stream.of(AWS_SERVICES_GATEWAY_NODE_NAME))
+                    .filter(gw ->
+                        _convertedConfiguration.getNode(gw) != null
+                            && Objects.requireNonNull(_convertedConfiguration.getNode(gw))
+                                    .getAllInterfaces()
+                                    .get(BACKBONE_FACING_INTERFACE_NAME)
+                                != null)
+                    .map(gw -> NodeInterfacePair.of(gw, BACKBONE_FACING_INTERFACE_NAME)))
             .map(BorderInterfaceInfo::new)
             .collect(Collectors.toList());
     return new IspConfiguration(
@@ -391,11 +388,10 @@ public class AwsConfiguration extends VendorConfiguration {
     Set<Prefix> awsServicesPrefixes = AwsPrefixes.getAwsServicesPrefixes();
 
     PrefixSpace servicesPrefixSpace = new PrefixSpace();
-    awsServicesPrefixes.forEach(
-        prefix -> {
-          servicesPrefixSpace.addPrefix(prefix);
-          addStaticRoute(cfgNode, toStaticRoute(prefix, outInterface.getName()));
-        });
+    awsServicesPrefixes.forEach(prefix -> {
+      servicesPrefixSpace.addPrefix(prefix);
+      addStaticRoute(cfgNode, toStaticRoute(prefix, outInterface.getName()));
+    });
 
     installRoutingPolicyAdvertiseStatic(
         AWS_SERVICES_GATEWAY_EXPORT_POLICY_NAME, cfgNode, servicesPrefixSpace);

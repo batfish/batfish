@@ -262,15 +262,14 @@ public class AclIp6Space extends Ip6Space {
         StreamSupport.stream(ip6Spaces.spliterator(), false)
             .filter(Objects::nonNull)
             .flatMap(AclIp6Space::flattenAclIp6SpacesForUnion)
-            .filter(
-                s -> {
-                  hasAnything[0] = true;
-                  if (s instanceof UniverseIp6Space) {
-                    hasUniverse[0] = true;
-                    return false; // can't fully exit from here, but don't include in array
-                  }
-                  return !(s instanceof EmptyIp6Space);
-                })
+            .filter(s -> {
+              hasAnything[0] = true;
+              if (s instanceof UniverseIp6Space) {
+                hasUniverse[0] = true;
+                return false; // can't fully exit from here, but don't include in array
+              }
+              return !(s instanceof EmptyIp6Space);
+            })
             .toArray(Ip6Space[]::new);
 
     if (hasUniverse[0]) {

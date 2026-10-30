@@ -185,10 +185,9 @@ public final class TopologyProviderImpl implements TopologyProvider {
   private @Nonnull Map<String, Configuration> getConfigurations(NetworkSnapshot snapshot) {
     return _batfish
         .getProcessedConfigurations(snapshot)
-        .orElseThrow(
-            () ->
-                new IllegalArgumentException(
-                    "Snapshot '" + snapshot + "' has not been parsed/serialized"));
+        .orElseThrow(() ->
+            new IllegalArgumentException(
+                "Snapshot '" + snapshot + "' has not been parsed/serialized"));
   }
 
   private @Nonnull IpOwners computeInitialIpOwners(NetworkSnapshot snapshot) {

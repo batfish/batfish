@@ -66,10 +66,9 @@ public class RolesQuestionPlugin extends QuestionPlugin {
       NodeRoleDimension roleDimension =
           _batfish
               .getNodeRoleDimension(question.getRoleDimension())
-              .orElseThrow(
-                  () ->
-                      new BatfishException(
-                          "No role dimension found for " + question.getRoleDimension()));
+              .orElseThrow(() ->
+                  new BatfishException(
+                      "No role dimension found for " + question.getRoleDimension()));
 
       RolesAnswerElement answerElement =
           new RolesAnswerElement(roleDimension, roleDimension.createRoleNodesMap(nodes));

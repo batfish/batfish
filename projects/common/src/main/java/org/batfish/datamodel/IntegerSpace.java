@@ -65,11 +65,10 @@ public final class IntegerSpace extends NumberSpace<Integer, IntegerSpace, Integ
   /** Return this space as a set of included {@link SubRange}s */
   public @Nonnull Set<SubRange> getSubRanges() {
     return _rangeset.asRanges().stream()
-        .map(
-            r -> {
-              assert r.lowerBoundType() == BoundType.CLOSED && r.upperBoundType() == BoundType.OPEN;
-              return new SubRange(r.lowerEndpoint(), r.upperEndpoint() - 1);
-            })
+        .map(r -> {
+          assert r.lowerBoundType() == BoundType.CLOSED && r.upperBoundType() == BoundType.OPEN;
+          return new SubRange(r.lowerEndpoint(), r.upperEndpoint() - 1);
+        })
         .collect(ImmutableSet.toImmutableSet());
   }
 

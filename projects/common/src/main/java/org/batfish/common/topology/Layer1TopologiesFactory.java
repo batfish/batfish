@@ -93,11 +93,10 @@ public final class Layer1TopologiesFactory {
     return new Layer1Topology(
         topology
             .edgeStream()
-            .map(
-                edge ->
-                    new Layer1Edge(
-                        replacements.getOrDefault(edge.getNode1(), edge.getNode1()),
-                        replacements.getOrDefault(edge.getNode2(), edge.getNode2()))));
+            .map(edge ->
+                new Layer1Edge(
+                    replacements.getOrDefault(edge.getNode1(), edge.getNode1()),
+                    replacements.getOrDefault(edge.getNode2(), edge.getNode2()))));
   }
 
   /**
@@ -155,11 +154,10 @@ public final class Layer1TopologiesFactory {
         new HashSet<>(); // dedupe warnings about missing or invalid interfaces.
     return new Layer1Topology(
         Stream.concat(userProvidedL1.edgeStream(), syntheticL1.edgeStream())
-            .map(
-                edge ->
-                    new Layer1Edge(
-                        toLogicalNode(edge.getNode1(), configs, invalidInterfaces),
-                        toLogicalNode(edge.getNode2(), configs, invalidInterfaces))));
+            .map(edge ->
+                new Layer1Edge(
+                    toLogicalNode(edge.getNode1(), configs, invalidInterfaces),
+                    toLogicalNode(edge.getNode2(), configs, invalidInterfaces))));
   }
 
   /**

@@ -275,16 +275,13 @@ public abstract class IpOwnersBaseImpl implements IpOwners {
       Map<Ip, Map<String, Set<String>>> deviceOwnedIps) {
     Map<String, Map<String, Set<Ip>>> ownedIps = new HashMap<>();
 
-    deviceOwnedIps.forEach(
-        (ip, owners) ->
-            owners.forEach(
-                (host, ifaces) ->
-                    ifaces.forEach(
-                        iface ->
-                            ownedIps
-                                .computeIfAbsent(host, k -> new HashMap<>())
-                                .computeIfAbsent(iface, k -> new HashSet<>())
-                                .add(ip))));
+    deviceOwnedIps.forEach((ip, owners) ->
+        owners.forEach((host, ifaces) ->
+            ifaces.forEach(iface ->
+                ownedIps
+                    .computeIfAbsent(host, k -> new HashMap<>())
+                    .computeIfAbsent(iface, k -> new HashSet<>())
+                    .add(ip))));
 
     // freeze
     return toImmutableMap(
@@ -334,25 +331,22 @@ public abstract class IpOwnersBaseImpl implements IpOwners {
     Map<Integer, Map<NodeInterfacePair, Map<String, Set<Ip>>>> vrrpGroups = new HashMap<>();
     // group -> interface -> IPs to own if interface wins election
     Map<Integer, Map<NodeInterfacePair, Set<Ip>>> hsrpGroups = new HashMap<>();
-    allInterfaces.forEach(
-        (hostname, interfaces) ->
-            interfaces.forEach(
-                i -> {
-                  if (!i.getActive() && excludeInactive) {
-                    return;
-                  }
-                  extractVrrp(vrrpGroups, i);
-                  extractHsrp(hsrpGroups, i);
-                  // collect prefixes
-                  i.getAllConcreteAddresses().stream()
-                      .map(ConcreteInterfaceAddress::getIp)
-                      .forEach(
-                          ip ->
-                              ipOwners
-                                  .computeIfAbsent(ip, k -> new HashMap<>())
-                                  .computeIfAbsent(hostname, k -> new HashSet<>())
-                                  .add(i.getName()));
-                }));
+    allInterfaces.forEach((hostname, interfaces) ->
+        interfaces.forEach(i -> {
+          if (!i.getActive() && excludeInactive) {
+            return;
+          }
+          extractVrrp(vrrpGroups, i);
+          extractHsrp(hsrpGroups, i);
+          // collect prefixes
+          i.getAllConcreteAddresses().stream()
+              .map(ConcreteInterfaceAddress::getIp)
+              .forEach(ip ->
+                  ipOwners
+                      .computeIfAbsent(ip, k -> new HashMap<>())
+                      .computeIfAbsent(hostname, k -> new HashSet<>())
+                      .add(i.getName()));
+        }));
     processVrrpGroups(ipOwners, vrrpGroups, l3Adjacencies, nc, provider, vrrpElectionDetails);
     processHsrpGroups(ipOwners, hsrpGroups, l3Adjacencies, nc, provider, hsrpElectionDetails);
 
@@ -380,43 +374,41 @@ public abstract class IpOwnersBaseImpl implements IpOwners {
     }
     // collect hsrp info
     i.getHsrpGroups()
-        .forEach(
-            (groupNum, hsrpGroup) -> {
-              Set<Ip> ips = hsrpGroup.getVirtualAddresses();
-              /*
-               * Invalid HSRP configuration. The HSRP group has no source IP address that
-               * would be used for VRRP election. This interface could never win the
-               * election, so is not a candidate.
-               */
-              if (hsrpGroup.getSourceAddress() == null) {
-                /*
-                 * Invalid VRRP configuration. The VRRP has no source IP address that
-                 * would be used for VRRP election. This interface could never win the
-                 * election, so is not a candidate.
-                 */
-                return;
-              }
-              if (ips.isEmpty()) {
-                /*
-                 * Invalid HSRP configuration. The HSRP group has no virtual IP addresses set, so
-                 * should not participate in HSRP election. This interface could never win the
-                 * election, so is not a candidate.
-                 *
-                 * TODO: Technically according to
-                 *       https://datatracker.ietf.org/doc/html/rfc2281#section-5.1 the virtual IP
-                 *       (there is only one primary IP communicatd via an HSRP packet) may be
-                 *       learned from the active router via a HELLO message, but we do not support
-                 *       this mode of operation.
-                 */
-                return;
-              }
-              ips.forEach(
-                  ip -> {
-                    hsrpGroups
-                        .computeIfAbsent(groupNum, k -> new HashMap<>())
-                        .put(NodeInterfacePair.of(i), hsrpGroup.getVirtualAddresses());
-                  });
-            });
+        .forEach((groupNum, hsrpGroup) -> {
+          Set<Ip> ips = hsrpGroup.getVirtualAddresses();
+          /*
+           * Invalid HSRP configuration. The HSRP group has no source IP address that
+           * would be used for VRRP election. This interface could never win the
+           * election, so is not a candidate.
+           */
+          if (hsrpGroup.getSourceAddress() == null) {
+            /*
+             * Invalid VRRP configuration. The VRRP has no source IP address that
+             * would be used for VRRP election. This interface could never win the
+             * election, so is not a candidate.
+             */
+            return;
+          }
+          if (ips.isEmpty()) {
+            /*
+             * Invalid HSRP configuration. The HSRP group has no virtual IP addresses set, so
+             * should not participate in HSRP election. This interface could never win the
+             * election, so is not a candidate.
+             *
+             * TODO: Technically according to
+             *       https://datatracker.ietf.org/doc/html/rfc2281#section-5.1 the virtual IP
+             *       (there is only one primary IP communicatd via an HSRP packet) may be
+             *       learned from the active router via a HELLO message, but we do not support
+             *       this mode of operation.
+             */
+            return;
+          }
+          ips.forEach(ip -> {
+            hsrpGroups
+                .computeIfAbsent(groupNum, k -> new HashMap<>())
+                .put(NodeInterfacePair.of(i), hsrpGroup.getVirtualAddresses());
+          });
+        });
   }
 
   /**
@@ -431,77 +423,73 @@ public abstract class IpOwnersBaseImpl implements IpOwners {
       NetworkConfigurations nc,
       TrackMethodEvaluatorProvider provider,
       @Nullable ElectionDetails electionDetails) {
-    hsrpGroups.forEach(
-        (groupNum, ipSpaceByCandidate) -> {
-          assert groupNum != null;
-          Set<NodeInterfacePair> candidates = ipSpaceByCandidate.keySet();
+    hsrpGroups.forEach((groupNum, ipSpaceByCandidate) -> {
+      assert groupNum != null;
+      Set<NodeInterfacePair> candidates = ipSpaceByCandidate.keySet();
 
-          List<List<NodeInterfacePair>> candidatePartitions =
-              partitionCandidates(candidates, l3Adjacencies);
+      List<List<NodeInterfacePair>> candidatePartitions =
+          partitionCandidates(candidates, l3Adjacencies);
 
-          candidatePartitions.forEach(
-              cp -> {
-                List<Interface> partitionInterfaces =
-                    cp.stream()
-                        .map(nip -> nc.getInterface(nip.getHostname(), nip.getInterface()).get())
-                        .collect(ImmutableList.toImmutableList());
-                if (partitionInterfaces.size() != 2) {
-                  LOGGER.warn(
-                      "HSRP group {} election is not among 2 devices, which is rare: {}",
-                      groupNum,
-                      partitionInterfaces);
-                }
-                /*
-                 * Compare priorities first, then highest interface IP, then hostname, then interface name.
-                 */
-                Map<NodeInterfacePair, Integer> priorities =
-                    partitionInterfaces.stream()
-                        .collect(
-                            ImmutableMap.toImmutableMap(
-                                NodeInterfacePair::of,
-                                i ->
-                                    computeHsrpPriority(
-                                        i,
-                                        i.getHsrpGroups().get(groupNum),
-                                        groupNum,
-                                        provider,
-                                        electionDetails)));
-                NodeInterfacePair hsrpMaster =
-                    NodeInterfacePair.of(
-                        Collections.max(
-                            partitionInterfaces,
-                            Comparator.comparingInt(
-                                    (Interface o) -> priorities.get(NodeInterfacePair.of(o)))
-                                .thenComparing(o -> o.getConcreteAddress().getIp())
-                                .thenComparing(o -> NodeInterfacePair.of(o))));
-                if (electionDetails != null) {
-                  cp.forEach(
-                      ni -> {
-                        electionDetails
-                            ._winnerByCandidate
-                            .computeIfAbsent(ni, n -> new HashMap<>())
-                            .put(groupNum, hsrpMaster);
-                        electionDetails
-                            ._candidatesByCandidate
-                            .computeIfAbsent(ni, n -> new HashMap<>())
-                            .put(groupNum, ImmutableSet.copyOf(cp));
-                      });
-                }
-                LOGGER.debug(
-                    "{} elected HSRP master for groupNum {} among candidates {}",
-                    hsrpMaster,
-                    groupNum,
-                    partitionInterfaces);
-                ipSpaceByCandidate
-                    .get(hsrpMaster)
-                    .forEach(
-                        ip ->
-                            ipOwners
-                                .computeIfAbsent(ip, k -> new HashMap<>())
-                                .computeIfAbsent(hsrpMaster.getHostname(), k -> new HashSet<>())
-                                .add(hsrpMaster.getInterface()));
-              });
-        });
+      candidatePartitions.forEach(cp -> {
+        List<Interface> partitionInterfaces =
+            cp.stream()
+                .map(nip -> nc.getInterface(nip.getHostname(), nip.getInterface()).get())
+                .collect(ImmutableList.toImmutableList());
+        if (partitionInterfaces.size() != 2) {
+          LOGGER.warn(
+              "HSRP group {} election is not among 2 devices, which is rare: {}",
+              groupNum,
+              partitionInterfaces);
+        }
+        /*
+         * Compare priorities first, then highest interface IP, then hostname, then interface name.
+         */
+        Map<NodeInterfacePair, Integer> priorities =
+            partitionInterfaces.stream()
+                .collect(
+                    ImmutableMap.toImmutableMap(
+                        NodeInterfacePair::of,
+                        i ->
+                            computeHsrpPriority(
+                                i,
+                                i.getHsrpGroups().get(groupNum),
+                                groupNum,
+                                provider,
+                                electionDetails)));
+        NodeInterfacePair hsrpMaster =
+            NodeInterfacePair.of(
+                Collections.max(
+                    partitionInterfaces,
+                    Comparator.comparingInt(
+                            (Interface o) -> priorities.get(NodeInterfacePair.of(o)))
+                        .thenComparing(o -> o.getConcreteAddress().getIp())
+                        .thenComparing(o -> NodeInterfacePair.of(o))));
+        if (electionDetails != null) {
+          cp.forEach(ni -> {
+            electionDetails
+                ._winnerByCandidate
+                .computeIfAbsent(ni, n -> new HashMap<>())
+                .put(groupNum, hsrpMaster);
+            electionDetails
+                ._candidatesByCandidate
+                .computeIfAbsent(ni, n -> new HashMap<>())
+                .put(groupNum, ImmutableSet.copyOf(cp));
+          });
+        }
+        LOGGER.debug(
+            "{} elected HSRP master for groupNum {} among candidates {}",
+            hsrpMaster,
+            groupNum,
+            partitionInterfaces);
+        ipSpaceByCandidate
+            .get(hsrpMaster)
+            .forEach(ip ->
+                ipOwners
+                    .computeIfAbsent(ip, k -> new HashMap<>())
+                    .computeIfAbsent(hsrpMaster.getHostname(), k -> new HashSet<>())
+                    .add(hsrpMaster.getInterface()));
+      });
+    });
   }
 
   /** Compute priority for a given HSRP group and the interface it is associated with. */
@@ -542,29 +530,28 @@ public abstract class IpOwnersBaseImpl implements IpOwners {
       return;
     }
     i.getVrrpGroups()
-        .forEach(
-            (vrid, vrrpGroup) -> {
-              if (vrrpGroup.getSourceAddress() == null) {
-                /*
-                 * Invalid VRRP configuration. The VRRP has no source IP address that
-                 * would be used for VRRP election. This interface could never win the
-                 * election, so is not a candidate.
-                 */
-                return;
-              }
-              if (vrrpGroup.getVirtualAddresses().isEmpty()) {
-                /*
-                 * Invalid VRRP configuration. The VRRP group has no virtual IP addresses set, so
-                 * should not participate in VRRP election. This interface could never win the
-                 * election, so is not a candidate.
-                 */
-                return;
-              }
-              // sync interface -> interface to receive IPs -> IPs
-              vrrpGroups
-                  .computeIfAbsent(vrid, k -> new HashMap<>())
-                  .put(NodeInterfacePair.of(i), vrrpGroup.getVirtualAddresses());
-            });
+        .forEach((vrid, vrrpGroup) -> {
+          if (vrrpGroup.getSourceAddress() == null) {
+            /*
+             * Invalid VRRP configuration. The VRRP has no source IP address that
+             * would be used for VRRP election. This interface could never win the
+             * election, so is not a candidate.
+             */
+            return;
+          }
+          if (vrrpGroup.getVirtualAddresses().isEmpty()) {
+            /*
+             * Invalid VRRP configuration. The VRRP group has no virtual IP addresses set, so
+             * should not participate in VRRP election. This interface could never win the
+             * election, so is not a candidate.
+             */
+            return;
+          }
+          // sync interface -> interface to receive IPs -> IPs
+          vrrpGroups
+              .computeIfAbsent(vrid, k -> new HashMap<>())
+              .put(NodeInterfacePair.of(i), vrrpGroup.getVirtualAddresses());
+        });
   }
 
   /**
@@ -579,80 +566,70 @@ public abstract class IpOwnersBaseImpl implements IpOwners {
       NetworkConfigurations nc,
       TrackMethodEvaluatorProvider provider,
       @Nullable ElectionDetails electionDetails) {
-    vrrpGroups.forEach(
-        (vrid, ipSpaceByCandidate) -> {
-          assert vrid != null;
-          Set<NodeInterfacePair> candidates = ipSpaceByCandidate.keySet();
+    vrrpGroups.forEach((vrid, ipSpaceByCandidate) -> {
+      assert vrid != null;
+      Set<NodeInterfacePair> candidates = ipSpaceByCandidate.keySet();
 
-          List<List<NodeInterfacePair>> candidatePartitions =
-              partitionCandidates(candidates, l3Adjacencies);
+      List<List<NodeInterfacePair>> candidatePartitions =
+          partitionCandidates(candidates, l3Adjacencies);
 
-          candidatePartitions.forEach(
-              cp -> {
-                List<Interface> partitionInterfaces =
-                    cp.stream()
-                        .map(nip -> nc.getInterface(nip.getHostname(), nip.getInterface()).get())
-                        .collect(ImmutableList.toImmutableList());
-                if (partitionInterfaces.size() != 2) {
-                  LOGGER.warn(
-                      "VRRP vrid {} election is not among 2 devices, which is rare: {}",
-                      vrid,
-                      partitionInterfaces);
-                }
-                /*
-                 * Compare priorities first, then highest interface IP, then hostname, then interface name.
-                 */
-                Map<NodeInterfacePair, Integer> priorities =
-                    partitionInterfaces.stream()
-                        .collect(
-                            ImmutableMap.toImmutableMap(
-                                NodeInterfacePair::of,
-                                i ->
-                                    computeVrrpPriority(
-                                        i,
-                                        i.getVrrpGroups().get(vrid),
-                                        vrid,
-                                        provider,
-                                        electionDetails)));
-                NodeInterfacePair vrrpMaster =
-                    NodeInterfacePair.of(
-                        Collections.max(
-                            partitionInterfaces,
-                            Comparator.comparingInt(
-                                    (Interface o) -> priorities.get(NodeInterfacePair.of(o)))
-                                .thenComparing(o -> o.getConcreteAddress().getIp())
-                                .thenComparing(o -> NodeInterfacePair.of(o))));
-                if (electionDetails != null) {
-                  cp.forEach(
-                      ni -> {
-                        electionDetails
-                            ._winnerByCandidate
-                            .computeIfAbsent(ni, n -> new HashMap<>())
-                            .put(vrid, vrrpMaster);
-                        electionDetails
-                            ._candidatesByCandidate
-                            .computeIfAbsent(ni, n -> new HashMap<>())
-                            .put(vrid, ImmutableSet.copyOf(cp));
-                      });
-                }
-                LOGGER.debug(
-                    "{} elected VRRP master for vrid {} among candidates {}",
-                    vrrpMaster,
-                    vrid,
-                    partitionInterfaces);
-                ipSpaceByCandidate
-                    .get(vrrpMaster)
-                    .forEach(
-                        (receivingInterface, ips) ->
-                            ips.forEach(
-                                ip ->
-                                    ipOwners
-                                        .computeIfAbsent(ip, k -> new HashMap<>())
-                                        .computeIfAbsent(
-                                            vrrpMaster.getHostname(), k -> new HashSet<>())
-                                        .add(receivingInterface)));
-              });
-        });
+      candidatePartitions.forEach(cp -> {
+        List<Interface> partitionInterfaces =
+            cp.stream()
+                .map(nip -> nc.getInterface(nip.getHostname(), nip.getInterface()).get())
+                .collect(ImmutableList.toImmutableList());
+        if (partitionInterfaces.size() != 2) {
+          LOGGER.warn(
+              "VRRP vrid {} election is not among 2 devices, which is rare: {}",
+              vrid,
+              partitionInterfaces);
+        }
+        /*
+         * Compare priorities first, then highest interface IP, then hostname, then interface name.
+         */
+        Map<NodeInterfacePair, Integer> priorities =
+            partitionInterfaces.stream()
+                .collect(
+                    ImmutableMap.toImmutableMap(
+                        NodeInterfacePair::of,
+                        i ->
+                            computeVrrpPriority(
+                                i, i.getVrrpGroups().get(vrid), vrid, provider, electionDetails)));
+        NodeInterfacePair vrrpMaster =
+            NodeInterfacePair.of(
+                Collections.max(
+                    partitionInterfaces,
+                    Comparator.comparingInt(
+                            (Interface o) -> priorities.get(NodeInterfacePair.of(o)))
+                        .thenComparing(o -> o.getConcreteAddress().getIp())
+                        .thenComparing(o -> NodeInterfacePair.of(o))));
+        if (electionDetails != null) {
+          cp.forEach(ni -> {
+            electionDetails
+                ._winnerByCandidate
+                .computeIfAbsent(ni, n -> new HashMap<>())
+                .put(vrid, vrrpMaster);
+            electionDetails
+                ._candidatesByCandidate
+                .computeIfAbsent(ni, n -> new HashMap<>())
+                .put(vrid, ImmutableSet.copyOf(cp));
+          });
+        }
+        LOGGER.debug(
+            "{} elected VRRP master for vrid {} among candidates {}",
+            vrrpMaster,
+            vrid,
+            partitionInterfaces);
+        ipSpaceByCandidate
+            .get(vrrpMaster)
+            .forEach((receivingInterface, ips) ->
+                ips.forEach(ip ->
+                    ipOwners
+                        .computeIfAbsent(ip, k -> new HashMap<>())
+                        .computeIfAbsent(vrrpMaster.getHostname(), k -> new HashSet<>())
+                        .add(receivingInterface)));
+      });
+    });
   }
 
   /**
@@ -716,15 +693,13 @@ public abstract class IpOwnersBaseImpl implements IpOwners {
 
     // Helper mapping: hostname -> vrf -> interfaces
     Map<String, Map<String, Set<String>>> hostsToVrfsToIfaces = new HashMap<>();
-    allInterfaces.forEach(
-        (hostname, ifaces) ->
-            ifaces.forEach(
-                iface -> {
-                  hostsToVrfsToIfaces
-                      .computeIfAbsent(hostname, n -> new HashMap<>())
-                      .computeIfAbsent(iface.getVrfName(), n -> new HashSet<>())
-                      .add(iface.getName());
-                }));
+    allInterfaces.forEach((hostname, ifaces) ->
+        ifaces.forEach(iface -> {
+          hostsToVrfsToIfaces
+              .computeIfAbsent(hostname, n -> new HashMap<>())
+              .computeIfAbsent(iface.getVrfName(), n -> new HashSet<>())
+              .add(iface.getName());
+        }));
 
     return toImmutableMap(
         activeDeviceOwnedIps,
@@ -812,19 +787,18 @@ public abstract class IpOwnersBaseImpl implements IpOwners {
       successfulTracks = null;
       failedTracks = null;
     }
-    trackActions.forEach(
-        (trackName, action) -> {
-          TrackMethod trackMethod = trackMethods.get(trackName);
-          assert trackMethod != null;
-          if (trackMethod.accept(trackMethodEvaluator)) {
-            action.accept(evaluator);
-            if (electionDetails != null) {
-              successfulTracks.put(trackName, immutableEntry(trackMethod, action));
-            }
-          } else if (electionDetails != null) {
-            failedTracks.put(trackName, immutableEntry(trackMethod, action));
-          }
-        });
+    trackActions.forEach((trackName, action) -> {
+      TrackMethod trackMethod = trackMethods.get(trackName);
+      assert trackMethod != null;
+      if (trackMethod.accept(trackMethodEvaluator)) {
+        action.accept(evaluator);
+        if (electionDetails != null) {
+          successfulTracks.put(trackName, immutableEntry(trackMethod, action));
+        }
+      } else if (electionDetails != null) {
+        failedTracks.put(trackName, immutableEntry(trackMethod, action));
+      }
+    });
     int actualPriority = evaluator.getPriority();
     if (electionDetails != null) {
       electionDetails
@@ -844,18 +818,14 @@ public abstract class IpOwnersBaseImpl implements IpOwners {
     // Invert to node -> vrf -> interface -> IPs, then build the IP spaces, the expensive part, per
     // node in parallel. Each interface's IPs stay in the order they were visited.
     Map<String, Map<String, Map<String, List<Ip>>>> ips = new HashMap<>();
-    ipIfaceOwners.forEach(
-        (ip, nodeMap) ->
-            nodeMap.forEach(
-                (node, vrfMap) ->
-                    vrfMap.forEach(
-                        (vrf, ifaces) ->
-                            ifaces.forEach(
-                                iface ->
-                                    ips.computeIfAbsent(node, k -> new HashMap<>())
-                                        .computeIfAbsent(vrf, k -> new HashMap<>())
-                                        .computeIfAbsent(iface, k -> new ArrayList<>())
-                                        .add(ip)))));
+    ipIfaceOwners.forEach((ip, nodeMap) ->
+        nodeMap.forEach((node, vrfMap) ->
+            vrfMap.forEach((vrf, ifaces) ->
+                ifaces.forEach(iface ->
+                    ips.computeIfAbsent(node, k -> new HashMap<>())
+                        .computeIfAbsent(vrf, k -> new HashMap<>())
+                        .computeIfAbsent(iface, k -> new ArrayList<>())
+                        .add(ip)))));
     return toImmutableMapParallel(
         ips,
         Entry::getKey, /* node */

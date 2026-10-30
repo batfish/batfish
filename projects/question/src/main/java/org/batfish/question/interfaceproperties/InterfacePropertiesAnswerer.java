@@ -51,14 +51,13 @@ public class InterfacePropertiesAnswerer extends Answerer {
         .add(new ColumnMetadata(COL_INTERFACE, Schema.INTERFACE, "Interface", true, false))
         .addAll(
             propertySpecifier.getMatchingProperties().stream()
-                .map(
-                    prop ->
-                        new ColumnMetadata(
-                            getColumnName(prop),
-                            InterfacePropertySpecifier.getPropertyDescriptor(prop).getSchema(),
-                            InterfacePropertySpecifier.getPropertyDescriptor(prop).getDescription(),
-                            false,
-                            true))
+                .map(prop ->
+                    new ColumnMetadata(
+                        getColumnName(prop),
+                        InterfacePropertySpecifier.getPropertyDescriptor(prop).getSchema(),
+                        InterfacePropertySpecifier.getPropertyDescriptor(prop).getDescription(),
+                        false,
+                        true))
                 .collect(Collectors.toList()))
         .build();
   }

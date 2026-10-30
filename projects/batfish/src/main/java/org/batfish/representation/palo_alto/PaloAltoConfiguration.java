@@ -942,22 +942,20 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
     // First, build independent ACLs for each rule (ignoring things like shadowing)
     Map<String, AclLineMatchExpr> ruleNameToAcl = new HashMap<>();
-    rules.forEach(
-        ruleAndVsys ->
-            ruleNameToAcl.put(
-                ruleAndVsys.getRule().getName(),
-                buildApplicationOverrideRuleAcl(vsys, ruleAndVsys.getRule())));
+    rules.forEach(ruleAndVsys ->
+        ruleNameToAcl.put(
+            ruleAndVsys.getRule().getName(),
+            buildApplicationOverrideRuleAcl(vsys, ruleAndVsys.getRule())));
 
     // Next, build map of app name to ACL, using the converted rules from above
     Map<String, AclLineMatchExpr> appNameToAcl = new HashMap<>();
     rules.stream()
         .map(ruleAndVsys -> ruleAndVsys.getRule().getApplication())
         .collect(ImmutableSet.toImmutableSet())
-        .forEach(
-            a ->
-                appNameToAcl.put(
-                    a.getName(),
-                    buildApplicationOverrideApplicationAcl(vsys, rules, ruleNameToAcl, a)));
+        .forEach(a ->
+            appNameToAcl.put(
+                a.getName(),
+                buildApplicationOverrideApplicationAcl(vsys, rules, ruleNameToAcl, a)));
 
     return appNameToAcl;
   }
@@ -1114,57 +1112,49 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             // Duplicate object names from panorama namespace should overwrite those in shared
             // namespace
             Stream.of(_shared, _panorama).filter(Objects::nonNull))
-        .forEach(
-            namespace -> {
-              loggingServers.addAll(namespace.getSyslogServerAddresses());
-              // convert address objects and groups to ip spaces
-              namespace
-                  .getAddressObjects()
-                  .forEach(
-                      (name, addressObject) -> {
-                        _c.getIpSpaces().put(name, addressObject.getIpSpace());
-                        _c.getIpSpaceMetadata()
-                            .put(
-                                name,
-                                new IpSpaceMetadata(name, ADDRESS_OBJECT.getDescription(), null));
-                      });
+        .forEach(namespace -> {
+          loggingServers.addAll(namespace.getSyslogServerAddresses());
+          // convert address objects and groups to ip spaces
+          namespace
+              .getAddressObjects()
+              .forEach((name, addressObject) -> {
+                _c.getIpSpaces().put(name, addressObject.getIpSpace());
+                _c.getIpSpaceMetadata()
+                    .put(name, new IpSpaceMetadata(name, ADDRESS_OBJECT.getDescription(), null));
+              });
 
-              namespace
-                  .getAddressGroups()
-                  .forEach(
-                      (name, addressGroup) -> {
-                        _c.getIpSpaces()
-                            .put(
-                                name,
-                                addressGroup.getIpSpace(
-                                    namespace.getAddressObjects(), namespace.getAddressGroups()));
-                        _c.getIpSpaceMetadata()
-                            .put(
-                                name,
-                                new IpSpaceMetadata(name, ADDRESS_GROUP.getDescription(), null));
-                      });
+          namespace
+              .getAddressGroups()
+              .forEach((name, addressGroup) -> {
+                _c.getIpSpaces()
+                    .put(
+                        name,
+                        addressGroup.getIpSpace(
+                            namespace.getAddressObjects(), namespace.getAddressGroups()));
+                _c.getIpSpaceMetadata()
+                    .put(name, new IpSpaceMetadata(name, ADDRESS_GROUP.getDescription(), null));
+              });
 
-              // Convert PAN zones
-              for (Entry<String, Zone> zoneEntry : namespace.getZones().entrySet()) {
-                Zone zone = zoneEntry.getValue();
-                org.batfish.datamodel.Zone newZone =
-                    toZone(computeObjectName(namespace.getName(), zone.getName()), zone);
-                _c.getZones().put(newZone.getName(), newZone);
-              }
+          // Convert PAN zones
+          for (Entry<String, Zone> zoneEntry : namespace.getZones().entrySet()) {
+            Zone zone = zoneEntry.getValue();
+            org.batfish.datamodel.Zone newZone =
+                toZone(computeObjectName(namespace.getName(), zone.getName()), zone);
+            _c.getZones().put(newZone.getName(), newZone);
+          }
 
-              // Services
-              for (Service service : namespace.getServices().values()) {
-                IpAccessList acl = service.toIpAccessList(LineAction.PERMIT, this, namespace, _w);
-                _c.getIpAccessLists().put(acl.getName(), acl);
-              }
+          // Services
+          for (Service service : namespace.getServices().values()) {
+            IpAccessList acl = service.toIpAccessList(LineAction.PERMIT, this, namespace, _w);
+            _c.getIpAccessLists().put(acl.getName(), acl);
+          }
 
-              // Service groups
-              for (ServiceGroup serviceGroup : namespace.getServiceGroups().values()) {
-                IpAccessList acl =
-                    serviceGroup.toIpAccessList(LineAction.PERMIT, this, namespace, _w);
-                _c.getIpAccessLists().put(acl.getName(), acl);
-              }
-            });
+          // Service groups
+          for (ServiceGroup serviceGroup : namespace.getServiceGroups().values()) {
+            IpAccessList acl = serviceGroup.toIpAccessList(LineAction.PERMIT, this, namespace, _w);
+            _c.getIpAccessLists().put(acl.getName(), acl);
+          }
+        });
     _c.setLoggingServers(loggingServers.build());
   }
 
@@ -1334,9 +1324,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     Vsys vsys = toZone.getVsys();
     List<AclLine> lines =
         vsys.getZones().values().stream()
-            .flatMap(
-                fromZone ->
-                    generateCrossZoneCalls(fromZone, toZone, sharedGateways, virtualSystems))
+            .flatMap(fromZone ->
+                generateCrossZoneCalls(fromZone, toZone, sharedGateways, virtualSystems))
             .collect(ImmutableList.toImmutableList());
     return IpAccessList.builder()
         .setName(computeOutgoingFilterName(computeObjectName(vsys.getName(), toZone.getName())))
@@ -1393,17 +1382,14 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       Vsys sharedGateway, Vsys vsys) {
     String sharedGatewayName = sharedGateway.getName();
     return vsys.getZones().values().stream()
-        .filter(
-            externalToZone ->
-                externalToZone.getType() == Type.EXTERNAL
-                    && externalToZone.getExternalNames().contains(sharedGatewayName))
-        .flatMap(
-            externalToZone ->
-                vsys.getZones().values().stream()
-                    .filter(externalFromZone -> externalFromZone.getType() == Type.LAYER3)
-                    .flatMap(
-                        externalFromZone ->
-                            generateCrossZoneCallsFromLayer3(externalFromZone, externalToZone)));
+        .filter(externalToZone ->
+            externalToZone.getType() == Type.EXTERNAL
+                && externalToZone.getExternalNames().contains(sharedGatewayName))
+        .flatMap(externalToZone ->
+            vsys.getZones().values().stream()
+                .filter(externalFromZone -> externalFromZone.getType() == Type.LAYER3)
+                .flatMap(externalFromZone ->
+                    generateCrossZoneCallsFromLayer3(externalFromZone, externalToZone)));
   }
 
   /**
@@ -1499,9 +1485,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     Stream<ExprAclLine> sgLines =
         sharedGateways.stream()
             .filter(sharedGateway -> fromZone.getExternalNames().contains(sharedGateway.getName()))
-            .flatMap(
-                sharedGateway ->
-                    generatedSharedGatewayVsysCrossZoneCalls(fromZone, toZone, sharedGateway));
+            .flatMap(sharedGateway ->
+                generatedSharedGatewayVsysCrossZoneCalls(fromZone, toZone, sharedGateway));
     return Stream.concat(vsysLines, sgLines);
   }
 
@@ -1545,18 +1530,15 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     assert vsys == toZone.getVsys() && vsys != externalVsys; // sanity check
     String vsysName = vsys.getName();
     return externalVsys.getZones().values().stream()
-        .filter(
-            externalVsysToZone ->
-                externalVsysToZone.getType() == Type.EXTERNAL
-                    && externalVsysToZone.getExternalNames().contains(vsysName))
-        .flatMap(
-            externalVsysToZone ->
-                externalVsys.getZones().values().stream()
-                    .filter(externalVsysFromZone -> externalVsysFromZone.getType() == Type.LAYER3)
-                    .flatMap(
-                        externalVsysFromZone ->
-                            generateDoubleCrossZoneCalls(
-                                fromZone, toZone, externalVsysFromZone, externalVsysToZone)));
+        .filter(externalVsysToZone ->
+            externalVsysToZone.getType() == Type.EXTERNAL
+                && externalVsysToZone.getExternalNames().contains(vsysName))
+        .flatMap(externalVsysToZone ->
+            externalVsys.getZones().values().stream()
+                .filter(externalVsysFromZone -> externalVsysFromZone.getType() == Type.LAYER3)
+                .flatMap(externalVsysFromZone ->
+                    generateDoubleCrossZoneCalls(
+                        fromZone, toZone, externalVsysFromZone, externalVsysToZone)));
   }
 
   /**
@@ -1613,22 +1595,20 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   private @Nonnull List<AclLineMatchExpr> aclLineMatchExprsFromRuleEndpointSources(
       Collection<RuleEndpoint> endpoints, Vsys vsys, Warnings w, String filename) {
     return endpoints.stream()
-        .map(
-            source ->
-                AclLineMatchExprs.matchSrc(
-                    ruleEndpointToIpSpace(source, vsys, w),
-                    getRuleEndpointTraceElement(source, vsys, filename)))
+        .map(source ->
+            AclLineMatchExprs.matchSrc(
+                ruleEndpointToIpSpace(source, vsys, w),
+                getRuleEndpointTraceElement(source, vsys, filename)))
         .collect(ImmutableList.toImmutableList());
   }
 
   private @Nonnull List<AclLineMatchExpr> aclLineMatchExprsFromRuleEndpointDestinations(
       Collection<RuleEndpoint> endpoints, Vsys vsys, Warnings w, String filename) {
     return endpoints.stream()
-        .map(
-            dest ->
-                AclLineMatchExprs.matchDst(
-                    ruleEndpointToIpSpace(dest, vsys, w),
-                    getRuleEndpointTraceElement(dest, vsys, filename)))
+        .map(dest ->
+            AclLineMatchExprs.matchDst(
+                ruleEndpointToIpSpace(dest, vsys, w),
+                getRuleEndpointTraceElement(dest, vsys, filename)))
         .collect(ImmutableList.toImmutableList());
   }
 
@@ -1793,10 +1773,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                         containingVsys.getApplications(), containingVsys.getApplicationGroups())
                     .stream()
                     // Don't add trace for children; we've already flattened intermediate app groups
-                    .map(
-                        a ->
-                            aclLineMatchExprForApplication(
-                                a, appOverrideAclsMap, null, applicationDefaultService, rule, _w))
+                    .map(a ->
+                        aclLineMatchExprForApplication(
+                            a, appOverrideAclsMap, null, applicationDefaultService, rule, _w))
                     .filter(Optional::isPresent)
                     .map(Optional::get)
                     .collect(ImmutableList.toImmutableList()),
@@ -1819,15 +1798,14 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
     if (isBuiltInApp(name)) {
       return getBuiltInApps(name).stream()
-          .map(
-              app ->
-                  aclLineMatchExprForApplication(
-                      app,
-                      appOverrideAclsMap,
-                      matchBuiltInApplicationTraceElement(name),
-                      applicationDefaultService,
-                      rule,
-                      _w))
+          .map(app ->
+              aclLineMatchExprForApplication(
+                  app,
+                  appOverrideAclsMap,
+                  matchBuiltInApplicationTraceElement(name),
+                  applicationDefaultService,
+                  rule,
+                  _w))
           .filter(Optional::isPresent)
           .map(Optional::get)
           .collect(ImmutableList.toImmutableList());
@@ -1895,11 +1873,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       Map<String, AclLineMatchExpr> appOverrideAcls,
       boolean applicationDefaultService) {
     return rule.getApplications().stream()
-        .flatMap(
-            a ->
-                aclLineMatchExprForApplicationOrGroup(
-                    a, rule, vsys, appOverrideAcls, applicationDefaultService)
-                    .stream())
+        .flatMap(a ->
+            aclLineMatchExprForApplicationOrGroup(
+                a, rule, vsys, appOverrideAcls, applicationDefaultService)
+                .stream())
         .collect(ImmutableList.toImmutableList());
   }
 
@@ -2257,16 +2234,15 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                   iface.getAllAddresses().stream()
                       .map(a -> interfaceAddressToConcreteInterfaceAddress(a, vsys, _w))
                       .filter(Objects::nonNull))
-              .filter(
-                  a -> {
-                    if (iface.getType() != Interface.Type.LOOPBACK) {
-                      return true;
-                    } else if (a.getPrefix().getPrefixLength() == Prefix.MAX_PREFIX_LENGTH) {
-                      return true;
-                    }
-                    _w.redFlag("Loopback ip address must be /32 or without mask, not " + a);
-                    return false;
-                  })
+              .filter(a -> {
+                if (iface.getType() != Interface.Type.LOOPBACK) {
+                  return true;
+                } else if (a.getPrefix().getPrefixLength() == Prefix.MAX_PREFIX_LENGTH) {
+                  return true;
+                }
+                _w.redFlag("Loopback ip address must be /32 or without mask, not " + a);
+                return false;
+              })
               .collect(Collectors.toSet());
       if (allValidAddresses.contains(primaryInterfaceAddress)) {
         // Make sure primary address is valid.
@@ -2623,14 +2599,13 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   private List<NatRule> getNatRulesForEnteringZone(Zone zone) {
     Vsys vsys = zone.getVsys();
     return getAllNatRules(vsys)
-        .filter(
-            rule ->
-                // Note: This isn't a good place to file warnings for invalid NAT rules because it
-                // leaves out rules that aren't in a zone. Instead file warnings per vsys.
-                checkNatRuleValid(rule, false)
-                    && !rule.getDisabled()
-                    && (rule.getFrom().contains(zone.getName())
-                        || rule.getFrom().contains(CATCHALL_ZONE_NAME)))
+        .filter(rule ->
+            // Note: This isn't a good place to file warnings for invalid NAT rules because it
+            // leaves out rules that aren't in a zone. Instead file warnings per vsys.
+            checkNatRuleValid(rule, false)
+                && !rule.getDisabled()
+                && (rule.getFrom().contains(zone.getName())
+                    || rule.getFrom().contains(CATCHALL_ZONE_NAME)))
         .collect(ImmutableList.toImmutableList());
   }
 
@@ -2867,19 +2842,16 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     vsArea
         .getInterfaces()
         .values()
-        .forEach(
-            ospfVsIface -> {
-              org.batfish.datamodel.Interface viIface = viInterfaces.get(ospfVsIface.getName());
-              if (viIface == null) {
-                _w.redFlagf(
-                    "OSPF area %s refers a non-existent interface %s",
-                    vsAreaId, ospfVsIface.getName());
-                return;
-              }
-              ospfIfaceNames.add(viIface.getName());
-              finalizeInterfaceOspfSettings(
-                  viIface, vsAreaId.asLong(), ospfProcessName, ospfVsIface);
-            });
+        .forEach(ospfVsIface -> {
+          org.batfish.datamodel.Interface viIface = viInterfaces.get(ospfVsIface.getName());
+          if (viIface == null) {
+            _w.redFlagf(
+                "OSPF area %s refers a non-existent interface %s", vsAreaId, ospfVsIface.getName());
+            return;
+          }
+          ospfIfaceNames.add(viIface.getName());
+          finalizeInterfaceOspfSettings(viIface, vsAreaId.asLong(), ospfProcessName, ospfVsIface);
+        });
     return ospfIfaceNames.build();
   }
 
@@ -3049,11 +3021,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       candidates.add(iface.getParent().getZone().getVsys());
     }
     Stream.concat(_virtualSystems.values().stream(), _sharedGateways.values().stream())
-        .filter(
-            vsys ->
-                vsys.getImportedInterfaces().contains(iface.getName())
-                    || (iface.getParent() != null
-                        && vsys.getImportedInterfaces().contains(iface.getParent().getName())))
+        .filter(vsys ->
+            vsys.getImportedInterfaces().contains(iface.getName())
+                || (iface.getParent() != null
+                    && vsys.getImportedInterfaces().contains(iface.getParent().getName())))
         .forEach(candidates::add);
     return candidates;
   }
@@ -3099,20 +3070,19 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
     // Assign the appropriate zone to each interface
     Stream.concat(_virtualSystems.values().stream(), _sharedGateways.values().stream())
-        .forEach(
-            zoneContainer -> {
-              for (Zone zone : zoneContainer.getZones().values()) {
-                for (String ifname : zone.getInterfaceNames()) {
-                  Interface iface = allInterfaces.get(ifname);
-                  if (iface != null) {
-                    iface.setZone(zone);
-                  } else {
-                    // do nothing. Assume that an undefined reference was logged elsewhere.
-                    assert true;
-                  }
-                }
+        .forEach(zoneContainer -> {
+          for (Zone zone : zoneContainer.getZones().values()) {
+            for (String ifname : zone.getInterfaceNames()) {
+              Interface iface = allInterfaces.get(ifname);
+              if (iface != null) {
+                iface.setZone(zone);
+              } else {
+                // do nothing. Assume that an undefined reference was logged elsewhere.
+                assert true;
               }
-            });
+            }
+          }
+        });
   }
 
   /**
@@ -3343,80 +3313,73 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     // Apply device-groups to firewalls
     _deviceGroups
         .entrySet()
-        .forEach(
-            deviceGroupEntry ->
-                deviceGroupEntry
-                    .getValue()
-                    .getDevices()
-                    .forEach(
-                        deviceId -> {
-                          // Create new managed config if one doesn't already exist for this device
-                          if (managedConfigurations.containsKey(deviceId)) {
-                            // If the device already has a config associated with it, it must
-                            // already be associated with another device-group (should not happen)
-                            _w.redFlagf(
-                                "Managed device '%s' cannot be associated with more than one"
-                                    + " device-group. Ignoring association with device-group"
-                                    + " '%s'.",
-                                deviceId, deviceGroupEntry.getKey());
-                          } else {
-                            PaloAltoConfiguration c = createManagedDeviceConfig(deviceId);
-                            c.applyDeviceGroup(deviceGroupEntry.getValue(), _shared, _deviceGroups);
-                            managedConfigurations.put(deviceId, c);
-                          }
-                        }));
+        .forEach(deviceGroupEntry ->
+            deviceGroupEntry
+                .getValue()
+                .getDevices()
+                .forEach(deviceId -> {
+                  // Create new managed config if one doesn't already exist for this device
+                  if (managedConfigurations.containsKey(deviceId)) {
+                    // If the device already has a config associated with it, it must
+                    // already be associated with another device-group (should not happen)
+                    _w.redFlagf(
+                        "Managed device '%s' cannot be associated with more than one"
+                            + " device-group. Ignoring association with device-group"
+                            + " '%s'.",
+                        deviceId, deviceGroupEntry.getKey());
+                  } else {
+                    PaloAltoConfiguration c = createManagedDeviceConfig(deviceId);
+                    c.applyDeviceGroup(deviceGroupEntry.getValue(), _shared, _deviceGroups);
+                    managedConfigurations.put(deviceId, c);
+                  }
+                }));
     // Apply device-groups to individual vsyses
     _deviceGroups
         .entrySet()
-        .forEach(
-            deviceGroupEntry ->
-                deviceGroupEntry
-                    .getValue()
-                    .getVsys()
-                    .forEach(
-                        (deviceId, vsys) -> {
-                          // Create new managed config if one doesn't already exist for this device
-                          if (managedConfigurations.containsKey(deviceId)) {
-                            _w.redFlagf(
-                                "Associating vsys on a managed device with different"
-                                    + " device-groups is not yet supported. Ignoring"
-                                    + " association with device-group '%s' for managed device"
-                                    + " '%s'.",
-                                deviceGroupEntry.getKey(), deviceId);
-                            return;
-                          }
-                          PaloAltoConfiguration c = createManagedDeviceConfig(deviceId);
-                          c.applyDeviceGroup(deviceGroupEntry.getValue(), _shared, _deviceGroups);
-                          managedConfigurations.put(deviceId, c);
-                        }));
+        .forEach(deviceGroupEntry ->
+            deviceGroupEntry
+                .getValue()
+                .getVsys()
+                .forEach((deviceId, vsys) -> {
+                  // Create new managed config if one doesn't already exist for this device
+                  if (managedConfigurations.containsKey(deviceId)) {
+                    _w.redFlagf(
+                        "Associating vsys on a managed device with different"
+                            + " device-groups is not yet supported. Ignoring"
+                            + " association with device-group '%s' for managed device"
+                            + " '%s'.",
+                        deviceGroupEntry.getKey(), deviceId);
+                    return;
+                  }
+                  PaloAltoConfiguration c = createManagedDeviceConfig(deviceId);
+                  c.applyDeviceGroup(deviceGroupEntry.getValue(), _shared, _deviceGroups);
+                  managedConfigurations.put(deviceId, c);
+                }));
     // Apply template-stacks
     _templateStacks
         .entrySet()
-        .forEach(
-            stackEntry ->
-                stackEntry
-                    .getValue()
-                    .getDevices()
-                    .forEach(
-                        deviceId -> {
-                          PaloAltoConfiguration c = managedConfigurations.get(deviceId);
-                          // Create new managed config if one doesn't already exist for this device
-                          if (c == null) {
-                            c = createManagedDeviceConfig(deviceId);
-                            managedConfigurations.put(deviceId, c);
-                          }
-                          c.applyTemplateStack(stackEntry.getValue(), this);
-                        }));
+        .forEach(stackEntry ->
+            stackEntry
+                .getValue()
+                .getDevices()
+                .forEach(deviceId -> {
+                  PaloAltoConfiguration c = managedConfigurations.get(deviceId);
+                  // Create new managed config if one doesn't already exist for this device
+                  if (c == null) {
+                    c = createManagedDeviceConfig(deviceId);
+                    managedConfigurations.put(deviceId, c);
+                  }
+                  c.applyTemplateStack(stackEntry.getValue(), this);
+                }));
 
     // Update hostnames for managed devices
-    _hostnameMap.forEach(
-        (deviceId, hostname) -> {
-          if (managedConfigurations.containsKey(deviceId)) {
-            managedConfigurations.get(deviceId).setHostname(hostname);
-          } else {
-            _w.redFlagf("Cannot set hostname for unknown device id %s.", deviceId);
-          }
-        });
+    _hostnameMap.forEach((deviceId, hostname) -> {
+      if (managedConfigurations.containsKey(deviceId)) {
+        managedConfigurations.get(deviceId).setHostname(hostname);
+      } else {
+        _w.redFlagf("Cannot set hostname for unknown device id %s.", deviceId);
+      }
+    });
     return ImmutableList.copyOf(managedConfigurations.values());
   }
 
@@ -4059,33 +4022,31 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     Map<String, Map<StructureUsage, Multiset<Integer>>> references =
         _structureManager.getStructureReferences(type);
     for (PaloAltoStructureUsage usage : usages) {
-      references.forEach(
-          (nameWithNamespace, byUsage) -> {
-            Multiset<Integer> lines = byUsage.get(usage);
-            if (lines == null || lines.isEmpty()) {
-              return;
-            }
-            String name = extractObjectName(nameWithNamespace);
+      references.forEach((nameWithNamespace, byUsage) -> {
+        Multiset<Integer> lines = byUsage.get(usage);
+        if (lines == null || lines.isEmpty()) {
+          return;
+        }
+        String name = extractObjectName(nameWithNamespace);
 
-            // Check this namespace first
-            DefinedStructureInfo info =
-                findDefinedStructure(nameWithNamespace, structureTypesToCheck);
-            // Check shared namespace if there was no match
-            if (info == null) {
-              info =
-                  findDefinedStructure(
-                      computeObjectName(SHARED_VSYS_NAME, name), structureTypesToCheck);
-            }
+        // Check this namespace first
+        DefinedStructureInfo info = findDefinedStructure(nameWithNamespace, structureTypesToCheck);
+        // Check shared namespace if there was no match
+        if (info == null) {
+          info =
+              findDefinedStructure(
+                  computeObjectName(SHARED_VSYS_NAME, name), structureTypesToCheck);
+        }
 
-            // Now update reference count if applicable
-            if (info != null) {
-              info.setNumReferrers(info.getNumReferrers() + lines.size());
-            } else if (!ignoreUndefined) {
-              for (int line : lines) {
-                undefined(type, name, usage, line);
-              }
-            }
-          });
+        // Now update reference count if applicable
+        if (info != null) {
+          info.setNumReferrers(info.getNumReferrers() + lines.size());
+        } else if (!ignoreUndefined) {
+          for (int line : lines) {
+            undefined(type, name, usage, line);
+          }
+        }
+      });
     }
   }
 

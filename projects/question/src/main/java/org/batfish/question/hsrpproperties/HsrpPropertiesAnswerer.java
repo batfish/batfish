@@ -133,11 +133,10 @@ public final class HsrpPropertiesAnswerer extends Answerer {
                 .put(COL_INTERFACE, NodeInterfacePair.of(nodeName, iface.getName()))
                 .put(COL_ACTIVE, iface.getActive());
         iface.getHsrpGroups().entrySet().stream()
-            .filter(
-                e ->
-                    e.getValue().getVirtualAddresses().stream()
-                        .anyMatch(
-                            address -> virtualAddressSpace.containsIp(address, ImmutableMap.of())))
+            .filter(e ->
+                e.getValue().getVirtualAddresses().stream()
+                    .anyMatch(
+                        address -> virtualAddressSpace.containsIp(address, ImmutableMap.of())))
             .forEach(e -> rows.add(populateRow(row, e.getKey(), e.getValue()).build()));
       }
     }

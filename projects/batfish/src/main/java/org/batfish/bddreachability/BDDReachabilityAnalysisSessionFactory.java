@@ -148,13 +148,12 @@ final class BDDReachabilityAnalysisSessionFactory {
   /** Compute initialized sessions for the entire network */
   private Map<String, List<BDDFirewallSessionTraceInfo>> computeInitializedSessions() {
     return _configs.values().stream()
-        .flatMap(
-            config -> {
-              List<BDDFirewallSessionTraceInfo> sessions = computeInitializedSessions(config);
-              return sessions.isEmpty()
-                  ? Stream.of()
-                  : Stream.of(Maps.immutableEntry(config.getHostname(), sessions));
-            })
+        .flatMap(config -> {
+          List<BDDFirewallSessionTraceInfo> sessions = computeInitializedSessions(config);
+          return sessions.isEmpty()
+              ? Stream.of()
+              : Stream.of(Maps.immutableEntry(config.getHostname(), sessions));
+        })
         .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
   }
 
@@ -192,28 +191,26 @@ final class BDDReachabilityAnalysisSessionFactory {
 
     Stream<BDDFirewallSessionTraceInfo> originatingSessions =
         sessionOriginateVrfs.stream()
-            .flatMap(
-                vrf -> {
-                  BDD originateBdd =
-                      _originatingSessionBdds.getOrDefault(hostname, ImmutableMap.of()).get(vrf);
-                  return originateBdd == null || originateBdd.isZero()
-                      ? Stream.of()
-                      : computeInitializedOriginatingSessions(
-                          hostname, vrf, lastHopOutgoingInterfaceBdds, originateBdd)
-                          .stream();
-                });
+            .flatMap(vrf -> {
+              BDD originateBdd =
+                  _originatingSessionBdds.getOrDefault(hostname, ImmutableMap.of()).get(vrf);
+              return originateBdd == null || originateBdd.isZero()
+                  ? Stream.of()
+                  : computeInitializedOriginatingSessions(
+                      hostname, vrf, lastHopOutgoingInterfaceBdds, originateBdd)
+                      .stream();
+            });
     Stream<BDDFirewallSessionTraceInfo> incomingSessions =
         sessionExitInterfaces.stream()
-            .flatMap(
-                iface -> {
-                  BDD exitIfaceBdd =
-                      _incomingSessionBdds.get(NodeInterfacePair.of(hostname, iface.getName()));
-                  return exitIfaceBdd == null || exitIfaceBdd.isZero()
-                      ? Stream.of()
-                      : computeInitializedIncomingSessions(
-                          iface, lastHopOutgoingInterfaceBdds, exitIfaceBdd)
-                          .stream();
-                });
+            .flatMap(iface -> {
+              BDD exitIfaceBdd =
+                  _incomingSessionBdds.get(NodeInterfacePair.of(hostname, iface.getName()));
+              return exitIfaceBdd == null || exitIfaceBdd.isZero()
+                  ? Stream.of()
+                  : computeInitializedIncomingSessions(
+                      iface, lastHopOutgoingInterfaceBdds, exitIfaceBdd)
+                      .stream();
+            });
 
     return Stream.concat(originatingSessions, incomingSessions)
         .collect(ImmutableList.toImmutableList());
@@ -260,103 +257,99 @@ final class BDDReachabilityAnalysisSessionFactory {
     srcMgr.getSourceBDDs().entrySet().stream()
         // Don't bother building trace info for sources for which sessions can't be set up
         .filter(e -> interfaceInfo.canSetUpSessionForFlowFrom(e.getKey()))
-        .forEach(
-            e -> {
-              // Flows entered src (either an interface or this device) and exited outIface
-              BDD srcToOutIfaceBdd = outIfaceBdd.and(e.getValue());
+        .forEach(e -> {
+          // Flows entered src (either an interface or this device) and exited outIface
+          BDD srcToOutIfaceBdd = outIfaceBdd.and(e.getValue());
 
-              if (srcToOutIfaceBdd.isZero()) {
+          if (srcToOutIfaceBdd.isZero()) {
+            return;
+          }
+
+          String src = e.getKey();
+          if (src.equals(SOURCE_ORIGINATING_FROM_DEVICE)) {
+            assert !_lastHopManager.hasLastHopConstraint(srcToOutIfaceBdd);
+
+            BDD outgoingTransformationRange =
+                _reverseTransformationRanges.reverseOutgoingTransformationRange(
+                    hostname, outIface.getName(), null, null);
+
+            // reverse direction, so out comes before in.
+            Transition transformation =
+                compose(outgoingTransformation, constraint(outgoingTransformationRange));
+
+            // Return flows for this session.
+            BDD sessionBdd = getSessionFlowMatchBdd(srcToOutIfaceBdd);
+            builder.add(
+                new BDDFirewallSessionTraceInfo(
+                    hostname, sessionInterfaces, Accept.INSTANCE, sessionBdd, transformation));
+          } else {
+            Transition incomingTransformation =
+                _reverseFlowTransformationFactory.reverseFlowIncomingTransformation(hostname, src);
+            Map<NodeInterfacePair, BDD> nextHops = lastHopOutIfaceBdds.get(src);
+            if (nextHops.isEmpty()) {
+              // The src interface has no neighbors
+              assert !_lastHopManager.hasLastHopConstraint(srcToOutIfaceBdd);
+
+              SessionAction action = matchAction.toSessionAction(src, null);
+
+              BDD incomingTransformationRange =
+                  _reverseTransformationRanges.reverseIncomingTransformationRange(
+                      hostname, src, src, null);
+
+              BDD outgoingTransformationRange =
+                  _reverseTransformationRanges.reverseOutgoingTransformationRange(
+                      hostname, outIface.getName(), src, null);
+
+              builder.add(
+                  new BDDFirewallSessionTraceInfo(
+                      hostname,
+                      sessionInterfaces,
+                      action,
+                      getSessionFlowMatchBdd(srcToOutIfaceBdd),
+                      compose(
+                          outgoingTransformation,
+                          constraint(outgoingTransformationRange),
+                          incomingTransformation,
+                          constraint(incomingTransformationRange))));
+              return;
+            }
+
+            nextHops.forEach((lastHopOutIface, lastHopOutIfaceBdd) -> {
+              // Flows that came from lastHopOutIface, entered src and exited outIface
+              BDD lastHopToSrcIfaceToOutIfaceBdd = srcToOutIfaceBdd.and(lastHopOutIfaceBdd);
+              if (lastHopToSrcIfaceToOutIfaceBdd.isZero()) {
                 return;
               }
 
-              String src = e.getKey();
-              if (src.equals(SOURCE_ORIGINATING_FROM_DEVICE)) {
-                assert !_lastHopManager.hasLastHopConstraint(srcToOutIfaceBdd);
+              // Return flows for this session.
+              BDD sessionBdd = getSessionFlowMatchBdd(lastHopToSrcIfaceToOutIfaceBdd);
 
-                BDD outgoingTransformationRange =
-                    _reverseTransformationRanges.reverseOutgoingTransformationRange(
-                        hostname, outIface.getName(), null, null);
+              // Next hop for session flows
+              NodeInterfacePair lastHop = lastHopOutIface == NO_LAST_HOP ? null : lastHopOutIface;
+              SessionAction action = matchAction.toSessionAction(src, lastHop);
 
-                // reverse direction, so out comes before in.
-                Transition transformation =
-                    compose(outgoingTransformation, constraint(outgoingTransformationRange));
+              BDD incomingTransformationRange =
+                  _reverseTransformationRanges.reverseIncomingTransformationRange(
+                      hostname, src, src, lastHop);
 
-                // Return flows for this session.
-                BDD sessionBdd = getSessionFlowMatchBdd(srcToOutIfaceBdd);
-                builder.add(
-                    new BDDFirewallSessionTraceInfo(
-                        hostname, sessionInterfaces, Accept.INSTANCE, sessionBdd, transformation));
-              } else {
-                Transition incomingTransformation =
-                    _reverseFlowTransformationFactory.reverseFlowIncomingTransformation(
-                        hostname, src);
-                Map<NodeInterfacePair, BDD> nextHops = lastHopOutIfaceBdds.get(src);
-                if (nextHops.isEmpty()) {
-                  // The src interface has no neighbors
-                  assert !_lastHopManager.hasLastHopConstraint(srcToOutIfaceBdd);
+              BDD outgoingTransformationRange =
+                  _reverseTransformationRanges.reverseOutgoingTransformationRange(
+                      hostname, outIface.getName(), src, lastHop);
 
-                  SessionAction action = matchAction.toSessionAction(src, null);
-
-                  BDD incomingTransformationRange =
-                      _reverseTransformationRanges.reverseIncomingTransformationRange(
-                          hostname, src, src, null);
-
-                  BDD outgoingTransformationRange =
-                      _reverseTransformationRanges.reverseOutgoingTransformationRange(
-                          hostname, outIface.getName(), src, null);
-
-                  builder.add(
-                      new BDDFirewallSessionTraceInfo(
-                          hostname,
-                          sessionInterfaces,
-                          action,
-                          getSessionFlowMatchBdd(srcToOutIfaceBdd),
-                          compose(
-                              outgoingTransformation,
-                              constraint(outgoingTransformationRange),
-                              incomingTransformation,
-                              constraint(incomingTransformationRange))));
-                  return;
-                }
-
-                nextHops.forEach(
-                    (lastHopOutIface, lastHopOutIfaceBdd) -> {
-                      // Flows that came from lastHopOutIface, entered src and exited outIface
-                      BDD lastHopToSrcIfaceToOutIfaceBdd = srcToOutIfaceBdd.and(lastHopOutIfaceBdd);
-                      if (lastHopToSrcIfaceToOutIfaceBdd.isZero()) {
-                        return;
-                      }
-
-                      // Return flows for this session.
-                      BDD sessionBdd = getSessionFlowMatchBdd(lastHopToSrcIfaceToOutIfaceBdd);
-
-                      // Next hop for session flows
-                      NodeInterfacePair lastHop =
-                          lastHopOutIface == NO_LAST_HOP ? null : lastHopOutIface;
-                      SessionAction action = matchAction.toSessionAction(src, lastHop);
-
-                      BDD incomingTransformationRange =
-                          _reverseTransformationRanges.reverseIncomingTransformationRange(
-                              hostname, src, src, lastHop);
-
-                      BDD outgoingTransformationRange =
-                          _reverseTransformationRanges.reverseOutgoingTransformationRange(
-                              hostname, outIface.getName(), src, lastHop);
-
-                      builder.add(
-                          new BDDFirewallSessionTraceInfo(
-                              hostname,
-                              sessionInterfaces,
-                              action,
-                              sessionBdd,
-                              compose(
-                                  outgoingTransformation,
-                                  constraint(outgoingTransformationRange),
-                                  incomingTransformation,
-                                  constraint(incomingTransformationRange))));
-                    });
-              }
+              builder.add(
+                  new BDDFirewallSessionTraceInfo(
+                      hostname,
+                      sessionInterfaces,
+                      action,
+                      sessionBdd,
+                      compose(
+                          outgoingTransformation,
+                          constraint(outgoingTransformationRange),
+                          incomingTransformation,
+                          constraint(incomingTransformationRange))));
             });
+          }
+        });
     return builder.build();
   }
 
@@ -386,72 +379,67 @@ final class BDDReachabilityAnalysisSessionFactory {
     ImmutableList.Builder<BDDFirewallSessionTraceInfo> sessions = ImmutableList.builder();
     srcMgr
         .getSourceBDDs()
-        .forEach(
-            (src, srcBdd) -> {
-              if (src.equals(SOURCE_ORIGINATING_FROM_DEVICE)) {
-                // This assumes traffic to self can't create and match a session. See related
-                // comment in FlowTracer#buildAcceptTrace.
-                return;
-              }
+        .forEach((src, srcBdd) -> {
+          if (src.equals(SOURCE_ORIGINATING_FROM_DEVICE)) {
+            // This assumes traffic to self can't create and match a session. See related
+            // comment in FlowTracer#buildAcceptTrace.
+            return;
+          }
 
-              // Flows that entered src (either an interface or this device) and were accepted
-              BDD srcToAcceptBdd = vrfAcceptBdd.and(srcBdd);
-              if (srcToAcceptBdd.isZero()) {
-                return;
-              }
-              Transition incomingTransformation =
-                  _reverseFlowTransformationFactory.reverseFlowIncomingTransformation(
-                      hostname, src);
-              Map<NodeInterfacePair, BDD> nextHops = lastHopOutIfaceBdds.get(src);
-              if (nextHops.isEmpty()) {
-                // The src interface has no neighbors
-                assert !_lastHopManager.hasLastHopConstraint(srcToAcceptBdd);
+          // Flows that entered src (either an interface or this device) and were accepted
+          BDD srcToAcceptBdd = vrfAcceptBdd.and(srcBdd);
+          if (srcToAcceptBdd.isZero()) {
+            return;
+          }
+          Transition incomingTransformation =
+              _reverseFlowTransformationFactory.reverseFlowIncomingTransformation(hostname, src);
+          Map<NodeInterfacePair, BDD> nextHops = lastHopOutIfaceBdds.get(src);
+          if (nextHops.isEmpty()) {
+            // The src interface has no neighbors
+            assert !_lastHopManager.hasLastHopConstraint(srcToAcceptBdd);
 
-                BDD incomingTransformationRange =
-                    _reverseTransformationRanges.reverseIncomingTransformationRange(
-                        hostname, src, src, null);
+            BDD incomingTransformationRange =
+                _reverseTransformationRanges.reverseIncomingTransformationRange(
+                    hostname, src, src, null);
 
-                sessions.add(
-                    new BDDFirewallSessionTraceInfo(
-                        hostname,
-                        new OriginatingSessionScope(vrfName),
-                        // Batfish does not support VRF-originating sessions with other actions
-                        PostNatFibLookup.INSTANCE,
-                        getSessionFlowMatchBdd(srcToAcceptBdd),
-                        compose(incomingTransformation, constraint(incomingTransformationRange))));
-                return;
-              }
+            sessions.add(
+                new BDDFirewallSessionTraceInfo(
+                    hostname,
+                    new OriginatingSessionScope(vrfName),
+                    // Batfish does not support VRF-originating sessions with other actions
+                    PostNatFibLookup.INSTANCE,
+                    getSessionFlowMatchBdd(srcToAcceptBdd),
+                    compose(incomingTransformation, constraint(incomingTransformationRange))));
+            return;
+          }
 
-              nextHops.forEach(
-                  (lastHopOutIface, lastHopOutIfaceBdd) -> {
-                    // Flows that came from lastHopOutIface, entered src and were accepted
-                    BDD lastHopToSrcIfaceToAcceptBdd = srcToAcceptBdd.and(lastHopOutIfaceBdd);
-                    if (lastHopToSrcIfaceToAcceptBdd.isZero()) {
-                      return;
-                    }
+          nextHops.forEach((lastHopOutIface, lastHopOutIfaceBdd) -> {
+            // Flows that came from lastHopOutIface, entered src and were accepted
+            BDD lastHopToSrcIfaceToAcceptBdd = srcToAcceptBdd.and(lastHopOutIfaceBdd);
+            if (lastHopToSrcIfaceToAcceptBdd.isZero()) {
+              return;
+            }
 
-                    // Return flows for this session.
-                    BDD sessionBdd = getSessionFlowMatchBdd(lastHopToSrcIfaceToAcceptBdd);
+            // Return flows for this session.
+            BDD sessionBdd = getSessionFlowMatchBdd(lastHopToSrcIfaceToAcceptBdd);
 
-                    // Next hop for session flows
-                    NodeInterfacePair lastHop =
-                        lastHopOutIface == NO_LAST_HOP ? null : lastHopOutIface;
+            // Next hop for session flows
+            NodeInterfacePair lastHop = lastHopOutIface == NO_LAST_HOP ? null : lastHopOutIface;
 
-                    BDD incomingTransformationRange =
-                        _reverseTransformationRanges.reverseIncomingTransformationRange(
-                            hostname, src, src, lastHop);
+            BDD incomingTransformationRange =
+                _reverseTransformationRanges.reverseIncomingTransformationRange(
+                    hostname, src, src, lastHop);
 
-                    sessions.add(
-                        new BDDFirewallSessionTraceInfo(
-                            hostname,
-                            new OriginatingSessionScope(vrfName),
-                            // Batfish does not support VRF-originating sessions with other actions
-                            PostNatFibLookup.INSTANCE,
-                            sessionBdd,
-                            compose(
-                                incomingTransformation, constraint(incomingTransformationRange))));
-                  });
-            });
+            sessions.add(
+                new BDDFirewallSessionTraceInfo(
+                    hostname,
+                    new OriginatingSessionScope(vrfName),
+                    // Batfish does not support VRF-originating sessions with other actions
+                    PostNatFibLookup.INSTANCE,
+                    sessionBdd,
+                    compose(incomingTransformation, constraint(incomingTransformationRange))));
+          });
+        });
     return sessions.build();
   }
 
@@ -474,21 +462,19 @@ final class BDDReachabilityAnalysisSessionFactory {
       BDD ipProtocolsWithSessionsBdd) {
     BDDOps ops = new BDDOps(ipProtocolsWithSessionsBdd.getFactory());
     return reachable.entrySet().stream()
-        .map(
-            entry ->
-                immutableEntry(
-                    entry.getKey().accept(SessionCreationNodeVisitor.INSTANCE), entry.getValue()))
+        .map(entry ->
+            immutableEntry(
+                entry.getKey().accept(SessionCreationNodeVisitor.INSTANCE), entry.getValue()))
         .filter(entry -> entry.getKey() != null)
-        .filter(
-            entry -> {
-              NodeInterfacePair key = entry.getKey();
-              return configs
-                      .get(key.getHostname())
-                      .getAllInterfaces()
-                      .get(key.getInterface())
-                      .getFirewallSessionInterfaceInfo()
-                  != null;
-            })
+        .filter(entry -> {
+          NodeInterfacePair key = entry.getKey();
+          return configs
+                  .get(key.getHostname())
+                  .getAllInterfaces()
+                  .get(key.getInterface())
+                  .getFirewallSessionInterfaceInfo()
+              != null;
+        })
         .collect(
             groupingBy(
                 Entry::getKey,

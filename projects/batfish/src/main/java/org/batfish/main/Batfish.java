@@ -363,17 +363,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private @Nonnull SortedMap<String, String> readAllInputObjects(
       Stream<String> keys, NetworkSnapshot snapshot) {
     return keys.parallel()
-        .map(
-            key -> {
-              _logger.debugf("Reading: \"%s\"\n", key);
-              try (InputStream inputStream =
-                  _storage.loadSnapshotInputObject(
-                      snapshot.getNetwork(), snapshot.getSnapshot(), key)) {
-                return new SimpleEntry<>(key, decodeStreamAndAppendNewline(inputStream));
-              } catch (IOException e) {
-                throw new UncheckedIOException(e);
-              }
-            })
+        .map(key -> {
+          _logger.debugf("Reading: \"%s\"\n", key);
+          try (InputStream inputStream =
+              _storage.loadSnapshotInputObject(
+                  snapshot.getNetwork(), snapshot.getSnapshot(), key)) {
+            return new SimpleEntry<>(key, decodeStreamAndAppendNewline(inputStream));
+          } catch (IOException e) {
+            throw new UncheckedIOException(e);
+          }
+        })
         .collect(
             ImmutableSortedMap.toImmutableSortedMap(
                 Ordering.natural(), SimpleEntry::getKey, SimpleEntry::getValue));
@@ -574,83 +573,79 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // Set bandwidths for aggregate interfaces
     interfaces.values().stream()
         .filter(iface -> iface.getInterfaceType() == InterfaceType.AGGREGATED)
-        .forEach(
-            iface -> {
-              /* If interface has dependencies, bandwidth should be sum of their bandwidths. */
-              if (!iface.getDependencies().isEmpty()) {
-                iface.setBandwidth(
-                    iface.getDependencies().stream()
-                        .map(dependency -> interfaces.get(dependency.getInterfaceName()))
-                        .filter(Objects::nonNull)
-                        .filter(Interface::getActive)
-                        .map(Interface::getBandwidth)
-                        .filter(Objects::nonNull)
-                        .mapToDouble(Double::doubleValue)
-                        .sum());
-              } else {
-                /* Bandwidth should be sum of bandwidth of channel-group members. */
-                iface.setBandwidth(
-                    iface.getChannelGroupMembers().stream()
-                        .mapToDouble(ifaceName -> interfaces.get(ifaceName).getBandwidth())
-                        .sum());
-              }
-            });
+        .forEach(iface -> {
+          /* If interface has dependencies, bandwidth should be sum of their bandwidths. */
+          if (!iface.getDependencies().isEmpty()) {
+            iface.setBandwidth(
+                iface.getDependencies().stream()
+                    .map(dependency -> interfaces.get(dependency.getInterfaceName()))
+                    .filter(Objects::nonNull)
+                    .filter(Interface::getActive)
+                    .map(Interface::getBandwidth)
+                    .filter(Objects::nonNull)
+                    .mapToDouble(Double::doubleValue)
+                    .sum());
+          } else {
+            /* Bandwidth should be sum of bandwidth of channel-group members. */
+            iface.setBandwidth(
+                iface.getChannelGroupMembers().stream()
+                    .mapToDouble(ifaceName -> interfaces.get(ifaceName).getBandwidth())
+                    .sum());
+          }
+        });
     // Now that aggregate interfaces have bandwidths, set bandwidths for aggregate child interfaces
     interfaces.values().stream()
         .filter(iface -> iface.getInterfaceType() == InterfaceType.AGGREGATE_CHILD)
-        .forEach(
-            iface -> {
-              /*
-              Bandwidth for aggregate child interfaces (e.g. units) should be inherited from parent.
-              */
-              double bandwidth =
-                  iface.getDependencies().stream()
-                      .filter(d -> d.getType() == DependencyType.BIND)
-                      .findFirst()
-                      .map(Dependency::getInterfaceName)
-                      .map(interfaces::get)
-                      .map(Interface::getBandwidth)
-                      .orElse(0.0);
-              iface.setBandwidth(bandwidth);
-            });
+        .forEach(iface -> {
+          /*
+          Bandwidth for aggregate child interfaces (e.g. units) should be inherited from parent.
+          */
+          double bandwidth =
+              iface.getDependencies().stream()
+                  .filter(d -> d.getType() == DependencyType.BIND)
+                  .findFirst()
+                  .map(Dependency::getInterfaceName)
+                  .map(interfaces::get)
+                  .map(Interface::getBandwidth)
+                  .orElse(0.0);
+          iface.setBandwidth(bandwidth);
+        });
   }
 
   private static void computeRedundantInterfaceBandwidths(Map<String, Interface> interfaces) {
     // Set bandwidths for redundant interfaces
     interfaces.values().stream()
         .filter(iface -> iface.getInterfaceType() == InterfaceType.REDUNDANT)
-        .forEach(
-            iface -> {
-              /* If interface has dependencies, bandwidth should be bandwidth of any active dependency. */
-              iface.setBandwidth(
-                  iface.getDependencies().stream()
-                      .map(dependency -> interfaces.get(dependency.getInterfaceName()))
-                      .filter(Objects::nonNull)
-                      .filter(Interface::getActive)
-                      .map(Interface::getBandwidth)
-                      .filter(Objects::nonNull)
-                      .mapToDouble(Double::doubleValue)
-                      .min()
-                      .orElse(0.0));
-            });
+        .forEach(iface -> {
+          /* If interface has dependencies, bandwidth should be bandwidth of any active dependency. */
+          iface.setBandwidth(
+              iface.getDependencies().stream()
+                  .map(dependency -> interfaces.get(dependency.getInterfaceName()))
+                  .filter(Objects::nonNull)
+                  .filter(Interface::getActive)
+                  .map(Interface::getBandwidth)
+                  .filter(Objects::nonNull)
+                  .mapToDouble(Double::doubleValue)
+                  .min()
+                  .orElse(0.0));
+        });
     // Now that redundant interfaces have bandwidths, set bandwidths for redundant child interfaces
     interfaces.values().stream()
         .filter(iface -> iface.getInterfaceType() == InterfaceType.REDUNDANT_CHILD)
-        .forEach(
-            iface -> {
-              /*
-              Bandwidth for redundant child interfaces (e.g. units) should be inherited from parent.
-              */
-              double bandwidth =
-                  iface.getDependencies().stream()
-                      .filter(d -> d.getType() == DependencyType.BIND)
-                      .findFirst()
-                      .map(Dependency::getInterfaceName)
-                      .map(interfaces::get)
-                      .map(Interface::getBandwidth)
-                      .orElse(0.0);
-              iface.setBandwidth(bandwidth);
-            });
+        .forEach(iface -> {
+          /*
+          Bandwidth for redundant child interfaces (e.g. units) should be inherited from parent.
+          */
+          double bandwidth =
+              iface.getDependencies().stream()
+                  .filter(d -> d.getType() == DependencyType.BIND)
+                  .findFirst()
+                  .map(Dependency::getInterfaceName)
+                  .map(interfaces::get)
+                  .map(Interface::getBandwidth)
+                  .orElse(0.0);
+          iface.setBandwidth(bandwidth);
+        });
   }
 
   public static Warnings buildWarnings(Settings settings) {
@@ -1273,24 +1268,19 @@ public class Batfish extends PluginConsumer implements IBatfish {
         SortedMap<String, List<BatfishStackTrace>> errors = initInfoAnswerElement.getErrors();
         initStepAnswerElement
             .getErrors()
-            .forEach(
-                (hostname, initStepErrors) ->
-                    errors.computeIfAbsent(hostname, k -> new ArrayList<>()).add(initStepErrors));
+            .forEach((hostname, initStepErrors) ->
+                errors.computeIfAbsent(hostname, k -> new ArrayList<>()).add(initStepErrors));
       }
       SortedMap<String, Warnings> warnings = initInfoAnswerElement.getWarnings();
       initStepAnswerElement
           .getWarnings()
-          .forEach(
-              (hostname, initStepWarnings) -> {
-                Warnings combined =
-                    warnings.computeIfAbsent(hostname, h -> buildWarnings(_settings));
-                combined.getParseWarnings().addAll(initStepWarnings.getParseWarnings());
-                combined.getPedanticWarnings().addAll(initStepWarnings.getPedanticWarnings());
-                combined.getRedFlagWarnings().addAll(initStepWarnings.getRedFlagWarnings());
-                combined
-                    .getUnimplementedWarnings()
-                    .addAll(initStepWarnings.getUnimplementedWarnings());
-              });
+          .forEach((hostname, initStepWarnings) -> {
+            Warnings combined = warnings.computeIfAbsent(hostname, h -> buildWarnings(_settings));
+            combined.getParseWarnings().addAll(initStepWarnings.getParseWarnings());
+            combined.getPedanticWarnings().addAll(initStepWarnings.getPedanticWarnings());
+            combined.getRedFlagWarnings().addAll(initStepWarnings.getRedFlagWarnings());
+            combined.getUnimplementedWarnings().addAll(initStepWarnings.getUnimplementedWarnings());
+          });
     }
   }
 
@@ -1617,13 +1607,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private void postProcessRedundantInterfaces(Map<String, Configuration> configurations) {
     configurations
         .values()
-        .forEach(
-            c ->
-                c.getVrfs()
-                    .values()
-                    .forEach(
-                        v ->
-                            postProcessRedundantInterfacesHelper(c.getAllInterfaces(v.getName()))));
+        .forEach(c ->
+            c.getVrfs()
+                .values()
+                .forEach(
+                    v -> postProcessRedundantInterfacesHelper(c.getAllInterfaces(v.getName()))));
   }
 
   private void postProcessRedundantInterfacesHelper(Map<String, Interface> interfaces) {
@@ -1640,13 +1628,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
       if (c.getConfigurationFormat() == ConfigurationFormat.HOST) {
         c.setDeviceType(DeviceType.HOST);
       } else if (c.getVrfs().values().stream()
-          .anyMatch(
-              vrf ->
-                  vrf.getBgpProcess() != null
-                      || !vrf.getEigrpProcesses().isEmpty()
-                      || vrf.getIsisProcess() != null
-                      || !vrf.getOspfProcesses().isEmpty()
-                      || vrf.getRipProcess() != null)) {
+          .anyMatch(vrf ->
+              vrf.getBgpProcess() != null
+                  || !vrf.getEigrpProcesses().isEmpty()
+                  || vrf.getIsisProcess() != null
+                  || !vrf.getOspfProcesses().isEmpty()
+                  || vrf.getRipProcess() != null)) {
         c.setDeviceType(DeviceType.ROUTER);
       } else {
         // If device was not a host or router, call it a switch
@@ -1659,47 +1646,42 @@ public class Batfish extends PluginConsumer implements IBatfish {
   static void postProcessInterfaceDependencies(
       Map<String, Configuration> configurations, Layer1Topologies layer1Topologies) {
     getInterfacesToDeactivate(configurations, layer1Topologies)
-        .forEach(
-            (iface, inactiveReason) ->
-                configurations
-                    .get(iface.getHostname())
-                    .getAllInterfaces()
-                    .get(iface.getInterface())
-                    .deactivate(inactiveReason));
+        .forEach((iface, inactiveReason) ->
+            configurations
+                .get(iface.getHostname())
+                .getAllInterfaces()
+                .get(iface.getInterface())
+                .deactivate(inactiveReason));
   }
 
   private void postProcessEigrpCosts(Map<String, Configuration> configurations) {
     configurations.values().stream()
         .flatMap(c -> c.getAllInterfaces().values().stream())
-        .filter(
-            iface ->
-                iface.getEigrp() != null
-                    && (iface.getInterfaceType() == InterfaceType.AGGREGATED
-                        || iface.getInterfaceType() == InterfaceType.AGGREGATE_CHILD))
-        .forEach(
-            iface -> {
-              EigrpMetricValues metricValues = iface.getEigrp().getMetric().getValues();
-              if (metricValues.getBandwidth() == null) {
-                // only set bandwidth if it's not explicitly configured for EIGRP
-                Double bw = iface.getBandwidth();
-                assert bw != null; // all bandwidths should be finalized at this point
-                metricValues.setBandwidth(bw.longValue() / 1000); // convert to kbps
-              }
-            });
+        .filter(iface ->
+            iface.getEigrp() != null
+                && (iface.getInterfaceType() == InterfaceType.AGGREGATED
+                    || iface.getInterfaceType() == InterfaceType.AGGREGATE_CHILD))
+        .forEach(iface -> {
+          EigrpMetricValues metricValues = iface.getEigrp().getMetric().getValues();
+          if (metricValues.getBandwidth() == null) {
+            // only set bandwidth if it's not explicitly configured for EIGRP
+            Double bw = iface.getBandwidth();
+            assert bw != null; // all bandwidths should be finalized at this point
+            metricValues.setBandwidth(bw.longValue() / 1000); // convert to kbps
+          }
+        });
   }
 
   private void postProcessOspfCosts(Map<String, Configuration> configurations) {
     configurations
         .values()
-        .forEach(
-            c ->
-                c.getVrfs()
-                    .values()
-                    .forEach(
-                        vrf -> {
-                          // Compute OSPF interface costs where they are missing
-                          vrf.getOspfProcesses().values().forEach(p -> p.initInterfaceCosts(c));
-                        }));
+        .forEach(c ->
+            c.getVrfs()
+                .values()
+                .forEach(vrf -> {
+                  // Compute OSPF interface costs where they are missing
+                  vrf.getOspfProcesses().values().forEach(p -> p.initInterfaceCosts(c));
+                }));
   }
 
   @Override
@@ -1749,18 +1731,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
   static void processManagementInterfaces(Map<String, Configuration> configurations) {
     configurations
         .values()
-        .forEach(
-            configuration -> {
-              for (Interface iface : configuration.getAllInterfaces().values()) {
-                if (iface.getActive()
-                    && (MANAGEMENT_INTERFACES.matcher(iface.getName()).find()
-                        || MANAGEMENT_VRFS.matcher(iface.getVrfName()).find())) {
-                  // Intentionally avoid touching line status, since we really just want to ensure
-                  // no L2+.
-                  iface.deactivate(IGNORE_MGMT);
-                }
-              }
-            });
+        .forEach(configuration -> {
+          for (Interface iface : configuration.getAllInterfaces().values()) {
+            if (iface.getActive()
+                && (MANAGEMENT_INTERFACES.matcher(iface.getName()).find()
+                    || MANAGEMENT_VRFS.matcher(iface.getVrfName()).find())) {
+              // Intentionally avoid touching line status, since we really just want to ensure
+              // no L2+.
+              iface.deactivate(IGNORE_MGMT);
+            }
+          }
+        });
   }
 
   @Override
@@ -2525,11 +2506,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .putBoolean(settings.getThrowOnParserError());
     job.getFileTexts().keySet().stream()
         .sorted()
-        .forEach(
-            filename -> {
-              hasher.putString(filename, UTF_8);
-              hasher.putString(job.getFileTexts().get(filename), UTF_8);
-            });
+        .forEach(filename -> {
+          hasher.putString(filename, UTF_8);
+          hasher.putString(job.getFileTexts().get(filename), UTF_8);
+        });
     String id = hasher.hash().toString();
     long startTime = System.currentTimeMillis();
     boolean cached = false;
@@ -2587,12 +2567,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // add devices in the 'configs' folder
     try (Stream<String> keys = _storage.listInputNetworkConfigurationsKeys(snapshot)) {
       readAllInputObjects(keys, snapshot).entrySet().stream()
-          .map(
-              entry ->
-                  makeParseVendorConfigurationJob(
-                      snapshot,
-                      ImmutableMap.of(entry.getKey(), entry.getValue()),
-                      ConfigurationFormat.UNKNOWN))
+          .map(entry ->
+              makeParseVendorConfigurationJob(
+                  snapshot,
+                  ImmutableMap.of(entry.getKey(), entry.getValue()),
+                  ConfigurationFormat.UNKNOWN))
           .forEach(jobs::add);
     } catch (IOException e) {
       throw new UncheckedIOException(e);
@@ -2602,14 +2581,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
     try (Stream<String> keys = _storage.listInputSonicConfigsKeys(snapshot)) {
       Map<String, String> sonicObjects = readAllInputObjects(keys, snapshot);
       makeSonicFileGroups(sonicObjects.keySet(), answerElement).stream()
-          .map(
-              files ->
-                  makeParseVendorConfigurationJob(
-                      snapshot,
-                      files.stream()
-                          .collect(
-                              ImmutableMap.toImmutableMap(Function.identity(), sonicObjects::get)),
-                      ConfigurationFormat.SONIC))
+          .map(files ->
+              makeParseVendorConfigurationJob(
+                  snapshot,
+                  files.stream()
+                      .collect(ImmutableMap.toImmutableMap(Function.identity(), sonicObjects::get)),
+                  ConfigurationFormat.SONIC))
           .forEach(jobs::add);
     } catch (IOException e) {
       throw new UncheckedIOException(e);
@@ -2622,15 +2599,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
     LOGGER.info("Parsing {} configuration files", jobs.size());
     parseResults =
         jobs.parallelStream()
-            .map(
-                j -> {
-                  ParseVendorConfigurationResult result = getOrParse(j, _settings);
-                  int done = batch.incrementAndGet();
-                  if (done % 100 == 0) {
-                    LOGGER.info("Successfully parsed {}/{} configuration files", done, jobs.size());
-                  }
-                  return result;
-                })
+            .map(j -> {
+              ParseVendorConfigurationResult result = getOrParse(j, _settings);
+              int done = batch.incrementAndGet();
+              if (done % 100 == 0) {
+                LOGGER.info("Successfully parsed {}/{} configuration files", done, jobs.size());
+              }
+              return result;
+            })
             .collect(ImmutableList.toImmutableList());
     LOGGER.info("Done parsing {} configuration files", jobs.size());
 
@@ -2656,21 +2632,20 @@ public class Batfish extends PluginConsumer implements IBatfish {
       _logger.info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
       _logger.resetTimer();
       Map<String, VendorConfiguration> output = new TreeMap<>();
-      vendorConfigurations.forEach(
-          (name, vc) -> {
-            if (name.contains(File.separator)) {
-              // iptables will get a hostname like configs/iptables-save if they
-              // are not set up correctly using host files
-              _logger.errorf("Cannot serialize configuration with bad hostname %s\n", name);
-              answerElement.addRedFlagWarning(
-                  name,
-                  new Warning(
-                      "Cannot serialize network config. Bad hostname " + name.replace("\\", "/"),
-                      "MISCELLANEOUS"));
-            } else {
-              output.put(name, vc);
-            }
-          });
+      vendorConfigurations.forEach((name, vc) -> {
+        if (name.contains(File.separator)) {
+          // iptables will get a hostname like configs/iptables-save if they
+          // are not set up correctly using host files
+          _logger.errorf("Cannot serialize configuration with bad hostname %s\n", name);
+          answerElement.addRedFlagWarning(
+              name,
+              new Warning(
+                  "Cannot serialize network config. Bad hostname " + name.replace("\\", "/"),
+                  "MISCELLANEOUS"));
+        } else {
+          output.put(name, vc);
+        }
+      });
 
       _storage.storeVendorConfigurations(output, snapshot);
       _logger.printElapsedTime();
@@ -2709,12 +2684,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
           parseVendorConfigurations(
               snapshot,
               makeSonicFileGroups(sonicObjects.keySet(), answerElement).stream()
-                  .map(
-                      files ->
-                          files.stream()
-                              .collect(
-                                  ImmutableMap.toImmutableMap(
-                                      Function.identity(), sonicObjects::get)))
+                  .map(files ->
+                      files.stream()
+                          .collect(
+                              ImmutableMap.toImmutableMap(Function.identity(), sonicObjects::get)))
                   .collect(ImmutableList.toImmutableList()),
               answerElement,
               ConfigurationFormat.SONIC));
@@ -2730,33 +2703,31 @@ public class Batfish extends PluginConsumer implements IBatfish {
       _logger.info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
       _logger.resetTimer();
       Map<String, VendorConfiguration> output = new TreeMap<>();
-      vendorConfigurations.forEach(
-          (name, vc) -> {
-            if (name.contains(File.separator)) {
-              // iptables will get a hostname like configs/iptables-save if they
-              // are not set up correctly using host files
-              _logger.errorf("Cannot serialize configuration with hostname %s\n", name);
-              answerElement.addRedFlagWarning(
-                  name,
-                  new Warning(
-                      "Cannot serialize network config. Bad hostname " + name.replace("\\", "/"),
-                      "MISCELLANEOUS"));
-            } else {
-              // apply overlay if it exists
-              VendorConfiguration overlayConfig = overlayHostConfigurations.get(name);
-              if (overlayConfig != null) {
-                vc.setOverlayConfiguration(overlayConfig);
-                overlayHostConfigurations.remove(name);
-              }
+      vendorConfigurations.forEach((name, vc) -> {
+        if (name.contains(File.separator)) {
+          // iptables will get a hostname like configs/iptables-save if they
+          // are not set up correctly using host files
+          _logger.errorf("Cannot serialize configuration with hostname %s\n", name);
+          answerElement.addRedFlagWarning(
+              name,
+              new Warning(
+                  "Cannot serialize network config. Bad hostname " + name.replace("\\", "/"),
+                  "MISCELLANEOUS"));
+        } else {
+          // apply overlay if it exists
+          VendorConfiguration overlayConfig = overlayHostConfigurations.get(name);
+          if (overlayConfig != null) {
+            vc.setOverlayConfiguration(overlayConfig);
+            overlayHostConfigurations.remove(name);
+          }
 
-              output.put(name, vc);
-            }
-          });
+          output.put(name, vc);
+        }
+      });
 
       // warn about unused overlays
-      overlayHostConfigurations.forEach(
-          (name, overlay) ->
-              answerElement.getParseStatus().put(overlay.getFilename(), ParseStatus.ORPHANED));
+      overlayHostConfigurations.forEach((name, overlay) ->
+          answerElement.getParseStatus().put(overlay.getFilename(), ParseStatus.ORPHANED));
 
       _storage.storeVendorConfigurations(output, snapshot);
       _logger.printElapsedTime();
@@ -2989,19 +2960,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Map<IngressLocation, BDD> loopBDDs = analysis.detectLoops();
 
     return loopBDDs.entrySet().stream()
-        .map(
-            entry ->
-                pkt.getFlow(entry.getValue())
-                    .map(
-                        fb -> {
-                          IngressLocation loc = entry.getKey();
-                          fb.setIngressNode(loc.getNode());
-                          switch (loc.getType()) {
-                            case INTERFACE_LINK -> fb.setIngressInterface(loc.getInterface());
-                            case VRF -> fb.setIngressVrf(loc.getVrf());
-                          }
-                          return fb.build();
-                        }))
+        .map(entry ->
+            pkt.getFlow(entry.getValue())
+                .map(fb -> {
+                  IngressLocation loc = entry.getKey();
+                  fb.setIngressNode(loc.getNode());
+                  switch (loc.getType()) {
+                    case INTERFACE_LINK -> fb.setIngressInterface(loc.getInterface());
+                    case VRF -> fb.setIngressVrf(loc.getVrf());
+                  }
+                  return fb.build();
+                }))
         .flatMap(Optional::stream)
         .collect(ImmutableSet.toImmutableSet());
   }
@@ -3159,26 +3128,25 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Map<IngressLocation, BDD> includeBDDs,
       Map<IngressLocation, BDD> excludeBDDs) {
     return commonSources.stream()
-        .flatMap(
-            source -> {
-              BDD difference = includeBDDs.get(source).diff(excludeBDDs.get(source));
+        .flatMap(source -> {
+          BDD difference = includeBDDs.get(source).diff(excludeBDDs.get(source));
 
-              if (difference.isZero()) {
-                return Stream.of();
-              }
+          if (difference.isZero()) {
+            return Stream.of();
+          }
 
-              Flow.Builder flow =
-                  pkt.getFlow(difference)
-                      .orElseThrow(() -> new BatfishException("Error getting flow from BDD"));
+          Flow.Builder flow =
+              pkt.getFlow(difference)
+                  .orElseThrow(() -> new BatfishException("Error getting flow from BDD"));
 
-              // set flow parameters
-              flow.setIngressNode(source.getNode());
-              switch (source.getType()) {
-                case VRF -> flow.setIngressVrf(source.getVrf());
-                case INTERFACE_LINK -> flow.setIngressInterface(source.getInterface());
-              }
-              return Stream.of(flow.build());
-            })
+          // set flow parameters
+          flow.setIngressNode(source.getNode());
+          switch (source.getType()) {
+            case VRF -> flow.setIngressVrf(source.getVrf());
+            case INTERFACE_LINK -> flow.setIngressInterface(source.getInterface());
+          }
+          return Stream.of(flow.build());
+        })
         .collect(ImmutableSet.toImmutableSet());
   }
 

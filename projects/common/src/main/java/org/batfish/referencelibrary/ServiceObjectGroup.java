@@ -34,13 +34,12 @@ public class ServiceObjectGroup implements Comparable<ServiceObjectGroup>, Seria
   }
 
   public void checkUndefinedReferences(List<String> allServiceNames) {
-    _services.forEach(
-        s ->
-            checkArgument(
-                allServiceNames.contains(s),
-                "Undefined service name '%s' in service object group '%s'",
-                s,
-                _name));
+    _services.forEach(s ->
+        checkArgument(
+            allServiceNames.contains(s),
+            "Undefined service name '%s' in service object group '%s'",
+            s,
+            _name));
   }
 
   @Override

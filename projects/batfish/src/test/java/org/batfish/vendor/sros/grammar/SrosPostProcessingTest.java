@@ -122,10 +122,9 @@ public final class SrosPostProcessingTest {
     assertTrue(
         l1.getActiveLogicalL1()
             .edgeStream()
-            .anyMatch(
-                e ->
-                    e.getNode1().asNodeInterfacePair().equals(r1Port)
-                        && e.getNode2().asNodeInterfacePair().equals(r2Eth)));
+            .anyMatch(e ->
+                e.getNode1().asNodeInterfacePair().equals(r1Port)
+                    && e.getNode2().asNodeInterfacePair().equals(r2Eth)));
   }
 
   /**
