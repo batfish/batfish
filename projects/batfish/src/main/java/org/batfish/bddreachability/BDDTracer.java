@@ -4,10 +4,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Table;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Stack;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -95,7 +96,7 @@ public final class BDDTracer {
 
   private final Consumer<BDDTrace> _traces;
   private final Table<StateExpr, StateExpr, Transition> _reachabilityGraph;
-  private final Stack<BDDHop> _hops = new Stack<>();
+  private final Deque<BDDHop> _hops = new ArrayDeque<>();
 
   public BDDTracer(
       Table<StateExpr, StateExpr, Transition> reachabilityGraph, Consumer<BDDTrace> traces) {
@@ -108,13 +109,13 @@ public final class BDDTracer {
   }
 
   private void buildTrace(BDDHop bddHop, BDDDisposition bddDisposition) {
-    BDDHop lastHop = _hops.peek();
+    BDDHop lastHop = _hops.getLast();
     if (lastHop.equals(bddHop)) {
       buildTrace(bddDisposition);
     } else {
-      _hops.push(bddHop);
+      _hops.addLast(bddHop);
       buildTrace(bddDisposition);
-      _hops.pop();
+      _hops.removeLast();
     }
   }
 
@@ -149,7 +150,7 @@ public final class BDDTracer {
   private void generateTraces(StateExpr state, BDD bdd) {
     checkArgument(!bdd.isZero());
     BDD stopHereBdd = stopAt(state, bdd);
-    _hops.push(new BDDHop(state, bdd));
+    _hops.addLast(new BDDHop(state, bdd));
     try {
       if (!stopHereBdd.isZero()) {
         buildTrace(new BDDHop(state, stopHereBdd), BDDDisposition.TERMINATED);
@@ -166,7 +167,7 @@ public final class BDDTracer {
         }
       });
     } finally {
-      _hops.pop();
+      _hops.removeLast();
     }
   }
 

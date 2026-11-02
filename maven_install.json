@@ -39,8 +39,8 @@
     "jakarta.ws.rs:jakarta.ws.rs-api": -620470552,
     "jakarta.xml.bind:jakarta.xml.bind-api": 952929903,
     "junit:junit": -744267592,
-    "net.sourceforge.pmd:pmd-cli": -1619330939,
-    "net.sourceforge.pmd:pmd-java": -715697535,
+    "net.sourceforge.pmd:pmd-cli": 878684998,
+    "net.sourceforge.pmd:pmd-java": 1782318402,
     "org.antlr:antlr4": -343190787,
     "org.antlr:antlr4-runtime": -1029114455,
     "org.apache.commons:commons-collections4": -664587860,
@@ -176,14 +176,14 @@
     "net.bytebuddy:byte-buddy:jar:sources": -1694574231,
     "net.sf.saxon:Saxon-HE": 1404898280,
     "net.sf.saxon:Saxon-HE:jar:sources": 37033699,
-    "net.sourceforge.pmd:pmd-cli": 1829387311,
-    "net.sourceforge.pmd:pmd-cli:jar:sources": -313254172,
-    "net.sourceforge.pmd:pmd-core": 1086322160,
-    "net.sourceforge.pmd:pmd-core:jar:sources": -415188564,
+    "net.sourceforge.pmd:pmd-cli": 176893744,
+    "net.sourceforge.pmd:pmd-cli:jar:sources": -963041679,
+    "net.sourceforge.pmd:pmd-core": 2026266485,
+    "net.sourceforge.pmd:pmd-core:jar:sources": 1453561464,
     "net.sourceforge.pmd:pmd-designer": 906775713,
     "net.sourceforge.pmd:pmd-designer:jar:sources": 433837014,
-    "net.sourceforge.pmd:pmd-java": 699410339,
-    "net.sourceforge.pmd:pmd-java:jar:sources": 258299743,
+    "net.sourceforge.pmd:pmd-java": -1681647760,
+    "net.sourceforge.pmd:pmd-java:jar:sources": 612367937,
     "org.antlr:antlr4-runtime": 460090011,
     "org.antlr:antlr4-runtime:jar:sources": 298890060,
     "org.antlr:antlr4:jar:complete": -609884220,
@@ -296,8 +296,8 @@
     "org.objenesis:objenesis:jar:sources": 1586171112,
     "org.opentest4j:opentest4j": -1711174392,
     "org.opentest4j:opentest4j:jar:sources": -1740624156,
-    "org.ow2.asm:asm": -153858314,
-    "org.ow2.asm:asm:jar:sources": 1372783843,
+    "org.ow2.asm:asm": -406993722,
+    "org.ow2.asm:asm:jar:sources": 1699695656,
     "org.pcollections:pcollections": -311488717,
     "org.pcollections:pcollections:jar:sources": 238016638,
     "org.reflections:reflections": -260522401,
@@ -701,17 +701,17 @@
     },
     "net.sourceforge.pmd:pmd-cli": {
       "shasums": {
-        "jar": "fbcbb4984aaac8214a1cfa4492e0d81764ed15bf964a35c47b25ee484562b50a",
-        "sources": "e77e5b11d85942209817237dd4f9fb2d79c1033190735a79353f872480851230"
+        "jar": "e9f2e3cb9f1acc61b6d403b96449f2f24773bf02de54921aea8158ac887f0c04",
+        "sources": "4a002712d9dba9d21b39e7bbe0fe689b9d3e048f92b612f2995e42daf5ef8cf9"
       },
-      "version": "7.28.0"
+      "version": "7.29.0"
     },
     "net.sourceforge.pmd:pmd-core": {
       "shasums": {
-        "jar": "6bfcd22b89b85589ade100545202e2eaf881e1ce664e5c7c0c21d06d9c1dc673",
-        "sources": "cc075c0afb92498a571eb5b5487d8b17f65d2a7b75dc6999847caaba1ca0919b"
+        "jar": "f73a3236b8d312eb90fdc3c5ef33252f873bc152f1a764e64736dfb726d62962",
+        "sources": "dc789e1ad76b2857d56a6d3dfa49c0a2e9c496326844e3beb77fe488f67d38e3"
       },
-      "version": "7.28.0"
+      "version": "7.29.0"
     },
     "net.sourceforge.pmd:pmd-designer": {
       "shasums": {
@@ -722,10 +722,10 @@
     },
     "net.sourceforge.pmd:pmd-java": {
       "shasums": {
-        "jar": "a25a46e2b1ff7b3f6568a7bd429dd201f474482a4e023a636b45a6af667b2f51",
-        "sources": "f69a27940fa7e2d1fdce68a7da6782bc4a1af2ad0936aa5c61454be999d39fe1"
+        "jar": "d4299d5b5f951f4812657a26f95790b77dbb6c84a80c8ae04e0c87db5fde2966",
+        "sources": "f3d3d7100193cce695a94d2e920b4ddb58733756d37f8c9cac540e04d3d61034"
       },
-      "version": "7.28.0"
+      "version": "7.29.0"
     },
     "org.antlr:antlr4": {
       "shasums": {
@@ -1121,10 +1121,10 @@
     },
     "org.ow2.asm:asm": {
       "shasums": {
-        "jar": "ed825d10ab1399c8c0cb669e688cf0c8c82629b4c8399b58352b68e92ca10fcb",
-        "sources": "cb29bf42b4008972c566944d377192aa1b2d90275b9cfa9a7fa86de669fde11c"
+        "jar": "ae4e6e10d59d0a1500317764b21881ad883f8550e33c66e6142f7032c6fb566c",
+        "sources": "3cfc56ad047260d8ccff50cd55af8922a9c9e2b0439c6eba801dbfaf0870a3ae"
       },
-      "version": "9.10.1"
+      "version": "9.11.1"
     },
     "org.pcollections:pcollections": {
       "shasums": {
@@ -1300,6 +1300,7 @@
     "net.sourceforge.pmd:pmd-core": [
       "com.github.oowekyala.ooxml:nice-xml-messages",
       "com.google.code.gson:gson",
+      "commons-io:commons-io",
       "net.sf.saxon:Saxon-HE",
       "org.antlr:antlr4-runtime",
       "org.apache.commons:commons-lang3",

@@ -12,13 +12,13 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
 import java.io.IOException;
 import java.io.Serial;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import javax.annotation.Nonnull;
@@ -251,13 +251,13 @@ public final class FibImpl implements Fib {
     ResolutionTreeNode resolutionRoot = ResolutionTreeNode.root(route);
     buildResolutionTree(rib, route, null, new HashSet<>(), 0, resolutionRoot, restriction, trace);
     Builder<FibEntry> collector = ImmutableSet.builder();
-    collectEntries(resolutionRoot, new Stack<>(), collector);
+    collectEntries(resolutionRoot, new ArrayList<>(), collector);
     return collector.build();
   }
 
   private void collectEntries(
       ResolutionTreeNode node,
-      Stack<AbstractRoute> stack,
+      List<AbstractRoute> stack,
       ImmutableCollection.Builder<FibEntry> entriesBuilder) {
     AbstractRoute route = node.getRoute();
     assert !route.getNonForwarding();
@@ -301,11 +301,11 @@ public final class FibImpl implements Fib {
       entriesBuilder.add(new FibEntry(fibAction, stack));
       return;
     }
-    stack.push(route);
+    stack.add(route);
     for (ResolutionTreeNode child : node.getChildren()) {
       collectEntries(child, stack, entriesBuilder);
     }
-    stack.pop();
+    stack.remove(stack.size() - 1);
   }
 
   /**

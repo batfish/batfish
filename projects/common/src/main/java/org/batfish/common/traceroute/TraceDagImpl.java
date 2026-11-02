@@ -7,7 +7,6 @@ import static org.batfish.common.util.FlatMapIterator.flatMapIterator;
 import com.google.common.collect.ImmutableList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Stack;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import javax.annotation.Nonnull;
@@ -165,7 +164,7 @@ public final class TraceDagImpl implements TraceDag {
   }
 
   private Iterator<TraceAndReverseFlow> getTraces(int rootId) {
-    return getTraces(ImmutableList.of(), new Stack<>(), rootId);
+    return getTraces(ImmutableList.of(), ImmutableList.of(), rootId);
   }
 
   @Override

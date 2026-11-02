@@ -7,7 +7,8 @@ import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Stack;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.apache.commons.lang3.StringUtils;
@@ -22,7 +23,7 @@ public final class ZipUtility {
           srcFolder,
           new FileVisitor<Path>() {
             /** A list of parent directory names. */
-            private final Stack<String> _path = new Stack<>();
+            private final Deque<String> _path = new ArrayDeque<>();
 
             /** Memoized _path joined with "/"; does not contain a trailing '/'. */
             private String _pathStr = "";
@@ -30,7 +31,7 @@ public final class ZipUtility {
             @Override
             public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
                 throws IOException {
-              _path.push(dir.getFileName().toString());
+              _path.addLast(dir.getFileName().toString());
               _pathStr = StringUtils.join(_path, "/");
               zipOutputStream.putNextEntry(new ZipEntry(_pathStr + '/'));
               return FileVisitResult.CONTINUE;
@@ -52,7 +53,7 @@ public final class ZipUtility {
 
             @Override
             public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
-              _path.pop();
+              _path.removeLast();
               _pathStr = StringUtils.join(_path, "/");
               return FileVisitResult.CONTINUE;
             }

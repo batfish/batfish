@@ -12,7 +12,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Stack;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -57,7 +56,7 @@ public final class Transitions {
   }
 
   public static Transition compose(Transition... transitions) {
-    Stack<Transition> mergedTransitions = new Stack<>();
+    List<Transition> mergedTransitions = new ArrayList<>();
     for (Transition transition : transitions) {
       if (transition == ZERO) {
         return ZERO;
@@ -67,45 +66,45 @@ public final class Transitions {
         List<Transition> composedTransitions = ((Composite) transition).getTransitions();
         // invariant: composedTransitions can't be merged any further, don't contain ZERO or
         // IDENTITY
-        if (mergedTransitions.empty()) {
+        if (mergedTransitions.isEmpty()) {
           mergedTransitions.addAll(composedTransitions);
         } else {
           // left-to-right, try to merge into the top of the stack
           int i = 0;
           while (i < composedTransitions.size()) {
-            Transition left = mergedTransitions.pop();
+            Transition left = mergedTransitions.remove(mergedTransitions.size() - 1);
             Transition right = composedTransitions.get(i++);
             @Nullable Transition merged = mergeComposed(left, right);
             if (merged == null) {
               // failed to merge. stop trying to merge and push the rest
-              mergedTransitions.push(left);
-              mergedTransitions.push(right);
+              mergedTransitions.add(left);
+              mergedTransitions.add(right);
               break;
             } else if (merged == ZERO) {
               return ZERO;
             } else if (merged != IDENTITY) {
-              mergedTransitions.push(merged);
+              mergedTransitions.add(merged);
             }
           }
           // push the rest
           while (i < composedTransitions.size()) {
-            mergedTransitions.push(composedTransitions.get(i++));
+            mergedTransitions.add(composedTransitions.get(i++));
           }
         }
       } else {
-        if (mergedTransitions.empty()) {
-          mergedTransitions.push(transition);
+        if (mergedTransitions.isEmpty()) {
+          mergedTransitions.add(transition);
         } else {
-          Transition left = mergedTransitions.pop();
+          Transition left = mergedTransitions.remove(mergedTransitions.size() - 1);
           @Nullable Transition merged = mergeComposed(left, transition);
           if (merged == null) {
             // failed to merge.
-            mergedTransitions.push(left);
-            mergedTransitions.push(transition);
+            mergedTransitions.add(left);
+            mergedTransitions.add(transition);
           } else if (merged == ZERO) {
             return ZERO;
           } else if (merged != IDENTITY) {
-            mergedTransitions.push(merged);
+            mergedTransitions.add(merged);
           }
         }
       }
