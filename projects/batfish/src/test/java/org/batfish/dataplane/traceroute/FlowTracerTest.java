@@ -46,13 +46,14 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Interners;
 import com.google.common.collect.Iterables;
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.Stack;
 import java.util.function.Consumer;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -211,7 +212,7 @@ public final class FlowTracerTest {
             vrf.getName(),
             new ArrayList<>(),
             new ArrayList<>(),
-            new Stack<>(),
+            new ArrayDeque<>(),
             flow,
             0,
             0,
@@ -352,7 +353,7 @@ public final class FlowTracerTest {
             vrf.getName(),
             new ArrayList<>(),
             new ArrayList<>(),
-            new Stack<>(),
+            new ArrayDeque<>(),
             flow,
             0,
             0,
@@ -441,7 +442,7 @@ public final class FlowTracerTest {
               vrf.getName(),
               new ArrayList<>(),
               new ArrayList<>(),
-              new Stack<>(),
+              new ArrayDeque<>(),
               returnFlow,
               0,
               0,
@@ -473,7 +474,7 @@ public final class FlowTracerTest {
               vrf.getName(),
               new ArrayList<>(),
               new ArrayList<>(),
-              new Stack<>(),
+              new ArrayDeque<>(),
               nonMatchingReturnFlow,
               0,
               0,
@@ -584,7 +585,7 @@ public final class FlowTracerTest {
               vrf.getName(),
               new ArrayList<>(),
               new ArrayList<>(),
-              new Stack<>(),
+              new ArrayDeque<>(),
               returnFlow,
               0,
               0,
@@ -633,7 +634,7 @@ public final class FlowTracerTest {
               vrf.getName(),
               new ArrayList<>(),
               new ArrayList<>(),
-              new Stack<>(),
+              new ArrayDeque<>(),
               nonMatchingReturnFlow,
               0,
               0,
@@ -783,7 +784,7 @@ public final class FlowTracerTest {
             vrf.getName(),
             new ArrayList<>(),
             new ArrayList<>(),
-            new Stack<>(),
+            new ArrayDeque<>(),
             returnFlow,
             0,
             0,
@@ -932,7 +933,7 @@ public final class FlowTracerTest {
             vrf,
             new ArrayList<>(),
             new ArrayList<>(),
-            new Stack<>(),
+            new ArrayDeque<>(),
             flow,
             0,
             0,
@@ -1730,7 +1731,7 @@ public final class FlowTracerTest {
             vrf.getName(),
             new ArrayList<>(),
             ImmutableList.of(),
-            new Stack<>(),
+            new ArrayDeque<>(),
             flow,
             0,
             0,
@@ -1934,7 +1935,7 @@ public final class FlowTracerTest {
             configs);
     String node = c.getHostname();
     Configuration currentConfig = ctxt.getConfigurations().get(node);
-    Stack<Breadcrumb> breadcrumbs = new Stack<>();
+    Deque<Breadcrumb> breadcrumbs = new ArrayDeque<>();
     FlowTracer flowTracer =
         new FlowTracer(
             ctxt,
@@ -2085,7 +2086,7 @@ public final class FlowTracerTest {
               vrf.getName(),
               new ArrayList<>(),
               steps,
-              new Stack<>(),
+              new ArrayDeque<>(),
               flowWithPermittedSrc, // current flow
               0,
               0,
@@ -2114,7 +2115,7 @@ public final class FlowTracerTest {
               vrf.getName(),
               new ArrayList<>(),
               steps,
-              new Stack<>(),
+              new ArrayDeque<>(),
               flowWithBlockedSrc, // current flow
               0,
               0,

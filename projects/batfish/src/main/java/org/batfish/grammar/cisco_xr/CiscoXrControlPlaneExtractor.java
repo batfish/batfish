@@ -203,8 +203,10 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -217,7 +219,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.Stack;
 import java.util.TreeSet;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -1334,9 +1335,9 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   private PrefixList _currentPrefixList;
   private String _currentPrefixSetName;
   private RipProcess _currentRipProcess;
-  private Stack<RoutePolicyIfStatement> _ifs;
-  private Stack<RoutePolicyElseIfBlock> _elseIfs;
-  private Stack<Consumer<RoutePolicyStatement>> _statementCollectors;
+  private Deque<RoutePolicyIfStatement> _ifs;
+  private Deque<RoutePolicyElseIfBlock> _elseIfs;
+  private Deque<Consumer<RoutePolicyStatement>> _statementCollectors;
   private SnmpCommunity _currentSnmpCommunity;
 
   @SuppressWarnings("unused")
@@ -1381,9 +1382,9 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     _currentBlockNeighborAddressFamilies = new HashSet<>();
     _silentSyntax = silentSyntax;
     _asPathBooleansByCtx = new IdentityHashMap<>();
-    _statementCollectors = new Stack<>();
-    _ifs = new Stack<>();
-    _elseIfs = new Stack<>();
+    _statementCollectors = new ArrayDeque<>();
+    _ifs = new ArrayDeque<>();
+    _elseIfs = new ArrayDeque<>();
   }
 
   private void addStatement(RoutePolicyStatement statement) {
@@ -2502,18 +2503,18 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     RoutePolicy currentRoutePolicy = new RoutePolicy(name);
     _configuration.getRoutePolicies().put(name, currentRoutePolicy);
     _configuration.defineStructure(ROUTE_POLICY, name, ctx);
-    assert _elseIfs.empty();
-    assert _ifs.empty();
-    assert _statementCollectors.empty();
+    assert _elseIfs.isEmpty();
+    assert _ifs.isEmpty();
+    assert _statementCollectors.isEmpty();
     _statementCollectors.push(currentRoutePolicy::addStatement);
   }
 
   @Override
   public void exitRoute_policy_stanza(Route_policy_stanzaContext ctx) {
     _statementCollectors.pop();
-    assert _elseIfs.empty();
-    assert _ifs.empty();
-    assert _statementCollectors.empty();
+    assert _elseIfs.isEmpty();
+    assert _ifs.isEmpty();
+    assert _statementCollectors.isEmpty();
   }
 
   @Override

@@ -40,16 +40,17 @@ import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.Stack;
 import java.util.TreeMap;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -250,7 +251,7 @@ class FlowTracer {
   // Mutable list of steps in the current hop
   private final List<Step<?>> _steps;
 
-  private final Stack<Breadcrumb> _breadcrumbs;
+  private final Deque<Breadcrumb> _breadcrumbs;
   private final int _origBreadcrumbsSize; // size of _breadcrumbs at construction
 
   // The current flow can change as we process the packet.
@@ -276,7 +277,7 @@ class FlowTracer {
         initVrfName(ingressInterface, currentConfig, originalFlow),
         new ArrayList<>(),
         new ArrayList<>(),
-        new Stack<>(),
+        new ArrayDeque<>(),
         originalFlow,
         0,
         0,
@@ -345,7 +346,7 @@ class FlowTracer {
       @Nonnull String vrfName,
       List<HopInfo> hops,
       List<Step<?>> steps,
-      Stack<Breadcrumb> breadcrumbs,
+      Deque<Breadcrumb> breadcrumbs,
       Flow currentFlow,
       int origNewSessionsSize,
       int origBreadcrumbsSize,
@@ -379,7 +380,7 @@ class FlowTracer {
     checkState(
         breadcrumbsSize == _origBreadcrumbsSize || breadcrumbsSize == _origBreadcrumbsSize + 1,
         "Breadcrumbs can only grow, and only by 1 breadcrumb per hop");
-    return breadcrumbsSize == _origBreadcrumbsSize ? null : _breadcrumbs.peek();
+    return breadcrumbsSize == _origBreadcrumbsSize ? null : _breadcrumbs.peekLast();
   }
 
   @Nullable
@@ -753,7 +754,7 @@ class FlowTracer {
               fibForward.getArpIp().orElse(null),
               overrideNextHopIp);
         },
-        new Stack<>());
+        new ArrayDeque<>());
   }
 
   /**
@@ -767,7 +768,8 @@ class FlowTracer {
       String lookupVrf,
       Fib fib,
       BiConsumer<FlowTracer, FibForward> forwardOutInterfaceHandler) {
-    fibLookup(dstIp, currentNodeName, lookupVrf, fib, forwardOutInterfaceHandler, new Stack<>());
+    fibLookup(
+        dstIp, currentNodeName, lookupVrf, fib, forwardOutInterfaceHandler, new ArrayDeque<>());
   }
 
   /**
@@ -782,7 +784,7 @@ class FlowTracer {
       String lookupVrf,
       Fib fib,
       BiConsumer<FlowTracer, FibForward> forwardOutInterfaceHandler,
-      Stack<Breadcrumb> intraHopBreadcrumbs) {
+      Deque<Breadcrumb> intraHopBreadcrumbs) {
     // Loop detection
     Breadcrumb breadcrumb =
         newBreadcrumb(currentNodeName, _vrfName, _ingressInterface, _currentFlow);
@@ -791,7 +793,7 @@ class FlowTracer {
       return;
     }
     if (intraHopBreadcrumbs.isEmpty()) {
-      _breadcrumbs.push(breadcrumb);
+      _breadcrumbs.addLast(breadcrumb);
     }
     try {
       Set<FibEntry> fibEntries = fib.get(dstIp);
@@ -825,7 +827,7 @@ class FlowTracer {
           }));
     } finally {
       if (intraHopBreadcrumbs.isEmpty()) {
-        _breadcrumbs.pop();
+        _breadcrumbs.removeLast();
       }
     }
   }
@@ -1029,7 +1031,7 @@ class FlowTracer {
                   buildLoopTrace(breadcrumb);
                   return null;
                 }
-                _breadcrumbs.push(breadcrumb);
+                _breadcrumbs.addLast(breadcrumb);
                 try {
                   NodeInterfacePair nextHop = forwardOutInterface.getNextHop();
                   String outgoingInterfaceName = forwardOutInterface.getOutgoingInterface();
@@ -1088,7 +1090,7 @@ class FlowTracer {
                       .processHop();
                   return null;
                 } finally {
-                  _breadcrumbs.pop();
+                  _breadcrumbs.removeLast();
                 }
               }
             });
@@ -1505,7 +1507,7 @@ class FlowTracer {
       String currentNodeName,
       String forwardingVrf,
       BiConsumer<FlowTracer, FibForward> forwardOutInterfaceHandler,
-      Stack<Breadcrumb> intraHopBreadcrumbs,
+      Deque<Breadcrumb> intraHopBreadcrumbs,
       Breadcrumb breadcrumb) {
     FlowTracer flowTracer = this;
     _steps.add(buildRoutingStep(forwardingVrf, fibAction, fibEntries));
@@ -1523,7 +1525,7 @@ class FlowTracer {
               buildLoopTrace(breadcrumb);
               return null;
             }
-            intraHopBreadcrumbs.push(breadcrumb);
+            intraHopBreadcrumbs.addLast(breadcrumb);
             String nextVrf = fibNextVrf.getNextVrf();
             FlowTracer forkedTracer = forkTracerSameNode(nextVrf);
             // Accept if the flow is destined for next vrf.
@@ -1538,7 +1540,7 @@ class FlowTracer {
                   forwardOutInterfaceHandler,
                   intraHopBreadcrumbs);
             }
-            intraHopBreadcrumbs.pop();
+            intraHopBreadcrumbs.removeLast();
             return null;
           }
 
