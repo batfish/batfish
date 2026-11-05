@@ -2644,7 +2644,8 @@ public class FrrGrammarTest {
       over cost-40000 links. abr1 has max-metric router-lsa administrative, so FRR advertises its
       inter-area networks with metric 0xFF0000 and traffic between the areas goes through abr2.
       r1 redistributes 192.0.2.0/24 as E1; abr1 does not max the metric of its route to r1 as an
-      ASBR, so r0 still prefers abr1 for it.
+      ASBR, so r0 still prefers abr1 for it. abr1 also does not max its loopback (10.255.0.1/32 in
+      area 1), which it advertises as a stub link.
     */
     String snapshotName = "ospf-max-metric-router-lsa";
     List<String> configurationNames = ImmutableList.of("r0", "abr1", "abr2", "r1");
@@ -2683,6 +2684,30 @@ public class FrrGrammarTest {
                 hasProtocol(RoutingProtocol.OSPF_E1),
                 hasMetric(65565L),
                 hasNextHop(NextHopInterface.of("swp1", Ip.parse("10.0.1.1"))))));
+    assertThat(
+        dp.getRibs().get("r1", DEFAULT_VRF_NAME).getRoutes(),
+        hasItem(
+            allOf(
+                hasPrefix(Prefix.parse("10.255.0.1/32")),
+                hasProtocol(RoutingProtocol.OSPF),
+                hasMetric(10L),
+                hasNextHop(NextHopInterface.of("swp1", Ip.parse("10.11.0.0"))))));
+    assertThat(
+        dp.getRibs().get("abr2", DEFAULT_VRF_NAME).getRoutes(),
+        hasItem(
+            allOf(
+                hasPrefix(Prefix.parse("10.255.0.1/32")),
+                hasProtocol(RoutingProtocol.OSPF),
+                hasMetric(40010L),
+                hasNextHop(NextHopInterface.of("swp2", Ip.parse("10.12.0.1"))))));
+    assertThat(
+        dp.getRibs().get("r0", DEFAULT_VRF_NAME).getRoutes(),
+        hasItem(
+            allOf(
+                hasPrefix(Prefix.parse("10.255.0.1/32")),
+                hasProtocol(RoutingProtocol.OSPF_IA),
+                hasMetric(80010L),
+                hasNextHop(NextHopInterface.of("swp2", Ip.parse("10.0.2.1"))))));
   }
 
   @Test
