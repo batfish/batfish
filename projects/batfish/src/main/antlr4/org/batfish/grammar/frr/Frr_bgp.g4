@@ -503,7 +503,7 @@ rbafin_next_hop_self
 
 rbafin_remove_private_as
 :
-  REMOVE_PRIVATE_AS (ALL REPLACE_AS?)? NEWLINE
+  REMOVE_PRIVATE_AS ALL? REPLACE_AS? NEWLINE
 ;
 
 
