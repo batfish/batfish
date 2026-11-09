@@ -103,7 +103,7 @@ bazel_dep(name = "rules_java", version = "9.9.0")
 bazel_dep(name = "rules_jvm_external", version = "7.2")
 
 # Python rules
-bazel_dep(name = "rules_python", version = "2.4.5")
+bazel_dep(name = "rules_python", version = "2.4.6")
 
 # Development tools
 bazel_dep(name = "buildifier_prebuilt", version = "10.1.0", dev_dependency = True)
@@ -119,9 +119,9 @@ single_version_override(
 # Python toolchain
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 python.toolchain(
-    python_version = "3.14",
+    python_version = "3.15",
 )
-use_repo(python, "python_3_14")
+use_repo(python, "python_3_15")
 
 # Maven dependencies
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
@@ -206,7 +206,7 @@ use_repo(maven, "jmh_maven", "jol_maven", "maven")
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
 pip.parse(
     hub_name = "pip",
-    python_version = "3.14",
+    python_version = "3.15",
     requirements_lock = "@batfish//python:requirements.txt",
 )
 use_repo(pip, "pip")
