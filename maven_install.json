@@ -12,7 +12,7 @@
     "com.fasterxml.jackson.datatype:jackson-datatype-jsr310": -578085414,
     "com.fasterxml.jackson.jaxrs:jackson-jaxrs-base": -182968498,
     "com.fasterxml.jackson.module:jackson-module-jaxb-annotations": 1548616537,
-    "com.fasterxml.jackson:jackson-bom": -317636408,
+    "com.fasterxml.jackson:jackson-bom": -289126421,
     "com.github.ben-manes.caffeine:caffeine": 1146040953,
     "com.google.auto.service:auto-service": -1729498094,
     "com.google.auto.service:auto-service-annotations": -843120535,
@@ -77,24 +77,24 @@
     "at.yawk.lz4:lz4-java:jar:sources": -735607469,
     "com.carrotsearch:hppc": 1959444341,
     "com.carrotsearch:hppc:jar:sources": 588431113,
-    "com.fasterxml.jackson.core:jackson-annotations": -1012223496,
-    "com.fasterxml.jackson.core:jackson-annotations:jar:sources": -164405597,
-    "com.fasterxml.jackson.core:jackson-core": -619345704,
-    "com.fasterxml.jackson.core:jackson-core:jar:sources": -630335594,
-    "com.fasterxml.jackson.core:jackson-databind": -329639675,
-    "com.fasterxml.jackson.core:jackson-databind:jar:sources": -1227756870,
-    "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml": 1281576533,
-    "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:jar:sources": 192110383,
-    "com.fasterxml.jackson.datatype:jackson-datatype-guava": -581815382,
-    "com.fasterxml.jackson.datatype:jackson-datatype-guava:jar:sources": -1235762981,
-    "com.fasterxml.jackson.datatype:jackson-datatype-jdk8": 1000107608,
-    "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:jar:sources": 11370829,
-    "com.fasterxml.jackson.datatype:jackson-datatype-jsr310": 948402455,
-    "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:jar:sources": 1591215383,
-    "com.fasterxml.jackson.jaxrs:jackson-jaxrs-base": 1481631993,
-    "com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:jar:sources": 461298051,
-    "com.fasterxml.jackson.module:jackson-module-jaxb-annotations": 1094557267,
-    "com.fasterxml.jackson.module:jackson-module-jaxb-annotations:jar:sources": -213143435,
+    "com.fasterxml.jackson.core:jackson-annotations": -1589838737,
+    "com.fasterxml.jackson.core:jackson-annotations:jar:sources": -361747825,
+    "com.fasterxml.jackson.core:jackson-core": -1317907497,
+    "com.fasterxml.jackson.core:jackson-core:jar:sources": 1453466587,
+    "com.fasterxml.jackson.core:jackson-databind": -1517379764,
+    "com.fasterxml.jackson.core:jackson-databind:jar:sources": 869519278,
+    "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml": 831683234,
+    "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:jar:sources": 380981259,
+    "com.fasterxml.jackson.datatype:jackson-datatype-guava": -937664946,
+    "com.fasterxml.jackson.datatype:jackson-datatype-guava:jar:sources": -1943242823,
+    "com.fasterxml.jackson.datatype:jackson-datatype-jdk8": -1628652970,
+    "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:jar:sources": 1685815265,
+    "com.fasterxml.jackson.datatype:jackson-datatype-jsr310": -1069648110,
+    "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:jar:sources": -1374881393,
+    "com.fasterxml.jackson.jaxrs:jackson-jaxrs-base": 497526003,
+    "com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:jar:sources": 1770699969,
+    "com.fasterxml.jackson.module:jackson-module-jaxb-annotations": 1354562987,
+    "com.fasterxml.jackson.module:jackson-module-jaxb-annotations:jar:sources": -2087495842,
     "com.github.ben-manes.caffeine:caffeine": -986631363,
     "com.github.ben-manes.caffeine:caffeine:jar:sources": -1862682179,
     "com.github.oowekyala.ooxml:nice-xml-messages": -1242718147,
@@ -256,7 +256,7 @@
     "org.glassfish.jersey.inject:jersey-hk2:jar:sources": -955988821,
     "org.glassfish.jersey.media:jersey-media-jaxb": 460526446,
     "org.glassfish.jersey.media:jersey-media-jaxb:jar:sources": -273605230,
-    "org.glassfish.jersey.media:jersey-media-json-jackson": -456634606,
+    "org.glassfish.jersey.media:jersey-media-json-jackson": 560076495,
     "org.glassfish.jersey.media:jersey-media-json-jackson:jar:sources": -1661795504,
     "org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2": -335164412,
     "org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2:jar:sources": -1806408383,
@@ -322,15 +322,15 @@
     "tools.profiler:async-profiler:jar:sources": 191814546
   },
   "conflict_resolution": {
-    "com.fasterxml.jackson.core:jackson-annotations": "com.fasterxml.jackson.core:jackson-annotations:2.22",
-    "com.fasterxml.jackson.core:jackson-core": "com.fasterxml.jackson.core:jackson-core:2.22.4",
-    "com.fasterxml.jackson.core:jackson-databind": "com.fasterxml.jackson.core:jackson-databind:2.22.4",
-    "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml": "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.22.4",
-    "com.fasterxml.jackson.datatype:jackson-datatype-guava": "com.fasterxml.jackson.datatype:jackson-datatype-guava:2.22.4",
-    "com.fasterxml.jackson.datatype:jackson-datatype-jdk8": "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.22.4",
-    "com.fasterxml.jackson.datatype:jackson-datatype-jsr310": "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.22.4",
-    "com.fasterxml.jackson.jaxrs:jackson-jaxrs-base": "com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:2.22.4",
-    "com.fasterxml.jackson.module:jackson-module-jaxb-annotations": "com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.22.4",
+    "com.fasterxml.jackson.core:jackson-annotations": "com.fasterxml.jackson.core:jackson-annotations:2.23",
+    "com.fasterxml.jackson.core:jackson-core": "com.fasterxml.jackson.core:jackson-core:2.23.0",
+    "com.fasterxml.jackson.core:jackson-databind": "com.fasterxml.jackson.core:jackson-databind:2.23.0",
+    "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml": "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.23.0",
+    "com.fasterxml.jackson.datatype:jackson-datatype-guava": "com.fasterxml.jackson.datatype:jackson-datatype-guava:2.23.0",
+    "com.fasterxml.jackson.datatype:jackson-datatype-jdk8": "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.23.0",
+    "com.fasterxml.jackson.datatype:jackson-datatype-jsr310": "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.23.0",
+    "com.fasterxml.jackson.jaxrs:jackson-jaxrs-base": "com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:2.23.0",
+    "com.fasterxml.jackson.module:jackson-module-jaxb-annotations": "com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.23.0",
     "com.google.guava:guava-testlib": "com.google.guava:guava-testlib:33.7.2-jre",
     "com.google.guava:guava:32.0.1-jre": "com.google.guava:guava:33.7.2-jre",
     "com.google.j2objc:j2objc-annotations:2.8": "com.google.j2objc:j2objc-annotations:3.1"
@@ -352,66 +352,66 @@
     },
     "com.fasterxml.jackson.core:jackson-annotations": {
       "shasums": {
-        "jar": "21ddb598807d3a51a876704eb979d9296e1c6a6f47ab1826ff88c6d6a127a2d0",
-        "sources": "f5375c756ee3c585808f9937eb087d074743fd3f05f6aeff9b183cf19230c9f7"
+        "jar": "e5b60c3088e0887b290ff9226394354589a1dad583743944b7f5538661056b4c",
+        "sources": "1d68d572e75ff7696db44545c48383593183600570c800f77660cb4775ce80fd"
       },
-      "version": "2.22"
+      "version": "2.23"
     },
     "com.fasterxml.jackson.core:jackson-core": {
       "shasums": {
-        "jar": "2d30c375cddea9657a1e1ef97547a2694b663b355facb4de53a097782b312d1a",
-        "sources": "470b0c061f786de32a48391a716656e14f73a7439466ca4ad17c1f4607982761"
+        "jar": "449798beb4c4ec26de9cc25b39ca2198036883fb905ca968cbef7136d19a25d9",
+        "sources": "eaf7d94abf63f638d76ce74bbf301b779b29c45e59a84b8a1413bf49f2081260"
       },
-      "version": "2.22.4"
+      "version": "2.23.0"
     },
     "com.fasterxml.jackson.core:jackson-databind": {
       "shasums": {
-        "jar": "d4cbf8947087f305869826801913abdc50735a1fab2074a1993e7bc67ca974a3",
-        "sources": "ffbe06fe73b9e3c3cd9b15ec9049711c91808cbbee133057bf13d3f9b43d7776"
+        "jar": "abd1edd2736c764da03fe6cb7a9de70d48dd0a198aed131604c564bff62f9cc1",
+        "sources": "1f2f827e0e75c4dc2ee7d43a3cdafeb92d994a58dcab3a1a1b64ce0976c977ab"
       },
-      "version": "2.22.4"
+      "version": "2.23.0"
     },
     "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml": {
       "shasums": {
-        "jar": "2f55e2b864f6354b24d4bcccd488f7c4a3fce4977f8c8dbad07242a68e11dde9",
-        "sources": "07073403660c47e49c8e1f0e540288ded8ef78d4952cf1d7d46d48c97726df65"
+        "jar": "971bce7e65b63c7f78965c29aa35370143f01e21a420d02bb3cde32069360689",
+        "sources": "6abd603d8113befb99115f529361488aca348a3bad00da7bd2059a28fa8980d2"
       },
-      "version": "2.22.4"
+      "version": "2.23.0"
     },
     "com.fasterxml.jackson.datatype:jackson-datatype-guava": {
       "shasums": {
-        "jar": "844d10482f84dc5a423124a766512a5dfe2ba20672343b64e884daf1afa9ee5a",
-        "sources": "c10837acea52d296ad562b12d7d833f833037852c682e2f49ba901a556bb4439"
+        "jar": "4606b3b38edda8329cf1cb40cb94da90af8e8a117e5a9442a04575ab0a8c6640",
+        "sources": "bc25d8e4c2e2be36482637bf721f2bb47d76d2fb29252b395a659306e77943c9"
       },
-      "version": "2.22.4"
+      "version": "2.23.0"
     },
     "com.fasterxml.jackson.datatype:jackson-datatype-jdk8": {
       "shasums": {
-        "jar": "2dea0c4f0a5dafaf1bd8b5e694090fe0043c29ba04367dbd38ec0869aca2bce9",
-        "sources": "17c1b03b0e965affb7094802f6e360de34b48a74acd00bbdc5620b6c64ac87f9"
+        "jar": "90388031bbcc4b732e994085d3c8e7dcd5543a5c455ae6ac52137ab0f05a663b",
+        "sources": "9103b44846452dab9af226bd2bf46a97b0f3a2bdd93dac10c820f8e4177542f0"
       },
-      "version": "2.22.4"
+      "version": "2.23.0"
     },
     "com.fasterxml.jackson.datatype:jackson-datatype-jsr310": {
       "shasums": {
-        "jar": "ec961697cbd631935b6fb6f673406861c75243521fb67fec10b59f1412ac50f7",
-        "sources": "8486f269386390a782cedc1a0a2e36101e9dfc70944638df66cd6e34660e1526"
+        "jar": "f348f4de49644afa0ccbff6b018709a5f0f1468c76852e4217051890a0b8528c",
+        "sources": "b24041e992b00da8e275be7ffd3c8de743c5524741bcd85d448c06300fba7753"
       },
-      "version": "2.22.4"
+      "version": "2.23.0"
     },
     "com.fasterxml.jackson.jaxrs:jackson-jaxrs-base": {
       "shasums": {
-        "jar": "5cf1465c70c2a7dc64b5b3a9f598c03527a547647f46f4178ae5b1904039a7cb",
-        "sources": "4ed658a3c47360b2b8ae8e2e6894c981b68dba3bcdd5bc581662f423d1413859"
+        "jar": "ffae9103cd739a1e761b5937a63cab5d9fa1ed6254e14b28b6b990b555e304ba",
+        "sources": "57bc71fd1f970858c2a1bacda0e96b7a0aca3b84ff8bd044fe74e3e8c24dc5e3"
       },
-      "version": "2.22.4"
+      "version": "2.23.0"
     },
     "com.fasterxml.jackson.module:jackson-module-jaxb-annotations": {
       "shasums": {
-        "jar": "91b0bee97055984ba118ce6ed5178f8d891970aa25a2806c3563828ac0a7a4d3",
-        "sources": "3e206f39515d42f75133cbd62f41a28f3e8a89f78d071496c089f86082f9601a"
+        "jar": "0d5aec202964f5e321aafb8b7ba7b7fbf7d7877e75e85604ddaa431a997ef503",
+        "sources": "8a845d8cc3923883435b8309bc7d5ba46ff3c0f5bf9eb625539fa0c80cc1cc48"
       },
-      "version": "2.22.4"
+      "version": "2.23.0"
     },
     "com.github.ben-manes.caffeine:caffeine": {
       "shasums": {
@@ -1532,7 +1532,7 @@
       "com.fasterxml.jackson.core.exc",
       "com.fasterxml.jackson.core.filter",
       "com.fasterxml.jackson.core.format",
-      "com.fasterxml.jackson.core.internal.shaded.fdp.v2_22_4",
+      "com.fasterxml.jackson.core.internal.shaded.fdp.v2_23_0",
       "com.fasterxml.jackson.core.io",
       "com.fasterxml.jackson.core.io.schubfach",
       "com.fasterxml.jackson.core.json",
