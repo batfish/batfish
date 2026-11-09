@@ -2299,6 +2299,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     BgpAdvertisementType type = advert.getType();
     boolean ebgp = type.isEbgp();
     RoutingProtocol targetProtocol = ebgp ? RoutingProtocol.BGP : RoutingProtocol.IBGP;
+    // As for routes from a peer in the snapshot: an iBGP route from a neighbor configured as a
+    // route reflector client is reflected to every other peer.
+    boolean fromRouteReflectorClient =
+        !ebgp && neighbor.getIpv4UnicastAddressFamily().getRouteReflectorClient();
 
     // Route advertisement does not contain its admin distance.
     int admin = _process.getAdminCost(targetProtocol);
@@ -2322,8 +2326,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               .setProtocol(targetProtocol)
               // TODO: support external unnumbered session, i.e. ReceivedFromInterface
               .setReceivedFrom(ReceivedFromIp.of(advert.getSrcIp()))
-              // TODO: support external route reflector clients
-              .setReceivedFromRouteReflectorClient(false)
+              .setReceivedFromRouteReflectorClient(fromRouteReflectorClient)
               .setSrcProtocol(advert.getSrcProtocol())
               // TODO: possibly support setting tag
               .setWeight(advert.getWeight())
@@ -2355,7 +2358,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               .setProtocol(targetProtocol)
               // TODO: support external unnumbered session, i.e. ReceivedFromInterface
               .setReceivedFrom(ReceivedFromIp.of(advert.getSrcIp()))
-              // TODO .setReceivedFromRouteReflectorClient(...)
+              .setReceivedFromRouteReflectorClient(fromRouteReflectorClient)
               .setSrcProtocol(advert.getSrcProtocol())
               .build();
       Bgpv4Route.Builder transformedIncomingRouteBuilder =
