@@ -412,6 +412,15 @@ public class BgpGroup implements Serializable {
     return _removePrivateReplace;
   }
 
+  /** Whether {@code remove-private} is configured with no modifiers. */
+  public boolean isRemovePrivateBare() {
+    return Boolean.TRUE.equals(_removePrivate)
+        && !_removePrivateAll
+        && !_removePrivateNoPeerLoopCheck
+        && !_removePrivateNearest
+        && !_removePrivateReplace;
+  }
+
   public boolean isRemovePrivateAllNoPeerLoopCheck() {
     return Boolean.TRUE.equals(_removePrivate)
         && _removePrivateAll

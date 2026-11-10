@@ -145,6 +145,23 @@ public final class AsPath implements Serializable, Comparable<AsPath> {
             .collect(ImmutableList.toImmutableList()));
   }
 
+  /**
+   * Returns a new {@link AsPath} without its leading private ASNs: {@link AsSet AS sets} are
+   * dropped from the most recently added end while they consist only of private ASNs, up to the
+   * first one with a public ASN or with {@code stopAs}.
+   *
+   * @param stopAs an ASN that is never removed, such as the peer's AS, or {@code null} for none
+   */
+  public @Nonnull AsPath removeLeadingPrivateAs(@Nullable Long stopAs) {
+    int first = 0;
+    while (first < _asSets.size()
+        && _asSets.get(first).removePrivateAs().isEmpty()
+        && (stopAs == null || !_asSets.get(first).containsAs(stopAs))) {
+      first++;
+    }
+    return first == 0 ? this : AsPath.of(_asSets.subList(first, _asSets.size()));
+  }
+
   /** Returns a new {@link AsPath} with all confederation {@link AsSet AS sets} removed */
   public AsPath removeConfederations() {
     return AsPath.of(

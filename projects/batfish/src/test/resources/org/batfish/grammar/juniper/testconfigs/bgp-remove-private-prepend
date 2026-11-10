@@ -1,0 +1,10 @@
+set system host-name bgp-remove-private-prepend
+set routing-options autonomous-system 65000
+set routing-options router-id 192.0.2.1
+set policy-options policy-statement PREPEND term T then as-path-prepend 65100
+set policy-options policy-statement PREPEND term T then accept
+set protocols bgp group G type internal
+set protocols bgp group G local-address 192.0.2.1
+set protocols bgp group G remove-private
+set protocols bgp group G export PREPEND
+set protocols bgp group G neighbor 192.0.2.2
