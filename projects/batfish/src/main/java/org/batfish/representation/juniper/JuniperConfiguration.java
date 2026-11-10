@@ -3412,6 +3412,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (!froms.getFromTags().isEmpty()) {
       conj.getConjuncts().add(new Disjunction(toBooleanExprs(froms.getFromTags())));
     }
+    if (!froms.getFromTag2s().isEmpty()) {
+      conj.getConjuncts().add(new Disjunction(toBooleanExprs(froms.getFromTag2s())));
+    }
     if (froms.getFromValidationDatabase() != null) {
       conj.getConjuncts().add(froms.getFromValidationDatabase().toBooleanExpr(this, _c, _w));
     }

@@ -39,6 +39,7 @@ public final class PsFroms implements Serializable {
   private PsFromRouteType _fromRouteType;
   private PsFromState _fromState;
   private final Set<PsFromTag> _fromTags;
+  private final Set<PsFromTag2> _fromTag2s;
   private PsFromUnsupported _fromUnsupported;
   private PsFromValidationDatabase _fromValidationDatabase;
 
@@ -59,6 +60,7 @@ public final class PsFroms implements Serializable {
     _fromProtocols = new LinkedHashSet<>();
     _fromRouteFilters = new LinkedHashSet<>();
     _fromTags = new LinkedHashSet<>();
+    _fromTag2s = new LinkedHashSet<>();
   }
 
   public void addFromAsPath(@Nonnull PsFromAsPath fromAsPath) {
@@ -157,6 +159,11 @@ public final class PsFroms implements Serializable {
   public void addFromTag(@Nonnull PsFromTag fromTag) {
     _atLeastOneFrom = true;
     _fromTags.add(fromTag);
+  }
+
+  public void addFromTag2(@Nonnull PsFromTag2 fromTag2) {
+    _atLeastOneFrom = true;
+    _fromTag2s.add(fromTag2);
   }
 
   @Nonnull
@@ -277,6 +284,11 @@ public final class PsFroms implements Serializable {
   @VisibleForTesting
   public @Nonnull Set<PsFromTag> getFromTags() {
     return _fromTags;
+  }
+
+  @VisibleForTesting
+  public @Nonnull Set<PsFromTag2> getFromTag2s() {
+    return _fromTag2s;
   }
 
   @Nullable
