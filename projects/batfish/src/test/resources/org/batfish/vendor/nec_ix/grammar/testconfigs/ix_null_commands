@@ -1,0 +1,54 @@
+! NEC Portable Internetwork Core Operating System Software
+! IX Series IX2215 (magellan-sec) Software, Version 10.9.11, RELEASE SOFTWARE
+!
+service password-encryption
+hostname ix_null_commands
+timezone +09 00
+terminal suppress-emanon
+logging buffered 131072
+syslog ip host 192.0.2.14
+ntp server 2001:db8::1
+ip ufs-cache enable
+ip multipath per-flow
+ipv6 ufs-cache enable
+ipv6 route 2001:db8::/48 GigaEthernet0.0 ra
+ipv6 access-list p-all permit ip src any dest any
+snmp-agent ip community public
+bridge irb enable
+ssh-server ip enable
+proxy-dns ip enable
+!
+ipv6 dhcp client-profile ngn
+  ia-pd subscriber GigaEthernet0.0 ::/64 eui-64
+!
+policy-map qos0
+  class class-default
+    set ip dscp 0
+!
+ikev2 default-profile
+  child-pfs 2048-bit
+  sa-proposal enc aes-cbc-256
+!
+ip dhcp profile lan
+  assignable-range 192.168.1.50 192.168.1.99
+  dns-server 192.168.1.1
+!
+device GigaEthernet2
+  port 1 shutdown
+  vlan-group 7 port 7
+!
+interface GigaEthernet0.0
+  description Circuit: NGN, {test}
+  no ip address
+  ipv6 enable
+  ipv6 address autoconfig
+  ipv6 filter p-all 10 in
+  service-policy output qos0
+  auto-connect
+  no auto-connect
+  bridge ip tcp adjust-mss 1342
+  ip tcp adjust-mss auto
+  ikev2 peer any authentication psk id fqdn example.net
+  tunnel mode ether-ip ipv6
+  no shutdown
+!

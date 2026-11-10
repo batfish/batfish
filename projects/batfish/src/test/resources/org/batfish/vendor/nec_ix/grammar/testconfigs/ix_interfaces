@@ -1,0 +1,65 @@
+! NEC Portable Internetwork Core Operating System Software
+! IX Series IX2215 (magellan-sec) Software, Version 10.9.11, RELEASE SOFTWARE
+!
+hostname ix_interfaces
+!
+device GigaEthernet3
+  shutdown
+!
+device USB0
+  shutdown
+!
+interface GigaEthernet0.0
+  description Upstream: ge-0/0/0@core
+  ip address 10.0.0.1/24
+  ip address 10.0.1.1/24 secondary
+  ip mtu 1390
+  no shutdown
+!
+interface GigaEthernet0.10
+  encapsulation dot1q 10 tpid 8100
+  auto-connect
+  ip address 10.0.10.1/24
+  no shutdown
+!
+interface GigaEthernet1.0
+  ip address 10.1.0.1/24
+!
+interface GigaEthernet1.1
+  ip address 10.1.1.1/24
+  shutdown
+!
+interface GigaEthernet2:7.0
+  no ip address
+  bridge-group 7
+  no shutdown
+!
+interface GigaEthernet3.0
+  ip address 10.3.0.1/24
+  no shutdown
+!
+interface USB-Serial0.0
+  encapsulation ppp
+  no ip address
+  no shutdown
+!
+interface Loopback0.0
+  ip address 10.255.0.1/32
+!
+interface Null0.0
+  no ip address
+!
+interface Tunnel1.0
+  tunnel mode ether-ip ipv6
+  bridge-group 7
+  no shutdown
+!
+interface Tunnel2.0
+  ip vrf forwarding red
+  ip address 172.16.0.1/30
+  no shutdown
+!
+interface BVI1
+  ip address 192.168.1.1/24
+  no shutdown
+!

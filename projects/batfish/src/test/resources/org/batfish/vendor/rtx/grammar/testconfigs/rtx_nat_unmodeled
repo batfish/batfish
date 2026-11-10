@@ -1,0 +1,9 @@
+# RTX1300 Rev.23.00.17 (Fri Oct  3 09:45:39 2025)
+console prompt rtx_nat_unmodeled
+ip lan1 address 203.0.113.1/24
+ip lan1 nat descriptor 9 reverse 10
+nat descriptor type 9 masquerade
+nat descriptor address outer 9 ipcp
+nat descriptor type 10 none
+nat descriptor static 9 1 203.0.113.5=10.0.0.5
+nat descriptor backward-compatibility 9 2

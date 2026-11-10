@@ -1,0 +1,10 @@
+# RTX3510 Rev.23.01.03 (Wed Jun 19 10:28:57 2024)
+console prompt rtx_nat_dynamic
+ip lan2 address 192.0.2.1/24
+ip lan2 nat descriptor 5
+ip lan3 address 198.51.100.1/24
+ip lan3 nat descriptor 6
+nat descriptor type 5 nat
+nat descriptor address outer 5 192.0.2.10-192.0.2.19 192.0.2.30
+nat descriptor type 6 masquerade
+nat descriptor address outer 6 primary

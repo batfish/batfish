@@ -1,0 +1,36 @@
+! NEC Portable Internetwork Core Operating System Software
+! IX Series IX2215 (magellan-sec) Software, Version 10.9.11, RELEASE SOFTWARE
+!
+hostname ix_route_maps
+!
+ip prefix-list pl-default 1 permit 0.0.0.0/0 max 0
+ip prefix-list pl-private 1 permit 10.0.0.0/8 max 32
+ip prefix-list pl-exact 1 permit 10.1.0.0/16
+ip prefix-list pl-min 1 permit 10.2.0.0/16 min 24
+ip prefix-list pl-range 1 permit 10.3.0.0/16 min 20 max 24
+ip prefix-list pl-any 1 deny 10.4.0.0/16 max 32
+ip prefix-list pl-any 2 permit any
+ip prefix-list PL-Upper 1 permit 10.5.0.0/16
+!
+route-map rm permit 10
+  match ip address prefix-list pl-private
+  set local-preference 200
+  set metric 50
+  set community 65000:100 65000:200
+!
+route-map rm deny 5
+  match ip address prefix-list pl-exact
+!
+route-map rm permit 20
+  match ip address prefix-list pl-default
+  set community 65000:300 additive
+  set as-path prepend 65000 65000
+!
+route-map rm-undefined permit 10
+  match ip address prefix-list no-such-list
+!
+route-map rm-upper permit 10
+  match ip address prefix-list pl-upper
+!
+route-map rm-all permit 10
+!

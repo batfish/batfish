@@ -4809,6 +4809,14 @@ M_Speed_WS
 
 mode M_Version;
 
+// `version` is not always followed by a version string. In `set system scripts op file <name>
+// arguments version` it is the name of a script argument and ends the line, so the mode must be
+// able to end at a newline instead of failing to tokenize it.
+M_Version_NEWLINE
+:
+   F_NewlineChar+ -> type ( NEWLINE ) , popMode
+;
+
 M_Version_V1_ONLY
 :
    'v1-only' -> type ( V1_ONLY ) , popMode

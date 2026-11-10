@@ -1,0 +1,10 @@
+# RTX3510 Rev.23.01.03 (Wed Jun 19 10:28:57 2024)
+console prompt rtx_vrrp_b
+vlan lan4/1 802.1q vid=10
+ip lan4/1 address 10.57.0.3/18
+ip lan4/1 vrrp 10 10.57.0.4 priority=100
+ip lan4/1 vrrp 20 10.57.0.5 priority=200
+vlan lan4/2 802.1q vid=20
+ip lan4/2 address 10.57.242.3/23
+ip lan4/2 vrrp 10 10.57.242.4 priority=100
+ip lan4/2 vrrp 20 10.57.242.5 priority=200

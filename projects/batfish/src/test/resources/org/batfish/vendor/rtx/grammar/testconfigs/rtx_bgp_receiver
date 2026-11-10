@@ -1,0 +1,9 @@
+# RTX3510 Rev.23.01.03
+console prompt rtx_bgp_receiver
+ip lan1 address 192.0.2.2/30
+bgp use on
+bgp autonomous-system 64998
+bgp neighbor 1 65000 192.0.2.1
+bgp import filter 20 include 0.0.0.0/0
+bgp export filter 20 include 0.0.0.0/0
+bgp export 65000 filter 20

@@ -1,0 +1,45 @@
+# RTX3510 Rev.23.01.03 (Wed Jun 19 10:28:57 2024)
+# MAC Address : f4:d5:80:12:34:e4, f4:d5:80:12:34:e5
+# Memory 2048Mbytes, 4LAN
+# Reporting Date: Feb 12 10:38:08 2026
+administrator password *
+login user admin *
+user attribute admin administrator=off connection=serial,telnet
+user attribute j57 administrator=2 connection=serial,ssh,sftp login-timer=clear
+console character ja.sjis
+console columns 4096
+console prompt rtx_null_commands
+login timer clear
+system packet-scheduling hash
+ipv6 routing on
+ipv6 prefix 1 2400:c320:101:2006::/64 preferred_lifetime=3600 valid_lifetime=7200
+ipv6 nd ra-rdnss 1 2400:c320:101:2007::53 2400:c320:101:2009::53
+ipv6 route default gateway 2400:c320:101:3011::3%lan3/3 gateway fd40:ee37:11b6::2%lan1 filter 5001
+ipv6 lan1 address 2400:c320:101:2016::1/64
+ipv6 lan1 secure filter in 100001
+ipv6 lan4/1 rtadv send 1 prf_flag=medium adv-default-lifetime=1800 rdnss=1
+ipv6 lan2 dhcp service client
+ipv6 filter 100001 pass * * * * *
+ipv6 filter dynamic 310005 * * udp syslog=off
+lan link-aggregation static 5 lan1:1 lan1:2
+ngn type lan2 ntt
+syslog host 192.168.57.33
+syslog format type rfc5424
+syslog format hostname text RT-C-01
+syslog notice on
+syslog local address 10.57.242.2
+dns server 10.57.244.8 2400:c320:101:2007::53 10.57.244.67
+snmpv2c host 192.168.57.0-192.168.57.254
+snmpv2c community read-only somecommunity
+schedule at 2 */* *:00 * ntpdate 10.57.244.69 syslog
+schedule at 10 startup * lua configpush.lua watch
+httpd service off
+telnetd service off
+sntpd service off
+sshd service on
+sshd host any
+sshd host key generate *
+sshd auth method publickey
+sftpd host any
+statistics traffic on
+statistics nat on

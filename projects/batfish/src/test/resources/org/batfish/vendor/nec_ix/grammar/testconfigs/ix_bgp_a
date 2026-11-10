@@ -1,0 +1,48 @@
+! NEC Portable Internetwork Core Operating System Software
+! IX Series IX2215 (magellan-sec) Software, Version 10.9.11, RELEASE SOFTWARE
+!
+hostname ix_bgp_a
+!
+ip route default Null0.0
+ip route 10.1.0.0/16 Null0.0
+ip route 10.2.0.0/16 Null0.0
+ip prefix-list pl-1 1 permit 10.1.0.0/16
+ip prefix-list pl-2 1 permit 10.2.0.0/16
+!
+route-map to-b permit 10
+  match ip address prefix-list pl-1
+  set community 65001:100 additive
+!
+route-map to-b deny 20
+  match ip address prefix-list pl-2
+!
+route-map to-b permit 30
+!
+router bgp 65001
+  neighbor 192.168.0.0 remote-as 65002
+  neighbor 192.168.0.0 timers 6 30
+  neighbor 192.168.1.0 remote-as 65003
+  neighbor 192.168.1.0 description to C
+  address-family ipv4 unicast
+    originate-default
+    neighbor 192.168.0.0 route-map to-b out
+    no neighbor 192.168.1.0 send-default
+    network 10.0.0.1/32
+    network 10.1.0.0/16
+    network 10.2.0.0/16
+    network 10.99.0.0/16
+!
+interface GigaEthernet0.0
+  ip address 192.168.0.1/31
+  no shutdown
+!
+interface GigaEthernet1.0
+  ip address 192.168.1.1/31
+  no shutdown
+!
+interface Loopback0.0
+  ip address 10.0.0.1/32
+!
+interface Null0.0
+  no ip address
+!

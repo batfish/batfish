@@ -1,0 +1,8 @@
+# RANCID-CONTENT-TYPE: juniper
+set system host-name juniper-system-scripts
+#
+# Here `version` is the name of a script argument rather than the start of a version string, and it
+# ends the line. The lexer must leave its version mode at the newline.
+#
+set system scripts op file mist_pyagent_tools.py arguments version
+set version 21.4R3.15

@@ -1,0 +1,21 @@
+! NEC Portable Internetwork Core Operating System Software
+! IX Series IX2215 (magellan-sec) Software, Version 10.9.11, RELEASE SOFTWARE
+!
+hostname ix_static_routes
+!
+ip route default 10.0.0.254
+ip route 10.10.0.0/16 Null0.0
+ip route 10.20.0.0/16 GigaEthernet0.0
+ip route 10.30.0.0/16 10.0.0.253 GigaEthernet0.0 distance 5 metric 2 tag 100
+ip route vrf red 172.16.10.0/24 172.16.0.2
+ip route 10.40.0.0/16 GigaEthernet0.0 dhcp
+!
+interface GigaEthernet0.0
+  ip address 10.0.0.1/24
+  no shutdown
+!
+interface GigaEthernet1.0
+  ip vrf forwarding red
+  ip address 172.16.0.1/24
+  no shutdown
+!

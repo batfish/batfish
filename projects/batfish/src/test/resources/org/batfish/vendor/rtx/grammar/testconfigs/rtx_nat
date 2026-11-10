@@ -1,0 +1,19 @@
+# RTX3510 Rev.23.01.03 (Wed Jun 19 10:28:57 2024)
+console prompt rtx_nat
+vlan lan4/1 802.1q vid=10
+ip lan4/1 address 10.57.0.2/18
+vlan lan3/3 802.1q vid=503
+ip lan3/3 address 211.14.210.84/29
+ip lan3/3 secure filter in 100
+ip lan3/3 secure filter out 100
+ip lan3/3 nat descriptor 1
+ip filter 100 pass * * * * *
+nat descriptor type 1 masquerade
+nat descriptor address outer 1 211.14.212.249-211.14.212.254
+nat descriptor address inner 1 10.57.0.0-10.57.255.255
+nat descriptor masquerade port range 1 1024-65534
+nat descriptor timer 1 protocol=tcp 120
+nat descriptor timer 1 protocol=udp 120
+nat descriptor masquerade session limit 1 1 500
+nat descriptor masquerade session limit total 1 500000
+nat descriptor log on

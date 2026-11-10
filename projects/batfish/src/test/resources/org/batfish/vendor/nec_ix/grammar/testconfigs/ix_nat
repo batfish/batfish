@@ -1,0 +1,37 @@
+! NEC Portable Internetwork Core Operating System Software
+! IX Series IX2215 (magellan-sec) Software, Version 10.9.11, RELEASE SOFTWARE
+!
+hostname ix_nat
+!
+ip access-list napt-inside permit ip src 10.0.0.0/16 dest any
+!
+interface GigaEthernet0.0
+  description inside
+  ip address 10.0.0.1/24
+  no shutdown
+!
+interface GigaEthernet1.0
+  description outside, NAPT to a dedicated address
+  ip address 203.0.113.1/30
+  ip napt enable
+  ip napt address 203.0.113.100
+  ip napt inside list napt-inside
+  ip napt translation port-range 1025-65535
+  ip napt translation tcp-timeout 120
+  ip napt service ping 10.0.0.1 none icmp any
+  no shutdown
+!
+interface GigaEthernet2.0
+  description outside, NAPT to the interface address
+  ip address 198.51.100.1/30
+  ip napt enable
+  no shutdown
+!
+interface GigaEthernet3.0
+  description outside, static NAT
+  ip address 192.0.2.1/24
+  ip nat enable
+  ip nat static 10.0.0.10 192.0.2.10
+  ip nat static network 10.0.1.0/24 198.18.1.0/24
+  no shutdown
+!

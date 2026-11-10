@@ -18,10 +18,12 @@ import static org.batfish.datamodel.ConfigurationFormat.JUNIPER;
 import static org.batfish.datamodel.ConfigurationFormat.JUNIPER_SWITCH;
 import static org.batfish.datamodel.ConfigurationFormat.NOKIA_SROS;
 import static org.batfish.datamodel.ConfigurationFormat.PALO_ALTO;
+import static org.batfish.datamodel.ConfigurationFormat.NEC_IX;
 import static org.batfish.datamodel.ConfigurationFormat.PALO_ALTO_NESTED;
 import static org.batfish.datamodel.ConfigurationFormat.RUCKUS_ICX;
 import static org.batfish.datamodel.ConfigurationFormat.UNKNOWN;
 import static org.batfish.datamodel.ConfigurationFormat.UNSUPPORTED;
+import static org.batfish.datamodel.ConfigurationFormat.YAMAHA_RTX;
 import static org.batfish.grammar.VendorConfigurationFormatDetector.identifyConfigurationFormat;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -427,6 +429,47 @@ public class VendorConfigurationFormatDetectorTest {
 
     for (String fileText : ImmutableList.of(rancidZebra, rancidFrr)) {
       assertThat(identifyConfigurationFormat(fileText), equalTo(UNSUPPORTED));
+    }
+  }
+
+  @Test
+  public void testYamahaRtx() {
+    String rtx1300 = "# RTX1300 Rev.23.00.17 (Fri Oct  3 09:45:39 2025)\nconsole prompt rt1\n";
+    String rtx3510 = "# RTX3510 Rev.23.01.03 (Wed Jun 19 10:28:57 2024)\nip lan1 address 10.0.0.1/30\n";
+    String nvr510 = "# NVR510 Rev.15.01.18 (Mon Apr  1 12:00:00 2024)\n";
+    String rtxBatfish = "# BATFISH_FORMAT: yamaha_rtx\n";
+
+    for (String fileText : ImmutableList.of(rtx1300, rtx3510, nvr510, rtxBatfish)) {
+      assertThat(fileText, identifyConfigurationFormat(fileText), equalTo(YAMAHA_RTX));
+    }
+
+    // An RTX config contains none of the tells other vendors' heuristics look for.
+    assertThat(identifyConfigurationFormat(rtx3510), not(equalTo(CISCO_IOS)));
+  }
+
+  @Test
+  public void testNecIx() {
+    // `show running-config` as saved from the device.
+    String showRun =
+        "! NEC Portable Internetwork Core Operating System Software\n"
+            + "! IX Series IX2215 (magellan-sec) Software, Version 10.9.11, RELEASE SOFTWARE\n"
+            + "!\n"
+            + "hostname ix\n"
+            + "interface GigaEthernet0.0\n"
+            + "  ip address 10.0.0.1/24\n"
+            + "  no shutdown\n";
+    // A terminal capture starts with the login banner instead.
+    String capture =
+        "\nNEC Portable Internetwork Core Operating System Software\n"
+            + "Copyright Notices:\n"
+            + "ix# conf te\n"
+            + "ix(config)# show run\n"
+            + "! IX Series IX3100 (magellan-sec) Software, Version 10.5.31, RELEASE SOFTWARE\n"
+            + "router bgp 65000\n";
+    String ixBatfish = "! BATFISH_FORMAT: nec_ix\n";
+
+    for (String fileText : ImmutableList.of(showRun, capture, ixBatfish)) {
+      assertThat(fileText, identifyConfigurationFormat(fileText), equalTo(NEC_IX));
     }
   }
 

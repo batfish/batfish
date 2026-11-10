@@ -53,6 +53,16 @@ public final class VendorConfigurationFormatDetector {
   private static final Pattern MRV_HOSTNAME_PATTERN =
       Pattern.compile("(?m)^configuration hostname .*$");
   private static final Pattern MSS_PATTERN = Pattern.compile("(?m)^set system name");
+  // NEC IX routers print the model and firmware version as the second line of
+  // `show running-config`, e.g. "! IX Series IX2215 (magellan-sec) Software, Version 10.9.11, ...".
+  // Terminal captures also start with the login banner.
+  private static final Pattern NEC_IX_PATTERN =
+      Pattern.compile(
+          "(?m)^(! IX Series IX\\d+ |NEC Portable Internetwork Core Operating System Software)");
+  // Yamaha RTX/NVR/FWX routers emit a model and firmware revision header as the first line of
+  // `show config`, e.g. "# RTX3510 Rev.23.01.03 (Wed Jun 19 10:28:57 2024)".
+  private static final Pattern YAMAHA_RTX_PATTERN =
+      Pattern.compile("(?m)^# (RTX|NVR|FWX|vRX)[\\w-]* Rev\\.\\d+\\.\\d+\\.\\d+");
 
   private static final Pattern FASTPATH_PATTERN =
       Pattern.compile(
@@ -510,6 +520,20 @@ public final class VendorConfigurationFormatDetector {
     return null;
   }
 
+  private @Nullable ConfigurationFormat checkNecIx() {
+    if (fileTextMatches(NEC_IX_PATTERN)) {
+      return ConfigurationFormat.NEC_IX;
+    }
+    return null;
+  }
+
+  private @Nullable ConfigurationFormat checkYamahaRtx() {
+    if (fileTextMatches(YAMAHA_RTX_PATTERN)) {
+      return ConfigurationFormat.YAMAHA_RTX;
+    }
+    return null;
+  }
+
   private @Nullable ConfigurationFormat checkFortios() {
     if (_fileText.contains("config system global")) {
       return ConfigurationFormat.FORTIOS;
@@ -529,6 +553,10 @@ public final class VendorConfigurationFormatDetector {
     }
 
     format = (format == null) ? checkA10() : format;
+    format = (format == null) ? checkYamahaRtx() : format;
+    // NEC IX must run before checkCisco: its Cisco-like CLI has `interface`, `ip access-list`,
+    // `route-map`, and `router bgp`.
+    format = (format == null) ? checkNecIx() : format;
     // SR-OS must run before checkJuniper/checkCisco: an SR-OS brace config contains
     // tokens (e.g. `policy-options {`, `interface ...`) that those heuristics would
     // otherwise claim. checkSros keys on SR-OS-specific tells, so it is safe to run early.

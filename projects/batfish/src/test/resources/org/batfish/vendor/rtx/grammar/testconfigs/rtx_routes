@@ -1,0 +1,7 @@
+# RTX1300 Rev.23.00.17 (Fri Oct  3 09:45:39 2025)
+console prompt rtx_routes
+ip route default gateway 10.0.0.2
+ip route 172.16.0.0/16 gateway 10.0.0.3
+ip route 192.0.2.1 gateway tunnel 1
+tunnel select 1
+ tunnel enable 1

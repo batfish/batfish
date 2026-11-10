@@ -1,0 +1,45 @@
+! NEC Portable Internetwork Core Operating System Software
+! IX Series IX2215 (magellan-sec) Software, Version 10.9.11, RELEASE SOFTWARE
+!
+hostname ix_access_lists
+!
+ip access-list p-icmp permit icmp src any dest any
+ip access-list p-echo permit icmp echo src any dest any
+ip access-list p-unreach permit icmp type 3 code 4 src any dest any
+ip access-list p-tcpest permit tcp established src any sport any dest any dport any
+ip access-list p-web permit tcp src 10.0.0.0/8 sport any dest 192.0.2.0 0.0.0.255 dport eq 443
+ip access-list p-web permit tcp src any sport any dest any dport range 8000 8080
+ip access-list d-low deny udp src any sport lt 1024 dest any dport any
+ip access-list d-high deny udp src any sport gt 60000 dest any dport neq 53
+ip access-list p-esp permit 50 src any dest any
+ip access-list p-af41 permit ip src any dest any dscp 34
+ip access-list p-prec5 permit ip src any dest any precedence 5
+ip access-list d-all deny ip src any dest any
+ip access-list seq sequence-mode 100
+ip access-list seq 200 permit ip src 10.0.0.0/8 dest any
+ip access-list seq 100 deny ip src 10.1.0.0/16 dest any
+ip access-list bad permit ip src-domain www.example.com dest any
+ip access-list bad permit ip src any dest any tos 4
+ip access-list bad permit icmp no-such-message src any dest any
+!
+interface GigaEthernet0.0
+  ip address 192.0.2.1/24
+  ip filter d-all 9000 in
+  ip filter p-web 100 in
+  ip filter p-tcpest 10 in
+  ip filter undefined-acl 20 in
+  ip filter p-all 1 out suppress-logging
+  no shutdown
+!
+interface GigaEthernet1.0
+  ip address 198.51.100.1/24
+  ip filter p-icmp 10 in
+  no shutdown
+!
+interface GigaEthernet2.0
+  ip address 203.0.113.1/24
+  ip filter seq 10 in
+  no shutdown
+!
+ip access-list p-all permit ip src any dest any
+!

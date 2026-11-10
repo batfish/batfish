@@ -1,0 +1,15 @@
+# RTX3510 Rev.23.01.03 (Wed Jun 19 10:28:57 2024)
+console prompt rtx_filters
+ip lan1 address 10.0.0.1/24
+ip lan1 secure filter in 101 102 103 104 105 106 107
+ip lan1 secure filter out 200 201 dynamic 900
+ip filter 101 pass * 10.57.244.8/32 tcp,udp * domain,https
+ip filter 102 reject-nolog * 10.57.240.0/22,10.57.244.0/24 * * *
+ip filter 103 pass * * icmp * *
+ip filter 104 pass * * established
+ip filter 105 pass 192.168.57.0-192.168.57.254 * * * *
+ip filter 106 reject-nolog * * tcp,udp * 135-netbios_ssn,445
+ip filter 107 pass * * * * 8301-8332
+ip filter 200 pass-log * * * * *
+ip filter 201 reject * * * * *
+ip filter dynamic 900 * * udp syslog=off

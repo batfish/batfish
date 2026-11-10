@@ -1,0 +1,12 @@
+# RTX3510 Rev.23.01.03 (Wed Jun 19 10:28:57 2024)
+console prompt rtx_interfaces
+ip lan1 address 10.0.0.1/30
+ip lan1 address 10.0.1.1/24
+vlan lan3/1 802.1q vid=501
+ip lan3/1 address 192.168.1.1/24
+vlan lan3/2 802.1q vid=4094
+tunnel select 1
+ tunnel encapsulation ipip
+ tunnel endpoint address 2001:db8::1 2001:db8::2
+ ip tunnel mtu 1460
+ tunnel enable 1

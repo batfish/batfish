@@ -1,0 +1,473 @@
+
+NEC Portable Internetwork Core Operating System Software
+Copyright Notices:
+Copyright (c) NEC Corporation 2001-2023. All rights reserved.
+Copyright (c) 1985-1998 OpenROUTE Networks, Inc.
+Copyright (c) 1984-1987, 1989 J. Noel Chiappa.
+tun-01-venue# conf te
+Enter configuration commands, one per line. End with CNTL/Z.
+tun-01-venue(config)# terminal length 0
+tun-01-venue(config)# show run
+! NEC Portable Internetwork Core Operating System Software
+! IX Series IX2215 (magellan-sec) Software, Version 10.9.11, RELEASE SOFTWARE
+! Compiled Dec 15-Fri-2023 13:35:51 JST #2
+! Current time Apr 18-Fri-2025 05:24:07 +00 00
+!
+service password-encryption
+service ssl-protocol tls1.2-and-later
+!
+hostname tun-01-venue
+timezone +00 00
+terminal suppress-emanon
+!
+logging buffered 131072
+logging subsystem all notice
+logging timestamp datetime
+!
+syslog ip host 10.33.136.14
+syslog ip source 10.33.0.161
+syslog timestamp datetime
+!
+!
+ntp server 2001:4860:4806::
+ntp server 2001:4860:4806:4::
+ntp server 2001:4860:4806:8::
+ntp server 2001:4860:4806:c::
+ntp interval 2000
+!
+!
+ip ufs-cache enable
+ip multipath per-flow
+ip prefix-list pl-default 1 permit 0.0.0.0/0 max 0
+ip prefix-list pl-private 1 permit 10.33.0.0/16 max 32
+ip prefix-list pl-private-aggregate 1 permit 10.33.0.0/16 max 16
+ip prefix-list pl-private-aggregate 2 permit 10.33.0.0/17 max 17
+ip prefix-list pl-private-aggregate 3 permit 10.33.128.0/18 max 18
+ip access-list d-all deny ip src any dest any
+ip access-list d-bogon-dst deny ip src any dest 10.0.0.0/8
+ip access-list d-bogon-dst deny ip src any dest 172.16.0.0/12
+ip access-list d-bogon-dst deny ip src any dest 192.168.0.0/16
+ip access-list d-bogon-dst deny ip src any dest 100.64.0.0/10
+ip access-list d-bogon-dst deny ip src any dest 127.0.0.0/8
+ip access-list d-bogon-dst deny ip src any dest 169.254.0.0/16
+ip access-list d-bogon-dst deny ip src any dest 192.0.2.0/24
+ip access-list d-bogon-dst deny ip src any dest 198.18.0.0/15
+ip access-list d-bogon-dst deny ip src any dest 198.51.100.0/24
+ip access-list d-bogon-dst deny ip src any dest 203.0.113.0/24
+ip access-list d-bogon-dst deny ip src any dest 224.0.0.0/3
+ip access-list d-bogon-src deny ip src 10.0.0.0/8 dest any
+ip access-list d-bogon-src deny ip src 172.16.0.0/12 dest any
+ip access-list d-bogon-src deny ip src 192.168.0.0/16 dest any
+ip access-list d-bogon-src deny ip src 100.64.0.0/10 dest any
+ip access-list d-bogon-src deny ip src 127.0.0.0/8 dest any
+ip access-list d-bogon-src deny ip src 169.254.0.0/16 dest any
+ip access-list d-bogon-src deny ip src 192.0.2.0/24 dest any
+ip access-list d-bogon-src deny ip src 198.18.0.0/15 dest any
+ip access-list d-bogon-src deny ip src 198.51.100.0/24 dest any
+ip access-list d-bogon-src deny ip src 203.0.113.0/24 dest any
+ip access-list d-bogon-src deny ip src 224.0.0.0/3 dest any
+ip access-list nat-inside-vpc sequence-mode 100
+ip access-list nat-inside-vpc 1 permit ip src 10.33.128.0/18 dest any
+ip access-list p-all permit ip src any dest any
+ip access-list p-dhcp permit udp src any sport range 67 68 dest any dport range 67 68
+ip access-list p-icmp permit icmp src any dest any
+ip access-list p-ipsec permit udp src any sport any dest any dport eq 500
+ip access-list p-ipsec permit udp src any sport any dest any dport eq 4500
+ip access-list p-ipsec permit udp src any sport any dest any dport eq 1701
+ip access-list p-ipsec permit 50 src any dest any
+ip access-list p-link permit ip src any dest 10.33.22.0/24
+ip access-list p-link permit ip src 10.33.22.0/24 dest any
+ip access-list p-ospf permit 89 src any dest any
+ip access-list p-tcpest permit tcp established src any sport any dest any dport any
+ip access-list p-to-gi2-1-1 permit ip src any dest 117.102.186.171/32
+ip access-list p-udpany permit udp src any sport any dest any dport any
+ip access-list r-mgmt permit ip src 192.50.220.153/32 dest any
+ip access-list r-mgmt permit ip src 192.50.220.161/32 dest any
+ip access-list r-mgmt permit ip src 10.33.128.0/17 dest any
+ip access-list r-mgmt permit ip src 10.33.100.0/24 dest any
+ip access-list r-mgmt permit ip src 10.33.1.0/24 dest any
+ip access-list r-mgmt permit ip src 10.33.0.0/24 dest any
+!
+!
+ipv6 ufs-cache enable
+ipv6 multipath per-flow
+ipv6 route 2001:4860:4806::/48 GigaEthernet0.0 ra
+ipv6 route 2001:f74:9800:4fa:389::78b1/128 GigaEthernet0.0 ra
+ipv6 route 2001:f74:9800:4fa:389::78b2/128 GigaEthernet0.0 ra
+ipv6 route 2408:210:2a2:a100:5::78b2/128 GigaEthernet0.0 ra
+ipv6 route 2409:10:b400:1fa::78b1/128 GigaEthernet0.0 ra
+ipv6 route 2409:10:b400:1fa::78b2/128 GigaEthernet0.0 ra
+ipv6 route 2409:10:f00:400:5::78b1/128 GigaEthernet0.0 ra
+ipv6 route 2409:10:f00:400:5::78b2/128 GigaEthernet0.0 ra
+ipv6 route 2409:10:b400:1fa:78::7c02/128 GigaEthernet0.0 ra
+ipv6 access-list d-all deny ip src any dest any
+ipv6 access-list d-bogon-dst deny ip src any dest ::/96
+ipv6 access-list d-bogon-dst deny ip src any dest ::1/128
+ipv6 access-list d-bogon-dst deny ip src any dest ::ffff:0:0/96
+ipv6 access-list d-bogon-dst deny ip src any dest 100::/64
+ipv6 access-list d-bogon-dst deny ip src any dest 2001:2::/48
+ipv6 access-list d-bogon-dst deny ip src any dest 2001:db8::/32
+ipv6 access-list d-bogon-dst deny ip src any dest fc00::/7
+ipv6 access-list d-bogon-dst deny ip src any dest fec0::/10
+ipv6 access-list d-bogon-dst deny ip src any dest ff00::/8
+ipv6 access-list d-bogon-src deny ip src ::/96 dest any
+ipv6 access-list d-bogon-src deny ip src ::1/128 dest any
+ipv6 access-list d-bogon-src deny ip src ::ffff:0:0/96 dest any
+ipv6 access-list d-bogon-src deny ip src 100::/64 dest any
+ipv6 access-list d-bogon-src deny ip src 2001:2::/48 dest any
+ipv6 access-list d-bogon-src deny ip src 2001:db8::/32 dest any
+ipv6 access-list d-bogon-src deny ip src fc00::/7 dest any
+ipv6 access-list d-bogon-src deny ip src fec0::/10 dest any
+ipv6 access-list d-bogon-src deny ip src ff00::/8 dest any
+ipv6 access-list p-all permit ip src any dest any
+ipv6 access-list p-dns permit udp src any sport eq 53 dest any dport any
+ipv6 access-list p-dns permit tcp src any sport eq 53 dest any dport any
+ipv6 access-list p-etherip permit 97 src any dest any
+ipv6 access-list p-etherip permit 4 src any dest any
+ipv6 access-list p-etherip permit 41 src any dest any
+ipv6 access-list p-icmp permit icmp src any dest any
+ipv6 access-list p-ipsec permit udp src any sport any dest any dport eq 500
+ipv6 access-list p-ipsec permit udp src any sport any dest any dport eq 4500
+ipv6 access-list p-ipsec permit udp src any sport any dest any dport eq 1701
+ipv6 access-list p-ipsec permit 50 src any dest any
+ipv6 access-list p-ntp permit udp src any sport eq 123 dest any dport any
+ipv6 access-list p-tcpest permit tcp established src any sport any dest any dport any
+ipv6 access-list p-udpany permit udp src any sport any dest any dport any
+!
+!
+snmp-agent ip enable
+snmp-agent ip community public
+!
+!
+bridge irb enable
+!
+!
+!
+!
+!
+!
+ssh-server ip access-list r-mgmt
+ssh-server ip enable
+!
+!
+!
+!
+!
+route-map aws-in permit 1
+  match ip address prefix-list pl-private
+  set local-preference 100
+!
+route-map aws-lo-in permit 1
+  match ip address prefix-list pl-private
+  set local-preference 90
+!
+route-map aws-lo-out permit 1
+  match ip address prefix-list pl-private-aggregate
+  set community 7224:7100 additive
+!
+route-map aws-lo-out permit 2
+  match ip address prefix-list default
+  set community 7224:7100 additive
+!
+route-map aws-out permit 1
+  match ip address prefix-list pl-private-aggregate
+  set community 7224:7200 additive
+!
+route-map aws-out permit 2
+  match ip address prefix-list pl-default
+  set community 7224:7200 additive
+!
+route-map bb-in permit 1
+  match ip address prefix-list pl-private
+  set local-preference 100
+!
+route-map bb-in permit 2
+  match ip address prefix-list pl-public
+  set local-preference 100
+!
+route-map bb-in permit 3
+  match ip address prefix-list default
+  set local-preference 100
+!
+route-map bb-out permit 1
+  match ip address prefix-list pl-private
+!
+route-map bb-out permit 2
+  match ip address prefix-list pl-public
+!
+route-map bb-out permit 3
+  match ip address prefix-list default
+!
+route-map private-hi-in permit 1
+  match ip address prefix-list pl-private
+  set local-preference 120
+!
+route-map private-in permit 1
+  match ip address prefix-list pl-private
+  set local-preference 100
+!
+route-map private-lo-in permit 1
+  match ip address prefix-list pl-private
+  set local-preference 90
+!
+route-map private-out permit 1
+  match ip address prefix-list pl-private
+!
+ipv6 dhcp client-profile ngn
+  ia-pd subscriber GigaEthernet0.0 ::/64 eui-64
+!
+router bgp 65161
+  router-id 10.33.0.161
+  default-local-preference 99
+  default-metric 100
+  neighbor 10.33.22.166 remote-as 65010
+  neighbor 10.33.22.166 connect-interval 10
+  neighbor 10.33.22.166 timers 6 30
+  neighbor 10.33.22.166 description GigaEthernet1.1 er-01.venue
+  neighbor 10.33.22.166 advertisement-interval 6
+  address-family ipv4 unicast
+    neighbor 10.33.22.166 route-map bb-in in
+    neighbor 10.33.22.166 route-map bb-out out
+    network 10.33.0.161/32
+!
+policy-map qos0
+  class class-local
+    set ipv6 dscp 0
+    set ip dscp 0
+  class class-default
+    set ipv6 dscp 0
+    set ip dscp 0
+!
+ikev2 default-profile
+  child-lifetime 3600
+  child-pfs 2048-bit
+  child-proposal enc aes-cbc-256
+  child-proposal integrity sha2-256
+  dpd interval 10
+  local-authentication id fqdn tun-01.venue.rubykaigi.net
+  sa-lifetime 21600
+  sa-proposal enc aes-cbc-256
+  sa-proposal integrity sha2-512
+  sa-proposal dh 2048-bit
+  sa-proposal prf sha2-512
+  ipsec-mode tunnel
+!
+device GigaEthernet0
+!
+device GigaEthernet1
+!
+device GigaEthernet2
+  port 1 shutdown
+  port 2 shutdown
+  port 3 shutdown
+  port 4 shutdown
+  port 6 shutdown
+  port 8 shutdown
+  vlan-group 7 port 7
+!
+device BRI0
+  isdn switch-type hsd128k
+!
+device USB0
+  shutdown
+!
+interface GigaEthernet0.0
+  description Circuit: NGN
+  no ip address
+  ipv6 enable
+  ipv6 interface-identifier dd:dd:aa:aa:00:00:00:01
+  ipv6 address autoconfig
+  ipv6 dhcp client ngn
+  ipv6 filter p-icmp 10 in
+  ipv6 filter p-ipsec 100 in
+  ipv6 filter p-etherip 101 in
+  ipv6 filter p-ntp 110 in
+  ipv6 filter p-dns 111 in
+  ipv6 filter p-all 9000 out
+  service-policy output qos0
+  no shutdown
+!
+interface GigaEthernet1.0
+  description Downstream: ge-0/0/5@er-01.venue
+  no ip address
+  shutdown
+!
+interface GigaEthernet2.0
+  no ip address
+  no shutdown
+!
+interface BRI0.0
+  encapsulation ppp
+  no auto-connect
+  no ip address
+  shutdown
+!
+interface USB-Serial0.0
+  encapsulation ppp
+  no auto-connect
+  no ip address
+  shutdown
+!
+interface GigaEthernet1.1
+  description Upstream: ge-0/0/0.1@er-01.venue
+  encapsulation dot1q 1 tpid 8100
+  auto-connect
+  ip address 10.33.22.167/31
+  ip mtu 1390
+  no shutdown
+!
+interface GigaEthernet1.10
+  description Downstream: ge-0/0/5.10@er-01.venue, Tun10 [etherip-ipsec]
+  encapsulation dot1q 10 tpid 8100
+  auto-connect
+  no ip address
+  bridge-group 10
+  no shutdown
+!
+interface GigaEthernet1.11
+  description Downstream: ge-0/0/5.11@er-01.venue, Tun11 [etherip]
+  encapsulation dot1q 11 tpid 8100
+  auto-connect
+  no ip address
+  bridge-group 11
+  no shutdown
+!
+interface GigaEthernet1.20
+  description Downstream: ge-0/0/5.20@er-01.venue, Tun20 [etherip-ipsec]
+  encapsulation dot1q 20 tpid 8100
+  auto-connect
+  no ip address
+  bridge-group 20
+  no shutdown
+!
+interface GigaEthernet1.21
+  description Downstream: ge-0/0/5.21@er-01.venue, Tun21 [etherip]
+  encapsulation dot1q 21 tpid 8100
+  auto-connect
+  no ip address
+  bridge-group 21
+  no shutdown
+!
+interface GigaEthernet1.30
+  description Downstream: ge-0/0/5.30@er-01.venue, Tun30 [etherip-ipsec]
+  encapsulation dot1q 30 tpid 8100
+  auto-connect
+  no ip address
+  bridge-group 30
+  no shutdown
+!
+interface GigaEthernet1.31
+  description Downstream: ge-0/0/5.31@er-01.venue, Tun31 [etherip]
+  encapsulation dot1q 31 tpid 8100
+  auto-connect
+  no ip address
+  bridge-group 31
+  no shutdown
+!
+interface GigaEthernet2:7.0
+  description Recon: {scout-a}
+  no ip address
+  bridge-group 7
+  no shutdown
+!
+interface Loopback0.0
+  ip address 10.33.0.161/32
+!
+interface Null0.0
+  no ip address
+!
+interface Tunnel7.0
+  description Scout: Tun1.0@recon-01.nrt(Gi1:1.0) [etherip-ipsec]
+  tunnel mode ether-ip ipsec-ikev2
+  no ip address
+  bridge-group 7
+  bridge ip tcp adjust-mss 1342
+  bridge ipv6 tcp adjust-mss 1342
+  ikev2 connect-type auto
+  ikev2 ipsec pre-fragment
+  ikev2 local-authentication psk id fqdn scout.tun-01.venue.rubykaigi.net
+  ikev2 outgoing-interface GigaEthernet0.0 auto
+  ikev2 source-address GigaEthernet0.0
+  ikev2 ipsec-mode transport
+  ikev2 peer 2409:10:b400:1fa:78::7c02 authentication psk id fqdn recon-01.nrt.rubykaigi.net
+  no shutdown
+!
+interface Tunnel10.0
+  description Downstream: Tun10.0@tun-01.hnd(Gi2.10), ge-0/0/0.10@br-01.hnd  [etherip-ipsec]
+  tunnel mode ether-ip ipsec-ikev2
+  no ip address
+  bridge-group 10
+  bridge ip tcp adjust-mss 1342
+  bridge ipv6 tcp adjust-mss 1342
+  ikev2 connect-type auto
+  ikev2 ipsec pre-fragment
+  ikev2 outgoing-interface GigaEthernet0.0 auto
+  ikev2 source-address GigaEthernet0.0
+  ikev2 ipsec-mode transport
+  ikev2 peer 2409:10:f00:400:5::78b1 authentication psk id fqdn tun-01.hnd.rubykaigi.net
+  no shutdown
+!
+interface Tunnel11.0
+  description Downstream: Tun11.0@tun-01.hnd(Gi1.11), ge-0/0/0.11@br-01.hnd [etherip]
+  tunnel mode ether-ip ipv6
+  tunnel destination 2409:10:f00:400:5::78b1
+  tunnel source GigaEthernet0.0
+  no ip address
+  bridge-group 11
+  bridge ip tcp adjust-mss 1342
+  bridge ipv6 tcp adjust-mss 1342
+  no shutdown
+!
+interface Tunnel20.0
+  description Downstream: Tun10.0@tun-01.nrt(Gi1.10), ge-0/0/0.10@br-01.nrt [etherip-ipsec]
+  tunnel mode ether-ip ipsec-ikev2
+  no ip address
+  bridge-group 20
+  bridge ip tcp adjust-mss 1342
+  bridge ipv6 tcp adjust-mss 1342
+  ikev2 connect-type auto
+  ikev2 ipsec pre-fragment
+  ikev2 outgoing-interface GigaEthernet0.0 auto
+  ikev2 source-address GigaEthernet0.0
+  ikev2 ipsec-mode transport
+  ikev2 peer 2409:10:b400:1fa::78b1 authentication psk id fqdn tun-01.nrt.rubykaigi.net
+  no shutdown
+!
+interface Tunnel21.0
+  description Downstream: Tun11.0@tun-01.nrt(Gi1.11), ge-0/0/0.11@br-01.nrt [etherip]
+  tunnel mode ether-ip ipv6
+  tunnel destination 2409:10:b400:1fa::78b1
+  tunnel source GigaEthernet0.0
+  no ip address
+  bridge-group 21
+  bridge ip tcp adjust-mss 1342
+  bridge ipv6 tcp adjust-mss 1342
+  no shutdown
+!
+interface Tunnel30.0
+  description Downstream: Tun10.0@tun-01.itm(Gi1.10), ge-0/0/0.10@br-01.itm [etherip-ipsec]
+  tunnel mode ether-ip ipsec-ikev2
+  no ip address
+  bridge-group 30
+  bridge ip tcp adjust-mss 1342
+  bridge ipv6 tcp adjust-mss 1342
+  ikev2 connect-type auto
+  ikev2 ipsec pre-fragment
+  ikev2 outgoing-interface GigaEthernet0.0 auto
+  ikev2 source-address GigaEthernet0.0
+  ikev2 ipsec-mode transport
+  ikev2 peer 2001:f74:9800:4fa:389::78b1 authentication psk id fqdn tun-01.itm.rubykaigi.net
+  no shutdown
+!
+interface Tunnel31.0
+  description Downstream: Tun11.0@tun-01.itm(Gi1.11), ge-0/0/0.11@br-01.itm [etherip]
+  tunnel mode ether-ip ipv6
+  tunnel destination 2001:f74:9800:4fa:389::78b1
+  tunnel source GigaEthernet0.0
+  no ip address
+  bridge-group 31
+  bridge ip tcp adjust-mss 1342
+  bridge ipv6 tcp adjust-mss 1342
+  no shutdown
+!
+tun-01-venue(config)# 

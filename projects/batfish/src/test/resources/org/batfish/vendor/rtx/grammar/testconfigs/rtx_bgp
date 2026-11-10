@@ -1,0 +1,20 @@
+# RTX3510 Rev.23.01.03 (Wed Jun 19 10:28:57 2024)
+console prompt rtx_bgp
+ip lan1 address 10.57.245.5/30
+vlan lan3/1 802.1q vid=501
+ip lan3/1 address 192.168.157.22/30
+bgp use on
+bgp autonomous-system 65000
+bgp neighbor 10 64998 192.168.157.21
+bgp neighbor 20 65000 10.57.245.6
+bgp neighbor pre-shared-key 20 text somekey
+bgp import filter 10 reject equal 0.0.0.0/0
+bgp import filter 20 include 0.0.0.0/0
+bgp import filter 30 refines 192.0.2.0/24
+bgp import 64998 static filter 10 20
+bgp import 64998 bgp 65000 filter 10 20
+bgp import 65000 static filter 10
+bgp import 65000 bgp 64998 filter 10 20
+bgp export filter 10 include 0.0.0.0/0
+bgp export 64998 filter 10
+bgp export 65000 filter 10

@@ -79,6 +79,10 @@ import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosCombinedParser;
 import org.batfish.vendor.cisco_nxos.grammar.NxosControlPlaneExtractor;
 import org.batfish.vendor.fastpath.grammar.FastpathCombinedParser;
 import org.batfish.vendor.fastpath.grammar.FastpathControlPlaneExtractor;
+import org.batfish.vendor.nec_ix.grammar.NecIxCombinedParser;
+import org.batfish.vendor.nec_ix.grammar.NecIxControlPlaneExtractor;
+import org.batfish.vendor.rtx.grammar.RtxCombinedParser;
+import org.batfish.vendor.rtx.grammar.RtxControlPlaneExtractor;
 import org.batfish.vendor.sonic.grammar.SonicControlPlaneExtractor;
 import org.batfish.vendor.sonic.grammar.SonicControlPlaneExtractor.SonicFileType;
 import org.batfish.vendor.sros.grammar.SrosCombinedParser;
@@ -586,6 +590,42 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                   _fileResults.get(filename).getWarnings(),
                   _fileResults.get(filename).getSilentSyntax());
           parseFile(filename, mrvParser, extractor);
+          vc = extractor.getVendorConfiguration();
+          vc.setFilename(filename);
+          break;
+        }
+
+      case NEC_IX:
+        {
+          Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
+          String filename = fileEntry.getKey();
+          String fileText = fileEntry.getValue();
+          NecIxCombinedParser necIxParser = new NecIxCombinedParser(fileText, _settings);
+          ControlPlaneExtractor extractor =
+              new NecIxControlPlaneExtractor(
+                  fileText,
+                  necIxParser,
+                  _fileResults.get(filename).getWarnings(),
+                  _fileResults.get(filename).getSilentSyntax());
+          parseFile(filename, necIxParser, extractor);
+          vc = extractor.getVendorConfiguration();
+          vc.setFilename(filename);
+          break;
+        }
+
+      case YAMAHA_RTX:
+        {
+          Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
+          String filename = fileEntry.getKey();
+          String fileText = fileEntry.getValue();
+          RtxCombinedParser rtxParser = new RtxCombinedParser(fileText, _settings);
+          ControlPlaneExtractor extractor =
+              new RtxControlPlaneExtractor(
+                  fileText,
+                  rtxParser,
+                  _fileResults.get(filename).getWarnings(),
+                  _fileResults.get(filename).getSilentSyntax());
+          parseFile(filename, rtxParser, extractor);
           vc = extractor.getVendorConfiguration();
           vc.setFilename(filename);
           break;

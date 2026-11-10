@@ -1,0 +1,13 @@
+# RTX3510 Rev.23.01.03
+console prompt rtx_bgp_exporter
+ip lan1 address 192.0.2.1/30
+ip route default gateway 192.0.2.2
+ip route 10.57.0.0/16 gateway 192.0.2.2
+bgp use on
+bgp autonomous-system 65000
+bgp neighbor 1 64998 192.0.2.2
+bgp import filter 10 reject equal 0.0.0.0/0
+bgp import filter 20 include 0.0.0.0/0
+bgp import 64998 static filter 10 20
+bgp export filter 20 include 0.0.0.0/0
+bgp export 64998 filter 20

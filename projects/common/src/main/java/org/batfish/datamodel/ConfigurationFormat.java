@@ -36,6 +36,7 @@ public enum ConfigurationFormat {
   MRV("mrv"),
   MRV_COMMANDS("mrv_commands"),
   MSS("mss"),
+  NEC_IX("nec_ix"),
   NOKIA_SROS("nokia_sros"),
   SONIC("sonic"),
   PALO_ALTO("paloalto"),
@@ -44,7 +45,8 @@ public enum ConfigurationFormat {
   UNKNOWN("unknown"),
   UNSUPPORTED("unsupported"),
   VXWORKS("vxworks"),
-  VYOS("vyos");
+  VYOS("vyos"),
+  YAMAHA_RTX("yamaha_rtx");
 
   private String _vendorString;
 

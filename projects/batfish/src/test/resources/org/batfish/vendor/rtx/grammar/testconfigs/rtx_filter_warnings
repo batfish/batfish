@@ -1,0 +1,7 @@
+# RTX1300 Rev.23.00.17 (Fri Oct  3 09:45:39 2025)
+console prompt rtx_filter_warnings
+ip lan1 address 10.0.0.1/24
+ip lan1 secure filter in 301 302 303
+ip filter 301 pass 10.57.244.8/32 tcp,udp * domain,https
+ip filter 302 pass * * bogusproto * *
+ip filter 303 pass * * tcp * nosuchservice

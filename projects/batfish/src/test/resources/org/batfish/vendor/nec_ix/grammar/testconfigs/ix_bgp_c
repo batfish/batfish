@@ -1,0 +1,12 @@
+! NEC Portable Internetwork Core Operating System Software
+! IX Series IX2215 (magellan-sec) Software, Version 10.9.11, RELEASE SOFTWARE
+!
+hostname ix_bgp_c
+!
+router bgp 65003
+  neighbor 192.168.1.1 remote-as 65001
+!
+interface GigaEthernet0.0
+  ip address 192.168.1.0/31
+  no shutdown
+!

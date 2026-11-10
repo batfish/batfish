@@ -1249,6 +1249,14 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testSystemScriptsArgumentsVersion() {
+    // `set system scripts op file <name> arguments version` ends the line with the keyword
+    // `version`, which used to leave the lexer stuck in its version mode.
+    Configuration c = parseConfig("juniper-system-scripts");
+    assertThat(c.getHostname(), equalTo("juniper-system-scripts"));
+  }
+
+  @Test
   public void testSyslogHostExtraction() {
     JuniperConfiguration c = parseJuniperConfig("juniper-syslog");
     Map<String, JunosSyslogHost> hosts = c.getMasterLogicalSystem().getSyslogHosts();
