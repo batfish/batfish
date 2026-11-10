@@ -30,12 +30,15 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
 import java.util.Collections;
@@ -240,6 +243,87 @@ public class BgpRoutingProcessTest {
     assertThat(proc._bgpv4Rib.getUnannotatedRoutes(), hasSize(1));
     assertThat(
         proc._ebgpv4Rib.getUnannotatedRoutes(), equalTo(proc._bgpv4Rib.getUnannotatedRoutes()));
+  }
+
+  /** A neighbor at {@code peerIp} in AS {@code remoteAs} (local AS 1), maybe a reflector client. */
+  private static BgpActivePeerConfig neighbor(Ip peerIp, long remoteAs, boolean rrClient) {
+    return BgpActivePeerConfig.builder()
+        .setLocalIp(Ip.parse("1.1.1.2"))
+        .setLocalAs(1L)
+        .setRemoteAs(remoteAs)
+        .setPeerAddress(peerIp)
+        .setIpv4UnicastAddressFamily(
+            Ipv4UnicastAddressFamily.builder().setRouteReflectorClient(rrClient).build())
+        .build();
+  }
+
+  /**
+   * Whether the route from an external advertisement of {@code type} on a session to {@code
+   * neighbor} is marked as received from a route reflector client.
+   */
+  private boolean externalRouteFromClient(BgpActivePeerConfig neighbor, BgpAdvertisementType type) {
+    Ip srcIp = neighbor.getPeerAddress();
+    _bgpProcess.setNeighbors(ImmutableMap.of(srcIp, neighbor));
+    BgpRoutingProcess proc =
+        new BgpRoutingProcess(
+            _bgpProcess,
+            _c,
+            DEFAULT_VRF_NAME,
+            mainRibResolvingNextHop(),
+            BgpTopology.EMPTY,
+            new PrefixTracer());
+    BgpAdvertisement advert =
+        BgpAdvertisement.builder()
+            .setType(type)
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
+            .setNextHopIp(Ip.parse("2.2.2.2"))
+            .setSrcIp(srcIp)
+            .setSrcNode("neighbor")
+            .setSrcVrf(DEFAULT_VRF_NAME)
+            .setDstIp(Ip.parse("1.1.1.2"))
+            .setDstNode("c1")
+            .setDstVrf(DEFAULT_VRF_NAME)
+            .setOriginatorIp(srcIp)
+            .setOriginType(OriginType.IGP)
+            .setSrcProtocol(RoutingProtocol.BGP)
+            .setAsPath(type.isEbgp() ? AsPath.ofSingletonAsSets(2L) : AsPath.empty())
+            .setCommunities(ImmutableSortedSet.of())
+            .setClusterList(ImmutableSortedSet.of())
+            .build();
+
+    proc.processExternalBgpAdvertisement(advert);
+
+    assertThat(proc._bgpv4Rib.getUnannotatedRoutes(), hasSize(1));
+    return ((Bgpv4Route) Iterables.getOnlyElement(proc._bgpv4Rib.getUnannotatedRoutes()))
+        .getReceivedFromRouteReflectorClient();
+  }
+
+  @Test
+  public void testExternalIbgpAdvertisementFromAReflectorClientIsFromAClient() {
+    Ip srcIp = Ip.parse("1.1.1.1");
+    for (BgpAdvertisementType type :
+        ImmutableList.of(BgpAdvertisementType.IBGP_RECEIVED, BgpAdvertisementType.IBGP_SENT)) {
+      assertTrue(type.toString(), externalRouteFromClient(neighbor(srcIp, 1L, true), type));
+    }
+  }
+
+  @Test
+  public void testExternalIbgpAdvertisementFromANonClientIsNotFromAClient() {
+    Ip srcIp = Ip.parse("1.1.1.1");
+    for (BgpAdvertisementType type :
+        ImmutableList.of(BgpAdvertisementType.IBGP_RECEIVED, BgpAdvertisementType.IBGP_SENT)) {
+      assertFalse(type.toString(), externalRouteFromClient(neighbor(srcIp, 1L, false), type));
+    }
+  }
+
+  @Test
+  public void testExternalEbgpAdvertisementIsNeverFromAClient() {
+    // Route reflection is iBGP only, even if the session is (mis)configured as a client.
+    Ip srcIp = Ip.parse("1.1.1.1");
+    for (BgpAdvertisementType type :
+        ImmutableList.of(BgpAdvertisementType.EBGP_RECEIVED, BgpAdvertisementType.EBGP_SENT)) {
+      assertFalse(type.toString(), externalRouteFromClient(neighbor(srcIp, 2L, true), type));
+    }
   }
 
   @Test
