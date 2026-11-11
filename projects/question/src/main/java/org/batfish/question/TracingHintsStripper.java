@@ -23,6 +23,7 @@ import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOriginatorIp;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
+import org.batfish.datamodel.routing_policy.statement.SetTag2;
 import org.batfish.datamodel.routing_policy.statement.SetTunnelEncapsulationAttribute;
 import org.batfish.datamodel.routing_policy.statement.SetVarMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetWeight;
@@ -149,6 +150,11 @@ public final class TracingHintsStripper implements StatementVisitor<Statement, V
   @Override
   public Statement visitSetTag(SetTag setTag, Void arg) {
     return setTag;
+  }
+
+  @Override
+  public Statement visitSetTag2(SetTag2 setTag2, Void arg) {
+    return setTag2;
   }
 
   @Override

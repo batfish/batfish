@@ -51,4 +51,15 @@ public class BgpRouteUtilTest {
 
     assertEquals(bgpRoute.build(), expectedRoute.build());
   }
+
+  @Test
+  public void testConvertNonBgpRouteToBgpRouteCopiesStaticTag2() {
+    StaticRoute inputRoute = StaticRoute.testBuilder().setNetwork(Prefix.ZERO).setTag2(300).build();
+
+    Bgpv4Route.Builder bgpRoute =
+        BgpRouteUtil.convertNonBgpRouteToBgpRoute(
+            inputRoute, Ip.ZERO, null, 0, RoutingProtocol.BGP, OriginMechanism.REDISTRIBUTE);
+
+    assertEquals(300L, bgpRoute.getTag2());
+  }
 }

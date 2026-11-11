@@ -1,10 +1,13 @@
 package org.batfish.datamodel;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -28,6 +31,7 @@ public final class StaticRouteTest {
             .setNextHop(NextHopVrf.of("otherVrf"))
             .setAdministrativeCost(1)
             .setTag(3L)
+            .setTag2(5L)
             .setMetric(123)
             .build()
             .toBuilder()
@@ -36,6 +40,7 @@ public final class StaticRouteTest {
     assertThat(sr.getNextHop(), equalTo(NextHopVrf.of("otherVrf")));
     assertThat(sr.getAdministrativeCost(), equalTo(1L));
     assertThat(sr.getTag(), equalTo(3L));
+    assertThat(sr.getTag2(), equalTo(5L));
     assertThat(sr.getMetric(), equalTo(123L));
   }
 
@@ -72,6 +77,7 @@ public final class StaticRouteTest {
             .build();
     assertThat(sr.getAdministrativeCost(), equalTo(1L));
     assertThat(sr.getTag(), equalTo(Route.UNSET_ROUTE_TAG));
+    assertThat(sr.getTag2(), equalTo(0L));
     assertThat(sr.getMetric(), equalTo(StaticRoute.DEFAULT_STATIC_ROUTE_METRIC));
   }
 
@@ -91,6 +97,7 @@ public final class StaticRouteTest {
             .setNextHop(NextHopVrf.of("otherVrf"))
             .setAdministrativeCost(1)
             .setTag(0L)
+            .setTag2(4294967295L)
             .setMetric(123)
             .build();
 
@@ -114,6 +121,7 @@ public final class StaticRouteTest {
         .addEqualityGroup(b.setNextHop(NextHopIp.of(Ip.parse("2.2.2.2"))).build())
         .addEqualityGroup(b.setNextHop(NextHopVrf.of("otherVrf")).build())
         .addEqualityGroup(b.setTag(4L).build())
+        .addEqualityGroup(b.setTag2(5L).build())
         .addEqualityGroup(new Object())
         .testEquals();
   }
@@ -139,6 +147,7 @@ public final class StaticRouteTest {
             .setNextHop(NextHopVrf.of("otherVrf"))
             .setAdministrativeCost(1)
             .setTag(0L)
+            .setTag2(4294967295L)
             .setMetric(123)
             .build();
 
@@ -155,9 +164,39 @@ public final class StaticRouteTest {
             .setNextHop(NextHopVrf.of("otherVrf"))
             .setAdministrativeCost(1)
             .setTag(0L)
+            .setTag2(4294967295L)
             .setMetric(123)
             .build();
 
     assertThat(SerializationUtils.clone(sr), sameInstance(sr));
+  }
+
+  @Test
+  public void testJsonOmitsZeroTag2() throws JsonProcessingException {
+    StaticRoute sr = StaticRoute.testBuilder().setNetwork(Prefix.ZERO).build();
+    assertThat(BatfishObjectMapper.writeString(sr), not(containsString("tag2")));
+    assertThat(BatfishObjectMapper.clone(sr, StaticRoute.class), sameInstance(sr));
+  }
+
+  @Test
+  public void testUncommonAttributesNullWhenUnset() {
+    assertThat(StaticRoute.UncommonAttributes.create(0), nullValue());
+    StaticRoute sr = StaticRoute.testBuilder().setNetwork(Prefix.ZERO).build();
+    assertThat(sr._uncommonAttributes, nullValue());
+  }
+
+  @Test
+  public void testRoutesShareUncommonAttributes() {
+    StaticRoute.Builder b = StaticRoute.testBuilder().setTag2(7);
+    StaticRoute r1 = b.setNetwork(Prefix.parse("1.0.0.0/8")).build();
+    StaticRoute r2 = b.setNetwork(Prefix.parse("2.0.0.0/8")).build();
+    assertThat(r1._uncommonAttributes, sameInstance(r2._uncommonAttributes));
+    assertThat(r1.getTag2(), equalTo(7L));
+  }
+
+  @Test
+  public void testUncommonAttributesJavaSerialization() {
+    StaticRoute.UncommonAttributes a = StaticRoute.UncommonAttributes.create(7);
+    assertThat(SerializationUtils.clone(a), sameInstance(a));
   }
 }

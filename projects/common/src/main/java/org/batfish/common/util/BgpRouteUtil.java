@@ -13,6 +13,7 @@ import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 
 /** Utility functions for {@link org.batfish.datamodel.BgpRoute} and its implementations. */
@@ -47,7 +48,8 @@ public class BgpRouteUtil {
             .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
             .setReceivedFrom(/* Originated locally. */ ReceivedFromSelf.instance())
             .setMetric(route.getMetric())
-            .setTag(routeDecorator.getAbstractRoute().getTag());
+            .setTag(routeDecorator.getAbstractRoute().getTag())
+            .setTag2(route instanceof StaticRoute staticRoute ? staticRoute.getTag2() : 0L);
     // Set next hop: if null, use NextHopDiscard; otherwise use NextHopIp
     if (nextHopIp == null) {
       builder.setNextHop(NextHopDiscard.instance());

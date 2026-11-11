@@ -263,6 +263,24 @@ public class BgpProtocolHelperTest {
   }
 
   @Test
+  public void testTransformPostExportClearTag2() {
+    Builder builder = _baseBgpRouteBuilder.setTag2(5L);
+    transformBgpRoutePostExport(
+        builder,
+        false,
+        true,
+        false,
+        false,
+        ConfedSessionType.NO_CONFED,
+        1,
+        DEST_IP,
+        Ip.ZERO,
+        null,
+        false);
+    assertThat("Tag2 is cleared", builder.getTag2(), equalTo(0L));
+  }
+
+  @Test
   public void testTransformPostExportClearTag() {
     Builder builder = _baseBgpRouteBuilder.setTag(MAX_TAG);
     transformBgpRoutePostExport(

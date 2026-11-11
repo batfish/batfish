@@ -12,8 +12,10 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableMap;
 import java.io.ObjectStreamException;
 import java.io.Serial;
+import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -41,14 +43,80 @@ public final class StaticRoute extends AbstractRoute implements Comparable<Stati
 
   static final long DEFAULT_STATIC_ROUTE_METRIC = 0L;
   private static final String PROP_NEXT_VRF = "nextVrf";
+  private static final String PROP_TAG2 = "tag2";
   private static final String PROP_TRACK = "track";
 
   // Stored as unsigned 32-bit int for memory savings. Use getMetric() to read.
   private final int _metric;
   private final boolean _recursive;
   private final @Nullable String _track;
+  @VisibleForTesting final @Nullable UncommonAttributes _uncommonAttributes;
 
   private transient int _hashCode;
+
+  /**
+   * Holds the properties of static routes that most static routes do not have. A route with none of
+   * them has no {@link UncommonAttributes} (null), so it pays only for the reference.
+   *
+   * <p>Interned for memory overhead.
+   */
+  static final class UncommonAttributes implements Serializable {
+    /** Keys of the attributes stored in {@link #_attributes}; each getter knows its value type. */
+    private enum Key {
+      TAG2
+    }
+
+    /** Returns the attributes with the given values, or {@code null} if none of them is set. */
+    static @Nullable UncommonAttributes create(long tag2) {
+      ImmutableMap.Builder<Key, Object> attributes = ImmutableMap.builder();
+      if (tag2 != 0) {
+        attributes.put(Key.TAG2, tag2);
+      }
+      ImmutableMap<Key, Object> map = attributes.buildOrThrow();
+      // Intern.
+      return map.isEmpty() ? null : UNCOMMON_ATTRIBUTE_CACHE.get(new UncommonAttributes(map));
+    }
+
+    private UncommonAttributes(ImmutableMap<Key, Object> attributes) {
+      _attributes = attributes;
+    }
+
+    /** Only the attributes that are set; never empty. */
+    private final @Nonnull ImmutableMap<Key, Object> _attributes;
+
+    /** A second route tag, local to the device (Junos {@code tag2}). 0 if unset. */
+    long getTag2() {
+      Long tag2 = (Long) _attributes.get(Key.TAG2);
+      return tag2 == null ? 0L : tag2;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      } else if (!(o instanceof UncommonAttributes)) {
+        return false;
+      }
+      return _attributes.equals(((UncommonAttributes) o)._attributes);
+    }
+
+    @Override
+    public int hashCode() {
+      return _attributes.hashCode();
+    }
+
+    /** Re-intern after deserialization. */
+    @Serial
+    private Object readResolve() throws ObjectStreamException {
+      return UNCOMMON_ATTRIBUTE_CACHE.get(this);
+    }
+  }
+
+  // Soft values: let it be garbage collected in times of pressure.
+  // Maximum size 2^16: Just some upper bound on cache size; few routes have uncommon attributes.
+  private static final LoadingCache<UncommonAttributes, UncommonAttributes>
+      UNCOMMON_ATTRIBUTE_CACHE =
+          Caffeine.newBuilder().softValues().maximumSize(1 << 16).build(a -> a);
 
   @JsonCreator
   private static StaticRoute jsonCreator(
@@ -59,6 +127,7 @@ public final class StaticRoute extends AbstractRoute implements Comparable<Stati
       @JsonProperty(PROP_ADMINISTRATIVE_COST) long administrativeCost,
       @JsonProperty(PROP_METRIC) long metric,
       @JsonProperty(PROP_TAG) long tag,
+      @JsonProperty(PROP_TAG2) @Nullable Long tag2,
       @JsonProperty(PROP_TRACK) @Nullable String track) {
     return CACHE.get(
         new StaticRoute(
@@ -69,6 +138,7 @@ public final class StaticRoute extends AbstractRoute implements Comparable<Stati
             administrativeCost,
             metric,
             tag,
+            UncommonAttributes.create(tag2 != null ? tag2 : 0L),
             false,
             false,
             true,
@@ -81,6 +151,7 @@ public final class StaticRoute extends AbstractRoute implements Comparable<Stati
       long administrativeCost,
       long metric,
       long tag,
+      @Nullable UncommonAttributes uncommonAttributes,
       boolean nonForwarding,
       boolean nonRouting,
       boolean recursive,
@@ -90,6 +161,7 @@ public final class StaticRoute extends AbstractRoute implements Comparable<Stati
     _nextHop = nextHop;
     _recursive = recursive;
     _track = track;
+    _uncommonAttributes = uncommonAttributes;
   }
 
   @Override
@@ -113,6 +185,19 @@ public final class StaticRoute extends AbstractRoute implements Comparable<Stati
   @JsonIgnore
   public boolean getRecursive() {
     return _recursive;
+  }
+
+  /** A second route tag, local to the device (Junos {@code tag2}). */
+  @JsonIgnore
+  public long getTag2() {
+    return _uncommonAttributes == null ? 0L : _uncommonAttributes.getTag2();
+  }
+
+  /** Jackson use only: omit tag2 when it is 0. */
+  @JsonProperty(PROP_TAG2)
+  private @Nullable Long getJsonTag2() {
+    long tag2 = getTag2();
+    return tag2 == 0 ? null : tag2;
   }
 
   @JsonProperty(PROP_TRACK)
@@ -140,6 +225,7 @@ public final class StaticRoute extends AbstractRoute implements Comparable<Stati
   public static final class Builder extends AbstractRouteBuilder<Builder, StaticRoute> {
 
     private boolean _recursive;
+    private long _tag2;
     private @Nullable String _track;
 
     private Builder() {
@@ -163,6 +249,7 @@ public final class StaticRoute extends AbstractRoute implements Comparable<Stati
               getAdmin(),
               getMetric(),
               getTag(),
+              UncommonAttributes.create(_tag2),
               getNonForwarding(),
               getNonRouting(),
               _recursive,
@@ -185,6 +272,15 @@ public final class StaticRoute extends AbstractRoute implements Comparable<Stati
       return this;
     }
 
+    public long getTag2() {
+      return _tag2;
+    }
+
+    public @Nonnull Builder setTag2(long tag2) {
+      _tag2 = tag2;
+      return this;
+    }
+
     public @Nonnull Builder setTrack(@Nullable String track) {
       _track = track;
       return this;
@@ -200,6 +296,7 @@ public final class StaticRoute extends AbstractRoute implements Comparable<Stati
           .thenComparing(StaticRoute::getMetric)
           .thenComparing(StaticRoute::getAdministrativeCost)
           .thenComparing(StaticRoute::getTag)
+          .thenComparing(StaticRoute::getTag2)
           .thenComparing(StaticRoute::getNonRouting)
           .thenComparing(StaticRoute::getNonForwarding)
           .thenComparing(StaticRoute::getRecursive)
@@ -212,6 +309,7 @@ public final class StaticRoute extends AbstractRoute implements Comparable<Stati
         .setNextHop(_nextHop)
         .setMetric(getMetric())
         .setTag(getTag())
+        .setTag2(getTag2())
         .setAdmin(getAdministrativeCost())
         .setNonRouting(getNonRouting())
         .setNonForwarding(getNonForwarding())
@@ -241,6 +339,7 @@ public final class StaticRoute extends AbstractRoute implements Comparable<Stati
         && getMetric() == rhs.getMetric()
         && _nextHop.equals(rhs._nextHop)
         && getTag() == rhs.getTag()
+        && Objects.equals(_uncommonAttributes, rhs._uncommonAttributes)
         && _recursive == rhs._recursive
         && Objects.equals(_track, rhs._track);
   }
@@ -258,6 +357,7 @@ public final class StaticRoute extends AbstractRoute implements Comparable<Stati
               getMetric(),
               _nextHop,
               getTag(),
+              _uncommonAttributes,
               _recursive,
               _track);
       _hashCode = h;
@@ -275,6 +375,7 @@ public final class StaticRoute extends AbstractRoute implements Comparable<Stati
         .add(PROP_METRIC, getMetric())
         .add("recursive", _recursive)
         .add(PROP_TAG, getTag())
+        .add(PROP_TAG2, getTag2())
         .add(PROP_TRACK, _track)
         .toString();
   }
