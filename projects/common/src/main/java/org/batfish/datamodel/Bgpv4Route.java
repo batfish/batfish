@@ -64,7 +64,8 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
           _receivedFrom,
           getNetwork(),
           _nextHop,
-          UncommonAttributes.create(getPathId(), _tag2, _tunnelEncapsulationAttribute),
+          UncommonAttributes.create(
+              getPathId(), _tag2, _color, _color2, _tunnelEncapsulationAttribute),
           getAdmin(),
           getTag(),
           getNonForwarding(),
@@ -104,6 +105,8 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
       @JsonProperty(PROP_SRC_PROTOCOL) @Nullable RoutingProtocol srcProtocol,
       @JsonProperty(PROP_TAG) long tag,
       @JsonProperty(PROP_TAG2) @Nullable Long tag2,
+      @JsonProperty(PROP_COLOR) @Nullable Long color,
+      @JsonProperty(PROP_COLOR2) @Nullable Long color2,
       @JsonProperty(PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE) @Nullable
           TunnelEncapsulationAttribute tunnelEncapsulationAttribute,
       @JsonProperty(PROP_WEIGHT) int weight) {
@@ -132,7 +135,12 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
         receivedFrom,
         network,
         NextHop.legacyConverter(nextHopInterface, nextHopIp),
-        UncommonAttributes.create(pathId, tag2 == null ? 0L : tag2, tunnelEncapsulationAttribute),
+        UncommonAttributes.create(
+            pathId,
+            tag2 == null ? 0L : tag2,
+            color == null ? 0L : color,
+            color2 == null ? 0L : color2,
+            tunnelEncapsulationAttribute),
         admin,
         tag,
         false,
@@ -203,6 +211,8 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
         .setSrcProtocol(_attributes.getSrcProtocol())
         .setTag(getTag())
         .setTag2(getTag2())
+        .setColor(getColor())
+        .setColor2(getColor2())
         .setTunnelEncapsulationAttribute(getTunnelEncapsulationAttribute())
         .setWeight(_attributes._weight);
   }

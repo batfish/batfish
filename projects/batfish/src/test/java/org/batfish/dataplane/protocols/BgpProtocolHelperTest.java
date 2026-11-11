@@ -281,6 +281,25 @@ public class BgpProtocolHelperTest {
   }
 
   @Test
+  public void testTransformPostExportClearColors() {
+    Builder builder = _baseBgpRouteBuilder.setColor(5L).setColor2(6L);
+    transformBgpRoutePostExport(
+        builder,
+        false,
+        true,
+        false,
+        false,
+        ConfedSessionType.NO_CONFED,
+        1,
+        DEST_IP,
+        Ip.ZERO,
+        null,
+        false);
+    assertThat("Color is cleared", builder.getColor(), equalTo(0L));
+    assertThat("Color2 is cleared", builder.getColor2(), equalTo(0L));
+  }
+
+  @Test
   public void testTransformPostExportClearTag() {
     Builder builder = _baseBgpRouteBuilder.setTag(MAX_TAG);
     transformBgpRoutePostExport(
