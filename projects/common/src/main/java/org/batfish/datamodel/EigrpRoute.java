@@ -10,7 +10,7 @@ import org.batfish.datamodel.eigrp.EigrpMetricVersion;
 import org.batfish.datamodel.route.nh.NextHop;
 
 /** Represents an EIGRP route, internal or external */
-public abstract class EigrpRoute extends AbstractRoute {
+public abstract class EigrpRoute extends AbstractTaggedRoute {
 
   static final String PROP_EIGRP_METRIC = "eigrp-metric";
   static final String PROP_EIGRP_METRIC_VERSION = "eigrp-metric-version";

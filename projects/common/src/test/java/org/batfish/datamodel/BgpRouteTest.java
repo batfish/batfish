@@ -4,6 +4,10 @@ import static org.batfish.datamodel.OriginMechanism.GENERATED;
 import static org.batfish.datamodel.OriginMechanism.LEARNED;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.sameInstance;
+import static org.junit.Assert.assertThrows;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
@@ -30,7 +34,6 @@ public class BgpRouteTest {
             RoutingProtocol.BGP,
             true,
             RoutingProtocol.STATIC,
-            new TunnelEncapsulationAttribute(Ip.parse("1.1.1.1")),
             1);
     assertThat(SerializationUtils.clone(attributes), equalTo(attributes));
   }
@@ -95,6 +98,115 @@ public class BgpRouteTest {
                     new TunnelEncapsulationAttribute(Ip.parse("2.2.2.2")))
                 .build())
         .addEqualityGroup(brb.setWeight(2).build())
+        .testEquals();
+  }
+
+  private static final TunnelEncapsulationAttribute TUNNEL =
+      new TunnelEncapsulationAttribute(Ip.parse("1.1.1.1"));
+
+  @Test
+  public void testUncommonAttributesNullWhenUnset() {
+    assertThat(BgpRoute.UncommonAttributes.create(null, Route.UNSET_ROUTE_TAG, null), nullValue());
+    // Path ID 0 means no path ID.
+    assertThat(BgpRoute.UncommonAttributes.create(0, Route.UNSET_ROUTE_TAG, null), nullValue());
+  }
+
+  @Test
+  public void testUncommonAttributesGetters() {
+    BgpRoute.UncommonAttributes a =
+        BgpRoute.UncommonAttributes.create(5, Route.UNSET_ROUTE_TAG, TUNNEL);
+    assertThat(a.getPathId(), equalTo(5));
+    assertThat(a.getTunnelEncapsulationAttribute(), equalTo(TUNNEL));
+    assertThat(
+        BgpRoute.UncommonAttributes.create(null, Route.UNSET_ROUTE_TAG, TUNNEL).getPathId(),
+        nullValue());
+    assertThat(
+        BgpRoute.UncommonAttributes.create(5, Route.UNSET_ROUTE_TAG, null)
+            .getTunnelEncapsulationAttribute(),
+        nullValue());
+  }
+
+  @Test
+  public void testUncommonAttributesInterned() {
+    assertThat(
+        BgpRoute.UncommonAttributes.create(5, Route.UNSET_ROUTE_TAG, TUNNEL),
+        sameInstance(BgpRoute.UncommonAttributes.create(5, Route.UNSET_ROUTE_TAG, TUNNEL)));
+  }
+
+  @Test
+  public void testUncommonAttributesJavaSerialization() {
+    BgpRoute.UncommonAttributes a =
+        BgpRoute.UncommonAttributes.create(5, Route.UNSET_ROUTE_TAG, TUNNEL);
+    assertThat(SerializationUtils.clone(a), sameInstance(a));
+  }
+
+  @Test
+  public void testUncommonAttributesEquals() {
+    new EqualsTester()
+        .addEqualityGroup(
+            BgpRoute.UncommonAttributes.create(5, Route.UNSET_ROUTE_TAG, TUNNEL),
+            BgpRoute.UncommonAttributes.create(5, Route.UNSET_ROUTE_TAG, TUNNEL))
+        .addEqualityGroup(BgpRoute.UncommonAttributes.create(6, Route.UNSET_ROUTE_TAG, TUNNEL))
+        .addEqualityGroup(BgpRoute.UncommonAttributes.create(5, Route.UNSET_ROUTE_TAG, null))
+        .addEqualityGroup(
+            BgpRoute.UncommonAttributes.create(
+                5, Route.UNSET_ROUTE_TAG, new TunnelEncapsulationAttribute(Ip.parse("2.2.2.2"))))
+        .testEquals();
+  }
+
+  @Test
+  public void testRoutesWithoutUncommonAttributesHaveNoHolder() {
+    Bgpv4Route route = Bgpv4Route.testBuilder().setNetwork(Prefix.parse("1.1.1.0/24")).build();
+    assertThat(route._uncommonAttributes, nullValue());
+  }
+
+  @Test
+  public void testRoutesShareUncommonAttributes() {
+    Bgpv4Route.Builder b =
+        Bgpv4Route.testBuilder().setPathId(5).setTunnelEncapsulationAttribute(TUNNEL);
+    Bgpv4Route r1 = b.setNetwork(Prefix.parse("1.1.1.0/24")).build();
+    Bgpv4Route r2 = b.setNetwork(Prefix.parse("2.2.2.0/24")).build();
+    assertThat(r1._uncommonAttributes, sameInstance(r2._uncommonAttributes));
+    assertThat(r1.getPathId(), equalTo(5));
+    assertThat(r1.getTunnelEncapsulationAttribute(), equalTo(TUNNEL));
+  }
+
+  @Test
+  public void testUncommonAttributesTag() {
+    BgpRoute.UncommonAttributes a = BgpRoute.UncommonAttributes.create(null, 7, null);
+    assertThat(a, notNullValue());
+    assertThat(a.getTag(), equalTo(7L));
+    assertThat(
+        BgpRoute.UncommonAttributes.create(5, Route.UNSET_ROUTE_TAG, null).getTag(),
+        equalTo(Route.UNSET_ROUTE_TAG));
+    new EqualsTester()
+        .addEqualityGroup(a, BgpRoute.UncommonAttributes.create(null, 7, null))
+        .addEqualityGroup(BgpRoute.UncommonAttributes.create(null, 0, null))
+        .addEqualityGroup(BgpRoute.UncommonAttributes.create(null, 8, null))
+        .testEquals();
+  }
+
+  @Test
+  public void testUncommonAttributesInvalidTag() {
+    assertThrows(
+        IllegalArgumentException.class, () -> BgpRoute.UncommonAttributes.create(null, -2, null));
+  }
+
+  @Test
+  public void testRouteTag() {
+    Bgpv4Route.Builder b = Bgpv4Route.testBuilder().setNetwork(Prefix.parse("1.1.1.0/24"));
+    Bgpv4Route untagged = b.build();
+    assertThat(untagged.getTag(), equalTo(Route.UNSET_ROUTE_TAG));
+    assertThat(untagged._uncommonAttributes, nullValue());
+
+    Bgpv4Route tagged = b.setTag(7L).build();
+    assertThat(tagged.getTag(), equalTo(7L));
+    assertThat(tagged.toBuilder().build(), equalTo(tagged));
+    assertThat(BatfishObjectMapper.clone(tagged, Bgpv4Route.class), equalTo(tagged));
+    new EqualsTester()
+        .addEqualityGroup(tagged, b.build())
+        .addEqualityGroup(untagged)
+        .addEqualityGroup(b.setTag(0L).build())
         .testEquals();
   }
 }

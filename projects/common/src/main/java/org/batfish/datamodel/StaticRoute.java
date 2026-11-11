@@ -31,7 +31,7 @@ import org.batfish.datamodel.route.nh.NextHopVrf;
  * for determining route preference in RIBs.
  */
 @ParametersAreNonnullByDefault
-public final class StaticRoute extends AbstractRoute implements Comparable<StaticRoute> {
+public final class StaticRoute extends AbstractTaggedRoute implements Comparable<StaticRoute> {
 
   // Soft values: let it be garbage collected in times of pressure.
   // Maximum size 2^20: Just some upper bound on cache size, well less than GiB.

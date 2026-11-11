@@ -13,7 +13,7 @@ import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 
 /** IS-IS route */
-public class IsisRoute extends AbstractRoute {
+public class IsisRoute extends AbstractTaggedRoute {
 
   public static class Builder extends AbstractRouteBuilder<Builder, IsisRoute> {
 

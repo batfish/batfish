@@ -82,11 +82,10 @@ public abstract class EvpnRoute<B extends Builder<B, R>, R extends BgpRoute<B, R
       NextHop nextHop,
       BgpRouteAttributes attributes,
       ReceivedFrom receivedFrom,
-      long tag,
       RouteDistinguisher routeDistinguisher,
       int vni,
-      @Nullable Integer pathId) {
-    super(network, nextHop, pathId, EVPN_ADMIN, attributes, receivedFrom, tag, true, true);
+      @Nullable UncommonAttributes uncommonAttributes) {
+    super(network, nextHop, uncommonAttributes, EVPN_ADMIN, attributes, receivedFrom, true, true);
     _routeDistinguisher = routeDistinguisher;
     _vni = vni;
   }

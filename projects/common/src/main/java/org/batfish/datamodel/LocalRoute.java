@@ -17,7 +17,7 @@ import org.batfish.datamodel.route.nh.NextHopInterface;
  * They are {@link Prefix#MAX_PREFIX_LENGTH} routes to the interface's IP address.
  */
 @ParametersAreNonnullByDefault
-public final class LocalRoute extends AbstractRoute {
+public final class LocalRoute extends AbstractTaggedRoute {
 
   private static final String PROP_SOURCE_PREFIX_LENGTH = "sourcePrefixLength";
 

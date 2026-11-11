@@ -12,7 +12,7 @@ import org.batfish.datamodel.route.nh.NextHopIp;
 
 /** A generic OSPF route */
 @ParametersAreNonnullByDefault
-public abstract class OspfRoute extends AbstractRoute {
+public abstract class OspfRoute extends AbstractTaggedRoute {
 
   /** Indicate that this route has no defined area (e.g., external routes) */
   public static final long NO_AREA = 0xFFFFFFFFL;
