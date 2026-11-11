@@ -63,13 +63,12 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
               _protocol,
               _receivedFromRouteReflectorClient,
               _srcProtocol,
-              _tunnelEncapsulationAttribute,
               _weight),
           _receivedFrom,
           _nextHop,
           _routeDistinguisher,
           _vni,
-          getPathId(),
+          UncommonAttributes.create(getPathId(), _tunnelEncapsulationAttribute),
           getTag(),
           _vniIp);
     }
@@ -146,13 +145,12 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
             protocol,
             receivedFromRouteReflectorClient,
             srcProtocol,
-            tunnelEncapsulationAttribute,
             weight),
         receivedFrom,
         NextHop.legacyConverter(nextHopInterface, nextHopIp),
         routeDistinguisher,
         vni,
-        pathId,
+        UncommonAttributes.create(pathId, tunnelEncapsulationAttribute),
         tag,
         vniIp);
   }
@@ -163,11 +161,18 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
       NextHop nextHop,
       RouteDistinguisher routeDistinguisher,
       int vni,
-      @Nullable Integer pathId,
+      @Nullable UncommonAttributes uncommonAttributes,
       long tag,
       Ip vniIp) {
     super(
-        vniIp.toPrefix(), nextHop, attributes, receivedFrom, tag, routeDistinguisher, vni, pathId);
+        vniIp.toPrefix(),
+        nextHop,
+        attributes,
+        receivedFrom,
+        tag,
+        routeDistinguisher,
+        vni,
+        uncommonAttributes);
     _vniIp = vniIp;
   }
 
@@ -205,7 +210,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
         .setRouteDistinguisher(_routeDistinguisher)
         .setSrcProtocol(_attributes.getSrcProtocol())
         .setTag(getTag())
-        .setTunnelEncapsulationAttribute(_attributes._tunnelEncapsulationAttribute)
+        .setTunnelEncapsulationAttribute(getTunnelEncapsulationAttribute())
         .setVni(_vni)
         .setVniIp(_vniIp)
         .setWeight(_attributes._weight);
@@ -225,7 +230,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
         && _attributes.equals(other._attributes)
         && _receivedFrom.equals(other._receivedFrom)
         && Objects.equals(_nextHop, other._nextHop)
-        && Objects.equals(getPathId(), other.getPathId())
+        && Objects.equals(_uncommonAttributes, other._uncommonAttributes)
         && Objects.equals(_routeDistinguisher, other._routeDistinguisher)
         && _vni == other._vni
         && getTag() == other.getTag()
@@ -240,7 +245,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
       h = h * 31 + _receivedFrom.hashCode();
       h = h * 31 + _network.hashCode();
       h = h * 31 + _nextHop.hashCode();
-      h = h * 31 + Objects.hashCode(getPathId());
+      h = h * 31 + Objects.hashCode(_uncommonAttributes);
       h = h * 31 + _routeDistinguisher.hashCode();
       h = h * 31 + Integer.hashCode(_vni);
       h = h * 31 + Long.hashCode(getTag());
