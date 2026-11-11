@@ -1,0 +1,11 @@
+set system host-name policy-statement-color
+set policy-options policy-statement SET-COLOR term T then color 10
+set policy-options policy-statement SET-COLOR term T then color2 20
+set policy-options policy-statement SET-COLOR term T then accept
+set policy-options policy-statement MATCH-COLOR term T from color 10
+set policy-options policy-statement MATCH-COLOR term T then accept
+set policy-options policy-statement MATCH-COLOR term R then reject
+set policy-options policy-statement MATCH-COLOR2 term T from color2 20
+set policy-options policy-statement MATCH-COLOR2 term T then accept
+set policy-options policy-statement MATCH-COLOR2 term R then reject
+set policy-options policy-statement ADD-COLOR term T then color add 5
