@@ -225,6 +225,8 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     /** Keys of the attributes stored in {@link #_attributes}; each getter knows its value type. */
     private enum Key {
       PATH_ID,
+      COLOR,
+      COLOR2,
       TAG2,
       TUNNEL_ENCAPSULATION_ATTRIBUTE
     }
@@ -233,6 +235,8 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     public static @Nullable UncommonAttributes create(
         @Nullable Integer pathId,
         long tag2,
+        long color,
+        long color2,
         @Nullable TunnelEncapsulationAttribute tunnelEncapsulationAttribute) {
       ImmutableMap.Builder<Key, Object> attributes = ImmutableMap.builder();
       // Path ID 0 means no path ID (path IDs start at 1).
@@ -241,6 +245,12 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
       }
       if (tag2 != 0) {
         attributes.put(Key.TAG2, tag2);
+      }
+      if (color != 0) {
+        attributes.put(Key.COLOR, color);
+      }
+      if (color2 != 0) {
+        attributes.put(Key.COLOR2, color2);
       }
       if (tunnelEncapsulationAttribute != null) {
         attributes.put(Key.TUNNEL_ENCAPSULATION_ATTRIBUTE, tunnelEncapsulationAttribute);
@@ -265,6 +275,18 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     public long getTag2() {
       Long tag2 = (Long) _attributes.get(Key.TAG2);
       return tag2 == null ? 0L : tag2;
+    }
+
+    /** A route preference value finer-grained than preference (Junos {@code color}). 0 if unset. */
+    public long getColor() {
+      Long color = (Long) _attributes.get(Key.COLOR);
+      return color == null ? 0L : color;
+    }
+
+    /** A route preference value finer-grained than color (Junos {@code color2}). 0 if unset. */
+    public long getColor2() {
+      Long color2 = (Long) _attributes.get(Key.COLOR2);
+      return color2 == null ? 0L : color2;
     }
 
     public @Nullable TunnelEncapsulationAttribute getTunnelEncapsulationAttribute() {
@@ -341,6 +363,8 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     protected boolean _receivedFromRouteReflectorClient;
     protected @Nullable RoutingProtocol _srcProtocol;
     protected long _tag2;
+    protected long _color;
+    protected long _color2;
     protected @Nullable TunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
     protected int _weight;
 
@@ -419,6 +443,16 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     /** A second route tag, local to the device (Junos {@code tag2}). */
     public long getTag2() {
       return _tag2;
+    }
+
+    /** Junos {@code color}: a local route preference value. */
+    public long getColor() {
+      return _color;
+    }
+
+    /** Junos {@code color2}: a local route preference value. */
+    public long getColor2() {
+      return _color2;
     }
 
     @Override
@@ -549,6 +583,16 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
       return getThis();
     }
 
+    public @Nonnull B setColor(long color) {
+      _color = color;
+      return getThis();
+    }
+
+    public @Nonnull B setColor2(long color2) {
+      _color2 = color2;
+      return getThis();
+    }
+
     public @Nonnull B setTunnelEncapsulationAttribute(
         @Nullable TunnelEncapsulationAttribute tunnelEncapsulationAttribute) {
       _tunnelEncapsulationAttribute = tunnelEncapsulationAttribute;
@@ -581,6 +625,8 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
       "receivedFromRouteReflectorClient";
   static final String PROP_SRC_PROTOCOL = "srcProtocol";
   static final String PROP_TAG2 = "tag2";
+  static final String PROP_COLOR = "color";
+  static final String PROP_COLOR2 = "color2";
   static final String PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE = "tunnelEncapsulationAttribute";
   static final String PROP_WEIGHT = "weight";
 
@@ -717,6 +763,36 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   private @Nullable Long getJsonTag2() {
     long tag2 = getTag2();
     return tag2 == 0 ? null : tag2;
+  }
+
+  /**
+   * Junos {@code color}: a route preference value, local to the device, that routing policy sets
+   * and matches. It is not sent to BGP peers and does not take part in BGP path selection. 0 if
+   * unset.
+   */
+  @JsonIgnore
+  public long getColor() {
+    return _uncommonAttributes == null ? 0L : _uncommonAttributes.getColor();
+  }
+
+  /** Jackson use only: omit color when it is 0. */
+  @JsonProperty(PROP_COLOR)
+  private @Nullable Long getJsonColor() {
+    long color = getColor();
+    return color == 0 ? null : color;
+  }
+
+  /** Junos {@code color2}: like {@link #getColor()}. 0 if unset. */
+  @JsonIgnore
+  public long getColor2() {
+    return _uncommonAttributes == null ? 0L : _uncommonAttributes.getColor2();
+  }
+
+  /** Jackson use only: omit color2 when it is 0. */
+  @JsonProperty(PROP_COLOR2)
+  private @Nullable Long getJsonColor2() {
+    long color2 = getColor2();
+    return color2 == 0 ? null : color2;
   }
 
   @JsonProperty(PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE)

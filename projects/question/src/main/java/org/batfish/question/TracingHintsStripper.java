@@ -11,6 +11,8 @@ import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.RemoveTunnelEncapsulationAttribute;
 import org.batfish.datamodel.routing_policy.statement.ReplaceAsesInAsSequence;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
+import org.batfish.datamodel.routing_policy.statement.SetColor;
+import org.batfish.datamodel.routing_policy.statement.SetColor2;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultTag;
 import org.batfish.datamodel.routing_policy.statement.SetEigrpMetric;
@@ -155,6 +157,16 @@ public final class TracingHintsStripper implements StatementVisitor<Statement, V
   @Override
   public Statement visitSetTag2(SetTag2 setTag2, Void arg) {
     return setTag2;
+  }
+
+  @Override
+  public Statement visitSetColor(SetColor setColor, Void arg) {
+    return setColor;
+  }
+
+  @Override
+  public Statement visitSetColor2(SetColor2 setColor2, Void arg) {
+    return setColor2;
   }
 
   @Override

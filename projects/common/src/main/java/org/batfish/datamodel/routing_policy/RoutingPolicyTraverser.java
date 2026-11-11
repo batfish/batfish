@@ -19,6 +19,7 @@ import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.MatchBgpSessionType;
 import org.batfish.datamodel.routing_policy.expr.MatchClusterListLength;
 import org.batfish.datamodel.routing_policy.expr.MatchColor;
+import org.batfish.datamodel.routing_policy.expr.MatchColor2;
 import org.batfish.datamodel.routing_policy.expr.MatchInterface;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
 import org.batfish.datamodel.routing_policy.expr.MatchLocalPreference;
@@ -45,6 +46,8 @@ import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.RemoveTunnelEncapsulationAttribute;
 import org.batfish.datamodel.routing_policy.statement.ReplaceAsesInAsSequence;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
+import org.batfish.datamodel.routing_policy.statement.SetColor;
+import org.batfish.datamodel.routing_policy.statement.SetColor2;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultTag;
 import org.batfish.datamodel.routing_policy.statement.SetEigrpMetric;
@@ -200,6 +203,16 @@ public abstract class RoutingPolicyTraverser<T, U>
 
   @Override
   public T visitSetTag2(SetTag2 setTag2, U arg) {
+    return defaultResult();
+  }
+
+  @Override
+  public T visitSetColor(SetColor setColor, U arg) {
+    return defaultResult();
+  }
+
+  @Override
+  public T visitSetColor2(SetColor2 setColor2, U arg) {
     return defaultResult();
   }
 
@@ -382,6 +395,11 @@ public abstract class RoutingPolicyTraverser<T, U>
 
   @Override
   public T visitMatchTag2(MatchTag2 matchTag2, U arg) {
+    return defaultResult();
+  }
+
+  @Override
+  public T visitMatchColor2(MatchColor2 matchColor2, U arg) {
     return defaultResult();
   }
 
