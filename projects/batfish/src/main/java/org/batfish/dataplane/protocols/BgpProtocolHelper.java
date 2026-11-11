@@ -526,6 +526,9 @@ public final class BgpProtocolHelper {
     // Weight is non-transitive and not carried in BGP UPDATE messages.
     routeBuilder.setWeight(0);
 
+    // Tag2 is local to the device and not carried in BGP UPDATE messages.
+    routeBuilder.setTag2(0);
+
     // Local preference is non-transitive: clear for eBGP sessions outside a confederation (after
     // export policy may have set it). Within a confederation, local-pref is preserved.
     if (!advertiseUnchangedLocalPref) {

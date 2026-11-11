@@ -71,7 +71,7 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
           _macAddress,
           _routeDistinguisher,
           _vni,
-          UncommonAttributes.create(getPathId(), _tunnelEncapsulationAttribute),
+          UncommonAttributes.create(getPathId(), _tag2, _tunnelEncapsulationAttribute),
           getTag());
     }
 
@@ -131,6 +131,7 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
       @JsonProperty(PROP_VNI) @Nullable Integer vni,
       @JsonProperty(PROP_SRC_PROTOCOL) @Nullable RoutingProtocol srcProtocol,
       @JsonProperty(PROP_TAG) long tag,
+      @JsonProperty(PROP_TAG2) @Nullable Long tag2,
       @JsonProperty(PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE) @Nullable
           TunnelEncapsulationAttribute tunnelEncapsulationAttribute,
       @JsonProperty(PROP_WEIGHT) int weight) {
@@ -166,7 +167,7 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
         macAddress,
         routeDistinguisher,
         vni,
-        UncommonAttributes.create(pathId, tunnelEncapsulationAttribute),
+        UncommonAttributes.create(pathId, tag2 == null ? 0L : tag2, tunnelEncapsulationAttribute),
         tag);
   }
 
@@ -234,6 +235,7 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
         .setVni(_vni)
         .setSrcProtocol(_attributes.getSrcProtocol())
         .setTag(getTag())
+        .setTag2(getTag2())
         .setTunnelEncapsulationAttribute(getTunnelEncapsulationAttribute())
         .setWeight(_attributes._weight);
   }

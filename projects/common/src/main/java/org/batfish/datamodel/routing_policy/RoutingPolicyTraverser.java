@@ -32,6 +32,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchRouteType;
 import org.batfish.datamodel.routing_policy.expr.MatchSourceProtocol;
 import org.batfish.datamodel.routing_policy.expr.MatchSourceVrf;
 import org.batfish.datamodel.routing_policy.expr.MatchTag;
+import org.batfish.datamodel.routing_policy.expr.MatchTag2;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.RouteIsClassful;
 import org.batfish.datamodel.routing_policy.expr.TrackSucceeded;
@@ -56,6 +57,7 @@ import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOriginatorIp;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
+import org.batfish.datamodel.routing_policy.statement.SetTag2;
 import org.batfish.datamodel.routing_policy.statement.SetTunnelEncapsulationAttribute;
 import org.batfish.datamodel.routing_policy.statement.SetVarMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetWeight;
@@ -193,6 +195,11 @@ public abstract class RoutingPolicyTraverser<T, U>
 
   @Override
   public T visitSetTag(SetTag setTag, U arg) {
+    return defaultResult();
+  }
+
+  @Override
+  public T visitSetTag2(SetTag2 setTag2, U arg) {
     return defaultResult();
   }
 
@@ -370,6 +377,11 @@ public abstract class RoutingPolicyTraverser<T, U>
 
   @Override
   public T visitMatchTag(MatchTag matchTag, U arg) {
+    return defaultResult();
+  }
+
+  @Override
+  public T visitMatchTag2(MatchTag2 matchTag2, U arg) {
     return defaultResult();
   }
 
