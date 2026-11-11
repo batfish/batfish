@@ -68,8 +68,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
           _nextHop,
           _routeDistinguisher,
           _vni,
-          UncommonAttributes.create(getPathId(), _tunnelEncapsulationAttribute),
-          getTag(),
+          UncommonAttributes.create(getPathId(), getTag(), _tunnelEncapsulationAttribute),
           _vniIp);
     }
 
@@ -150,8 +149,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
         NextHop.legacyConverter(nextHopInterface, nextHopIp),
         routeDistinguisher,
         vni,
-        UncommonAttributes.create(pathId, tunnelEncapsulationAttribute),
-        tag,
+        UncommonAttributes.create(pathId, tag, tunnelEncapsulationAttribute),
         vniIp);
   }
 
@@ -162,14 +160,12 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
       RouteDistinguisher routeDistinguisher,
       int vni,
       @Nullable UncommonAttributes uncommonAttributes,
-      long tag,
       Ip vniIp) {
     super(
         vniIp.toPrefix(),
         nextHop,
         attributes,
         receivedFrom,
-        tag,
         routeDistinguisher,
         vni,
         uncommonAttributes);
@@ -233,7 +229,6 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
         && Objects.equals(_uncommonAttributes, other._uncommonAttributes)
         && Objects.equals(_routeDistinguisher, other._routeDistinguisher)
         && _vni == other._vni
-        && getTag() == other.getTag()
         && Objects.equals(_vniIp, other._vniIp);
   }
 
@@ -248,7 +243,6 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
       h = h * 31 + Objects.hashCode(_uncommonAttributes);
       h = h * 31 + _routeDistinguisher.hashCode();
       h = h * 31 + Integer.hashCode(_vni);
-      h = h * 31 + Long.hashCode(getTag());
       h = h * 31 + _vniIp.hashCode();
 
       _hashCode = h;

@@ -16,7 +16,7 @@ import org.batfish.datamodel.route.nh.NextHopInterface;
  * adjacencies.
  */
 @ParametersAreNonnullByDefault
-public final class ConnectedRoute extends AbstractRoute {
+public final class ConnectedRoute extends AbstractTaggedRoute {
 
   @JsonCreator
   @SuppressWarnings("unused")

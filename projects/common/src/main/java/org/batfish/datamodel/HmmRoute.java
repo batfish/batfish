@@ -14,7 +14,7 @@ import org.batfish.datamodel.route.nh.NextHopInterface;
  * An NX-OS Host Mobility Manager (HMM) route. HMM routes are /32 routes whose prefix IP is an IP
  * address assigned on a neighbor interface of an HMM-enabled NX-OS interface.
  */
-public final class HmmRoute extends AbstractRoute {
+public final class HmmRoute extends AbstractTaggedRoute {
 
   public static final class Builder extends AbstractRouteBuilder<Builder, HmmRoute> {
 

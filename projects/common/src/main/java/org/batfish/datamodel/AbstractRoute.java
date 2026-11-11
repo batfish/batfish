@@ -42,9 +42,6 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
   private final int _admin;
   private final boolean _nonRouting;
   private final boolean _nonForwarding;
-  private final boolean _hasTag;
-  // Stored as unsigned 32-bit int for memory savings. Use getTag() to read.
-  private final int _tag;
   protected @Nonnull NextHop _nextHop = NextHopDiscard.instance();
 
   /** Helper to check admin distance validity. */
@@ -57,21 +54,23 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
         MAX_ADMIN_DISTANCE);
   }
 
-  protected AbstractRoute(
-      @Nullable Prefix network, long admin, long tag, boolean nonRouting, boolean nonForwarding) {
-    checkArgument(network != null, "Cannot create a route without a %s", PROP_NETWORK);
-    checkAdmin(admin, 0);
+  /** Helper to check tag validity. */
+  static void checkTag(long tag) {
     checkArgument(
         tag == Route.UNSET_ROUTE_TAG || (tag >= 0 && tag <= MAX_TAG),
         "Invalid tag %s is not UNSET or in [0,%s]",
         tag,
         MAX_TAG);
+  }
+
+  protected AbstractRoute(
+      @Nullable Prefix network, long admin, boolean nonRouting, boolean nonForwarding) {
+    checkArgument(network != null, "Cannot create a route without a %s", PROP_NETWORK);
+    checkAdmin(admin, 0);
     _network = network;
     _admin = (int) admin;
     _nonForwarding = nonForwarding;
     _nonRouting = nonRouting;
-    _hasTag = tag != Route.UNSET_ROUTE_TAG;
-    _tag = (int) tag;
   }
 
   @Override
@@ -147,9 +146,7 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
 
   /** Return the route's tag or {@link Route#UNSET_ROUTE_TAG} if no tag is present */
   @JsonProperty(PROP_TAG)
-  public final long getTag() {
-    return _hasTag ? Integer.toUnsignedLong(_tag) : Route.UNSET_ROUTE_TAG;
-  }
+  public abstract long getTag();
 
   @Override
   public String toString() {

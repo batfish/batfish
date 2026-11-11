@@ -225,17 +225,23 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     /** Keys of the attributes stored in {@link #_attributes}; each getter knows its value type. */
     private enum Key {
       PATH_ID,
+      TAG,
       TUNNEL_ENCAPSULATION_ATTRIBUTE
     }
 
     /** Returns the attributes with the given values, or {@code null} if none of them is set. */
     public static @Nullable UncommonAttributes create(
         @Nullable Integer pathId,
+        long tag,
         @Nullable TunnelEncapsulationAttribute tunnelEncapsulationAttribute) {
+      checkTag(tag);
       ImmutableMap.Builder<Key, Object> attributes = ImmutableMap.builder();
       // Path ID 0 means no path ID (path IDs start at 1).
       if (pathId != null && pathId != 0) {
         attributes.put(Key.PATH_ID, pathId);
+      }
+      if (tag != Route.UNSET_ROUTE_TAG) {
+        attributes.put(Key.TAG, tag);
       }
       if (tunnelEncapsulationAttribute != null) {
         attributes.put(Key.TUNNEL_ENCAPSULATION_ATTRIBUTE, tunnelEncapsulationAttribute);
@@ -254,6 +260,12 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
 
     public @Nullable Integer getPathId() {
       return (Integer) _attributes.get(Key.PATH_ID);
+    }
+
+    /** The route's tag, or {@link Route#UNSET_ROUTE_TAG} if it has none. */
+    public long getTag() {
+      Long tag = (Long) _attributes.get(Key.TAG);
+      return tag == null ? Route.UNSET_ROUTE_TAG : tag;
     }
 
     public @Nullable TunnelEncapsulationAttribute getTunnelEncapsulationAttribute() {
@@ -573,10 +585,9 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
       long admin,
       BgpRouteAttributes attributes,
       ReceivedFrom receivedFrom,
-      long tag,
       boolean nonForwarding,
       boolean nonRouting) {
-    super(network, admin, tag, nonRouting, nonForwarding);
+    super(network, admin, nonRouting, nonForwarding);
     _attributes = attributes;
     _nextHop = nextHop;
     _uncommonAttributes = uncommonAttributes;
@@ -678,6 +689,13 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   @Override
   public @Nullable RoutingProtocol getSrcProtocol() {
     return _attributes.getSrcProtocol();
+  }
+
+  /** Return the route's tag or {@link Route#UNSET_ROUTE_TAG} if no tag is present */
+  @JsonProperty(PROP_TAG)
+  @Override
+  public long getTag() {
+    return _uncommonAttributes == null ? Route.UNSET_ROUTE_TAG : _uncommonAttributes.getTag();
   }
 
   @JsonProperty(PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE)

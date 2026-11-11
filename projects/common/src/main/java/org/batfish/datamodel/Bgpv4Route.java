@@ -64,9 +64,8 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
           _receivedFrom,
           getNetwork(),
           _nextHop,
-          UncommonAttributes.create(getPathId(), _tunnelEncapsulationAttribute),
+          UncommonAttributes.create(getPathId(), getTag(), _tunnelEncapsulationAttribute),
           getAdmin(),
-          getTag(),
           getNonForwarding(),
           getNonRouting());
     }
@@ -131,9 +130,8 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
         receivedFrom,
         network,
         NextHop.legacyConverter(nextHopInterface, nextHopIp),
-        UncommonAttributes.create(pathId, tunnelEncapsulationAttribute),
+        UncommonAttributes.create(pathId, tag, tunnelEncapsulationAttribute),
         admin,
-        tag,
         false,
         false);
   }
@@ -145,7 +143,6 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
       @Nonnull NextHop nextHop,
       @Nullable UncommonAttributes uncommonAttributes,
       long admin,
-      long tag,
       boolean nonForwarding,
       boolean nonRouting) {
     super(
@@ -155,7 +152,6 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
         admin,
         attributes,
         receivedFrom,
-        tag,
         nonForwarding,
         nonRouting);
   }
@@ -222,7 +218,6 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
         && _receivedFrom.equals(other._receivedFrom)
         // Things above this line are more likely to cause false earlier.
         && getAdministrativeCost() == other.getAdministrativeCost()
-        && getTag() == other.getTag()
         && getNonRouting() == other.getNonRouting()
         && getNonForwarding() == other.getNonForwarding();
   }
@@ -239,7 +234,6 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
       h = h * 31 + Objects.hashCode(_uncommonAttributes);
       h = h * 31 + Boolean.hashCode(getNonForwarding());
       h = h * 31 + Boolean.hashCode(getNonRouting());
-      h = h * 31 + Long.hashCode(getTag());
 
       _hashCode = h;
     }

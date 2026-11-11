@@ -21,7 +21,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
  * for determining route preference in RIBs.
  */
 @ParametersAreNonnullByDefault
-public final class KernelRoute extends AbstractRoute implements Comparable<KernelRoute> {
+public final class KernelRoute extends AbstractTaggedRoute implements Comparable<KernelRoute> {
 
   // The comparator has no impact on route preference in RIBs and should not be used as such
   private static final Comparator<KernelRoute> COMPARATOR =

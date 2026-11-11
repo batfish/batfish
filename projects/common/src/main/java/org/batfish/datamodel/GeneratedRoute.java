@@ -34,7 +34,7 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySet;
  * used for determining route preference in RIBs.
  */
 @ParametersAreNonnullByDefault
-public final class GeneratedRoute extends AbstractRoute
+public final class GeneratedRoute extends AbstractTaggedRoute
     implements Comparable<GeneratedRoute>,
         HasReadableAsPath,
         HasReadableCommunities,

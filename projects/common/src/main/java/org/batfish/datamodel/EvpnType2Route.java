@@ -71,8 +71,7 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
           _macAddress,
           _routeDistinguisher,
           _vni,
-          UncommonAttributes.create(getPathId(), _tunnelEncapsulationAttribute),
-          getTag());
+          UncommonAttributes.create(getPathId(), getTag(), _tunnelEncapsulationAttribute));
     }
 
     public Builder setIp(@Nonnull Ip ip) {
@@ -166,8 +165,7 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
         macAddress,
         routeDistinguisher,
         vni,
-        UncommonAttributes.create(pathId, tunnelEncapsulationAttribute),
-        tag);
+        UncommonAttributes.create(pathId, tag, tunnelEncapsulationAttribute));
   }
 
   private EvpnType2Route(
@@ -178,14 +176,12 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
       @Nullable MacAddress macAddress,
       RouteDistinguisher routeDistinguisher,
       int vni,
-      @Nullable UncommonAttributes uncommonAttributes,
-      long tag) {
+      @Nullable UncommonAttributes uncommonAttributes) {
     super(
         ip.toPrefix(),
         nextHop,
         attributes,
         receivedFrom,
-        tag,
         routeDistinguisher,
         vni,
         uncommonAttributes);
@@ -256,8 +252,7 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
         && Objects.equals(_nextHop, other._nextHop)
         && Objects.equals(_uncommonAttributes, other._uncommonAttributes)
         && Objects.equals(_routeDistinguisher, other._routeDistinguisher)
-        && _vni == other._vni
-        && getTag() == other.getTag();
+        && _vni == other._vni;
   }
 
   @Override
@@ -273,7 +268,6 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
       h = h * 31 + Objects.hashCode(_uncommonAttributes);
       h = h * 31 + _routeDistinguisher.hashCode();
       h = h * 31 + Integer.hashCode(_vni);
-      h = h * 31 + Long.hashCode(getTag());
 
       _hashCode = h;
     }

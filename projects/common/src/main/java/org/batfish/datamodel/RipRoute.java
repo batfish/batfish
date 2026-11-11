@@ -8,7 +8,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.route.nh.NextHop;
 
 @ParametersAreNonnullByDefault
-public abstract class RipRoute extends AbstractRoute {
+public abstract class RipRoute extends AbstractTaggedRoute {
 
   /** Maximum allowable route metric in RIP */
   public static final long MAX_ROUTE_METRIC = 16;

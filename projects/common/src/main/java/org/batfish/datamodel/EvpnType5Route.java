@@ -67,8 +67,7 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
           _nextHop,
           _routeDistinguisher,
           _vni,
-          UncommonAttributes.create(getPathId(), _tunnelEncapsulationAttribute),
-          getTag());
+          UncommonAttributes.create(getPathId(), getTag(), _tunnelEncapsulationAttribute));
     }
 
     @Override
@@ -136,8 +135,7 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
         NextHop.legacyConverter(nextHopInterface, nextHopIp),
         routeDistinguisher,
         vni,
-        UncommonAttributes.create(pathId, tunnelEncapsulationAttribute),
-        tag);
+        UncommonAttributes.create(pathId, tag, tunnelEncapsulationAttribute));
   }
 
   private EvpnType5Route(
@@ -147,17 +145,8 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
       NextHop nextHop,
       RouteDistinguisher routeDistinguisher,
       int vni,
-      @Nullable UncommonAttributes uncommonAttributes,
-      long tag) {
-    super(
-        network,
-        nextHop,
-        attributes,
-        receivedFrom,
-        tag,
-        routeDistinguisher,
-        vni,
-        uncommonAttributes);
+      @Nullable UncommonAttributes uncommonAttributes) {
+    super(network, nextHop, attributes, receivedFrom, routeDistinguisher, vni, uncommonAttributes);
   }
 
   public static Builder builder() {
@@ -207,8 +196,7 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
         && Objects.equals(_nextHop, other._nextHop)
         && Objects.equals(_uncommonAttributes, other._uncommonAttributes)
         && Objects.equals(_routeDistinguisher, other._routeDistinguisher)
-        && _vni == other._vni
-        && getTag() == other.getTag();
+        && _vni == other._vni;
   }
 
   @Override
@@ -222,7 +210,6 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
       h = h * 31 + Objects.hashCode(_uncommonAttributes);
       h = h * 31 + _routeDistinguisher.hashCode();
       h = h * 31 + Integer.hashCode(_vni);
-      h = h * 31 + Long.hashCode(getTag());
 
       _hashCode = h;
     }
