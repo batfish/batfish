@@ -5946,7 +5946,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     if (replace) {
       _currentBgpGroup.setRemovePrivateReplace(true);
     }
-    if (nearest || replace || !(all || noPeerLoopCheck)) {
+    if (nearest || replace) {
       todo(ctx);
     }
   }

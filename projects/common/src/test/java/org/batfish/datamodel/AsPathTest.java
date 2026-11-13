@@ -28,6 +28,36 @@ public class AsPathTest {
   }
 
   @Test
+  public void testRemoveLeadingPrivateAs() {
+    assertThat(
+        AsPath.ofSingletonAsSets(65001L, 65002L, 1L, 65003L).removeLeadingPrivateAs(null),
+        equalTo(AsPath.ofSingletonAsSets(1L, 65003L)));
+    assertThat(
+        AsPath.ofSingletonAsSets(65001L, 65002L).removeLeadingPrivateAs(null),
+        equalTo(AsPath.empty()));
+    assertThat(
+        AsPath.ofSingletonAsSets(1L, 65001L).removeLeadingPrivateAs(null),
+        equalTo(AsPath.ofSingletonAsSets(1L, 65001L)));
+  }
+
+  @Test
+  public void testRemoveLeadingPrivateAsStopsAtMixedAsSet() {
+    AsPath path = AsPath.of(ImmutableList.of(AsSet.of(65001L, 2L), AsSet.of(3L)));
+    assertThat(path.removeLeadingPrivateAs(null), equalTo(path));
+  }
+
+  @Test
+  public void testRemoveLeadingPrivateAsStopsAtStopAs() {
+    assertThat(
+        AsPath.ofSingletonAsSets(65001L, 65002L, 65003L).removeLeadingPrivateAs(65002L),
+        equalTo(AsPath.ofSingletonAsSets(65002L, 65003L)));
+    assertThat(
+        AsPath.of(ImmutableList.of(AsSet.of(65001L), AsSet.of(65002L, 65003L)))
+            .removeLeadingPrivateAs(65003L),
+        equalTo(AsPath.of(ImmutableList.of(AsSet.of(65002L, 65003L)))));
+  }
+
+  @Test
   public void testAsPathLength() {
     AsPath path = AsPath.of(AsSet.confed(1L));
     assertThat(path.length(), equalTo(0));

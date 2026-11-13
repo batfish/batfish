@@ -16,6 +16,11 @@ public enum Statements {
   ExitAccept,
   ExitReject,
   FallThrough,
+  /**
+   * Remove the private ASNs at the most recently added end of the AS path, up to the first public
+   * ASN or the session's remote AS (Junos {@code remove-private}).
+   */
+  RemoveLeadingPrivateAs,
   RemovePrivateAs,
   Return,
   ReturnFalse,
@@ -71,6 +76,22 @@ public enum Statements {
 
         case FallThrough:
           return Result.builder().setReturn(true).setFallThrough(true).build();
+
+        case RemoveLeadingPrivateAs:
+          {
+            if (!(environment.getOutputRoute() instanceof HasWritableAsPath)) {
+              break;
+            }
+            HasWritableAsPath<?, ?> outputRoute =
+                (HasWritableAsPath<?, ?>) environment.getOutputRoute();
+            Long remoteAs = environment.getRemoteAs().orElse(null);
+            outputRoute.setAsPath(outputRoute.getAsPath().removeLeadingPrivateAs(remoteAs));
+            if (environment.getWriteToIntermediateBgpAttributes()) {
+              BgpRoute.Builder<?, ?> ir = environment.getIntermediateBgpAttributes();
+              ir.setAsPath(ir.getAsPath().removeLeadingPrivateAs(remoteAs));
+            }
+            break;
+          }
 
         case RemovePrivateAs:
           {
