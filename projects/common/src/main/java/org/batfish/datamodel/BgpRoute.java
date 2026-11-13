@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.ObjectStreamException;
@@ -15,7 +16,6 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
@@ -61,7 +61,6 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
         RoutingProtocol protocol,
         boolean receivedFromRouteReflectorClient,
         @Nullable RoutingProtocol srcProtocol,
-        @Nullable TunnelEncapsulationAttribute tunnelEncapsulationAttribute,
         int weight) {
       checkArgument(
           protocol == RoutingProtocol.BGP
@@ -82,7 +81,6 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
               protocol,
               receivedFromRouteReflectorClient,
               srcProtocol,
-              tunnelEncapsulationAttribute,
               weight));
     }
 
@@ -98,7 +96,6 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
         RoutingProtocol protocol,
         boolean receivedFromRouteReflectorClient,
         @Nullable RoutingProtocol srcProtocol,
-        @Nullable TunnelEncapsulationAttribute tunnelEncapsulationAttribute,
         int weight) {
       _asPath = firstNonNull(asPath, AsPath.empty());
       _clusterList = clusterList == null ? ImmutableSet.of() : CLUSTER_CACHE.get(clusterList);
@@ -111,7 +108,6 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
       _protocol = (byte) protocol.ordinal();
       _receivedFromRouteReflectorClient = receivedFromRouteReflectorClient;
       _srcProtocol = srcProtocol == null ? -1 : (byte) srcProtocol.ordinal();
-      _tunnelEncapsulationAttribute = tunnelEncapsulationAttribute;
       _weight = weight;
     }
 
@@ -135,8 +131,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
           && _originatorIp.equals(that._originatorIp)
           && _originMechanism == that._originMechanism
           && _originType == that._originType
-          && _srcProtocol == that._srcProtocol
-          && Objects.equals(_tunnelEncapsulationAttribute, that._tunnelEncapsulationAttribute);
+          && _srcProtocol == that._srcProtocol;
     }
 
     private transient int _hashCode;
@@ -156,7 +151,6 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
         h = h * 31 + _protocol;
         h = h * 31 + Boolean.hashCode(_receivedFromRouteReflectorClient);
         h = h * 31 + _srcProtocol;
-        h = h * 31 + Objects.hashCode(_tunnelEncapsulationAttribute);
         h = h * 31 + _weight;
         _hashCode = h;
       }
@@ -172,7 +166,6 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     private final int _med;
     protected final @Nonnull Ip _originatorIp;
     protected final boolean _receivedFromRouteReflectorClient;
-    protected final @Nullable TunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
     protected final int _weight;
 
     /////
@@ -222,6 +215,73 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     }
   }
 
+  /**
+   * Holds the properties of BGP routes that most routes do not have. A route with none of them has
+   * no {@link UncommonAttributes} (null), so it pays only for the reference.
+   *
+   * <p>Interned for memory overhead.
+   */
+  protected static final class UncommonAttributes implements Serializable {
+    /** Keys of the attributes stored in {@link #_attributes}; each getter knows its value type. */
+    private enum Key {
+      PATH_ID,
+      TUNNEL_ENCAPSULATION_ATTRIBUTE
+    }
+
+    /** Returns the attributes with the given values, or {@code null} if none of them is set. */
+    public static @Nullable UncommonAttributes create(
+        @Nullable Integer pathId,
+        @Nullable TunnelEncapsulationAttribute tunnelEncapsulationAttribute) {
+      ImmutableMap.Builder<Key, Object> attributes = ImmutableMap.builder();
+      // Path ID 0 means no path ID (path IDs start at 1).
+      if (pathId != null && pathId != 0) {
+        attributes.put(Key.PATH_ID, pathId);
+      }
+      if (tunnelEncapsulationAttribute != null) {
+        attributes.put(Key.TUNNEL_ENCAPSULATION_ATTRIBUTE, tunnelEncapsulationAttribute);
+      }
+      ImmutableMap<Key, Object> map = attributes.buildOrThrow();
+      // Intern.
+      return map.isEmpty() ? null : UNCOMMON_ATTRIBUTE_CACHE.get(new UncommonAttributes(map));
+    }
+
+    private UncommonAttributes(ImmutableMap<Key, Object> attributes) {
+      _attributes = attributes;
+    }
+
+    /** Only the attributes that are set; never empty. */
+    private final @Nonnull ImmutableMap<Key, Object> _attributes;
+
+    public @Nullable Integer getPathId() {
+      return (Integer) _attributes.get(Key.PATH_ID);
+    }
+
+    public @Nullable TunnelEncapsulationAttribute getTunnelEncapsulationAttribute() {
+      return (TunnelEncapsulationAttribute) _attributes.get(Key.TUNNEL_ENCAPSULATION_ATTRIBUTE);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      } else if (!(o instanceof UncommonAttributes)) {
+        return false;
+      }
+      return _attributes.equals(((UncommonAttributes) o)._attributes);
+    }
+
+    @Override
+    public int hashCode() {
+      return _attributes.hashCode();
+    }
+
+    /** Re-intern after deserialization. */
+    @Serial
+    private Object readResolve() throws ObjectStreamException {
+      return UNCOMMON_ATTRIBUTE_CACHE.get(this);
+    }
+  }
+
   /** Local-preference has a maximum value of u32 max. */
   public static final long MAX_LOCAL_PREFERENCE = (1L << 32) - 1;
 
@@ -230,6 +290,12 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   //   (100 bytes seems smallest possible object size, would be 100 MiB total).
   private static final LoadingCache<BgpRouteAttributes, BgpRouteAttributes> ATTRIBUTE_CACHE =
       Caffeine.newBuilder().softValues().maximumSize(1 << 20).build(a -> a);
+
+  // Soft values: let it be garbage collected in times of pressure.
+  // Maximum size 2^16: Just some upper bound on cache size; few routes have uncommon attributes.
+  private static final LoadingCache<UncommonAttributes, UncommonAttributes>
+      UNCOMMON_ATTRIBUTE_CACHE =
+          Caffeine.newBuilder().softValues().maximumSize(1 << 16).build(a -> a);
 
   // Soft values: let it be garbage collected in times of pressure.
   // Maximum size 2^16: Just some upper bound on cache size, well less than GiB.
@@ -496,15 +562,14 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   static final String PROP_WEIGHT = "weight";
 
   protected final @Nonnull BgpRouteAttributes _attributes;
-  // Stored as int with 0 meaning null (path IDs start at 1). Use getPathId() to read.
-  private final int _pathId;
+  protected final @Nullable UncommonAttributes _uncommonAttributes;
 
   protected final @Nonnull ReceivedFrom _receivedFrom;
 
   protected BgpRoute(
       @Nullable Prefix network,
       @Nonnull NextHop nextHop,
-      @Nullable Integer pathId,
+      @Nullable UncommonAttributes uncommonAttributes,
       long admin,
       BgpRouteAttributes attributes,
       ReceivedFrom receivedFrom,
@@ -514,7 +579,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     super(network, admin, tag, nonRouting, nonForwarding);
     _attributes = attributes;
     _nextHop = nextHop;
-    _pathId = pathId == null ? 0 : pathId;
+    _uncommonAttributes = uncommonAttributes;
     _receivedFrom = receivedFrom;
   }
 
@@ -589,7 +654,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
    */
   @JsonProperty(PROP_PATH_ID)
   public @Nullable Integer getPathId() {
-    return _pathId == 0 ? null : _pathId;
+    return _uncommonAttributes == null ? null : _uncommonAttributes.getPathId();
   }
 
   @JsonIgnore(false)
@@ -617,7 +682,9 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
 
   @JsonProperty(PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE)
   public @Nullable TunnelEncapsulationAttribute getTunnelEncapsulationAttribute() {
-    return _attributes._tunnelEncapsulationAttribute;
+    return _uncommonAttributes == null
+        ? null
+        : _uncommonAttributes.getTunnelEncapsulationAttribute();
   }
 
   @JsonProperty(PROP_WEIGHT)

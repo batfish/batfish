@@ -60,12 +60,11 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
               _protocol,
               _receivedFromRouteReflectorClient,
               _srcProtocol,
-              _tunnelEncapsulationAttribute,
               _weight),
           _receivedFrom,
           getNetwork(),
           _nextHop,
-          getPathId(),
+          UncommonAttributes.create(getPathId(), _tunnelEncapsulationAttribute),
           getAdmin(),
           getTag(),
           getNonForwarding(),
@@ -128,12 +127,11 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
             protocol,
             receivedFromRouteReflectorClient,
             srcProtocol,
-            tunnelEncapsulationAttribute,
             weight),
         receivedFrom,
         network,
         NextHop.legacyConverter(nextHopInterface, nextHopIp),
-        pathId,
+        UncommonAttributes.create(pathId, tunnelEncapsulationAttribute),
         admin,
         tag,
         false,
@@ -145,13 +143,21 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
       @Nonnull ReceivedFrom receivedFrom,
       @Nullable Prefix network,
       @Nonnull NextHop nextHop,
-      @Nullable Integer pathId,
+      @Nullable UncommonAttributes uncommonAttributes,
       long admin,
       long tag,
       boolean nonForwarding,
       boolean nonRouting) {
     super(
-        network, nextHop, pathId, admin, attributes, receivedFrom, tag, nonForwarding, nonRouting);
+        network,
+        nextHop,
+        uncommonAttributes,
+        admin,
+        attributes,
+        receivedFrom,
+        tag,
+        nonForwarding,
+        nonRouting);
   }
 
   public static Builder builder() {
@@ -195,7 +201,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
         .setReceivedFromRouteReflectorClient(_attributes._receivedFromRouteReflectorClient)
         .setSrcProtocol(_attributes.getSrcProtocol())
         .setTag(getTag())
-        .setTunnelEncapsulationAttribute(_attributes._tunnelEncapsulationAttribute)
+        .setTunnelEncapsulationAttribute(getTunnelEncapsulationAttribute())
         .setWeight(_attributes._weight);
   }
 
@@ -211,7 +217,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
     return (_hashCode == other._hashCode || _hashCode == 0 || other._hashCode == 0)
         && _network.equals(other._network)
         && _nextHop.equals(other._nextHop)
-        && Objects.equals(getPathId(), other.getPathId())
+        && Objects.equals(_uncommonAttributes, other._uncommonAttributes)
         && _attributes.equals(other._attributes)
         && _receivedFrom.equals(other._receivedFrom)
         // Things above this line are more likely to cause false earlier.
@@ -230,7 +236,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
       h = h * 31 + _receivedFrom.hashCode();
       h = h * 31 + _network.hashCode();
       h = h * 31 + _nextHop.hashCode();
-      h = h * 31 + (getPathId() != null ? getPathId() : 0);
+      h = h * 31 + Objects.hashCode(_uncommonAttributes);
       h = h * 31 + Boolean.hashCode(getNonForwarding());
       h = h * 31 + Boolean.hashCode(getNonRouting());
       h = h * 31 + Long.hashCode(getTag());
@@ -261,7 +267,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
         .add("_receivedFrom", _receivedFrom)
         .add("_receivedFromRouteReflectorClient", _attributes._receivedFromRouteReflectorClient)
         .add("_srcProtocol", _attributes._srcProtocol)
-        .add("_tunnelEncapsulationAttribute", _attributes._tunnelEncapsulationAttribute)
+        .add("_tunnelEncapsulationAttribute", getTunnelEncapsulationAttribute())
         .add("_weight", _attributes._weight)
         .toString();
   }
