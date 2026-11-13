@@ -4,6 +4,13 @@ options {
   tokenVocab = FrrLexer;
 }
 
+as_path_access_list_name
+:
+  WORD
+  // 'seq' is lexed as SEQ in an as-path access-list
+  | SEQ
+;
+
 autonomous_system
 :
   uint32

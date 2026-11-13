@@ -2043,13 +2043,16 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
    */
   private <T> void addLineInSeqOrder(
       List<T> lines, NavigableMap<Long, T> linesBySeq, @Nullable Uint32Context seqCtx, T line) {
-    long seq =
-        seqCtx != null
-            ? toLong(seqCtx)
-            : nextMultipleOfFive(linesBySeq.isEmpty() ? null : linesBySeq.lastKey());
+    Long lastSeq = linesBySeq.isEmpty() ? null : linesBySeq.lastKey();
+    long seq = seqCtx != null ? toLong(seqCtx) : nextMultipleOfFive(lastSeq);
     linesBySeq.put(seq, line);
-    lines.clear();
-    lines.addAll(linesBySeq.values());
+    if (lastSeq == null || seq > lastSeq) {
+      // The common case: entries in seq order.
+      lines.add(line);
+    } else {
+      lines.clear();
+      lines.addAll(linesBySeq.values());
+    }
   }
 
   @VisibleForTesting
