@@ -462,6 +462,8 @@ public class OspfRoutingProcessTest {
     OspfRoutingProcess process =
         new OspfRoutingProcess(ospfProcess.build(), VRF_NAME, _c, _emptyOspfTopology);
     assertThat(process.getIncrementalCost(loopbackName, true), equalTo(5L));
+    // The neighbor-edge form gives the same cost; FRR forms no adjacencies on a loopback
+    assertThat(process.getIncrementalCost(loopbackName, false), equalTo(5L));
     assertThat(process.getIncrementalCost(ACTIVE_IFACE_NAME, false), equalTo(overrideMetric));
 
     // and gets the stub override instead

@@ -2711,6 +2711,38 @@ public class FrrGrammarTest {
   }
 
   @Test
+  public void testOspfLoopbackInSharedSubnet_noNeighbors() throws IOException {
+    /*
+      r1's loopback (10.0.0.1/24) shares a subnet with r2's swp2 (10.0.0.2/24), and both are in OSPF
+      area 0. FRR does not form adjacencies on a loopback, and neither does Batfish, so a loopback
+      is never on an OSPF neighbor edge. The only adjacency is over swp1.
+    */
+    String snapshotName = "ospf-loopback-subnet";
+    List<String> configurationNames = ImmutableList.of("r1", "r2");
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationFiles(SNAPSHOTS_PREFIX + snapshotName, configurationNames)
+                .build(),
+            _folder);
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+
+    assertThat(
+        batfish.getTopologyProvider().getOspfTopology(snapshot).edges().stream()
+            .map(e ->
+                e.getTail().getHostname()
+                    + ":"
+                    + e.getTail().getInterfaceName()
+                    + "->"
+                    + e.getHead().getHostname()
+                    + ":"
+                    + e.getHead().getInterfaceName())
+            .collect(ImmutableList.toImmutableList()),
+        containsInAnyOrder("r1:swp1->r2:swp1", "r2:swp1->r1:swp1"));
+  }
+
+  @Test
   public void testCreatePhysicalInterfaceInFRR() {
     String name = "eth1";
     parse(String.format("interface %s\n", name));
