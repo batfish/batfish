@@ -1183,7 +1183,7 @@ M_AccessList_PERMIT
 
 M_AccessList_SEQ
 :
-   'seq' -> type(SEQ), pushMode(M_AccessListSeq)
+   'seq' -> type(SEQ), mode(M_AccessListSeq)
 ;
 
 M_AsPathAccessList_REGEX
@@ -1206,11 +1206,32 @@ M_AccessList_WS
    F_Whitespace+ -> channel (HIDDEN)
 ;
 
+// After 'seq': either the sequence number, or, for a list named 'seq', what follows the name.
 mode M_AccessListSeq;
+
+M_AccessListSeq_DENY
+:
+   'deny' -> type(DENY), mode(M_AccessList)
+;
+
+M_AccessListSeq_PERMIT
+:
+   'permit' -> type(PERMIT), mode(M_AccessList)
+;
+
+M_AccessListSeq_SEQ
+:
+   'seq' -> type(SEQ)
+;
 
 M_AccessListSeq_UINT32
 :
-   F_Uint32 -> type(UINT32), popMode
+   F_Uint32 -> type(UINT32), mode(M_AccessList)
+;
+
+M_AccessListSeq_NEWLINE
+:
+   F_Newline -> type (NEWLINE) , popMode
 ;
 
 M_AccessListSeq_WS

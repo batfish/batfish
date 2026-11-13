@@ -1706,6 +1706,30 @@ public class FrrGrammarTest {
   }
 
   @Test
+  public void testFrrAsPathAccessListNamedSeq() {
+    parseLines(
+        "bgp as-path access-list seq permit .*", "bgp as-path access-list seq seq 1 deny _65001_");
+    assertThat(
+        _frr.getBgpAsPathAccessLists().get("seq").getLines().stream()
+            .map(l -> l.getAction() + " " + l.getRegex())
+            .collect(ImmutableList.toImmutableList()),
+        contains("DENY _65001_", "PERMIT .*"));
+  }
+
+  @Test
+  public void testFrrAsPathAccessListSeqWithoutNumber() {
+    // 'seq' with no number is invalid, but only that line should be unrecognized
+    Settings settings = new Settings();
+    settings.setDisableUnrecognized(false);
+    settings.setThrowOnLexerError(false);
+    settings.setThrowOnParserError(false);
+    parseFromTextWithSettings(
+        "bgp as-path access-list P seq permit .*\nbgp as-path access-list Q permit .*\n", settings);
+    assertThat(_frr.getBgpAsPathAccessLists(), not(hasKey("P")));
+    assertThat(_frr.getBgpAsPathAccessLists(), hasKey("Q"));
+  }
+
+  @Test
   public void testFrrVrfRouteMapMatchInterface() {
     String name = "ROUTE-MAP-NAME";
 

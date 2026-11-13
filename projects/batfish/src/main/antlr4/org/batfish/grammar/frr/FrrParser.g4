@@ -40,7 +40,8 @@ statement
 
 b_as_path_access_list
 :
-  AS_PATH ACCESS_LIST name = word (SEQ seq = uint32)? action = access_list_action
+  AS_PATH ACCESS_LIST name = as_path_access_list_name (SEQ seq = uint32)?
+  action = access_list_action
   as_path_regex = REGEX NEWLINE
 ;
 
