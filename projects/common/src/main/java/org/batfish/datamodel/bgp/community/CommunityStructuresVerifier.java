@@ -82,6 +82,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchRouteType;
 import org.batfish.datamodel.routing_policy.expr.MatchSourceProtocol;
 import org.batfish.datamodel.routing_policy.expr.MatchSourceVrf;
 import org.batfish.datamodel.routing_policy.expr.MatchTag;
+import org.batfish.datamodel.routing_policy.expr.MatchTag2;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.RouteIsClassful;
 import org.batfish.datamodel.routing_policy.expr.TrackSucceeded;
@@ -106,6 +107,7 @@ import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOriginatorIp;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
+import org.batfish.datamodel.routing_policy.statement.SetTag2;
 import org.batfish.datamodel.routing_policy.statement.SetTunnelEncapsulationAttribute;
 import org.batfish.datamodel.routing_policy.statement.SetVarMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetWeight;
@@ -297,6 +299,11 @@ public final class CommunityStructuresVerifier {
 
     @Override
     public Void visitMatchTag(MatchTag matchTag, CommunityStructuresVerifierContext arg) {
+      return null;
+    }
+
+    @Override
+    public Void visitMatchTag2(MatchTag2 matchTag2, CommunityStructuresVerifierContext arg) {
       return null;
     }
 
@@ -774,6 +781,11 @@ public final class CommunityStructuresVerifier {
 
     @Override
     public Void visitSetTag(SetTag setTag, CommunityStructuresVerifierContext arg) {
+      return null;
+    }
+
+    @Override
+    public Void visitSetTag2(SetTag2 setTag2, CommunityStructuresVerifierContext arg) {
       return null;
     }
 

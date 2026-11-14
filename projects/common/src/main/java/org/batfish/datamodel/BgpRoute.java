@@ -225,17 +225,22 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     /** Keys of the attributes stored in {@link #_attributes}; each getter knows its value type. */
     private enum Key {
       PATH_ID,
+      TAG2,
       TUNNEL_ENCAPSULATION_ATTRIBUTE
     }
 
     /** Returns the attributes with the given values, or {@code null} if none of them is set. */
     public static @Nullable UncommonAttributes create(
         @Nullable Integer pathId,
+        long tag2,
         @Nullable TunnelEncapsulationAttribute tunnelEncapsulationAttribute) {
       ImmutableMap.Builder<Key, Object> attributes = ImmutableMap.builder();
       // Path ID 0 means no path ID (path IDs start at 1).
       if (pathId != null && pathId != 0) {
         attributes.put(Key.PATH_ID, pathId);
+      }
+      if (tag2 != 0) {
+        attributes.put(Key.TAG2, tag2);
       }
       if (tunnelEncapsulationAttribute != null) {
         attributes.put(Key.TUNNEL_ENCAPSULATION_ATTRIBUTE, tunnelEncapsulationAttribute);
@@ -254,6 +259,12 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
 
     public @Nullable Integer getPathId() {
       return (Integer) _attributes.get(Key.PATH_ID);
+    }
+
+    /** A second route tag, local to the device (Junos {@code tag2}). 0 if unset. */
+    public long getTag2() {
+      Long tag2 = (Long) _attributes.get(Key.TAG2);
+      return tag2 == null ? 0L : tag2;
     }
 
     public @Nullable TunnelEncapsulationAttribute getTunnelEncapsulationAttribute() {
@@ -329,6 +340,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
 
     protected boolean _receivedFromRouteReflectorClient;
     protected @Nullable RoutingProtocol _srcProtocol;
+    protected long _tag2;
     protected @Nullable TunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
     protected int _weight;
 
@@ -402,6 +414,11 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
 
     public @Nullable RoutingProtocol getProtocol() {
       return _protocol;
+    }
+
+    /** A second route tag, local to the device (Junos {@code tag2}). */
+    public long getTag2() {
+      return _tag2;
     }
 
     @Override
@@ -527,6 +544,11 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
       return getThis();
     }
 
+    public @Nonnull B setTag2(long tag2) {
+      _tag2 = tag2;
+      return getThis();
+    }
+
     public @Nonnull B setTunnelEncapsulationAttribute(
         @Nullable TunnelEncapsulationAttribute tunnelEncapsulationAttribute) {
       _tunnelEncapsulationAttribute = tunnelEncapsulationAttribute;
@@ -558,6 +580,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   static final String PROP_RECEIVED_FROM_ROUTE_REFLECTOR_CLIENT =
       "receivedFromRouteReflectorClient";
   static final String PROP_SRC_PROTOCOL = "srcProtocol";
+  static final String PROP_TAG2 = "tag2";
   static final String PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE = "tunnelEncapsulationAttribute";
   static final String PROP_WEIGHT = "weight";
 
@@ -678,6 +701,22 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   @Override
   public @Nullable RoutingProtocol getSrcProtocol() {
     return _attributes.getSrcProtocol();
+  }
+
+  /**
+   * A second route tag, local to the device: like the tag, it is set and matched by routing policy
+   * and not sent to BGP peers (Junos {@code tag2}). 0 if unset.
+   */
+  @JsonIgnore
+  public long getTag2() {
+    return _uncommonAttributes == null ? 0L : _uncommonAttributes.getTag2();
+  }
+
+  /** Jackson use only: omit tag2 when it is 0. */
+  @JsonProperty(PROP_TAG2)
+  private @Nullable Long getJsonTag2() {
+    long tag2 = getTag2();
+    return tag2 == 0 ? null : tag2;
   }
 
   @JsonProperty(PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE)
