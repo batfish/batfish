@@ -21,7 +21,10 @@ import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.minesweeper.aspath.AsPathRegexCollector;
+import org.batfish.minesweeper.aspath.Color2Collector;
+import org.batfish.minesweeper.aspath.ColorCollector;
 import org.batfish.minesweeper.aspath.RoutingPolicyCollector;
+import org.batfish.minesweeper.aspath.Tag2Collector;
 import org.batfish.minesweeper.aspath.TunnelEncapsulationAttributeCollector;
 import org.batfish.minesweeper.communities.RoutePolicyStatementVarCollector;
 import org.batfish.minesweeper.env.PeerAddressCollector;
@@ -71,6 +74,9 @@ public final class ConfigAtomicPredicates {
 
   private final List<TunnelEncapsulationAttribute> _tunnelEncapsulationAttributes;
 
+  /** The tag2, color and color2 literals that appear in the given configuration. */
+  private final LocalAttributeLiterals _localAttributeLiterals;
+
   private static boolean isStandardCommunity(CommunityVar var) {
     if (var.getType() == CommunityVar.Type.REGEX) {
       // assume all regexes are on standard communities
@@ -99,6 +105,9 @@ public final class ConfigAtomicPredicates {
     Set<String> allSourceVrfNames = new TreeSet<>();
     ImmutableSet.Builder<TunnelEncapsulationAttribute> allTunnelEncapsulationAttributes =
         ImmutableSet.builder();
+    Set<Long> allTag2s = new HashSet<>();
+    Set<Long> allColors = new HashSet<>();
+    Set<Long> allColor2s = new HashSet<>();
     allCommunitiesB.addAll(extraCommunities);
     extraAsPathRegexes.forEach(s -> allAsPathRegexesB.add(new SymbolicAsPathRegex(s)));
 
@@ -112,6 +121,12 @@ public final class ConfigAtomicPredicates {
       allPeerAddresses.addAll(findAllPeerAddresses(policies, config));
       allSourceVrfNames.addAll(findAllSourceVrfs(policies, config));
       allTunnelEncapsulationAttributes.addAll(findAllTunnelAttributes(policies, config));
+      allTag2s.addAll(
+          findAllMatchItems(ImmutableSet.of(), policies, config, Tag2Collector.instance()));
+      allColors.addAll(
+          findAllMatchItems(ImmutableSet.of(), policies, config, ColorCollector.instance()));
+      allColor2s.addAll(
+          findAllMatchItems(ImmutableSet.of(), policies, config, Color2Collector.instance()));
     }
     Set<CommunityVar> allCommunities = allCommunitiesB.build();
 
@@ -141,6 +156,7 @@ public final class ConfigAtomicPredicates {
     _tracks = ImmutableList.copyOf(allTrackNames);
     _sourceVrfs = ImmutableList.copyOf(allSourceVrfNames);
     _tunnelEncapsulationAttributes = ImmutableList.copyOf(allTunnelEncapsulationAttributes.build());
+    _localAttributeLiterals = LocalAttributeLiterals.create(allTag2s, allColors, allColor2s);
   }
 
   public ConfigAtomicPredicates(ConfigAtomicPredicates other) {
@@ -154,6 +170,7 @@ public final class ConfigAtomicPredicates {
     _tracks = other._tracks;
     _sourceVrfs = other._sourceVrfs;
     _tunnelEncapsulationAttributes = other._tunnelEncapsulationAttributes;
+    _localAttributeLiterals = other._localAttributeLiterals;
   }
 
   /**
@@ -336,6 +353,23 @@ public final class ConfigAtomicPredicates {
 
   public List<TunnelEncapsulationAttribute> getTunnelEncapsulationAttributes() {
     return _tunnelEncapsulationAttributes;
+  }
+
+  /** The tag2, color and color2 literals that appear in the given configurations' policies. */
+  public LocalAttributeLiterals getLocalAttributeLiterals() {
+    return _localAttributeLiterals;
+  }
+
+  public List<Long> getTag2s() {
+    return _localAttributeLiterals.tag2s();
+  }
+
+  public List<Long> getColors() {
+    return _localAttributeLiterals.colors();
+  }
+
+  public List<Long> getColor2s() {
+    return _localAttributeLiterals.color2s();
   }
 
   public List<String> getSourceVrfs() {

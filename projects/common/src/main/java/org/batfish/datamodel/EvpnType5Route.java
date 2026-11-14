@@ -67,7 +67,8 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
           _nextHop,
           _routeDistinguisher,
           _vni,
-          UncommonAttributes.create(getPathId(), _tunnelEncapsulationAttribute),
+          UncommonAttributes.create(
+              getPathId(), _tag2, _color, _color2, _tunnelEncapsulationAttribute),
           getTag());
     }
 
@@ -103,6 +104,9 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
       @JsonProperty(PROP_VNI) @Nullable Integer vni,
       @JsonProperty(PROP_SRC_PROTOCOL) @Nullable RoutingProtocol srcProtocol,
       @JsonProperty(PROP_TAG) long tag,
+      @JsonProperty(PROP_TAG2) @Nullable Long tag2,
+      @JsonProperty(PROP_COLOR) @Nullable Long color,
+      @JsonProperty(PROP_COLOR2) @Nullable Long color2,
       @JsonProperty(PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE) @Nullable
           TunnelEncapsulationAttribute tunnelEncapsulationAttribute,
       @JsonProperty(PROP_WEIGHT) int weight) {
@@ -136,7 +140,12 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
         NextHop.legacyConverter(nextHopInterface, nextHopIp),
         routeDistinguisher,
         vni,
-        UncommonAttributes.create(pathId, tunnelEncapsulationAttribute),
+        UncommonAttributes.create(
+            pathId,
+            tag2 == null ? 0L : tag2,
+            color == null ? 0L : color,
+            color2 == null ? 0L : color2,
+            tunnelEncapsulationAttribute),
         tag);
   }
 
@@ -186,6 +195,9 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
         .setRouteDistinguisher(_routeDistinguisher)
         .setSrcProtocol(_attributes.getSrcProtocol())
         .setTag(getTag())
+        .setTag2(getTag2())
+        .setColor(getColor())
+        .setColor2(getColor2())
         .setTunnelEncapsulationAttribute(getTunnelEncapsulationAttribute())
         .setVni(_vni)
         .setWeight(_attributes._weight);

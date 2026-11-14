@@ -62,6 +62,10 @@ public interface BooleanExprVisitor<T, U> {
 
   T visitMatchTag(MatchTag matchTag, U arg);
 
+  T visitMatchTag2(MatchTag2 matchTag2, U arg);
+
+  T visitMatchColor2(MatchColor2 matchColor2, U arg);
+
   T visitNot(Not not, U arg);
 
   T visitRouteIsClassful(RouteIsClassful routeIsClassful, U arg);

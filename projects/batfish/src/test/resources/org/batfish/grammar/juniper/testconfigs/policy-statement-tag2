@@ -1,0 +1,6 @@
+set system host-name policy-statement-tag2
+set policy-options policy-statement SET-TAG2 term T then tag2 10
+set policy-options policy-statement SET-TAG2 term T then accept
+set policy-options policy-statement MATCH-TAG2 term T from tag2 10
+set policy-options policy-statement MATCH-TAG2 term T then accept
+set policy-options policy-statement MATCH-TAG2 term R then reject

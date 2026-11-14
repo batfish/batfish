@@ -30,6 +30,7 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.TunnelEncapsulationAttribute;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.batfish.minesweeper.IDeepCopy;
+import org.batfish.minesweeper.LocalAttributeLiterals;
 import org.batfish.minesweeper.OspfType;
 
 /**
@@ -159,6 +160,24 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
    */
   private @Nonnull BDDTunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
 
+  /**
+   * Represents the local {@code tag2} of the route (see {@link
+   * org.batfish.datamodel.BgpRoute#getTag2()}), over the literals that route policies use.
+   */
+  private @Nonnull BDDLongAtom _tag2;
+
+  /**
+   * Represents the local {@code color} of the route (see {@link
+   * org.batfish.datamodel.BgpRoute#getColor()}), over the literals that route policies use.
+   */
+  private @Nonnull BDDLongAtom _color;
+
+  /**
+   * Represents the local {@code color2} of the route (see {@link
+   * org.batfish.datamodel.BgpRoute#getColor2()}), over the literals that route policies use.
+   */
+  private @Nonnull BDDLongAtom _color2;
+
   private MutableBDDInteger _tag;
 
   /**
@@ -202,7 +221,8 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
         aps.getPeerAddresses().size(),
         aps.getSourceVrfs().size(),
         aps.getTracks().size(),
-        aps.getTunnelEncapsulationAttributes());
+        aps.getTunnelEncapsulationAttributes(),
+        aps.getLocalAttributeLiterals());
   }
 
   private static int numNonPrefixVars(
@@ -212,7 +232,8 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
       int numPeerAddresses,
       int numSourceVrfs,
       int numTracks,
-      List<TunnelEncapsulationAttribute> tunnelEncapsulationAttributes) {
+      List<TunnelEncapsulationAttribute> tunnelEncapsulationAttributes,
+      LocalAttributeLiterals localAttributeLiterals) {
     int bitsToRepresentAdmin =
         LongMath.log2(AbstractRoute.MAX_ADMIN_DISTANCE, RoundingMode.CEILING);
     // or else we need to do tricks in the BDDInteger.
@@ -235,6 +256,9 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
         + numBits(numPeerAddresses + 1)
         + numTracks
         + BDDTunnelEncapsulationAttribute.numBitsFor(tunnelEncapsulationAttributes)
+        + BDDLongAtom.numBitsFor(localAttributeLiterals.tag2s())
+        + BDDLongAtom.numBitsFor(localAttributeLiterals.colors())
+        + BDDLongAtom.numBitsFor(localAttributeLiterals.color2s())
         + numBits(OriginType.values().length)
         + numBits(RoutingProtocol.values().length)
         + numBits(allMetricTypes.size());
@@ -254,7 +278,10 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
         aps.getPeerAddresses().size(),
         aps.getSourceVrfs().size(),
         aps.getTracks().size(),
-        aps.getTunnelEncapsulationAttributes());
+        aps.getTunnelEncapsulationAttributes(),
+        aps.getLocalAttributeLiterals(),
+        /* prefixStartIdx= */ 0,
+        /* startIdx= */ PREFIX_LENGTH_BITS + PREFIX_BITS);
   }
 
   /**
@@ -282,6 +309,7 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
         numSourceVrfs,
         numTracks,
         tunnelEncapsulationAttributes,
+        LocalAttributeLiterals.empty(),
         /* prefixStartIdx= */ 0,
         /* startIdx= */ PREFIX_LENGTH_BITS + PREFIX_BITS);
   }
@@ -297,7 +325,8 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
    * a route's destination, so there is nothing to distinguish per block. Used by {@link
    * BDDRouteFactory} to build additional, disjoint (except for prefix/prefix-length) routes in the
    * same factory, and optionally to offset {@code prefixStartIdx} itself past a block of
-   * caller-defined shared bits allocated before it.
+   * caller-defined shared bits allocated before it. The {@code tag2}, {@code color} and {@code
+   * color2} attributes track exactly the given {@code localAttributeLiterals}.
    */
   BDDRoute(
       BDDFactory factory,
@@ -308,6 +337,7 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
       int numSourceVrfs,
       int numTracks,
       List<TunnelEncapsulationAttribute> tunnelEncapsulationAttributes,
+      LocalAttributeLiterals localAttributeLiterals,
       int prefixStartIdx,
       int startIdx) {
     checkArgument(prefixStartIdx >= 0, "prefixStartIdx must be non-negative");
@@ -332,7 +362,8 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
                 numPeerAddresses,
                 numSourceVrfs,
                 numTracks,
-                tunnelEncapsulationAttributes);
+                tunnelEncapsulationAttributes,
+                localAttributeLiterals);
     if (factory.varNum() < numNeeded) {
       factory.setVarNum(numNeeded);
     }
@@ -444,6 +475,20 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
     addBitNames("tunnel encapsulation attributes", len, idx, false);
     idx += len;
 
+    // Local attributes are atoms over the literals that route policies use
+    _tag2 = BDDLongAtom.create(factory, idx, localAttributeLiterals.tag2s());
+    len = _tag2.getNumBits();
+    addBitNames("tag2", len, idx, false);
+    idx += len;
+    _color = BDDLongAtom.create(factory, idx, localAttributeLiterals.colors());
+    len = _color.getNumBits();
+    addBitNames("color", len, idx, false);
+    idx += len;
+    _color2 = BDDLongAtom.create(factory, idx, localAttributeLiterals.color2s());
+    len = _color2.getNumBits();
+    addBitNames("color2", len, idx, false);
+    idx += len;
+
     // Initialize OSPF type
     _ospfMetric = new BDDDomain<>(factory, allMetricTypes, idx);
     len = _ospfMetric.getInteger().size();
@@ -507,6 +552,9 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
     }
     _tunnelEncapsulationAttribute =
         BDDTunnelEncapsulationAttribute.copyOf(other._tunnelEncapsulationAttribute);
+    _tag2 = BDDLongAtom.copyOf(other._tag2);
+    _color = BDDLongAtom.copyOf(other._color);
+    _color2 = BDDLongAtom.copyOf(other._color2);
     _unsupported = other._unsupported;
     _allFields = other._allFields;
   }
@@ -551,6 +599,9 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
     _sourceVrfs = new BDDDomain<>(pred, route._sourceVrfs);
     _tracks = route.getTracks();
     _tunnelEncapsulationAttribute = route._tunnelEncapsulationAttribute.and(pred);
+    _tag2 = route._tag2.and(pred);
+    _color = route._color.and(pred);
+    _color2 = route._color2.and(pred);
     _allFields = route._allFields;
   }
 
@@ -588,6 +639,9 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
     _peerAddress = route._peerAddress.veccompose(pairing);
     _sourceVrfs = route._sourceVrfs.veccompose(pairing);
     _tunnelEncapsulationAttribute = route._tunnelEncapsulationAttribute.veccompose(pairing);
+    _tag2 = route._tag2.veccompose(pairing);
+    _color = route._color.veccompose(pairing);
+    _color2 = route._color2.veccompose(pairing);
     BDD[] tracks = new BDD[route._tracks.length];
     for (int i = 0; i < tracks.length; i++) {
       tracks[i] = route._tracks[i].veccompose(pairing);
@@ -669,6 +723,9 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
     BDD peerAddressValid = _peerAddress.getIsValidConstraint();
     BDD sourceVrfValid = _sourceVrfs.getIsValidConstraint();
     BDD tunnelEncapValid = _tunnelEncapsulationAttribute.getIsValidConstraint();
+    BDD tag2Valid = _tag2.getIsValidConstraint();
+    BDD colorValid = _color.getIsValidConstraint();
+    BDD color2Valid = _color2.getIsValidConstraint();
     return _factory.andAllAndFree(
         prefLenConstraint,
         nextHopConstraint,
@@ -679,7 +736,10 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
         protocolConstraint,
         peerAddressValid,
         sourceVrfValid,
-        tunnelEncapValid);
+        tunnelEncapValid,
+        tag2Valid,
+        colorValid,
+        color2Valid);
   }
 
   /**
@@ -710,6 +770,9 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
     _sourceVrfs.augmentPairing(identity._sourceVrfs, pairing);
     pairing.set(identity._tracks, _tracks);
     _tunnelEncapsulationAttribute.augmentPairing(identity._tunnelEncapsulationAttribute, pairing);
+    _tag2.augmentPairing(identity._tag2, pairing);
+    _color.augmentPairing(identity._color, pairing);
+    _color2.augmentPairing(identity._color2, pairing);
   }
 
   /**
@@ -1022,6 +1085,54 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
             .allDifferences(other._tunnelEncapsulationAttribute)
             .notEq();
       }
+    },
+    TAG2 {
+      @Override
+      public BDD support(BDDRoute route) {
+        return route._tag2.support();
+      }
+
+      @Override
+      public void augmentPairing(BDDRoute route, BDDRoute identity, BDDPairing pairing) {
+        route._tag2.augmentPairing(identity._tag2, pairing);
+      }
+
+      @Override
+      public BDD eq(BDDRoute route, BDDRoute other) {
+        return route._tag2.allDifferences(other._tag2).notEq();
+      }
+    },
+    COLOR {
+      @Override
+      public BDD support(BDDRoute route) {
+        return route._color.support();
+      }
+
+      @Override
+      public void augmentPairing(BDDRoute route, BDDRoute identity, BDDPairing pairing) {
+        route._color.augmentPairing(identity._color, pairing);
+      }
+
+      @Override
+      public BDD eq(BDDRoute route, BDDRoute other) {
+        return route._color.allDifferences(other._color).notEq();
+      }
+    },
+    COLOR2 {
+      @Override
+      public BDD support(BDDRoute route) {
+        return route._color2.support();
+      }
+
+      @Override
+      public void augmentPairing(BDDRoute route, BDDRoute identity, BDDPairing pairing) {
+        route._color2.augmentPairing(identity._color2, pairing);
+      }
+
+      @Override
+      public BDD eq(BDDRoute route, BDDRoute other) {
+        return route._color2.allDifferences(other._color2).notEq();
+      }
     };
   }
 
@@ -1196,6 +1307,15 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
     if (!_tunnelEncapsulationAttribute.equals(identity._tunnelEncapsulationAttribute)) {
       touched.add(Attribute.TUNNEL_ENCAPSULATION_ATTRIBUTE);
     }
+    if (!_tag2.equals(identity._tag2)) {
+      touched.add(Attribute.TAG2);
+    }
+    if (!_color.equals(identity._color)) {
+      touched.add(Attribute.COLOR);
+    }
+    if (!_color2.equals(identity._color2)) {
+      touched.add(Attribute.COLOR2);
+    }
     return touched;
   }
 
@@ -1227,6 +1347,9 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
       track.free();
     }
     _tunnelEncapsulationAttribute.free();
+    _tag2.free();
+    _color.free();
+    _color2.free();
   }
 
   /**
@@ -1451,6 +1574,30 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
     return _tunnelEncapsulationAttribute;
   }
 
+  public @Nonnull BDDLongAtom getTag2() {
+    return _tag2;
+  }
+
+  public void setTag2(@Nonnull BDDLongAtom tag2) {
+    _tag2 = tag2;
+  }
+
+  public @Nonnull BDDLongAtom getColor() {
+    return _color;
+  }
+
+  public void setColor(@Nonnull BDDLongAtom color) {
+    _color = color;
+  }
+
+  public @Nonnull BDDLongAtom getColor2() {
+    return _color2;
+  }
+
+  public void setColor2(@Nonnull BDDLongAtom color2) {
+    _color2 = color2;
+  }
+
   public MutableBDDInteger getWeight() {
     return _weight;
   }
@@ -1497,6 +1644,9 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
         && Objects.equals(_sourceVrfs, other._sourceVrfs)
         && Arrays.equals(_tracks, other._tracks)
         && _tunnelEncapsulationAttribute.equals(other._tunnelEncapsulationAttribute)
+        && _tag2.equals(other._tag2)
+        && _color.equals(other._color)
+        && _color2.equals(other._color2)
         && Objects.equals(_unsupported, other._unsupported);
   }
 

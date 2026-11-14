@@ -167,6 +167,7 @@ public final class BDDRouteFactory {
         aps.getSourceVrfs().size(),
         aps.getTracks().size(),
         aps.getTunnelEncapsulationAttributes(),
+        aps.getLocalAttributeLiterals(),
         prefixStartIdx,
         startIdx);
   }

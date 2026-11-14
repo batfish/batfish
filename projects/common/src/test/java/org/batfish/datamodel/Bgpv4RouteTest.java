@@ -42,6 +42,7 @@ public class Bgpv4RouteTest {
             .setOriginType(OriginType.IGP)
             .setPathId(5)
             .setProtocol(RoutingProtocol.BGP)
+            .setTag2(4L)
             .build();
     assertThat(BatfishObjectMapper.clone(br, Bgpv4Route.class), equalTo(br));
   }
@@ -57,6 +58,7 @@ public class Bgpv4RouteTest {
             .setPathId(5)
             .setProtocol(RoutingProtocol.BGP)
             .setTag(3L)
+            .setTag2(4L)
             .build();
     assertThat(br, equalTo(br.toBuilder().build()));
   }
@@ -90,6 +92,7 @@ public class Bgpv4RouteTest {
         .addEqualityGroup(brb.setProtocol(RoutingProtocol.IBGP).build())
         .addEqualityGroup(brb.setSrcProtocol(RoutingProtocol.STATIC).build())
         .addEqualityGroup(brb.setTag(3L).build())
+        .addEqualityGroup(brb.setTag2(4L).build())
         .addEqualityGroup(brb.setWeight(1).build(), brb.build().toBuilder().build())
         .addEqualityGroup(new Object())
         .testEquals();

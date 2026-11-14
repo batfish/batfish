@@ -43,6 +43,12 @@ public interface StatementVisitor<T, U> {
 
   T visitSetTag(SetTag setTag, U arg);
 
+  T visitSetTag2(SetTag2 setTag2, U arg);
+
+  T visitSetColor(SetColor setColor, U arg);
+
+  T visitSetColor2(SetColor2 setColor2, U arg);
+
   T visitSetTunnelEncapsulationAttribute(
       SetTunnelEncapsulationAttribute setTunnelEncapsulationAttribute, U arg);
 
