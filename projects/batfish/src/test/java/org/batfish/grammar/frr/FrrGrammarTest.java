@@ -880,10 +880,12 @@ public class FrrGrammarTest {
         "  neighbor N1 interface description N",
         "  neighbor N2 interface description N",
         "  neighbor N3 interface description N",
+        "  neighbor N4 interface description N",
         "  address-family ipv4 unicast",
         "    neighbor N1 remove-private-AS",
         "    neighbor N2 remove-private-AS all",
-        "    neighbor N3 remove-private-AS all replace-as",
+        "    neighbor N3 remove-private-AS replace-AS",
+        "    neighbor N4 remove-private-AS all replace-AS",
         "  exit-address-family");
     assertThat(
         _frr.getBgpProcess()
@@ -903,6 +905,12 @@ public class FrrGrammarTest {
             .getIpv4UnicastConfiguration("N3")
             .getRemovePrivateAsMode(),
         equalTo(RemovePrivateAsMode.REPLACE_AS));
+    assertThat(
+        _frr.getBgpProcess()
+            .getDefaultVrf()
+            .getIpv4UnicastConfiguration("N4")
+            .getRemovePrivateAsMode(),
+        equalTo(RemovePrivateAsMode.ALL_REPLACE_AS));
   }
 
   @Test
