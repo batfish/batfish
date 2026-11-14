@@ -4254,23 +4254,31 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitPopsfrf_address_mask(Popsfrf_address_maskContext ctx) {
     if (_currentRouteFilterPrefix != null) { // ipv4
       if (ctx.ip_address() != null) {
+        Ip mask = toIp(ctx.ip_address());
+        int maskLength = Integer.numberOfLeadingZeros((int) mask.inverted().asLong());
+        if (maskLength > _currentRouteFilterPrefix.getPrefixLength()) {
+          fatalRouteFilter(ctx, "Route-filter address-mask is longer than the configured prefix");
+        }
         Route4FilterLine line =
-            new Route4FilterLineAddressMask(
-                _currentRouteFilterPrefix, toIp(ctx.ip_address()).inverted());
+            new Route4FilterLineAddressMask(_currentRouteFilterPrefix, mask.inverted());
         _currentRouteFilterLine = _currentRouteFilter.insertLine(line, Route4FilterLine.class);
       } else {
-        _w.redFlagf(
-            "Route filter mask does not match version for prefix %s", _currentRouteFilterPrefix);
+        fatalRouteFilter(ctx, "Route-filter address-mask must have the same address family");
+        setEmptyRouteFilterLine();
       }
     } else if (_currentRoute6FilterPrefix != null) { // ipv6
       if (ctx.ipv6_address() != null) {
+        Ip6 mask = toIp6(ctx.ipv6_address());
+        int maskLength = Prefix6.MAX_PREFIX_LENGTH - mask.inverted().asBigInteger().bitLength();
+        if (maskLength > _currentRoute6FilterPrefix.getPrefixLength()) {
+          fatalRouteFilter(ctx, "Route-filter address-mask is longer than the configured prefix");
+        }
         Route6FilterLine line =
-            new Route6FilterLineAddressMask(
-                _currentRoute6FilterPrefix, toIp6(ctx.ipv6_address()).inverted());
+            new Route6FilterLineAddressMask(_currentRoute6FilterPrefix, mask.inverted());
         _currentRoute6FilterLine = _currentRouteFilter.insertLine(line, Route6FilterLine.class);
       } else {
-        _w.redFlagf(
-            "Route filter mask does not match version for prefix %s", _currentRouteFilterPrefix);
+        fatalRouteFilter(ctx, "Route-filter address-mask must have the same address family");
+        setEmptyRouteFilterLine();
       }
     }
   }
@@ -4289,9 +4297,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void enterPopsfrf_longer(Popsfrf_longerContext ctx) {
     if (_currentRouteFilterPrefix != null) { // ipv4
+      if (_currentRouteFilterPrefix.getPrefixLength() == Prefix.MAX_PREFIX_LENGTH) {
+        warnEmptyRouteFilter(ctx);
+      }
       Route4FilterLine line = new Route4FilterLineLonger(_currentRouteFilterPrefix);
       _currentRouteFilterLine = _currentRouteFilter.insertLine(line, Route4FilterLine.class);
     } else if (_currentRoute6FilterPrefix != null) { // ipv6
+      if (_currentRoute6FilterPrefix.getPrefixLength() == Prefix6.MAX_PREFIX_LENGTH) {
+        warnEmptyRouteFilter(ctx);
+      }
       Route6FilterLine line = new Route6FilterLineLonger(_currentRoute6FilterPrefix);
       _currentRoute6FilterLine = _currentRouteFilter.insertLine(line, Route6FilterLine.class);
     }
@@ -4310,8 +4324,32 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void enterPopsfrf_prefix_length_range(Popsfrf_prefix_length_rangeContext ctx) {
+    // This grammar rule is also used by source-address-filter.
+    if (_currentRouteFilterPrefix == null && _currentRoute6FilterPrefix == null) {
+      return;
+    }
     int minPrefixLength = toInt(ctx.low);
     int maxPrefixLength = toInt(ctx.high);
+    int baseLength =
+        _currentRouteFilterPrefix != null
+            ? _currentRouteFilterPrefix.getPrefixLength()
+            : _currentRoute6FilterPrefix.getPrefixLength();
+    int familyMaxLength =
+        _currentRouteFilterPrefix != null ? Prefix.MAX_PREFIX_LENGTH : Prefix6.MAX_PREFIX_LENGTH;
+    if (minPrefixLength < baseLength
+        || minPrefixLength > familyMaxLength
+        || maxPrefixLength > familyMaxLength) {
+      _w.fatalRedFlag(
+          "Invalid route-filter prefix-length-range in policy-statement %s term %s: %s"
+              + " (minimum must be at least /%s and lengths must not exceed /%s)",
+          _currentPolicyStatement.getName(),
+          _currentPsTerm.getName(),
+          getFullText(ctx.getParent().getParent()).trim(),
+          baseLength,
+          familyMaxLength);
+    } else if (minPrefixLength > maxPrefixLength) {
+      warnEmptyRouteFilter(ctx);
+    }
     if (_currentRouteFilterPrefix != null) { // ipv4
       Route4FilterLine line =
           new Route4FilterLineLengthRange(
@@ -4338,12 +4376,28 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void enterPopsfrf_through(Popsfrf_throughContext ctx) {
+    if ((_currentRouteFilterPrefix != null && ctx.prefix == null)
+        || (_currentRoute6FilterPrefix != null && ctx.prefix6 == null)) {
+      fatalRouteFilter(ctx, "Route-filter through prefix must have the same address family");
+      setEmptyRouteFilterLine();
+      return;
+    }
     if (_currentRouteFilterPrefix != null) { // ipv4
       Prefix throughPrefix = toPrefix(ctx.prefix);
+      if (throughPrefix.getPrefixLength() < _currentRouteFilterPrefix.getPrefixLength()) {
+        fatalRouteFilter(ctx, "Route-filter through prefix is shorter than the base prefix");
+      } else if (!_currentRouteFilterPrefix.containsPrefix(throughPrefix)) {
+        warnEmptyRouteFilter(ctx);
+      }
       Route4FilterLine line = new Route4FilterLineThrough(_currentRouteFilterPrefix, throughPrefix);
       _currentRouteFilterLine = _currentRouteFilter.insertLine(line, Route4FilterLine.class);
     } else if (_currentRoute6FilterPrefix != null) { // ipv6
       Prefix6 throughPrefix6 = toPrefix6(ctx.prefix6);
+      if (throughPrefix6.getPrefixLength() < _currentRoute6FilterPrefix.getPrefixLength()) {
+        fatalRouteFilter(ctx, "Route-filter through prefix is shorter than the base prefix");
+      } else if (!_currentRoute6FilterPrefix.contains(throughPrefix6.getAddress())) {
+        warnEmptyRouteFilter(ctx);
+      }
       Route6FilterLine line =
           new Route6FilterLineThrough(_currentRoute6FilterPrefix, throughPrefix6);
       _currentRoute6FilterLine = _currentRouteFilter.insertLine(line, Route6FilterLine.class);
@@ -4352,13 +4406,65 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void enterPopsfrf_upto(Popsfrf_uptoContext ctx) {
+    // This grammar rule is also used by source-address-filter.
+    if (_currentRouteFilterPrefix == null && _currentRoute6FilterPrefix == null) {
+      return;
+    }
     int maxPrefixLength = toInt(ctx.high);
+    int familyMaxLength =
+        _currentRouteFilterPrefix != null ? Prefix.MAX_PREFIX_LENGTH : Prefix6.MAX_PREFIX_LENGTH;
+    if (maxPrefixLength > familyMaxLength) {
+      _w.fatalRedFlag(
+          "Invalid route-filter upto length /%s in policy-statement %s term %s"
+              + " (must not exceed /%s)",
+          maxPrefixLength,
+          _currentPolicyStatement.getName(),
+          _currentPsTerm.getName(),
+          familyMaxLength);
+    }
     if (_currentRouteFilterPrefix != null) { // ipv4
+      if (maxPrefixLength < _currentRouteFilterPrefix.getPrefixLength()) {
+        warnEmptyRouteFilter(ctx);
+      }
       Route4FilterLine line = new Route4FilterLineUpTo(_currentRouteFilterPrefix, maxPrefixLength);
       _currentRouteFilterLine = _currentRouteFilter.insertLine(line, Route4FilterLine.class);
     } else if (_currentRoute6FilterPrefix != null) { // ipv6
+      if (maxPrefixLength < _currentRoute6FilterPrefix.getPrefixLength()) {
+        warnEmptyRouteFilter(ctx);
+      }
       Route6FilterLine line = new Route6FilterLineUpTo(_currentRoute6FilterPrefix, maxPrefixLength);
       _currentRoute6FilterLine = _currentRouteFilter.insertLine(line, Route6FilterLine.class);
+    }
+  }
+
+  private void warnEmptyRouteFilter(ParserRuleContext ctx) {
+    _w.riskyRedFlag(
+        "Route filter cannot match any route in policy-statement %s term %s: %s",
+        _currentPolicyStatement.getName(),
+        _currentPsTerm.getName(),
+        getFullText(ctx.getParent().getParent()).trim());
+  }
+
+  private void fatalRouteFilter(ParserRuleContext ctx, String reason) {
+    _w.fatalRedFlag(
+        "%s in policy-statement %s term %s: %s",
+        reason,
+        _currentPolicyStatement.getName(),
+        _currentPsTerm.getName(),
+        getFullText(ctx.getParent().getParent()).trim());
+  }
+
+  private void setEmptyRouteFilterLine() {
+    if (_currentRouteFilterPrefix != null) {
+      _currentRouteFilterLine =
+          _currentRouteFilter.insertLine(
+              new Route4FilterLineLengthRange(_currentRouteFilterPrefix, 1, 0),
+              Route4FilterLine.class);
+    } else {
+      _currentRoute6FilterLine =
+          _currentRouteFilter.insertLine(
+              new Route6FilterLineLengthRange(_currentRoute6FilterPrefix, 1, 0),
+              Route6FilterLine.class);
     }
   }
 

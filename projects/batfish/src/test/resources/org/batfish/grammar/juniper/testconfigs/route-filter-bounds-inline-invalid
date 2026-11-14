@@ -1,0 +1,5 @@
+set system host-name route-filter-bounds-inline-invalid
+set policy-options policy-statement BAD-MASK4 term MATCH from route-filter 192.0.2.0/24 address-mask ffff:ffff:: accept
+set policy-options policy-statement BAD-MASK6 term MATCH from route-filter 2001:db8::/32 address-mask 255.255.0.0 accept
+set policy-options policy-statement BAD-THROUGH4 term MATCH from route-filter 192.0.2.0/24 through 2001:db8::/32 accept
+set policy-options policy-statement BAD-THROUGH6 term MATCH from route-filter 2001:db8::/32 through 192.0.2.0/24 accept

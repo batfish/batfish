@@ -1,0 +1,114 @@
+set system host-name route-filter-bounds-valid
+set policy-options policy-statement RF-v4-exact term MATCH from route-filter 10.64.0.64/26 exact
+set policy-options policy-statement RF-v4-exact term MATCH then accept
+set policy-options policy-statement RF-v4-exact term REJECT then reject
+set policy-options policy-statement RF-v4-host-exact term MATCH from route-filter 10.64.0.64/32 exact
+set policy-options policy-statement RF-v4-host-exact term MATCH then accept
+set policy-options policy-statement RF-v4-host-exact term REJECT then reject
+set policy-options policy-statement RF-v4-longer term MATCH from route-filter 10.64.0.64/26 longer
+set policy-options policy-statement RF-v4-longer term MATCH then accept
+set policy-options policy-statement RF-v4-longer term REJECT then reject
+set policy-options policy-statement RF-v4-host-longer term MATCH from route-filter 10.64.0.64/32 longer
+set policy-options policy-statement RF-v4-host-longer term MATCH then accept
+set policy-options policy-statement RF-v4-host-longer term REJECT then reject
+set policy-options policy-statement RF-v4-orlonger term MATCH from route-filter 10.64.0.64/26 orlonger
+set policy-options policy-statement RF-v4-orlonger term MATCH then accept
+set policy-options policy-statement RF-v4-orlonger term REJECT then reject
+set policy-options policy-statement RF-v4-host-orlonger term MATCH from route-filter 10.64.0.64/32 orlonger
+set policy-options policy-statement RF-v4-host-orlonger term MATCH then accept
+set policy-options policy-statement RF-v4-host-orlonger term REJECT then reject
+set policy-options policy-statement RF-v4-upto-short term MATCH from route-filter 10.64.0.64/26 upto /24
+set policy-options policy-statement RF-v4-upto-short term MATCH then accept
+set policy-options policy-statement RF-v4-upto-short term REJECT then reject
+set policy-options policy-statement RF-v4-upto-equal term MATCH from route-filter 10.64.0.64/26 upto /26
+set policy-options policy-statement RF-v4-upto-equal term MATCH then accept
+set policy-options policy-statement RF-v4-upto-equal term REJECT then reject
+set policy-options policy-statement RF-v4-upto-valid term MATCH from route-filter 10.64.0.64/26 upto /28
+set policy-options policy-statement RF-v4-upto-valid term MATCH then accept
+set policy-options policy-statement RF-v4-upto-valid term REJECT then reject
+set policy-options policy-statement RF-v4-upto-max term MATCH from route-filter 10.64.0.64/26 upto /32
+set policy-options policy-statement RF-v4-upto-max term MATCH then accept
+set policy-options policy-statement RF-v4-upto-max term REJECT then reject
+set policy-options policy-statement RF-v4-upto-zero term MATCH from route-filter 10.64.0.64/26 upto /0
+set policy-options policy-statement RF-v4-upto-zero term MATCH then accept
+set policy-options policy-statement RF-v4-upto-zero term REJECT then reject
+set policy-options policy-statement RF-v4-range-valid term MATCH from route-filter 10.64.0.64/26 prefix-length-range /26-/28
+set policy-options policy-statement RF-v4-range-valid term MATCH then accept
+set policy-options policy-statement RF-v4-range-valid term REJECT then reject
+set policy-options policy-statement RF-v4-range-equal term MATCH from route-filter 10.64.0.64/26 prefix-length-range /26-/26
+set policy-options policy-statement RF-v4-range-equal term MATCH then accept
+set policy-options policy-statement RF-v4-range-equal term REJECT then reject
+set policy-options policy-statement RF-v4-range-reversed term MATCH from route-filter 10.64.0.64/26 prefix-length-range /28-/26
+set policy-options policy-statement RF-v4-range-reversed term MATCH then accept
+set policy-options policy-statement RF-v4-range-reversed term REJECT then reject
+set policy-options policy-statement RF-v4-through-valid term MATCH from route-filter 10.64.0.64/26 through 10.64.0.64/28
+set policy-options policy-statement RF-v4-through-valid term MATCH then accept
+set policy-options policy-statement RF-v4-through-valid term REJECT then reject
+set policy-options policy-statement RF-v4-through-equal term MATCH from route-filter 10.64.0.64/26 through 10.64.0.64/26
+set policy-options policy-statement RF-v4-through-equal term MATCH then accept
+set policy-options policy-statement RF-v4-through-equal term REJECT then reject
+set policy-options policy-statement RF-v4-through-outside term MATCH from route-filter 10.64.0.64/26 through 10.65.0.0/28
+set policy-options policy-statement RF-v4-through-outside term MATCH then accept
+set policy-options policy-statement RF-v4-through-outside term REJECT then reject
+set policy-options policy-statement RF-v4-mask-valid term MATCH from route-filter 10.64.0.64/26 address-mask 255.255.255.192
+set policy-options policy-statement RF-v4-mask-valid term MATCH then accept
+set policy-options policy-statement RF-v4-mask-valid term REJECT then reject
+set policy-options policy-statement RF-v4-mask-zero term MATCH from route-filter 10.64.0.64/26 address-mask 0.0.0.0
+set policy-options policy-statement RF-v4-mask-zero term MATCH then accept
+set policy-options policy-statement RF-v4-mask-zero term REJECT then reject
+set policy-options policy-statement RF-v4-mask-noncontiguous term MATCH from route-filter 10.64.0.64/26 address-mask 255.255.0.255
+set policy-options policy-statement RF-v4-mask-noncontiguous term MATCH then accept
+set policy-options policy-statement RF-v4-mask-noncontiguous term REJECT then reject
+set policy-options policy-statement RF-v4-host-bits-exact term MATCH from route-filter 10.64.0.65/26 exact
+set policy-options policy-statement RF-v4-host-bits-exact term MATCH then accept
+set policy-options policy-statement RF-v4-host-bits-exact term REJECT then reject
+set policy-options policy-statement RF-v4-shadow-empty term MATCH from route-filter 10.64.0.0/24 orlonger
+set policy-options policy-statement RF-v4-shadow-empty term MATCH from route-filter 10.64.0.64/26 upto /24
+set policy-options policy-statement RF-v4-shadow-empty term MATCH then accept
+set policy-options policy-statement RF-v4-shadow-empty term REJECT then reject
+set policy-options policy-statement RF-v4-mask-shorter term MATCH from route-filter 10.64.0.64/26 address-mask 255.255.0.0
+set policy-options policy-statement RF-v4-mask-shorter term MATCH then accept
+set policy-options policy-statement RF-v4-mask-shorter term REJECT then reject
+set policy-options policy-statement RF-v4-zero-base-upto-short term MATCH from route-filter 10.64.0.0/26 upto /24
+set policy-options policy-statement RF-v4-zero-base-upto-short term MATCH then accept
+set policy-options policy-statement RF-v4-zero-base-upto-short term REJECT then reject
+set policy-options policy-statement RF-v4-through-host-bits term MATCH from route-filter 10.64.0.65/26 through 10.64.0.65/28
+set policy-options policy-statement RF-v4-through-host-bits term MATCH then accept
+set policy-options policy-statement RF-v4-through-host-bits term REJECT then reject
+set policy-options policy-statement RF-v4-root-longer term MATCH from route-filter 0.0.0.0/0 longer
+set policy-options policy-statement RF-v4-root-longer term MATCH then accept
+set policy-options policy-statement RF-v4-root-longer term REJECT then reject
+set policy-options policy-statement RF-v4-range-high-below term MATCH from route-filter 10.64.0.64/26 prefix-length-range /28-/24
+set policy-options policy-statement RF-v4-range-high-below term MATCH then accept
+set policy-options policy-statement RF-v4-range-high-below term REJECT then reject
+set policy-options policy-statement RF-v4-mask-many-bits term MATCH from route-filter 10.64.0.64/26 address-mask 255.127.255.255
+set policy-options policy-statement RF-v4-mask-many-bits term MATCH then accept
+set policy-options policy-statement RF-v4-mask-many-bits term REJECT then reject
+set policy-options policy-statement RF-v4-mask-last-bit term MATCH from route-filter 10.64.0.64/26 address-mask 0.0.0.1
+set policy-options policy-statement RF-v4-mask-last-bit term MATCH then accept
+set policy-options policy-statement RF-v4-mask-last-bit term REJECT then reject
+set policy-options policy-statement RF-v4-through-different-equal term MATCH from route-filter 10.64.0.64/26 through 10.65.0.0/26
+set policy-options policy-statement RF-v4-through-different-equal term MATCH then accept
+set policy-options policy-statement RF-v4-through-different-equal term REJECT then reject
+set policy-options policy-statement RF-v4-upto-inline-action term MATCH from route-filter 10.64.0.64/26 upto /24 accept
+set policy-options policy-statement RF-v4-upto-inline-action term MATCH then accept
+set policy-options policy-statement RF-v4-upto-inline-action term REJECT then reject
+set policy-options policy-statement RF-v4-shadow-mask term MATCH from route-filter 10.64.0.0/26 address-mask 0.0.0.0
+set policy-options policy-statement RF-v4-shadow-mask term MATCH from route-filter 10.64.0.64/26 upto /24
+set policy-options policy-statement RF-v4-shadow-mask term MATCH then accept
+set policy-options policy-statement RF-v4-shadow-mask term REJECT then reject
+set policy-options policy-statement RF-v4-host-bits-mask-last-bit term MATCH from route-filter 10.64.0.65/26 address-mask 0.0.0.1
+set policy-options policy-statement RF-v4-host-bits-mask-last-bit term MATCH then accept
+set policy-options policy-statement RF-v4-host-bits-mask-last-bit term REJECT then reject
+set policy-options policy-statement RF-v4-shadow-longer term MATCH from route-filter 10.64.0.0/24 orlonger
+set policy-options policy-statement RF-v4-shadow-longer term MATCH from route-filter 10.64.0.64/32 longer
+set policy-options policy-statement RF-v4-shadow-longer term MATCH then accept
+set policy-options policy-statement RF-v4-shadow-longer term REJECT then reject
+set policy-options policy-statement RF-v4-shadow-range term MATCH from route-filter 10.64.0.0/24 orlonger
+set policy-options policy-statement RF-v4-shadow-range term MATCH from route-filter 10.64.0.64/26 prefix-length-range /28-/26
+set policy-options policy-statement RF-v4-shadow-range term MATCH then accept
+set policy-options policy-statement RF-v4-shadow-range term REJECT then reject
+set policy-options policy-statement RF-v4-shadow-through term MATCH from route-filter 10.64.0.0/24 orlonger
+set policy-options policy-statement RF-v4-shadow-through term MATCH from route-filter 10.64.0.64/26 through 10.65.0.0/28
+set policy-options policy-statement RF-v4-shadow-through term MATCH then accept
+set policy-options policy-statement RF-v4-shadow-through term REJECT then reject

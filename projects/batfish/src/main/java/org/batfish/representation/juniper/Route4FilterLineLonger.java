@@ -2,7 +2,6 @@ package org.batfish.representation.juniper;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
-import org.batfish.common.BatfishException;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
@@ -17,7 +16,7 @@ public class Route4FilterLineLonger extends Route4FilterLine {
   public List<org.batfish.datamodel.RouteFilterLine> toRouteFilterLines() {
     int prefixLength = _prefix.getPrefixLength();
     if (prefixLength >= 32) {
-      throw new BatfishException("Route filter prefix length cannot be 'longer' than 32");
+      return ImmutableList.of();
     }
     return ImmutableList.of(
         new org.batfish.datamodel.RouteFilterLine(

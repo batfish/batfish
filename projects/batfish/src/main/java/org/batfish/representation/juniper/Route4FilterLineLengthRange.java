@@ -22,7 +22,9 @@ public final class Route4FilterLineLengthRange extends Route4FilterLine {
   public List<org.batfish.datamodel.RouteFilterLine> toRouteFilterLines() {
     return ImmutableList.of(
         new org.batfish.datamodel.RouteFilterLine(
-            LineAction.PERMIT, _prefix, new SubRange(_minPrefixLength, _maxPrefixLength)));
+            LineAction.PERMIT,
+            _prefix,
+            new SubRange(Math.max(_prefix.getPrefixLength(), _minPrefixLength), _maxPrefixLength)));
   }
 
   @Override
