@@ -3798,13 +3798,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       String name = e.getKey();
       RouteFilter rf = e.getValue();
       if (rf.getIpv4()) {
-        RouteFilterList rfl =
-            new RouteFilterList(
-                name,
-                rf.getLines().stream()
-                    .filter(line -> line instanceof Route4FilterLine && line.getThens().isEmpty())
-                    .flatMap(line -> ((Route4FilterLine) line).toRouteFilterLines().stream())
-                    .collect(ImmutableList.toImmutableList()));
+        RouteFilterList rfl = new RouteFilterList(name, rf.toRouteFilterLines());
         _c.getRouteFilterLists().put(name, rfl);
       }
     }

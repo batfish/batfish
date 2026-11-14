@@ -11,6 +11,11 @@ public abstract class Route4FilterLine extends RouteFilterLine {
     _prefix = prefix;
   }
 
+  /** Prefix used for longest-prefix lookup before evaluating the match type. */
+  public Prefix getLookupPrefix() {
+    return _prefix;
+  }
+
   /**
    * Returns the vendor-independent {@link org.batfish.datamodel.RouteFilterLine}s for this line.
    */

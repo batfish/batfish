@@ -1,0 +1,5 @@
+set system host-name route-filter-bounds-source-address
+set policy-options policy-statement SOURCE4 from source-address-filter 192.0.2.0/26 prefix-length-range /24-/28
+set policy-options policy-statement SOURCE6 from source-address-filter 2001:db8::/64 prefix-length-range /48-/66
+set policy-options policy-statement SOURCE4-UPTO from source-address-filter 192.0.2.0/26 upto /33
+set policy-options policy-statement SOURCE6-UPTO from source-address-filter 2001:db8::/64 upto /129

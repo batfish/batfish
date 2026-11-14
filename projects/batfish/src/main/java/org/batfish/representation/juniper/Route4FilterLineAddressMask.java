@@ -20,6 +20,12 @@ public final class Route4FilterLineAddressMask extends Route4FilterLine {
   }
 
   @Override
+  public Prefix getLookupPrefix() {
+    int maskLength = Integer.numberOfLeadingZeros((int) _addressMask.asLong());
+    return Prefix.create(_prefix.getStartIp(), maskLength);
+  }
+
+  @Override
   public List<org.batfish.datamodel.RouteFilterLine> toRouteFilterLines() {
     int prefixLength = _prefix.getPrefixLength();
     return ImmutableList.of(

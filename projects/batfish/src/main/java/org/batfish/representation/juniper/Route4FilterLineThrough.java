@@ -18,6 +18,9 @@ public final class Route4FilterLineThrough extends Route4FilterLine {
 
   @Override
   public List<org.batfish.datamodel.RouteFilterLine> toRouteFilterLines() {
+    if (!_prefix.containsPrefix(_throughPrefix)) {
+      return ImmutableList.of();
+    }
     int low = _prefix.getPrefixLength();
     int high = _throughPrefix.getPrefixLength();
     Ip startIp = _throughPrefix.getStartIp();
