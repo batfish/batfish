@@ -71,11 +71,15 @@ import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.MatchMetric;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.MatchTag;
+import org.batfish.datamodel.routing_policy.expr.MatchTag2;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
+import org.batfish.datamodel.routing_policy.statement.SetColor;
+import org.batfish.datamodel.routing_policy.statement.SetColor2;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
+import org.batfish.datamodel.routing_policy.statement.SetTag2;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
@@ -390,6 +394,89 @@ public class TestRoutePoliciesAnswererTest {
                 hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), BGP_ROUTE),
                 // no diff
                 hasColumn(COL_DIFF, equalTo(diffs), BGP_ROUTE_DIFFS))));
+  }
+
+  /** A minimal input route with the given local attributes. */
+  private static BgpRoute inputRouteWithLocalAttributes(long tag2, long color, long color2) {
+    return BgpRoute.builder()
+        .setNetwork(Prefix.ZERO)
+        .setOriginatorIp(Ip.ZERO)
+        .setOriginType(OriginType.IGP)
+        .setProtocol(RoutingProtocol.BGP)
+        .setTag2(tag2)
+        .setColor(color)
+        .setColor2(color2)
+        .build();
+  }
+
+  private TableAnswerElement testRoute(RoutingPolicy policy, BgpRoute inputRoute) {
+    TestRoutePoliciesQuestion question =
+        new TestRoutePoliciesQuestion(
+            Direction.IN, ImmutableList.of(inputRoute), HOSTNAME, policy.getName(), null);
+    return new TestRoutePoliciesAnswerer(question, _batfish).answer(_batfish.getSnapshot());
+  }
+
+  @Test
+  public void testLocalAttributesCarriedThrough() {
+    RoutingPolicy policy =
+        _policyBuilder.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+    BgpRoute inputRoute = inputRouteWithLocalAttributes(2, 3, 4);
+
+    assertThat(
+        testRoute(policy, inputRoute).getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), BGP_ROUTE),
+                hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), BGP_ROUTE),
+                hasColumn(
+                    COL_DIFF, equalTo(new BgpRouteDiffs(ImmutableSet.of())), BGP_ROUTE_DIFFS))));
+  }
+
+  @Test
+  public void testSetLocalAttributes() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(new SetTag2(new LiteralLong(5)))
+            .addStatement(new SetColor(new LiteralLong(6)))
+            .addStatement(new SetColor2(new LiteralLong(7)))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+    BgpRoute inputRoute = inputRouteWithLocalAttributes(0, 0, 0);
+
+    BgpRouteDiffs diffs =
+        new BgpRouteDiffs(
+            ImmutableSet.of(
+                new BgpRouteDiff(BgpRoute.PROP_TAG2, "0", "5"),
+                new BgpRouteDiff(BgpRoute.PROP_COLOR, "0", "6"),
+                new BgpRouteDiff(BgpRoute.PROP_COLOR2, "0", "7")));
+    assertThat(
+        testRoute(policy, inputRoute).getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(
+                    COL_OUTPUT_ROUTE, equalTo(inputRouteWithLocalAttributes(5, 6, 7)), BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diffs), BGP_ROUTE_DIFFS))));
+  }
+
+  @Test
+  public void testMatchInputTag2() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new MatchTag2(IntComparator.EQ, new LiteralLong(2)),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept)),
+                    ImmutableList.of(new StaticStatement(Statements.ExitReject))))
+            .build();
+
+    assertThat(
+        testRoute(policy, inputRouteWithLocalAttributes(2, 0, 0)).getRows().getData(),
+        Matchers.contains(hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING)));
+    assertThat(
+        testRoute(policy, inputRouteWithLocalAttributes(3, 0, 0)).getRows().getData(),
+        Matchers.contains(hasColumn(COL_ACTION, equalTo(DENY.toString()), Schema.STRING)));
   }
 
   @Test

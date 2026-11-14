@@ -87,6 +87,7 @@ import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighLow
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighMatch;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityLowMatch;
 import org.batfish.datamodel.routing_policy.expr.BgpPeerAddressNextHop;
+import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
@@ -115,6 +116,7 @@ import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.LiteralTunnelEncapsulationAttribute;
 import org.batfish.datamodel.routing_policy.expr.MatchClusterListLength;
 import org.batfish.datamodel.routing_policy.expr.MatchColor;
+import org.batfish.datamodel.routing_policy.expr.MatchColor2;
 import org.batfish.datamodel.routing_policy.expr.MatchInterface;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
 import org.batfish.datamodel.routing_policy.expr.MatchLocalPreference;
@@ -124,6 +126,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.MatchSourceVrf;
 import org.batfish.datamodel.routing_policy.expr.MatchTag;
+import org.batfish.datamodel.routing_policy.expr.MatchTag2;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.NextHopIp;
@@ -140,6 +143,8 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.RemoveTunnelEncapsulationAttribute;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
+import org.batfish.datamodel.routing_policy.statement.SetColor;
+import org.batfish.datamodel.routing_policy.statement.SetColor2;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultTag;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
@@ -148,6 +153,7 @@ import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
+import org.batfish.datamodel.routing_policy.statement.SetTag2;
 import org.batfish.datamodel.routing_policy.statement.SetTunnelEncapsulationAttribute;
 import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.Statement;
@@ -1196,6 +1202,200 @@ public class TransferBDDTest {
     List<TransferReturn> expectedPaths =
         ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
     assertEquals(expectedPaths, paths);
+    assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
+  }
+
+  /** A policy that executes the given statements and then accepts. */
+  private RoutingPolicy acceptAfter(Statement... statements) {
+    for (Statement statement : statements) {
+      _policyBuilder.addStatement(statement);
+    }
+    return _policyBuilder.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+  }
+
+  /** A policy that accepts the routes matching {@code expr} and rejects all others. */
+  private RoutingPolicy acceptIf(BooleanExpr expr) {
+    return _policyBuilder
+        .addStatement(new If(expr, ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+        .build();
+  }
+
+  /** Builds the analysis for the policies of the base configuration as they are now. */
+  private TransferBDD analysisOfBaseConfig() {
+    _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    return new TransferBDD(_configAPs);
+  }
+
+  /** Asserts that {@code policy} has a single path, which accepts every route as {@code output}. */
+  private void assertAcceptsAllAs(RoutingPolicy policy, TransferBDD tbdd, BDDRoute output) {
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
+    assertEquals(
+        ImmutableList.of(new TransferReturn(output, tbdd.getFactory().one(), true)), paths);
+    assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
+  }
+
+  /**
+   * Asserts that {@code policy} accepts exactly the routes satisfying {@code matched}, without
+   * changing them.
+   */
+  private void assertAcceptsExactly(RoutingPolicy policy, TransferBDD tbdd, BDD matched) {
+    BDDRoute any = new BDDRoute(tbdd.getFactory(), _configAPs);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
+    assertEquals(
+        ImmutableList.of(
+            new TransferReturn(any, matched, true), new TransferReturn(any, matched.not(), false)),
+        paths);
+    assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
+  }
+
+  @Test
+  public void testSetTag2() {
+    RoutingPolicy policy = acceptAfter(new SetTag2(new LiteralLong(42)));
+    TransferBDD tbdd = analysisOfBaseConfig();
+
+    BDDRoute expected = new BDDRoute(tbdd.getFactory(), _configAPs);
+    expected.getTag2().setValue(42);
+    assertAcceptsAllAs(policy, tbdd, expected);
+  }
+
+  @Test
+  public void testSetColor() {
+    RoutingPolicy policy = acceptAfter(new SetColor(new LiteralLong(42)));
+    TransferBDD tbdd = analysisOfBaseConfig();
+
+    BDDRoute expected = new BDDRoute(tbdd.getFactory(), _configAPs);
+    expected.getColor().setValue(42);
+    assertAcceptsAllAs(policy, tbdd, expected);
+  }
+
+  @Test
+  public void testSetColor2() {
+    RoutingPolicy policy = acceptAfter(new SetColor2(new LiteralLong(42)));
+    TransferBDD tbdd = analysisOfBaseConfig();
+
+    BDDRoute expected = new BDDRoute(tbdd.getFactory(), _configAPs);
+    expected.getColor2().setValue(42);
+    assertAcceptsAllAs(policy, tbdd, expected);
+  }
+
+  @Test
+  public void testSetTag2ToZero() {
+    RoutingPolicy policy = acceptAfter(new SetTag2(new LiteralLong(0)));
+    TransferBDD tbdd = analysisOfBaseConfig();
+
+    BDDRoute expected = new BDDRoute(tbdd.getFactory(), _configAPs);
+    expected.getTag2().setValue(0);
+    assertAcceptsAllAs(policy, tbdd, expected);
+  }
+
+  @Test
+  public void testSetTag2Unsupported() {
+    RoutingPolicy policy = acceptAfter(new SetTag2(new VarLong("var")));
+    TransferBDD tbdd = analysisOfBaseConfig();
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
+
+    BDDRoute expected = new BDDRoute(tbdd.getFactory(), _configAPs);
+    expected.setUnsupported(true);
+    assertEquals(
+        ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)), paths);
+  }
+
+  @Test
+  public void testSetColorUnsupported() {
+    RoutingPolicy policy = acceptAfter(new SetColor(new VarLong("var")));
+    TransferBDD tbdd = analysisOfBaseConfig();
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
+
+    BDDRoute expected = new BDDRoute(tbdd.getFactory(), _configAPs);
+    expected.setUnsupported(true);
+    assertEquals(
+        ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)), paths);
+  }
+
+  @Test
+  public void testMatchTag2() {
+    RoutingPolicy policy = acceptIf(new MatchTag2(IntComparator.EQ, new LiteralLong(42)));
+    TransferBDD tbdd = analysisOfBaseConfig();
+
+    BDD hasTag2 = new BDDRoute(tbdd.getFactory(), _configAPs).getTag2().value(42);
+    assertAcceptsExactly(policy, tbdd, hasTag2);
+  }
+
+  @Test
+  public void testMatchTag2Zero() {
+    RoutingPolicy policy = acceptIf(new MatchTag2(IntComparator.EQ, new LiteralLong(0)));
+    TransferBDD tbdd = analysisOfBaseConfig();
+
+    BDD noTag2 = new BDDRoute(tbdd.getFactory(), _configAPs).getTag2().value(0);
+    assertAcceptsExactly(policy, tbdd, noTag2);
+  }
+
+  @Test
+  public void testMatchColor() {
+    RoutingPolicy policy = acceptIf(new MatchColor(42));
+    TransferBDD tbdd = analysisOfBaseConfig();
+
+    BDD hasColor = new BDDRoute(tbdd.getFactory(), _configAPs).getColor().value(42);
+    assertAcceptsExactly(policy, tbdd, hasColor);
+  }
+
+  @Test
+  public void testMatchColor2() {
+    RoutingPolicy policy = acceptIf(new MatchColor2(42));
+    TransferBDD tbdd = analysisOfBaseConfig();
+
+    BDD hasColor2 = new BDDRoute(tbdd.getFactory(), _configAPs).getColor2().value(42);
+    assertAcceptsExactly(policy, tbdd, hasColor2);
+  }
+
+  @Test
+  public void testMatchTag2NonEqualityUnsupported() {
+    RoutingPolicy policy = acceptIf(new MatchTag2(IntComparator.GE, new LiteralLong(42)));
+    TransferBDD tbdd = analysisOfBaseConfig();
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
+
+    BDDRoute any = new BDDRoute(tbdd.getFactory(), _configAPs);
+    any.setUnsupported(true);
+    assertEquals(ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), false)), paths);
+  }
+
+  @Test
+  public void testMatchTag2VariableUnsupported() {
+    RoutingPolicy policy = acceptIf(new MatchTag2(IntComparator.EQ, new VarLong("var")));
+    TransferBDD tbdd = analysisOfBaseConfig();
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
+
+    BDDRoute any = new BDDRoute(tbdd.getFactory(), _configAPs);
+    any.setUnsupported(true);
+    assertEquals(ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), false)), paths);
+  }
+
+  @Test
+  public void testSetThenMatchTag2() {
+    // Junos matches on the output attributes, so the match sees the value just set
+    setup(ConfigurationFormat.JUNIPER);
+    _policyBuilder.addStatement(new SetTag2(new LiteralLong(42)));
+    RoutingPolicy policy = acceptIf(new MatchTag2(IntComparator.EQ, new LiteralLong(42)));
+    TransferBDD tbdd = analysisOfBaseConfig();
+
+    BDDRoute expected = new BDDRoute(tbdd.getFactory(), _configAPs);
+    expected.getTag2().setValue(42);
+    assertAcceptsAllAs(policy, tbdd, expected);
+  }
+
+  @Test
+  public void testSetThenMatchOtherColor() {
+    // Junos matches on the output attributes, so the match sees the value just set
+    setup(ConfigurationFormat.JUNIPER);
+    _policyBuilder.addStatement(new SetColor(new LiteralLong(42)));
+    RoutingPolicy policy = acceptIf(new MatchColor(7));
+    TransferBDD tbdd = analysisOfBaseConfig();
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
+
+    BDDRoute expected = new BDDRoute(tbdd.getFactory(), _configAPs);
+    expected.getColor().setValue(42);
+    assertEquals(
+        ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), false)), paths);
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -2334,8 +2534,9 @@ public class TransferBDDTest {
             new Conjunction(
                 ImmutableList.of(
                     matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/8:16-24"))),
-                    // MatchColor is unsupported, so it should be ignored
-                    new MatchColor(0L),
+                    // matching the metric against a variable is unsupported, so it should be
+                    // ignored
+                    new MatchMetric(IntComparator.EQ, new VarLong("var")),
                     matchPrefixSet(ImmutableList.of(PrefixRange.fromString("0.0.0.0/0:24-32"))))),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
@@ -2568,8 +2769,9 @@ public class TransferBDDTest {
             new Disjunction(
                 ImmutableList.of(
                     matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/8:16-24"))),
-                    // MatchColor is unsupported, so it should be ignored
-                    new MatchColor(0L),
+                    // matching the metric against a variable is unsupported, so it should be
+                    // ignored
+                    new MatchMetric(IntComparator.EQ, new VarLong("var")),
                     matchPrefixSet(ImmutableList.of(PrefixRange.fromString("0.0.0.0/0:24-32"))))),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
@@ -3559,7 +3761,9 @@ public class TransferBDDTest {
   @Test
   public void testUnsupportedExpression() {
     _policyBuilder.addStatement(
-        new If(new MatchColor(0L), ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
+        new If(
+            new MatchMetric(IntComparator.EQ, new VarLong("var")),
+            ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 

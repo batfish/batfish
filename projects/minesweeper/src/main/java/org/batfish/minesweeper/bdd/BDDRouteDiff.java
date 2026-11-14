@@ -18,6 +18,9 @@ public final class BDDRouteDiff {
     NEXTHOP_TYPE,
     NEXTHOP_SET,
     TAG,
+    TAG2,
+    COLOR,
+    COLOR2,
     ADMIN_DIST,
     TUNNEL_ENCAPSULATION_ATTRIBUTE,
     WEIGHT,
@@ -54,6 +57,15 @@ public final class BDDRouteDiff {
     }
     if (!Objects.equals(r1.getTag(), r2.getTag())) {
       result.add(DifferenceType.TAG);
+    }
+    if (!r1.getTag2().equals(r2.getTag2())) {
+      result.add(DifferenceType.TAG2);
+    }
+    if (!r1.getColor().equals(r2.getColor())) {
+      result.add(DifferenceType.COLOR);
+    }
+    if (!r1.getColor2().equals(r2.getColor2())) {
+      result.add(DifferenceType.COLOR2);
     }
     if (!Objects.equals(r1.getAdminDist(), r2.getAdminDist())) {
       result.add(DifferenceType.ADMIN_DIST);

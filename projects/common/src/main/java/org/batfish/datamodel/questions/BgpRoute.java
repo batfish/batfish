@@ -5,6 +5,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.OriginMechanism.LEARNED;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
@@ -38,6 +40,8 @@ public final class BgpRoute {
   public static final String PROP_ADMINISTRATIVE_DISTANCE = "adminDistance";
   public static final String PROP_AS_PATH = "asPath";
   public static final String PROP_CLUSTER_LIST = "clusterList";
+  public static final String PROP_COLOR = "color";
+  public static final String PROP_COLOR2 = "color2";
   public static final String PROP_COMMUNITIES = "communities";
   public static final String PROP_LOCAL_PREFERENCE = "localPreference";
   public static final String PROP_METRIC = "metric";
@@ -51,6 +55,7 @@ public final class BgpRoute {
   public static final String PROP_PROTOCOL = "protocol";
   public static final String PROP_SRC_PROTOCOL = "srcProtocol";
   public static final String PROP_TAG = "tag";
+  public static final String PROP_TAG2 = "tag2";
   public static final String PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE = "tunnelEncapsulationAttribute";
   public static final String PROP_WEIGHT = "weight";
   public static final String PROP_CLASS = "class";
@@ -70,6 +75,9 @@ public final class BgpRoute {
   private final @Nonnull RoutingProtocol _protocol;
   private final @Nullable RoutingProtocol _srcProtocol;
   private final long _tag;
+  private final long _tag2;
+  private final long _color;
+  private final long _color2;
   private final @Nullable TunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
   private final int _weight;
 
@@ -89,6 +97,9 @@ public final class BgpRoute {
       RoutingProtocol protocol,
       @Nullable RoutingProtocol srcProtocol,
       long tag,
+      long tag2,
+      long color,
+      long color2,
       @Nullable TunnelEncapsulationAttribute tunnelEncapsulationAttribute,
       int weight) {
     _adminDist = adminDist;
@@ -106,6 +117,9 @@ public final class BgpRoute {
     _protocol = protocol;
     _srcProtocol = srcProtocol;
     _tag = tag;
+    _tag2 = tag2;
+    _color = color;
+    _color2 = color2;
     _tunnelEncapsulationAttribute = tunnelEncapsulationAttribute;
     _weight = weight;
   }
@@ -128,6 +142,9 @@ public final class BgpRoute {
       @JsonProperty(PROP_PROTOCOL) @Nullable RoutingProtocol protocol,
       @JsonProperty(PROP_SRC_PROTOCOL) @Nullable RoutingProtocol srcProtocol,
       @JsonProperty(PROP_TAG) long tag,
+      @JsonProperty(PROP_TAG2) @Nullable Long tag2,
+      @JsonProperty(PROP_COLOR) @Nullable Long color,
+      @JsonProperty(PROP_COLOR2) @Nullable Long color2,
       @JsonProperty(PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE) @Nullable
           TunnelEncapsulationAttribute tunnelEncapsulationAttribute,
       @JsonProperty(PROP_WEIGHT) int weight,
@@ -153,6 +170,9 @@ public final class BgpRoute {
         protocol,
         srcProtocol,
         tag,
+        firstNonNull(tag2, 0L),
+        firstNonNull(color, 0L),
+        firstNonNull(color2, 0L),
         tunnelEncapsulationAttribute,
         weight);
   }
@@ -251,6 +271,27 @@ public final class BgpRoute {
     return _tag;
   }
 
+  /** The local {@code tag2} of the route, or 0 if unset. Omitted from JSON when 0. */
+  @JsonProperty(PROP_TAG2)
+  @JsonInclude(Include.NON_DEFAULT)
+  public long getTag2() {
+    return _tag2;
+  }
+
+  /** The local {@code color} of the route, or 0 if unset. Omitted from JSON when 0. */
+  @JsonProperty(PROP_COLOR)
+  @JsonInclude(Include.NON_DEFAULT)
+  public long getColor() {
+    return _color;
+  }
+
+  /** The local {@code color2} of the route, or 0 if unset. Omitted from JSON when 0. */
+  @JsonProperty(PROP_COLOR2)
+  @JsonInclude(Include.NON_DEFAULT)
+  public long getColor2() {
+    return _color2;
+  }
+
   @JsonProperty(PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE)
   public @Nullable TunnelEncapsulationAttribute getTunnelEncapsulationAttribute() {
     return _tunnelEncapsulationAttribute;
@@ -273,6 +314,9 @@ public final class BgpRoute {
     return _localPreference == bgpRoute._localPreference
         && _metric == bgpRoute._metric
         && _tag == bgpRoute._tag
+        && _tag2 == bgpRoute._tag2
+        && _color == bgpRoute._color
+        && _color2 == bgpRoute._color2
         && _weight == bgpRoute._weight
         && Objects.equals(_adminDist, bgpRoute._adminDist)
         && Objects.equals(_asPath, bgpRoute._asPath)
@@ -307,6 +351,9 @@ public final class BgpRoute {
         _protocol.ordinal(),
         _srcProtocol != null ? _srcProtocol.ordinal() : null,
         _tag,
+        _tag2,
+        _color,
+        _color2,
         _tunnelEncapsulationAttribute,
         _weight);
   }
@@ -332,6 +379,9 @@ public final class BgpRoute {
         .setProtocol(_protocol)
         .setSrcProtocol(_srcProtocol)
         .setTag(_tag)
+        .setTag2(_tag2)
+        .setColor(_color)
+        .setColor2(_color2)
         .setTunnelEncapsulationAttribute(_tunnelEncapsulationAttribute)
         .setWeight(_weight);
   }
@@ -355,6 +405,9 @@ public final class BgpRoute {
     private @Nullable RoutingProtocol _protocol;
     private @Nullable RoutingProtocol _srcProtocol;
     private long _tag;
+    private long _tag2;
+    private long _color;
+    private long _color2;
     private @Nullable TunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
     private int _weight;
 
@@ -385,6 +438,9 @@ public final class BgpRoute {
           _protocol,
           _srcProtocol,
           _tag,
+          _tag2,
+          _color,
+          _color2,
           _tunnelEncapsulationAttribute,
           _weight);
     }
@@ -474,6 +530,21 @@ public final class BgpRoute {
       return this;
     }
 
+    public Builder setTag2(long tag2) {
+      _tag2 = tag2;
+      return this;
+    }
+
+    public Builder setColor(long color) {
+      _color = color;
+      return this;
+    }
+
+    public Builder setColor2(long color2) {
+      _color2 = color2;
+      return this;
+    }
+
     public Builder setTunnelEncapsulationAttribute(
         @Nullable TunnelEncapsulationAttribute tunnelEncapsulationAttribute) {
       _tunnelEncapsulationAttribute = tunnelEncapsulationAttribute;
@@ -504,6 +575,9 @@ public final class BgpRoute {
         .add("protocol", _protocol)
         .add("srcProtocol", _srcProtocol)
         .add("tag", _tag)
+        .add("tag2", _tag2)
+        .add("color", _color)
+        .add("color2", _color2)
         .add("tunnelEncapsulationAttribute", _tunnelEncapsulationAttribute)
         .add("weight", _weight)
         .add("adminDist", _adminDist)

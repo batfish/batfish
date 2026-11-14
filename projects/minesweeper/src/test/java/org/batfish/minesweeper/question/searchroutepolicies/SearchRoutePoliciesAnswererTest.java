@@ -97,10 +97,13 @@ import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchClusterListLength;
+import org.batfish.datamodel.routing_policy.expr.MatchColor;
+import org.batfish.datamodel.routing_policy.expr.MatchColor2;
 import org.batfish.datamodel.routing_policy.expr.MatchInterface;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.MatchSourceVrf;
+import org.batfish.datamodel.routing_policy.expr.MatchTag2;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
@@ -109,10 +112,13 @@ import org.batfish.datamodel.routing_policy.statement.ExcludeAsPath;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
+import org.batfish.datamodel.routing_policy.statement.SetColor;
+import org.batfish.datamodel.routing_policy.statement.SetColor2;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
+import org.batfish.datamodel.routing_policy.statement.SetTag2;
 import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
@@ -925,6 +931,90 @@ public class SearchRoutePoliciesAnswererTest {
                 hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
                 hasColumn(COL_OUTPUT_ROUTE, equalTo(outputRoute), Schema.BGP_ROUTE),
                 hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
+  }
+
+  /** The input route that searchRoutePolicies produces when nothing constrains it. */
+  private static BgpRoute.Builder defaultInputRoute() {
+    return BgpRoute.builder()
+        .setNetwork(Prefix.parse("10.0.0.0/8"))
+        .setOriginatorIp(Ip.ZERO)
+        .setOriginMechanism(OriginMechanism.LEARNED)
+        .setOriginType(OriginType.EGP)
+        .setProtocol(RoutingProtocol.BGP)
+        .setNextHopIp(Ip.parse("0.0.0.1"))
+        .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
+        .setAdminDist(0L);
+  }
+
+  private TableAnswerElement searchPermitted(RoutingPolicy policy) {
+    SearchRoutePoliciesQuestion question =
+        new SearchRoutePoliciesQuestion(
+            DEFAULT_DIRECTION,
+            EMPTY_CONSTRAINTS,
+            EMPTY_CONSTRAINTS,
+            HOSTNAME,
+            policy.getName(),
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+    return (TableAnswerElement)
+        new SearchRoutePoliciesAnswerer(question, _batfish).answer(_batfish.getSnapshot());
+  }
+
+  @Test
+  public void testSetLocalAttributes() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(new SetTag2(new LiteralLong(5)))
+            .addStatement(new SetColor(new LiteralLong(6)))
+            .addStatement(new SetColor2(new LiteralLong(7)))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+
+    BgpRouteDiffs diff =
+        new BgpRouteDiffs(
+            ImmutableSet.of(
+                new BgpRouteDiff(BgpRoute.PROP_TAG2, "0", "5"),
+                new BgpRouteDiff(BgpRoute.PROP_COLOR, "0", "6"),
+                new BgpRouteDiff(BgpRoute.PROP_COLOR2, "0", "7")));
+    assertThat(
+        searchPermitted(policy).getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(defaultInputRoute().build()), Schema.BGP_ROUTE),
+                hasColumn(
+                    COL_OUTPUT_ROUTE,
+                    equalTo(defaultInputRoute().setTag2(5).setColor(6).setColor2(7).build()),
+                    Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
+  }
+
+  @Test
+  public void testMatchLocalAttributes() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new Conjunction(
+                        ImmutableList.of(
+                            new MatchTag2(IntComparator.EQ, new LiteralLong(2)),
+                            new MatchColor(3),
+                            new MatchColor2(4))),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    BgpRoute matching = defaultInputRoute().setTag2(2).setColor(3).setColor2(4).build();
+    assertThat(
+        searchPermitted(policy).getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(matching), Schema.BGP_ROUTE),
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(matching), Schema.BGP_ROUTE),
+                hasColumn(
+                    COL_DIFF,
+                    equalTo(new BgpRouteDiffs(ImmutableSet.of())),
+                    Schema.BGP_ROUTE_DIFFS))));
   }
 
   @Test
