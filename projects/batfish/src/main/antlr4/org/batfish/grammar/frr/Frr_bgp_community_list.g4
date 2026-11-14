@@ -18,6 +18,7 @@ b_community_list
 bcl_expanded
 :
   EXPANDED name = ip_community_list_name
+  (SEQ seq = uint32)?
   action = line_action
   (
     quoted = double_quoted_string
@@ -28,6 +29,7 @@ bcl_expanded
 bcl_standard
 :
   STANDARD name = ip_community_list_name
+  (SEQ seq = uint32)?
   action = line_action communities += standard_community+ NEWLINE
 ;
 
