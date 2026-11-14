@@ -17,6 +17,7 @@ public final class PsFroms implements Serializable {
   private final Set<PsFromAsPath> _fromAsPaths;
   private final Set<PsFromAsPathGroup> _fromAsPathGroups;
   private PsFromColor _fromColor;
+  private PsFromColor2 _fromColor2;
   private final Set<PsFromCommunity> _fromCommunities;
   private PsFromCommunityCount _fromCommunityCount;
   private final Set<PsFromCondition> _fromConditions;
@@ -39,6 +40,7 @@ public final class PsFroms implements Serializable {
   private PsFromRouteType _fromRouteType;
   private PsFromState _fromState;
   private final Set<PsFromTag> _fromTags;
+  private final Set<PsFromTag2> _fromTag2s;
   private PsFromUnsupported _fromUnsupported;
   private PsFromValidationDatabase _fromValidationDatabase;
 
@@ -59,6 +61,7 @@ public final class PsFroms implements Serializable {
     _fromProtocols = new LinkedHashSet<>();
     _fromRouteFilters = new LinkedHashSet<>();
     _fromTags = new LinkedHashSet<>();
+    _fromTag2s = new LinkedHashSet<>();
   }
 
   public void addFromAsPath(@Nonnull PsFromAsPath fromAsPath) {
@@ -159,6 +162,11 @@ public final class PsFroms implements Serializable {
     _fromTags.add(fromTag);
   }
 
+  public void addFromTag2(@Nonnull PsFromTag2 fromTag2) {
+    _atLeastOneFrom = true;
+    _fromTag2s.add(fromTag2);
+  }
+
   @Nonnull
   Set<PsFromAsPath> getFromAsPaths() {
     return _fromAsPaths;
@@ -172,6 +180,10 @@ public final class PsFroms implements Serializable {
   @VisibleForTesting
   public @Nullable PsFromColor getFromColor() {
     return _fromColor;
+  }
+
+  public @Nullable PsFromColor2 getFromColor2() {
+    return _fromColor2;
   }
 
   @Nonnull
@@ -279,6 +291,11 @@ public final class PsFroms implements Serializable {
     return _fromTags;
   }
 
+  @VisibleForTesting
+  public @Nonnull Set<PsFromTag2> getFromTag2s() {
+    return _fromTag2s;
+  }
+
   @Nullable
   PsFromUnsupported getFromUnsupported() {
     return _fromUnsupported;
@@ -296,6 +313,11 @@ public final class PsFroms implements Serializable {
   public void setFromColor(@Nonnull PsFromColor fromColor) {
     _atLeastOneFrom = true;
     _fromColor = fromColor;
+  }
+
+  public void setFromColor2(@Nonnull PsFromColor2 fromColor2) {
+    _atLeastOneFrom = true;
+    _fromColor2 = fromColor2;
   }
 
   public void setFromCommunityCount(@Nonnull PsFromCommunityCount fromCommunityCount) {

@@ -777,6 +777,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pops_termContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_areaContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_as_pathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_as_path_groupContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_color2Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_colorContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_community_countContext;
@@ -1534,6 +1535,7 @@ import org.batfish.representation.juniper.PrefixList;
 import org.batfish.representation.juniper.PsFromAsPath;
 import org.batfish.representation.juniper.PsFromAsPathGroup;
 import org.batfish.representation.juniper.PsFromColor;
+import org.batfish.representation.juniper.PsFromColor2;
 import org.batfish.representation.juniper.PsFromCommunity;
 import org.batfish.representation.juniper.PsFromCommunityCount;
 import org.batfish.representation.juniper.PsFromCommunityCount.Mode;
@@ -1558,6 +1560,7 @@ import org.batfish.representation.juniper.PsFromRouteFilter;
 import org.batfish.representation.juniper.PsFromRouteType;
 import org.batfish.representation.juniper.PsFromState;
 import org.batfish.representation.juniper.PsFromTag;
+import org.batfish.representation.juniper.PsFromTag2;
 import org.batfish.representation.juniper.PsFromUnsupported;
 import org.batfish.representation.juniper.PsFromValidationDatabase;
 import org.batfish.representation.juniper.PsFroms;
@@ -1572,6 +1575,8 @@ import org.batfish.representation.juniper.PsThenAsPathExpand;
 import org.batfish.representation.juniper.PsThenAsPathExpandAsList;
 import org.batfish.representation.juniper.PsThenAsPathExpandLastAs;
 import org.batfish.representation.juniper.PsThenAsPathPrepend;
+import org.batfish.representation.juniper.PsThenColor;
+import org.batfish.representation.juniper.PsThenColor2;
 import org.batfish.representation.juniper.PsThenCommunityAdd;
 import org.batfish.representation.juniper.PsThenCommunityDelete;
 import org.batfish.representation.juniper.PsThenCommunitySet;
@@ -1598,6 +1603,7 @@ import org.batfish.representation.juniper.PsThenPreference;
 import org.batfish.representation.juniper.PsThenReject;
 import org.batfish.representation.juniper.PsThenSourceClass;
 import org.batfish.representation.juniper.PsThenTag;
+import org.batfish.representation.juniper.PsThenTag2;
 import org.batfish.representation.juniper.PsThenTunnelAttributeRemove;
 import org.batfish.representation.juniper.PsThenTunnelAttributeSet;
 import org.batfish.representation.juniper.PsThenValidationState;
@@ -8051,6 +8057,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitPopsf_color2(Popsf_color2Context ctx) {
+    long color2 = toLong(ctx.color2);
+    _currentPsTerm.getFroms().setFromColor2(new PsFromColor2(color2));
+  }
+
+  @Override
   public void exitPopsf_community(Popsf_communityContext ctx) {
     String name = toString(ctx.name);
     _currentPsTerm.getFroms().addFromCommunity(new PsFromCommunity(name));
@@ -8317,8 +8329,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitPopsf_tag2(Popsf_tag2Context ctx) {
-    todo(ctx);
-    _currentPsTerm.getFroms().setFromUnsupported(new PsFromUnsupported());
+    long tag2 = toLong(ctx.uint32());
+    _currentPsTerm.getFroms().addFromTag2(new PsFromTag2(tag2));
   }
 
   @Override
@@ -8498,7 +8510,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitPopst_color(Popst_colorContext ctx) {
-    todo(ctx);
+    if (ctx.uint32() == null || ctx.ADD() != null || ctx.SUBTRACT() != null) {
+      // apply, add and subtract are not supported.
+      todo(ctx);
+      return;
+    }
+    addPsThen(new PsThenColor(toLong(ctx.uint32())), ctx);
   }
 
   @Override
@@ -8514,7 +8531,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitPopst_color2(Popst_color2Context ctx) {
-    todo(ctx);
+    if (ctx.uint32() == null || ctx.ADD() != null || ctx.SUBTRACT() != null) {
+      // apply, add and subtract are not supported.
+      todo(ctx);
+      return;
+    }
+    addPsThen(new PsThenColor2(toLong(ctx.uint32())), ctx);
   }
 
   @Override
@@ -8822,7 +8844,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitPopst_tag2(Popst_tag2Context ctx) {
-    todo(ctx);
+    addPsThen(new PsThenTag2(toLong(ctx.uint32())), ctx);
   }
 
   @Override
