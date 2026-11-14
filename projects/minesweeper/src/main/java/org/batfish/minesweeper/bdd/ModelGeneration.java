@@ -456,6 +456,9 @@ public class ModelGeneration {
 
     builder.setTunnelEncapsulationAttribute(
         satAssignmentToTunnelEncapsulationAttribute(model, bddRoute));
+    builder.setTag2(bddRoute.getTag2().satAssignmentToLong(model));
+    builder.setColor(bddRoute.getColor().satAssignmentToLong(model));
+    builder.setColor2(bddRoute.getColor2().satAssignmentToLong(model));
 
     return builder;
   }

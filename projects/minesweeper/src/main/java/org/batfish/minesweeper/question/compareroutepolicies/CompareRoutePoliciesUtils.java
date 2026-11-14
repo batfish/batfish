@@ -8,6 +8,8 @@ import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePo
 import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.ADMINISTRATIVE_DISTANCE;
 import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.AS_PATH;
 import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.CLUSTER_LIST;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.COLOR;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.COLOR2;
 import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.COMMUNITIES;
 import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.LOCAL_PREFERENCE;
 import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.METRIC;
@@ -16,6 +18,7 @@ import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.N
 import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.ORIGIN_TYPE;
 import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.PROTOCOL;
 import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.TAG;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.TAG2;
 import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.TUNNEL_ENCAPSULATION_ATTRIBUTE;
 import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.WEIGHT;
 import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
@@ -345,6 +348,12 @@ public final class CompareRoutePoliciesUtils {
         return r1.getNextHop().allDifferences(r2.getNextHop());
       case TAG:
         return r1.getTag().allDifferences(r2.getTag());
+      case TAG2:
+        return r1.getTag2().allDifferences(r2.getTag2());
+      case COLOR:
+        return r1.getColor().allDifferences(r2.getColor());
+      case COLOR2:
+        return r1.getColor2().allDifferences(r2.getColor2());
       case ADMIN_DIST:
         return r1.getAdminDist().allDifferences(r2.getAdminDist());
       case TUNNEL_ENCAPSULATION_ATTRIBUTE:
@@ -626,6 +635,15 @@ public final class CompareRoutePoliciesUtils {
     }
     if (support.testsVars(identityRoute.getTag().support())) {
       result.add(TAG);
+    }
+    if (support.testsVars(identityRoute.getTag2().support())) {
+      result.add(TAG2);
+    }
+    if (support.testsVars(identityRoute.getColor().support())) {
+      result.add(COLOR);
+    }
+    if (support.testsVars(identityRoute.getColor2().support())) {
+      result.add(COLOR2);
     }
     if (support.testsVars(identityRoute.getTunnelEncapsulationAttribute().support())) {
       result.add(TUNNEL_ENCAPSULATION_ATTRIBUTE);

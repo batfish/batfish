@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Map;
 import java.util.SortedMap;
 import org.batfish.common.NetworkSnapshot;
@@ -28,7 +29,18 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetUnion;
 import org.batfish.datamodel.routing_policy.communities.InputCommunities;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
+import org.batfish.datamodel.routing_policy.expr.Conjunction;
+import org.batfish.datamodel.routing_policy.expr.IntComparator;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
+import org.batfish.datamodel.routing_policy.expr.MatchColor;
+import org.batfish.datamodel.routing_policy.expr.MatchColor2;
+import org.batfish.datamodel.routing_policy.expr.MatchTag2;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
+import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetColor;
+import org.batfish.datamodel.routing_policy.statement.SetColor2;
+import org.batfish.datamodel.routing_policy.statement.SetTag2;
+import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
@@ -202,6 +214,77 @@ public class ConfigAtomicPredicatesTest {
     assertEquals(cap.getNextHopInterfaces(), copy.getNextHopInterfaces());
     assertEquals(cap.getTracks(), copy.getTracks());
     assertEquals(cap.getSourceVrfs(), copy.getSourceVrfs());
+  }
+
+  /** Adds a policy with the given statements to the base configuration. */
+  private void addPolicy(String name, Statement... statements) {
+    RoutingPolicy.Builder policy = _nf.routingPolicyBuilder().setName(name).setOwner(_baseConfig);
+    for (Statement statement : statements) {
+      policy.addStatement(statement);
+    }
+    policy.build();
+  }
+
+  @Test
+  public void testLocalAttributeLiteralsEmpty() {
+    ConfigAtomicPredicates cap = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    assertEquals(LocalAttributeLiterals.empty(), cap.getLocalAttributeLiterals());
+  }
+
+  @Test
+  public void testLocalAttributeLiterals() {
+    addPolicy(
+        "policy",
+        new If(
+            new Conjunction(
+                ImmutableList.of(
+                    new MatchTag2(IntComparator.EQ, new LiteralLong(7)),
+                    new MatchColor(9),
+                    new MatchColor2(11))),
+            ImmutableList.of(
+                new SetTag2(new LiteralLong(5)),
+                new SetColor(new LiteralLong(3)),
+                new SetColor2(new LiteralLong(13)))));
+    ConfigAtomicPredicates cap = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    assertEquals(ImmutableList.of(5L, 7L), cap.getTag2s());
+    assertEquals(ImmutableList.of(3L, 9L), cap.getColors());
+    assertEquals(ImmutableList.of(11L, 13L), cap.getColor2s());
+  }
+
+  @Test
+  public void testLocalAttributeLiteralsFromCalledPolicy() {
+    addPolicy("caller", new CallStatement("callee"));
+    addPolicy("callee", new SetTag2(new LiteralLong(5)));
+    ConfigAtomicPredicates cap =
+        new ConfigAtomicPredicates(
+            ImmutableList.of(
+                new SimpleImmutableEntry<>(
+                    _baseConfig, ImmutableList.of(_baseConfig.getRoutingPolicies().get("caller")))),
+            ImmutableSet.of(),
+            ImmutableSet.of());
+
+    assertEquals(ImmutableList.of(5L), cap.getTag2s());
+  }
+
+  @Test
+  public void testLocalAttributeLiteralsAcrossPolicies() {
+    addPolicy("policy1", new SetColor(new LiteralLong(5)));
+    addPolicy("policy2", new SetColor(new LiteralLong(5)), new SetColor(new LiteralLong(2)));
+    ConfigAtomicPredicates cap = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    assertEquals(ImmutableList.of(2L, 5L), cap.getColors());
+  }
+
+  @Test
+  public void testLocalAttributeLiteralsCopyConstructor() {
+    addPolicy("policy", new SetTag2(new LiteralLong(5)));
+    ConfigAtomicPredicates cap = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    assertEquals(
+        cap.getLocalAttributeLiterals(),
+        new ConfigAtomicPredicates(cap).getLocalAttributeLiterals());
   }
 
   @Test

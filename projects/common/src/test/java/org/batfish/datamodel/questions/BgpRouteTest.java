@@ -3,6 +3,7 @@ package org.batfish.datamodel.questions;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -61,6 +62,9 @@ public class BgpRouteTest {
         .addEqualityGroup(brb.setPathId(5).build())
         .addEqualityGroup(brb.setProtocol(RoutingProtocol.IBGP).build())
         .addEqualityGroup(brb.setSrcProtocol(RoutingProtocol.STATIC).build())
+        .addEqualityGroup(brb.setTag2(1).build())
+        .addEqualityGroup(brb.setColor(1).build())
+        .addEqualityGroup(brb.setColor2(1).build())
         .addEqualityGroup(
             brb.setTunnelEncapsulationAttribute(
                 new TunnelEncapsulationAttribute(Ip.parse("1.1.1.1"))))
@@ -86,9 +90,47 @@ public class BgpRouteTest {
             .setPathId(5)
             .setProtocol(RoutingProtocol.BGP)
             .setSrcProtocol(RoutingProtocol.STATIC)
+            .setTag2(2)
+            .setColor(3)
+            .setColor2(4)
             .setTunnelEncapsulationAttribute(new TunnelEncapsulationAttribute(Ip.parse("1.1.1.1")))
             .setWeight(1)
             .build();
     assertThat(br, equalTo(br.toBuilder().build()));
+  }
+
+  private static Builder minimalBuilder() {
+    return BgpRoute.builder()
+        .setNetwork(Prefix.parse("1.1.1.0/24"))
+        .setOriginatorIp(Ip.parse("1.1.1.1"))
+        .setOriginType(OriginType.IGP)
+        .setProtocol(RoutingProtocol.BGP);
+  }
+
+  @Test
+  public void testJsonSerializationLocalAttributes() {
+    BgpRoute br = minimalBuilder().setTag2(2).setColor(3).setColor2(4).build();
+
+    assertThat(BatfishObjectMapper.clone(br, BgpRoute.class), equalTo(br));
+  }
+
+  @Test
+  public void testJsonOmitsUnsetLocalAttributes() {
+    JsonNode json = BatfishObjectMapper.mapper().valueToTree(minimalBuilder().build());
+
+    assertThat(json.has(BgpRoute.PROP_TAG2), equalTo(false));
+    assertThat(json.has(BgpRoute.PROP_COLOR), equalTo(false));
+    assertThat(json.has(BgpRoute.PROP_COLOR2), equalTo(false));
+  }
+
+  @Test
+  public void testJsonIncludesSetLocalAttributes() {
+    JsonNode json =
+        BatfishObjectMapper.mapper()
+            .valueToTree(minimalBuilder().setTag2(2).setColor(3).setColor2(4).build());
+
+    assertThat(json.get(BgpRoute.PROP_TAG2).asLong(), equalTo(2L));
+    assertThat(json.get(BgpRoute.PROP_COLOR).asLong(), equalTo(3L));
+    assertThat(json.get(BgpRoute.PROP_COLOR2).asLong(), equalTo(4L));
   }
 }

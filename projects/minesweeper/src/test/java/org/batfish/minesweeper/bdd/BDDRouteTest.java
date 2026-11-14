@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
@@ -20,6 +21,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.TunnelEncapsulationAttribute;
+import org.batfish.minesweeper.LocalAttributeLiterals;
 import org.batfish.minesweeper.OspfType;
 import org.batfish.minesweeper.bdd.BDDRoute.Attribute;
 import org.batfish.minesweeper.bdd.BDDRoute.Field;
@@ -76,6 +78,12 @@ public class BDDRouteTest {
     peerAddress.getPeerAddress().setValue(1);
     BDDRoute tunnelEncapsulationAttribute = new BDDRoute(orig);
     tunnelEncapsulationAttribute.getTunnelEncapsulationAttribute().setValue(Value.absent());
+    BDDRoute tag2 = new BDDRoute(orig);
+    tag2.getTag2().setValue(0);
+    BDDRoute color = new BDDRoute(orig);
+    color.getColor().setValue(0);
+    BDDRoute color2 = new BDDRoute(orig);
+    color2.getColor2().setValue(0);
     BDDRoute unsupported = new BDDRoute(orig);
     unsupported.setUnsupported(true);
     BDDRoute weight = new BDDRoute(orig);
@@ -103,6 +111,9 @@ public class BDDRouteTest {
         .addEqualityGroup(tag)
         .addEqualityGroup(tracks)
         .addEqualityGroup(tunnelEncapsulationAttribute)
+        .addEqualityGroup(tag2)
+        .addEqualityGroup(color)
+        .addEqualityGroup(color2)
         .addEqualityGroup(unsupported)
         .addEqualityGroup(weight)
         .testEquals();
@@ -335,6 +346,20 @@ public class BDDRouteTest {
     pairing.reset();
     attrPairing.reset();
 
+    // Test tag2, color and color2
+    for (Function<BDDRoute, BDDLongAtom> getter :
+        ImmutableList.<Function<BDDRoute, BDDLongAtom>>of(
+            BDDRoute::getTag2, BDDRoute::getColor, BDDRoute::getColor2)) {
+      BDD atomSupport = getter.apply(orig).support();
+      BDDRoute atom = new BDDRoute(orig);
+      getter.apply(atom).setValue(0);
+      atom.augmentPairing(orig, pairing);
+      getter.apply(atom).augmentPairing(getter.apply(orig), attrPairing);
+      assertEquals(atomSupport.veccompose(pairing), atomSupport.veccompose(attrPairing));
+      pairing.reset();
+      attrPairing.reset();
+    }
+
     // Test communityAtomicPredicates (uses pairing.set instead of augmentPairing)
     BDD[] origCommunities = orig.getCommunityAtomicPredicates();
     BDD communitySupport = factory.andAll(origCommunities);
@@ -441,6 +466,7 @@ public class BDDRouteTest {
                 7,
                 2,
                 ImmutableList.of(),
+                LocalAttributeLiterals.empty(),
                 /* prefixStartIdx= */ -1,
                 /* startIdx= */ 38));
   }
@@ -460,6 +486,7 @@ public class BDDRouteTest {
                 7,
                 2,
                 ImmutableList.of(),
+                LocalAttributeLiterals.empty(),
                 /* prefixStartIdx= */ 0,
                 /* startIdx= */ 37));
   }
@@ -470,7 +497,17 @@ public class BDDRouteTest {
     // of the prefix/prefix-length block, one past the rejected 37 above -- must not throw.
     BDDFactory factory = JFactory.init(10000, 1000);
     new BDDRoute(
-        factory, 3, 4, 5, 6, 7, 2, ImmutableList.of(), /* prefixStartIdx= */ 0, /* startIdx= */ 38);
+        factory,
+        3,
+        4,
+        5,
+        6,
+        7,
+        2,
+        ImmutableList.of(),
+        LocalAttributeLiterals.empty(),
+        /* prefixStartIdx= */ 0,
+        /* startIdx= */ 38);
   }
 
   @Test
@@ -543,6 +580,9 @@ public class BDDRouteTest {
             x ->
                 x.getTunnelEncapsulationAttribute()
                     .setValue(Value.literal(new TunnelEncapsulationAttribute(Ip.create(1)))),
+            x -> x.getTag2().setValue(0),
+            x -> x.getColor().setValue(0),
+            x -> x.getColor2().setValue(0),
             x -> x.getWeight().setValue(200));
 
     for (Consumer<BDDRoute> mutator : mutators) {
@@ -602,6 +642,59 @@ public class BDDRouteTest {
     assertThat(identityTrackSupport.isOne(), equalTo(false));
     assertThat(BDDRoute.track(2).eq(track, identity).isOne(), equalTo(false));
     assertEquals(factory.one(), BDDRoute.track(2).eq(track, track));
+  }
+
+  @Test
+  public void testLocalAttributesAreSizedToTheirLiterals() {
+    BDDFactory factory = JFactory.init(1000, 1000);
+    BDDRoute route =
+        new BDDRoute(
+            factory,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            ImmutableList.of(),
+            LocalAttributeLiterals.create(
+                ImmutableList.of(5L, 7L), ImmutableList.of(9L), ImmutableList.of()),
+            /* prefixStartIdx= */ 0,
+            /* startIdx= */ 38);
+
+    // {0, 5, 7, OTHER}, {0, 9, OTHER} and {0, OTHER}
+    assertEquals(2, route.getTag2().getNumBits());
+    assertEquals(2, route.getColor().getNumBits());
+    assertEquals(1, route.getColor2().getNumBits());
+    assertThat(route.getTag2().value(7).isZero(), equalTo(false));
+    assertThat(route.getColor().value(9).isZero(), equalTo(false));
+  }
+
+  @Test
+  public void testWellFormedLocalAttributes() {
+    BDDFactory factory = JFactory.init(1000, 1000);
+    BDDRoute route =
+        new BDDRoute(
+            factory,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            ImmutableList.of(),
+            LocalAttributeLiterals.create(
+                ImmutableList.of(5L), ImmutableList.of(5L), ImmutableList.of(5L)),
+            /* prefixStartIdx= */ 0,
+            /* startIdx= */ 38);
+
+    // Each attribute has three values {0, 5, OTHER} in two bits, so one bit pattern is invalid.
+    for (BDDLongAtom atom :
+        ImmutableList.of(route.getTag2(), route.getColor(), route.getColor2())) {
+      BDD invalid = atom.getIsValidConstraint().not();
+      assertThat(invalid.isZero(), equalTo(false));
+      assertThat(route.wellFormednessConstraints(true).and(invalid), isZero());
+    }
   }
 
   @Test
