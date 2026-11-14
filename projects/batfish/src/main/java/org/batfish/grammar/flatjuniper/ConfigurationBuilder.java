@@ -1558,6 +1558,7 @@ import org.batfish.representation.juniper.PsFromRouteFilter;
 import org.batfish.representation.juniper.PsFromRouteType;
 import org.batfish.representation.juniper.PsFromState;
 import org.batfish.representation.juniper.PsFromTag;
+import org.batfish.representation.juniper.PsFromTag2;
 import org.batfish.representation.juniper.PsFromUnsupported;
 import org.batfish.representation.juniper.PsFromValidationDatabase;
 import org.batfish.representation.juniper.PsFroms;
@@ -1598,6 +1599,7 @@ import org.batfish.representation.juniper.PsThenPreference;
 import org.batfish.representation.juniper.PsThenReject;
 import org.batfish.representation.juniper.PsThenSourceClass;
 import org.batfish.representation.juniper.PsThenTag;
+import org.batfish.representation.juniper.PsThenTag2;
 import org.batfish.representation.juniper.PsThenTunnelAttributeRemove;
 import org.batfish.representation.juniper.PsThenTunnelAttributeSet;
 import org.batfish.representation.juniper.PsThenValidationState;
@@ -8317,8 +8319,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitPopsf_tag2(Popsf_tag2Context ctx) {
-    todo(ctx);
-    _currentPsTerm.getFroms().setFromUnsupported(new PsFromUnsupported());
+    long tag2 = toLong(ctx.uint32());
+    _currentPsTerm.getFroms().addFromTag2(new PsFromTag2(tag2));
   }
 
   @Override
@@ -8822,7 +8824,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitPopst_tag2(Popst_tag2Context ctx) {
-    todo(ctx);
+    addPsThen(new PsThenTag2(toLong(ctx.uint32())), ctx);
   }
 
   @Override
