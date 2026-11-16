@@ -25,6 +25,7 @@ import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.MatchBgpSessionType;
 import org.batfish.datamodel.routing_policy.expr.MatchClusterListLength;
 import org.batfish.datamodel.routing_policy.expr.MatchColor;
+import org.batfish.datamodel.routing_policy.expr.MatchColor2;
 import org.batfish.datamodel.routing_policy.expr.MatchInterface;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
 import org.batfish.datamodel.routing_policy.expr.MatchLocalPreference;
@@ -53,6 +54,8 @@ import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.RemoveTunnelEncapsulationAttribute;
 import org.batfish.datamodel.routing_policy.statement.ReplaceAsesInAsSequence;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
+import org.batfish.datamodel.routing_policy.statement.SetColor;
+import org.batfish.datamodel.routing_policy.statement.SetColor2;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultTag;
 import org.batfish.datamodel.routing_policy.statement.SetEigrpMetric;
@@ -262,6 +265,11 @@ public final class AsPathStructuresVerifier {
 
     @Override
     public Void visitMatchTag2(MatchTag2 matchTag2, AsPathStructuresVerifierContext arg) {
+      return null;
+    }
+
+    @Override
+    public Void visitMatchColor2(MatchColor2 matchColor2, AsPathStructuresVerifierContext arg) {
       return null;
     }
 
@@ -536,6 +544,16 @@ public final class AsPathStructuresVerifier {
 
     @Override
     public Void visitSetTag2(SetTag2 setTag2, AsPathStructuresVerifierContext arg) {
+      return null;
+    }
+
+    @Override
+    public Void visitSetColor(SetColor setColor, AsPathStructuresVerifierContext arg) {
+      return null;
+    }
+
+    @Override
+    public Void visitSetColor2(SetColor2 setColor2, AsPathStructuresVerifierContext arg) {
       return null;
     }
 
