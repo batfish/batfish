@@ -207,6 +207,7 @@ pops_from
       | popsf_as_path
       | popsf_as_path_group
       | popsf_color
+      | popsf_color2
       | popsf_community
       | popsf_community_count
       | popsf_condition
@@ -280,6 +281,11 @@ popsf_as_path_group
 popsf_color
 :
    COLOR color = uint32
+;
+
+popsf_color2
+:
+   COLOR2 color2 = uint32
 ;
 
 popsf_community
