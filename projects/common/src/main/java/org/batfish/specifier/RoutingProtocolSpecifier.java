@@ -1,6 +1,7 @@
 package org.batfish.specifier;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+import static org.batfish.common.util.CollectionUtil.hashCodeWithEnumOrdinals;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -277,7 +278,7 @@ public class RoutingProtocolSpecifier {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_protocols, _text);
+    return Objects.hash(hashCodeWithEnumOrdinals(_protocols), _text);
   }
 
   @Override

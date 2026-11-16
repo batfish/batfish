@@ -97,7 +97,7 @@ public final class RouteInfo {
   @Override
   public int hashCode() {
     return Objects.hash(
-        _protocol, _network, _nextHop, _nextHopIp, _nextVrf, _adminDistance, _metric);
+        _protocol.ordinal(), _network, _nextHop, _nextHopIp, _nextVrf, _adminDistance, _metric);
   }
 
   @JsonProperty(PROP_PROTOCOL)

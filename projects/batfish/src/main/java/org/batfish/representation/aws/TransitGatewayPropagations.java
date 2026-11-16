@@ -98,7 +98,7 @@ final class TransitGatewayPropagations implements AwsVpcEntity, Serializable {
 
     @Override
     public int hashCode() {
-      return Objects.hash(_attachmentId, _resourceId, _resourceType, _enabled);
+      return Objects.hash(_attachmentId, _resourceId, _resourceType.ordinal(), _enabled);
     }
   }
 

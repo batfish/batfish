@@ -120,6 +120,7 @@ public class SessionMatchExpr {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_ipProtocol, _srcIp, _dstIp, _srcPort, _dstPort);
+    return Objects.hash(
+        _ipProtocol == null ? 0 : _ipProtocol.ordinal(), _srcIp, _dstIp, _srcPort, _dstPort);
   }
 }

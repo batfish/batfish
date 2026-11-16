@@ -53,7 +53,8 @@ public class NatSettings implements Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_autoRule, _hideBehind, _installOn, _ipv4Address, _method);
+    return Objects.hash(
+        _autoRule, _hideBehind, _installOn, _ipv4Address, _method == null ? 0 : _method.ordinal());
   }
 
   @JsonCreator

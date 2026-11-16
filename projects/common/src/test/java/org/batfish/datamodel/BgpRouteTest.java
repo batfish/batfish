@@ -13,6 +13,9 @@ import static org.hamcrest.Matchers.sameInstance;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.bgp.TunnelEncapsulationAttribute;
@@ -21,6 +24,43 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.junit.Test;
 
 public class BgpRouteTest {
+  @Test
+  public void testHashCodesAcrossJvmProcesses() throws IOException, InterruptedException {
+    assertThat(hashCodes(11), equalTo(hashCodes(0)));
+  }
+
+  private static String hashCodes(int padding) throws IOException, InterruptedException {
+    Process process =
+        new ProcessBuilder(
+                Path.of(System.getProperty("java.home"), "bin", "java").toString(),
+                "-cp",
+                System.getProperty("java.class.path"),
+                HashCodeProbe.class.getName(),
+                Integer.toString(padding))
+            .redirectError(ProcessBuilder.Redirect.INHERIT)
+            .start();
+    try {
+      assertThat(process.waitFor(30, TimeUnit.SECONDS), equalTo(true));
+      assertThat(process.exitValue(), equalTo(0));
+      return new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+    } finally {
+      process.destroyForcibly();
+    }
+  }
+
+  public static final class HashCodeProbe {
+    public static void main(String[] args) {
+      for (int i = 0; i < Integer.parseInt(args[0]); i++) {
+        System.identityHashCode(new Object());
+      }
+      Bgpv4Route.Builder builder =
+          Bgpv4Route.testBuilder().setNetwork(Prefix.parse("192.0.2.0/24"));
+      System.out.println(builder.setPathId(1).build().hashCode());
+      System.out.println(builder.setPathId(2).build().hashCode());
+      System.out.println(builder.setTag2(7).build().hashCode());
+    }
+  }
+
   @Test
   public void testBgpRouteAttributesJavaSerialization() {
     BgpRoute.BgpRouteAttributes attributes =

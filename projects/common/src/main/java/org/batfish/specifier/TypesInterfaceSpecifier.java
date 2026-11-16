@@ -1,6 +1,7 @@
 package org.batfish.specifier;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.common.util.CollectionUtil.hashCodeWithEnumOrdinals;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.Map;
@@ -59,6 +60,6 @@ public final class TypesInterfaceSpecifier implements InterfaceSpecifier {
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(_interfaceTypes);
+    return hashCodeWithEnumOrdinals(_interfaceTypes);
   }
 }

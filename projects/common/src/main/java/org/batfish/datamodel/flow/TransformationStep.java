@@ -63,7 +63,7 @@ public final class TransformationStep extends Step<TransformationStepDetail> {
 
     @Override
     public int hashCode() {
-      return Objects.hash(_type, _flowDiffs);
+      return Objects.hash(_type.ordinal(), _flowDiffs);
     }
 
     @JsonProperty(PROP_TRANSFORMATION_TYPE)

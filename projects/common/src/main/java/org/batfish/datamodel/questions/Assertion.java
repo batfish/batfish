@@ -76,7 +76,7 @@ public class Assertion {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_assertionType, _expect);
+    return Objects.hash(_assertionType == null ? 0 : _assertionType.ordinal(), _expect);
   }
 
   @Override

@@ -43,6 +43,6 @@ public final class RedistributionPolicy implements Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_cumulusRoutingProtocol, _routeMap);
+    return Objects.hash(_cumulusRoutingProtocol.ordinal(), _routeMap);
   }
 }

@@ -1,6 +1,7 @@
 package org.batfish.specifier;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.common.util.CollectionUtil.hashCodeWithEnumOrdinals;
 import static org.batfish.datamodel.FlowDisposition.FAILURE_DISPOSITIONS;
 import static org.batfish.datamodel.FlowDisposition.SUCCESS_DISPOSITIONS;
 
@@ -112,7 +113,7 @@ public final class DispositionSpecifier {
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(_dispositions);
+    return hashCodeWithEnumOrdinals(_dispositions);
   }
 
   @Override

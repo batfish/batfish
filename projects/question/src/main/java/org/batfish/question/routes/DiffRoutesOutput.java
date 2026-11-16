@@ -92,10 +92,10 @@ public class DiffRoutesOutput {
   @Override
   public int hashCode() {
     return Objects.hash(
-        _networkKeyPresenceStatus,
+        _networkKeyPresenceStatus.ordinal(),
         _routeRowKey,
         _routeRowSecondaryKey,
-        _routeRowSecondaryKeyStatus,
+        _routeRowSecondaryKeyStatus.ordinal(),
         _diffInAttributes);
   }
 

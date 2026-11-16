@@ -200,7 +200,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
         _localPreference,
         _clusterList,
         _communities,
-        _originMechanism,
+        _originMechanism == null ? 0 : _originMechanism.ordinal(),
         _originProtocol,
         _originType == null ? 0 : _originType.ordinal(),
         _originatorIp,

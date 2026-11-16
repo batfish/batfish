@@ -784,7 +784,8 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_arn, _availabilityZones, _dnsName, _name, _scheme, _type, _vpcId);
+    return Objects.hash(
+        _arn, _availabilityZones, _dnsName, _name, _scheme.ordinal(), _type.ordinal(), _vpcId);
   }
 
   @Override

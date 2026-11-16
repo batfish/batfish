@@ -2,6 +2,7 @@ package org.batfish.datamodel.answers;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.MoreObjects.toStringHelper;
+import static org.batfish.common.util.CollectionUtil.hashCodeWithEnumOrdinals;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -129,7 +130,8 @@ public class Metrics {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_aggregations, _emptyColumns, _numExcludedRows, _numRows);
+    return Objects.hash(
+        hashCodeWithEnumOrdinals(_aggregations), _emptyColumns, _numExcludedRows, _numRows);
   }
 
   @Override

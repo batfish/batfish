@@ -96,7 +96,7 @@ public final class NatPacketLocation implements Serializable, Comparable<NatPack
 
   @Override
   public int hashCode() {
-    return Objects.hash(_name, _type);
+    return Objects.hash(_name, _type == null ? 0 : _type.ordinal());
   }
 
   @Override

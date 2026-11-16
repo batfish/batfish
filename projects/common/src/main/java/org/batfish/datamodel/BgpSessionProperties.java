@@ -3,6 +3,7 @@ package org.batfish.datamodel;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.batfish.common.util.CollectionUtil.hashCodeWithEnumOrdinals;
 import static org.batfish.datamodel.bgp.BgpTopologyUtils.computeAsPair;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -533,8 +534,8 @@ public final class BgpSessionProperties {
   @Override
   public int hashCode() {
     return Objects.hash(
-        _addressFamilies,
-        _routeExchangeSettings,
+        hashCodeWithEnumOrdinals(_addressFamilies),
+        hashCodeWithEnumOrdinals(_routeExchangeSettings),
         _remoteAs,
         _localAs,
         _remoteIp,

@@ -88,7 +88,7 @@ public final class LoadBalancerTargetHealth implements AwsVpcEntity, Serializabl
 
     @Override
     public int hashCode() {
-      return Objects.hash(_description, _reason, _state);
+      return Objects.hash(_description, _reason, _state.ordinal());
     }
 
     @Override

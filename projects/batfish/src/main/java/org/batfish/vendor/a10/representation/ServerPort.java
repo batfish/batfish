@@ -11,7 +11,7 @@ public class ServerPort implements Serializable {
   public static class ServerPortAndType implements Serializable {
     @Override
     public int hashCode() {
-      return Objects.hash(_port, _type);
+      return Objects.hash(_port, _type.ordinal());
     }
 
     @Override

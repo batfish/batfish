@@ -38,7 +38,7 @@ public class AristaBgpRedistributionPolicy implements Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_type, _routeMap);
+    return Objects.hash(_type.ordinal(), _routeMap);
   }
 
   @Override

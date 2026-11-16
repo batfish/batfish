@@ -69,6 +69,6 @@ public class ServiceObject implements Comparable<ServiceObject>, Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_name, _ipProtocol, _ports);
+    return Objects.hash(_name, _ipProtocol.ordinal(), _ports);
   }
 }

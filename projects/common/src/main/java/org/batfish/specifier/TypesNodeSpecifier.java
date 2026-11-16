@@ -1,5 +1,7 @@
 package org.batfish.specifier;
 
+import static org.batfish.common.util.CollectionUtil.hashCodeWithEnumOrdinals;
+
 import com.google.common.collect.ImmutableSet;
 import java.util.Objects;
 import java.util.Set;
@@ -33,7 +35,7 @@ public final class TypesNodeSpecifier implements NodeSpecifier {
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(_types);
+    return hashCodeWithEnumOrdinals(_types);
   }
 
   @Override

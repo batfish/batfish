@@ -1,5 +1,7 @@
 package org.batfish.representation.palo_alto;
 
+import static org.batfish.common.util.CollectionUtil.hashCodeWithEnumOrdinals;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
@@ -140,13 +142,13 @@ public final class CryptoProfile implements Serializable {
   public int hashCode() {
     return Objects.hash(
         _name,
-        _type,
-        _authAlgorithm,
-        _dhGroups,
-        _encryptionAlgorithms,
-        _hashAlgorithm,
+        _type.ordinal(),
+        _authAlgorithm == null ? 0 : _authAlgorithm.ordinal(),
+        hashCodeWithEnumOrdinals(_dhGroups),
+        hashCodeWithEnumOrdinals(_encryptionAlgorithms),
+        _hashAlgorithm == null ? 0 : _hashAlgorithm.ordinal(),
         _lifetimeSeconds,
-        _protocol,
+        _protocol == null ? 0 : _protocol.ordinal(),
         _noPfs);
   }
 

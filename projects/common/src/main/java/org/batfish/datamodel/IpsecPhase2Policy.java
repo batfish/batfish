@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import static org.batfish.common.util.CollectionUtil.hashCodeWithEnumOrdinals;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
@@ -87,7 +89,7 @@ public class IpsecPhase2Policy implements Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_pfsKeyGroups, _proposals);
+    return Objects.hash(hashCodeWithEnumOrdinals(_pfsKeyGroups), _proposals);
   }
 
   @Override

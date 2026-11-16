@@ -1,5 +1,7 @@
 package org.batfish.specifier;
 
+import static org.batfish.common.util.CollectionUtil.hashCodeWithEnumOrdinals;
+
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -26,7 +28,7 @@ public final class ConstantEnumSetSpecifier<T> implements EnumSetSpecifier<T> {
 
   @Override
   public int hashCode() {
-    return _structureTypes.hashCode();
+    return hashCodeWithEnumOrdinals(_structureTypes);
   }
 
   @Override

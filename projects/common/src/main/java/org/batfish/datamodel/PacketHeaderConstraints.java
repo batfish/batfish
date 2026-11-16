@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.common.util.CollectionUtil.hashCodeWithEnumOrdinals;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -614,7 +615,7 @@ public class PacketHeaderConstraints {
         _ecns,
         _packetLengths,
         _fragmentOffsets,
-        _ipProtocols,
+        hashCodeWithEnumOrdinals(_ipProtocols),
         _srcIp,
         _dstIp,
         _icmpCode,

@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.common.util.CollectionUtil.hashCodeWithEnumOrdinals;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -95,6 +96,9 @@ public class IpsecPhase2Proposal implements Serializable {
   @Override
   public int hashCode() {
     return Objects.hash(
-        _authenticationAlgorithm, _encryptionAlgorithm, _ipsecEncapsulationMode, _protocols);
+        _authenticationAlgorithm == null ? 0 : _authenticationAlgorithm.ordinal(),
+        _encryptionAlgorithm == null ? 0 : _encryptionAlgorithm.ordinal(),
+        _ipsecEncapsulationMode.ordinal(),
+        hashCodeWithEnumOrdinals(_protocols));
   }
 }

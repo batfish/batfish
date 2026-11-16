@@ -108,7 +108,7 @@ public class FilterStep extends Step<FilterStepDetail> {
 
     @Override
     public int hashCode() {
-      return Objects.hash(_filter, _type, _inputInterface, _flow);
+      return Objects.hash(_filter, _type.ordinal(), _inputInterface, _flow);
     }
   }
 

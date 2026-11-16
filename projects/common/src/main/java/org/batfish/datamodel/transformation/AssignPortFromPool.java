@@ -93,6 +93,10 @@ public class AssignPortFromPool implements TransformationStep, Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_type, _portField, _poolStart, _poolEnd);
+    return Objects.hash(
+        _type == null ? 0 : _type.ordinal(),
+        _portField == null ? 0 : _portField.ordinal(),
+        _poolStart,
+        _poolEnd);
   }
 }

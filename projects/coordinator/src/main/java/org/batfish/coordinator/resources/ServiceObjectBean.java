@@ -38,7 +38,7 @@ public class ServiceObjectBean {
 
   @Override
   public int hashCode() {
-    return Objects.hash(ipProtocol, name, ports);
+    return Objects.hash(ipProtocol == null ? 0 : ipProtocol.ordinal(), name, ports);
   }
 
   public ServiceObject toServiceObject() {

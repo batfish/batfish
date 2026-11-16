@@ -177,7 +177,7 @@ public class IsisInterfaceLevelSettings implements Serializable {
     return Objects.hash(
         _cost,
         _helloAuthenticationKey,
-        _helloAuthenticationType,
+        _helloAuthenticationType == null ? 0 : _helloAuthenticationType.ordinal(),
         _helloInterval,
         _holdTime,
         _mode.ordinal());
