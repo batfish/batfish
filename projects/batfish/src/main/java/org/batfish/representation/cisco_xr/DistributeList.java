@@ -43,7 +43,7 @@ public final class DistributeList implements Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_filterType, _filterName);
+    return Objects.hash(_filterType.ordinal(), _filterName);
   }
 
   @Override

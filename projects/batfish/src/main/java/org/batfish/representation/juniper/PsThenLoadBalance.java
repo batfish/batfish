@@ -50,7 +50,7 @@ public final class PsThenLoadBalance extends PsThen {
 
   @Override
   public int hashCode() {
-    return _method.hashCode();
+    return _method.ordinal();
   }
 
   @Override

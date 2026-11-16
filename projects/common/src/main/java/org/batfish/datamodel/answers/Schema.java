@@ -181,7 +181,7 @@ public class Schema {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_baseType, _innerSchema, _type);
+    return Objects.hash(_baseType, _innerSchema, _type.ordinal());
   }
 
   /** Whether this Schema is List or Set */

@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import static java.util.Comparator.naturalOrder;
 import static java.util.Comparator.nullsFirst;
+import static org.batfish.common.util.CollectionUtil.hashCodeWithEnumOrdinals;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
@@ -800,7 +801,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
         _fragmentOffsets,
         _icmpCodes,
         _icmpTypes,
-        _ipProtocols,
+        hashCodeWithEnumOrdinals(_ipProtocols),
         _negate,
         _notDscps,
         _notDstIps,
@@ -809,7 +810,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
         _notFragmentOffsets,
         _notIcmpCodes,
         _notIcmpTypes,
-        _notIpProtocols,
+        hashCodeWithEnumOrdinals(_notIpProtocols),
         _notPacketLengths,
         _notSrcIps,
         _notSrcPorts,

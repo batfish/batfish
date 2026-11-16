@@ -59,6 +59,9 @@ public class BgpAuthenticationSettings implements Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_authenticationAlgorithm, _authenticationKey, _authenticationKeyChainName);
+    return Objects.hash(
+        _authenticationAlgorithm == null ? 0 : _authenticationAlgorithm.ordinal(),
+        _authenticationKey,
+        _authenticationKeyChainName);
   }
 }

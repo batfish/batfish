@@ -217,7 +217,12 @@ public final class ExprAclLine extends AclLine {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_action, _matchCondition, _name, _traceElement, _vendorStructureId);
+    return Objects.hash(
+        _action == null ? 0 : _action.ordinal(),
+        _matchCondition,
+        _name,
+        _traceElement,
+        _vendorStructureId);
   }
 
   public Builder toBuilder() {

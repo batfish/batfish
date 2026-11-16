@@ -48,6 +48,6 @@ public final class FwThenDecapsulate implements FwThen {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_type, _routingInstance);
+    return Objects.hash(_type.ordinal(), _routingInstance);
   }
 }

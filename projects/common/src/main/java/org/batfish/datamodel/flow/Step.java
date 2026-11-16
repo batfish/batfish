@@ -64,6 +64,6 @@ public abstract class Step<D> {
 
   @Override
   public final int hashCode() {
-    return Objects.hash(_detail, _action);
+    return Objects.hash(_detail, _action.ordinal());
   }
 }

@@ -42,6 +42,6 @@ public final class PsThenExternal extends PsThen {
 
   @Override
   public int hashCode() {
-    return _type.hashCode();
+    return _type.ordinal();
   }
 }

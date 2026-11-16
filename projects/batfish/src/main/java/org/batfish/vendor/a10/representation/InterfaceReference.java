@@ -31,7 +31,7 @@ public class InterfaceReference implements Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_type, _number);
+    return Objects.hash(_type.ordinal(), _number);
   }
 
   public InterfaceReference(Interface.Type type, int number) {

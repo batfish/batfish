@@ -111,7 +111,13 @@ public final class PrefixListEntry implements Serializable {
   @Override
   public int hashCode() {
     return Objects.hash(
-        _prefix, _type, _throughLength, _startLength, _endLength, _toPrefixes, _maskPatterns);
+        _prefix,
+        _type.ordinal(),
+        _throughLength,
+        _startLength,
+        _endLength,
+        _toPrefixes,
+        _maskPatterns);
   }
 
   private final @Nonnull Prefix _prefix;

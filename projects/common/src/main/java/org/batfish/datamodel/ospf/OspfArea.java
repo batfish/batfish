@@ -353,7 +353,7 @@ public class OspfArea implements Serializable {
         _metricOfDefaultRoute,
         _nssa,
         _stub,
-        _stubType,
+        _stubType.ordinal(),
         _summaries,
         _summaryFilter);
   }

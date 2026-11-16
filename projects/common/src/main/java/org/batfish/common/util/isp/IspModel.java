@@ -143,7 +143,12 @@ final class IspModel {
   @Override
   public int hashCode() {
     return Objects.hash(
-        _asn, _name, _snapshotConnections, _role, _additionalPrefixesToInternet, _trafficFiltering);
+        _asn,
+        _name,
+        _snapshotConnections,
+        _role == null ? 0 : _role.ordinal(),
+        _additionalPrefixesToInternet,
+        _trafficFiltering);
   }
 
   @Override

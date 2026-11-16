@@ -86,7 +86,8 @@ public final class AssignIpAddressFromPool implements TransformationStep, Serial
 
   @Override
   public int hashCode() {
-    return Objects.hash(_type, _ipField, _ipRanges);
+    return Objects.hash(
+        _type == null ? 0 : _type.ordinal(), _ipField == null ? 0 : _ipField.ordinal(), _ipRanges);
   }
 
   @Override

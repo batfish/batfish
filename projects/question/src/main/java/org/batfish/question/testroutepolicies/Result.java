@@ -1,6 +1,7 @@
 package org.batfish.question.testroutepolicies;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.common.util.CollectionUtil.hashCodeWithEnumOrdinals;
 
 import java.util.List;
 import java.util.Objects;
@@ -162,6 +163,11 @@ public class Result<I, O> {
   @Override
   public int hashCode() {
     return Objects.hash(
-        _policyId, _action, _inputRoute, _relevantInputAttributes, _outputRoute, _trace);
+        _policyId,
+        _action == null ? 0 : _action.ordinal(),
+        _inputRoute,
+        hashCodeWithEnumOrdinals(_relevantInputAttributes),
+        _outputRoute,
+        _trace);
   }
 }

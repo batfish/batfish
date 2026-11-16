@@ -90,7 +90,7 @@ public final class LoadBalancerListener implements AwsVpcEntity, Serializable {
 
     @Override
     public int hashCode() {
-      return Objects.hash(_order, _targetGroupArn, _type);
+      return Objects.hash(_order, _targetGroupArn, _type.ordinal());
     }
   }
 
@@ -225,7 +225,7 @@ public final class LoadBalancerListener implements AwsVpcEntity, Serializable {
 
     @Override
     public int hashCode() {
-      return Objects.hash(_listenerArn, _defaultActions, _protocol, _port);
+      return Objects.hash(_listenerArn, _defaultActions, _protocol.ordinal(), _port);
     }
 
     @Override

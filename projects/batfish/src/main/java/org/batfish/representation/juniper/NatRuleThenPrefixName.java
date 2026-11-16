@@ -50,7 +50,7 @@ public class NatRuleThenPrefixName implements NatRuleThen, Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_name, _ipField);
+    return Objects.hash(_name, _ipField == null ? 0 : _ipField.ordinal());
   }
 
   @Override

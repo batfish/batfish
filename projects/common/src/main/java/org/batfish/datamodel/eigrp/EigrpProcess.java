@@ -191,7 +191,7 @@ public final class EigrpProcess implements Serializable {
     return Objects.hash(
         _asn,
         _redistributionPolicy,
-        _mode,
+        _mode.ordinal(),
         _routerId,
         _neighbors,
         _internalAdminCost,

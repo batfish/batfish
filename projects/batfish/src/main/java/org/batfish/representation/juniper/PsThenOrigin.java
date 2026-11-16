@@ -43,6 +43,6 @@ public final class PsThenOrigin extends PsThen {
 
   @Override
   public int hashCode() {
-    return _originType.hashCode();
+    return _originType.ordinal();
   }
 }

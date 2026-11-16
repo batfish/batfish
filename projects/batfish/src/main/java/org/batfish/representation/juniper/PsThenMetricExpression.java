@@ -69,7 +69,7 @@ public final class PsThenMetricExpression extends PsThen {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_target, _source, _multiplier, _offset);
+    return Objects.hash(_target.ordinal(), _source.ordinal(), _multiplier, _offset);
   }
 
   private final long _multiplier;

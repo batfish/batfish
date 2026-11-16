@@ -195,7 +195,7 @@ public final class AddressFamilyCapabilities implements Serializable {
         _advertiseExternal,
         _advertiseInactive,
         _allowLocalAsIn,
-        _allowRemoteAsOut,
+        _allowRemoteAsOut.ordinal(),
         _sendCommunity,
         _sendExtendedCommunity);
   }

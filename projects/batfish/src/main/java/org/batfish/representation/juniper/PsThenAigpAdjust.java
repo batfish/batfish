@@ -59,7 +59,7 @@ public final class PsThenAigpAdjust extends PsThen {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_operator, _value);
+    return Objects.hash(_operator.ordinal(), _value);
   }
 
   private final @Nonnull Operator _operator;
