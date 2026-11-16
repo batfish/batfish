@@ -57,7 +57,13 @@ public final class BgpVrfAddressFamilyAggregateNetworkConfiguration implements S
 
   @Override
   public int hashCode() {
-    return Objects.hash(_asSet, _matchingMedOnly, _origin, _routeMap, _summaryOnly, _suppressMap);
+    return Objects.hash(
+        _asSet,
+        _matchingMedOnly,
+        _origin == null ? 0 : _origin.ordinal(),
+        _routeMap,
+        _summaryOnly,
+        _suppressMap);
   }
 
   @Override

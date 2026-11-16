@@ -69,7 +69,7 @@ public class StandardAccessListActionLine implements StandardAccessListLine {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_action, _name, _sourceIps, _seq);
+    return Objects.hash(_action.ordinal(), _name, _sourceIps, _seq);
   }
 
   @Override

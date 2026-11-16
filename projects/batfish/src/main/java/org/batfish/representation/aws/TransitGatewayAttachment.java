@@ -192,7 +192,7 @@ final class TransitGatewayAttachment implements AwsVpcEntity, Serializable {
         _attachmentId,
         _gatewayId,
         _gatewayOwnerId,
-        _resourceType,
+        _resourceType.ordinal(),
         _resourceId,
         _resourceOwnerId,
         _association);

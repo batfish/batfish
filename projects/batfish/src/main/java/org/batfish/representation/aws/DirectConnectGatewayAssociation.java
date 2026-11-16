@@ -107,7 +107,7 @@ final class DirectConnectGatewayAssociation implements AwsVpcEntity, Serializabl
 
     @Override
     public int hashCode() {
-      return Objects.hash(_id, _type, _ownerAccount, _region);
+      return Objects.hash(_id, _type.ordinal(), _ownerAccount, _region);
     }
   }
 

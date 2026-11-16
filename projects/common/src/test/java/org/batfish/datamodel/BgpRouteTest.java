@@ -10,6 +10,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
 import java.io.IOException;
@@ -135,6 +136,13 @@ public class BgpRouteTest {
   public void testUncommonAttributesJavaSerialization() {
     BgpRoute.UncommonAttributes a = BgpRoute.UncommonAttributes.create(5, 0, TUNNEL);
     assertThat(SerializationUtils.clone(a), sameInstance(a));
+  }
+
+  @Test
+  public void testUncommonAttributesHashCode() {
+    assertThat(
+        BgpRoute.UncommonAttributes.create(5, 7, TUNNEL).hashCode(),
+        equalTo(ImmutableMap.of(0, 5, 1, 7L, 2, TUNNEL).hashCode()));
   }
 
   @Test

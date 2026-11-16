@@ -241,7 +241,7 @@ public final class OspfInterfaceSettings implements Serializable {
         _ospfHelloMultiplier,
         _ospfInboundDistributeListPolicy,
         _ospfNbmaNeighbors,
-        _ospfNetworkType,
+        _ospfNetworkType == null ? 0 : _ospfNetworkType.ordinal(),
         _ospfPassive,
         _ospfProcess,
         _ospfType5FilterPolicy);

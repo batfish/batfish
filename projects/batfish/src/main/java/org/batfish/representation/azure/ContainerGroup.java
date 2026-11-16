@@ -153,7 +153,7 @@ public class ContainerGroup extends Instance implements Serializable {
 
     @Override
     public int hashCode() {
-      return _protocol.hashCode() + _port;
+      return _protocol.ordinal() + _port;
     }
   }
 

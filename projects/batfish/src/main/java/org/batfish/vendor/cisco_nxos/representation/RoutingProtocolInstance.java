@@ -73,7 +73,7 @@ public final class RoutingProtocolInstance implements Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_protocol, _tag);
+    return Objects.hash(_protocol.ordinal(), _tag);
   }
 
   @Override

@@ -19,6 +19,7 @@ import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -126,10 +127,40 @@ public final class CollectionUtil {
     return us;
   }
 
+  /** Uses enum ordinals in place of identity hashes, including inside lists, sets, and maps. */
+  public static int hashCodeWithEnumOrdinals(@Nullable Object value) {
+    if (value instanceof Enum<?> e) {
+      return e.ordinal();
+    }
+    if (value instanceof Map<?, ?> map) {
+      int hash = 0;
+      for (Entry<?, ?> entry : map.entrySet()) {
+        hash +=
+            hashCodeWithEnumOrdinals(entry.getKey()) ^ hashCodeWithEnumOrdinals(entry.getValue());
+      }
+      return hash;
+    }
+    if (value instanceof Set<?> set) {
+      int hash = 0;
+      for (Object element : set) {
+        hash += hashCodeWithEnumOrdinals(element);
+      }
+      return hash;
+    }
+    if (value instanceof List<?> list) {
+      int hash = 1;
+      for (Object element : list) {
+        hash = 31 * hash + hashCodeWithEnumOrdinals(element);
+      }
+      return hash;
+    }
+    return Objects.hashCode(value);
+  }
+
   /**
    * A collector that returns a hashcode of all the objects in a stream (order-dependent).
    *
-   * <p>Equivalent to to collecting elements into a list and calling {@link List#hashCode()}
+   * <p>Uses the {@link List#hashCode()} algorithm, with enum ordinals in place of identity hashes.
    */
   public static <T> Collector<T, ?, Integer> toOrderedHashCode() {
     // See https://stackoverflow.com/a/39396614 for mode detail
@@ -139,7 +170,7 @@ public final class CollectionUtil {
         // accumulator: single element added to hashcode
         (a, o) -> {
           checkArgument(!(o instanceof Stream), "Cannot hash a stream, check the caller");
-          int hash = Objects.hashCode(o);
+          int hash = hashCodeWithEnumOrdinals(o);
           if (o != null && hash == System.identityHashCode(o)) {
             // Not an assert or a check, since collisions can happen.
             LOGGER.warn(

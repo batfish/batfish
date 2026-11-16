@@ -42,6 +42,6 @@ final class TypeInterfaceAstNode implements InterfaceAstNode {
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(_interfaceType);
+    return _interfaceType == null ? 0 : _interfaceType.ordinal();
   }
 }

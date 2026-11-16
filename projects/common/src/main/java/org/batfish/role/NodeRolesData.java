@@ -243,7 +243,7 @@ public class NodeRolesData {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_defaultDimension, _roleMappings, _roleDimensionOrder, _type);
+    return Objects.hash(_defaultDimension, _roleMappings, _roleDimensionOrder, _type.ordinal());
   }
 
   @Override

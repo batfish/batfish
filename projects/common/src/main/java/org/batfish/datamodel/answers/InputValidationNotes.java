@@ -110,7 +110,8 @@ public final class InputValidationNotes {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_description, _errorIndex, _expansions, _validity);
+    return Objects.hash(
+        _description, _errorIndex, _expansions, _validity == null ? 0 : _validity.ordinal());
   }
 
   @Override

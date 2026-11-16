@@ -1,5 +1,7 @@
 package org.batfish.specifier.parse;
 
+import static org.batfish.common.util.CollectionUtil.hashCodeWithEnumOrdinals;
+
 import com.google.common.base.MoreObjects;
 import java.util.Collection;
 import java.util.Objects;
@@ -48,7 +50,7 @@ final class ValueEnumSetAstNode<T> implements EnumSetAstNode {
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(_value);
+    return hashCodeWithEnumOrdinals(_value);
   }
 
   @Override

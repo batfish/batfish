@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.common.util.CollectionUtil.hashCodeWithEnumOrdinals;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -283,7 +284,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
 
     @Override
     public int hashCode() {
-      return _attributes.hashCode();
+      return hashCodeWithEnumOrdinals(_attributes);
     }
 
     /** Re-intern after deserialization. */

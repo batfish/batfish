@@ -3,6 +3,7 @@ package org.batfish.datamodel.tracking;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.common.util.CollectionUtil.hashCodeWithEnumOrdinals;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -84,7 +85,7 @@ public final class TrackRoute implements TrackMethod {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_prefix, _protocols, _ribType.ordinal(), _vrf);
+    return Objects.hash(_prefix, hashCodeWithEnumOrdinals(_protocols), _ribType.ordinal(), _vrf);
   }
 
   static @Nonnull TrackRoute of(

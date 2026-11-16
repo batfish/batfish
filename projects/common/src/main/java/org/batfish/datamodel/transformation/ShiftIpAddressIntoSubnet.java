@@ -80,6 +80,7 @@ public final class ShiftIpAddressIntoSubnet implements TransformationStep, Seria
 
   @Override
   public int hashCode() {
-    return Objects.hash(_type, _ipField, _subnet);
+    return Objects.hash(
+        _type == null ? 0 : _type.ordinal(), _ipField == null ? 0 : _ipField.ordinal(), _subnet);
   }
 }

@@ -8,7 +8,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import java.io.Serializable;
-import java.util.Objects;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 
@@ -54,7 +53,7 @@ public final class Noop implements TransformationStep, Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(_type);
+    return _type == null ? 0 : _type.ordinal();
   }
 
   @JsonProperty(PROP_TRANSFORMATION_TYPE)

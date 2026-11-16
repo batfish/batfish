@@ -134,7 +134,7 @@ public final class RouteDistinguisher implements Serializable, Comparable<RouteD
 
   @Override
   public int hashCode() {
-    return Objects.hash(_value, _type);
+    return Objects.hash(_value, _type.ordinal());
   }
 
   @Override

@@ -100,7 +100,7 @@ public class ContainerInstance implements Serializable {
 
     @Override
     public int hashCode() {
-      return _protocol.hashCode() + _port;
+      return _protocol.ordinal() + _port;
     }
   }
 

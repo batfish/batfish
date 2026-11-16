@@ -116,7 +116,7 @@ public class Filter {
 
     @Override
     public int hashCode() {
-      return Objects.hash(_type, _value);
+      return Objects.hash(_type.ordinal(), _value);
     }
 
     @Override

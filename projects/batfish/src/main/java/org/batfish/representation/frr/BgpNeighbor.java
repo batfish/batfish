@@ -38,7 +38,7 @@ public abstract class BgpNeighbor implements Serializable {
 
     @Override
     public int hashCode() {
-      return Objects.hash(_asn, _type);
+      return Objects.hash(_asn, _type == null ? 0 : _type.ordinal());
     }
 
     /**

@@ -39,7 +39,7 @@ final class NameAppAstNode implements AppAstNode {
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(_namedApplication);
+    return _namedApplication == null ? 0 : _namedApplication.ordinal();
   }
 
   @Override

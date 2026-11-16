@@ -63,6 +63,6 @@ public final class PsFromCommunityCount extends PsFrom {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_count, _mode);
+    return Objects.hash(_count, _mode.ordinal());
   }
 }

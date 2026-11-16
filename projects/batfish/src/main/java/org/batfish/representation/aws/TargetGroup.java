@@ -123,7 +123,12 @@ public final class TargetGroup implements AwsVpcEntity, Serializable {
   @Override
   public int hashCode() {
     return Objects.hash(
-        _targetGroupArn, _loadBalancerArns, _protocol, _port, _targetGroupName, _targetType);
+        _targetGroupArn,
+        _loadBalancerArns,
+        _protocol.ordinal(),
+        _port,
+        _targetGroupName,
+        _targetType.ordinal());
   }
 
   @Override

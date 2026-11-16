@@ -13,7 +13,7 @@ public class VirtualServerPort implements Serializable {
   public static class PortAndType implements Serializable {
     @Override
     public int hashCode() {
-      return Objects.hash(_port, _type);
+      return Objects.hash(_port, _type.ordinal());
     }
 
     @Override
