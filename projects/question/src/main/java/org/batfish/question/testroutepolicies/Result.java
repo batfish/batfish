@@ -60,6 +60,8 @@ public class Result<I, O> {
     ADMINISTRATIVE_DISTANCE,
     AS_PATH,
     CLUSTER_LIST,
+    COLOR,
+    COLOR2,
     COMMUNITIES,
     LOCAL_PREFERENCE,
     METRIC,
@@ -68,6 +70,7 @@ public class Result<I, O> {
     ORIGIN_TYPE,
     PROTOCOL,
     TAG,
+    TAG2,
     TUNNEL_ENCAPSULATION_ATTRIBUTE,
     WEIGHT
   }

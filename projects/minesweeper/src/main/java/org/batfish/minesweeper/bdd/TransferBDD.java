@@ -85,6 +85,8 @@ import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.LiteralTunnelEncapsulationAttribute;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.datamodel.routing_policy.expr.MatchClusterListLength;
+import org.batfish.datamodel.routing_policy.expr.MatchColor;
+import org.batfish.datamodel.routing_policy.expr.MatchColor2;
 import org.batfish.datamodel.routing_policy.expr.MatchInterface;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
 import org.batfish.datamodel.routing_policy.expr.MatchLocalPreference;
@@ -94,6 +96,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.MatchSourceVrf;
 import org.batfish.datamodel.routing_policy.expr.MatchTag;
+import org.batfish.datamodel.routing_policy.expr.MatchTag2;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.NextHopExpr;
@@ -110,6 +113,8 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.RemoveTunnelEncapsulationAttribute;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
+import org.batfish.datamodel.routing_policy.statement.SetColor;
+import org.batfish.datamodel.routing_policy.statement.SetColor2;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
@@ -117,6 +122,7 @@ import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
+import org.batfish.datamodel.routing_policy.statement.SetTag2;
 import org.batfish.datamodel.routing_policy.statement.SetTunnelEncapsulationAttribute;
 import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.Statement;
@@ -620,6 +626,26 @@ public class TransferBDD {
       BDD mtBDD = matchLongComparison(mt.getCmp(), mt.getTag(), currRoute.getTag());
       finalResults.add(result.setReturnValueBDD(mtBDD).setReturnValueAccepted(true));
 
+    } else if (expr instanceof MatchTag2) {
+      MatchTag2 mt = (MatchTag2) expr;
+      // tag2 is tracked only as an atom over the literals that policies use, so only equality
+      // against a literal is supported
+      if (mt.getCmp() != IntComparator.EQ) {
+        throw new UnsupportedOperationException(expr.toString());
+      }
+      BDD mtBDD = currRoute.getTag2().value(literalLongValue(mt.getTag2()));
+      finalResults.add(result.setReturnValueBDD(mtBDD).setReturnValueAccepted(true));
+
+    } else if (expr instanceof MatchColor) {
+      MatchColor mc = (MatchColor) expr;
+      BDD mcBDD = currRoute.getColor().value(mc.getColor());
+      finalResults.add(result.setReturnValueBDD(mcBDD).setReturnValueAccepted(true));
+
+    } else if (expr instanceof MatchColor2) {
+      MatchColor2 mc = (MatchColor2) expr;
+      BDD mcBDD = currRoute.getColor2().value(mc.getColor2());
+      finalResults.add(result.setReturnValueBDD(mcBDD).setReturnValueAccepted(true));
+
     } else if (expr instanceof MatchMetric) {
       MatchMetric mm = (MatchMetric) expr;
       BDD mmBDD = matchLongComparison(mm.getComparator(), mm.getMetric(), currRoute.getMed());
@@ -1005,6 +1031,24 @@ public class TransferBDD {
       LongExpr ie = st.getTag();
       MutableBDDInteger newValue = applyLongExprModification(state, context, BDDRoute::getTag, ie);
       writeRouteAttribute(state, r -> r.setTag(newValue));
+      return ImmutableList.of(toTransferBDDState(curP, result));
+
+    } else if (stmt instanceof SetTag2) {
+      curP.debug("SetTag2");
+      long tag2 = literalLongValue(((SetTag2) stmt).getTag2());
+      writeRouteAttribute(state, r -> r.setTag2(withValue(r.getTag2(), tag2)));
+      return ImmutableList.of(toTransferBDDState(curP, result));
+
+    } else if (stmt instanceof SetColor) {
+      curP.debug("SetColor");
+      long color = literalLongValue(((SetColor) stmt).getColor());
+      writeRouteAttribute(state, r -> r.setColor(withValue(r.getColor(), color)));
+      return ImmutableList.of(toTransferBDDState(curP, result));
+
+    } else if (stmt instanceof SetColor2) {
+      curP.debug("SetColor2");
+      long color2 = literalLongValue(((SetColor2) stmt).getColor2());
+      writeRouteAttribute(state, r -> r.setColor2(withValue(r.getColor2(), color2)));
       return ImmutableList.of(toTransferBDDState(curP, result));
 
     } else if (stmt instanceof RemoveTunnelEncapsulationAttribute
@@ -1524,6 +1568,25 @@ public class TransferBDD {
     } else {
       return _originalRoute;
     }
+  }
+
+  /**
+   * Returns the value of the given expression, which must be a {@link LiteralLong}. Used for the
+   * attributes that are tracked only as atoms over the literals that policies use (see {@link
+   * BDDLongAtom}).
+   */
+  private static long literalLongValue(LongExpr expr) throws UnsupportedOperationException {
+    if (!(expr instanceof LiteralLong)) {
+      throw new UnsupportedOperationException(expr.toString());
+    }
+    return ((LiteralLong) expr).getValue();
+  }
+
+  /** Returns a copy of {@code current} that always has the given value. */
+  private static BDDLongAtom withValue(BDDLongAtom current, long value) {
+    BDDLongAtom newValue = BDDLongAtom.copyOf(current);
+    newValue.setValue(value);
+    return newValue;
   }
 
   // Applies a transformation to a route attribute. The output route is updated. Additionally, the

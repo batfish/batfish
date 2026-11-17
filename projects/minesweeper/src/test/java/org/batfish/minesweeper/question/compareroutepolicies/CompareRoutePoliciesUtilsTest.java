@@ -5,12 +5,15 @@ import static org.batfish.minesweeper.question.compareroutepolicies.CompareRoute
 import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.ADMINISTRATIVE_DISTANCE;
 import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.AS_PATH;
 import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.CLUSTER_LIST;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.COLOR;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.COLOR2;
 import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.COMMUNITIES;
 import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.LOCAL_PREFERENCE;
 import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.METRIC;
 import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.NETWORK;
 import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.NEXT_HOP;
 import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.TAG;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.TAG2;
 import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.WEIGHT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -111,6 +114,16 @@ public class CompareRoutePoliciesUtilsTest {
     assertThat(
         relevantAttributesFor(several, _configAPs),
         containsInAnyOrder(NETWORK, NEXT_HOP, CLUSTER_LIST, TAG));
+  }
+
+  @Test
+  public void testRelevantInputAttributesForLocalAttributes() {
+    // the policy-free ConfigAtomicPredicates tracks no literals, so each attribute is {0, OTHER}
+    BDD tag2 = _bddRoute.getTag2().value(0);
+    BDD colorOrColor2 = _bddRoute.getColor().value(0).or(_bddRoute.getColor2().value(0).not());
+
+    assertThat(relevantAttributesFor(tag2, _configAPs), equalTo(ImmutableList.of(TAG2)));
+    assertThat(relevantAttributesFor(colorOrColor2, _configAPs), containsInAnyOrder(COLOR, COLOR2));
   }
 
   @Test

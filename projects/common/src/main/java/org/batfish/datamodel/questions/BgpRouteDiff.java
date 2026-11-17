@@ -6,6 +6,8 @@ import static com.google.common.collect.Ordering.natural;
 import static java.util.Comparator.comparing;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_ADMINISTRATIVE_DISTANCE;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_AS_PATH;
+import static org.batfish.datamodel.questions.BgpRoute.PROP_COLOR;
+import static org.batfish.datamodel.questions.BgpRoute.PROP_COLOR2;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_COMMUNITIES;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_METRIC;
@@ -13,6 +15,7 @@ import static org.batfish.datamodel.questions.BgpRoute.PROP_NEXT_HOP;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_ORIGINATOR_IP;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_ORIGIN_TYPE;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_TAG;
+import static org.batfish.datamodel.questions.BgpRoute.PROP_TAG2;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_WEIGHT;
 
@@ -44,6 +47,8 @@ public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
       ImmutableSet.of(
           PROP_ADMINISTRATIVE_DISTANCE,
           PROP_AS_PATH,
+          PROP_COLOR,
+          PROP_COLOR2,
           PROP_COMMUNITIES,
           PROP_LOCAL_PREFERENCE,
           PROP_METRIC,
@@ -51,6 +56,7 @@ public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
           PROP_ORIGINATOR_IP,
           PROP_ORIGIN_TYPE,
           PROP_TAG,
+          PROP_TAG2,
           PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE,
           PROP_WEIGHT);
 
@@ -136,6 +142,9 @@ public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
             .setOriginatorIp(route2.getOriginatorIp())
             .setOriginType(route2.getOriginType())
             .setTag(route2.getTag())
+            .setTag2(route2.getTag2())
+            .setColor(route2.getColor())
+            .setColor2(route2.getColor2())
             .setTunnelEncapsulationAttribute(route2.getTunnelEncapsulationAttribute())
             .setWeight(route2.getWeight())
             .build()
@@ -149,12 +158,15 @@ public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
         Stream.of(
                 routeDiff(route1, route2, PROP_ADMINISTRATIVE_DISTANCE, BgpRoute::getAdminDist),
                 routeDiff(route1, route2, PROP_AS_PATH, BgpRoute::getAsPath),
+                routeDiff(route1, route2, PROP_COLOR, BgpRoute::getColor),
+                routeDiff(route1, route2, PROP_COLOR2, BgpRoute::getColor2),
                 routeDiff(route1, route2, PROP_LOCAL_PREFERENCE, BgpRoute::getLocalPreference),
                 routeDiff(route1, route2, PROP_METRIC, BgpRoute::getMetric),
                 routeDiff(route1, route2, PROP_NEXT_HOP, BgpRoute::getNextHop),
                 routeDiff(route1, route2, PROP_ORIGINATOR_IP, BgpRoute::getOriginatorIp),
                 routeDiff(route1, route2, PROP_ORIGIN_TYPE, BgpRoute::getOriginType),
                 routeDiff(route1, route2, PROP_TAG, BgpRoute::getTag),
+                routeDiff(route1, route2, PROP_TAG2, BgpRoute::getTag2),
                 routeDiff(
                     route1,
                     route2,

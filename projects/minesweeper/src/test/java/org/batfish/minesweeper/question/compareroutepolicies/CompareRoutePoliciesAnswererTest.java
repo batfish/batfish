@@ -16,6 +16,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasProperty;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -88,6 +89,7 @@ import org.batfish.datamodel.routing_policy.expr.LiteralAdministrativeCost;
 import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
+import org.batfish.datamodel.routing_policy.expr.MatchColor;
 import org.batfish.datamodel.routing_policy.expr.MatchInterface;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchSourceVrf;
@@ -98,17 +100,23 @@ import org.batfish.datamodel.routing_policy.expr.TrackSucceeded;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
+import org.batfish.datamodel.routing_policy.statement.SetColor;
+import org.batfish.datamodel.routing_policy.statement.SetColor2;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
+import org.batfish.datamodel.routing_policy.statement.SetTag2;
 import org.batfish.datamodel.routing_policy.statement.SetWeight;
+import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
+import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
+import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -412,6 +420,108 @@ public class CompareRoutePoliciesAnswererTest {
                 hasColumn(deltaColumnName(COL_ACTION), equalTo(PERMIT.toString()), Schema.STRING),
                 hasColumn(baseColumnName(COL_OUTPUT_ROUTE), anything(), Schema.BGP_ROUTE),
                 hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
+  }
+
+  /** Runs compareRoutePolicies on the new (base) policy against the reference (delta) policy. */
+  private TableAnswerElement compare(RoutingPolicy policyNew, RoutingPolicy policyReference) {
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
+            DEFAULT_DIRECTION, policyNew.getName(), policyReference.getName(), HOSTNAME);
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer answerer =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer(
+            question, _batfish);
+    return (TableAnswerElement)
+        answerer.answerDiff(_batfish.getSnapshot(), _batfish.getReferenceSnapshot());
+  }
+
+  /** Builds a policy that executes the given statements and then accepts. */
+  private static RoutingPolicy acceptAfter(RoutingPolicy.Builder builder, Statement... statements) {
+    for (Statement statement : statements) {
+      builder.addStatement(statement);
+    }
+    return builder.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+  }
+
+  /** Matches a single row where both policies permit the input route, with the given diff. */
+  private static Matcher<Iterable<? extends Row>> bothPermitWithDiff(
+      Matcher<? super BgpRoute> inputRoute, BgpRouteDiff diff) {
+    return Matchers.contains(
+        allOf(
+            hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+            hasColumn(COL_POLICY_NAME, equalTo(POLICY_NEW_NAME), Schema.STRING),
+            hasColumn(COL_REFERENCE_POLICY_NAME, equalTo(POLICY_REFERENCE_NAME), Schema.STRING),
+            hasColumn(COL_INPUT_ROUTE, inputRoute, Schema.BGP_ROUTE),
+            hasColumn(baseColumnName(COL_ACTION), equalTo(PERMIT.toString()), Schema.STRING),
+            hasColumn(deltaColumnName(COL_ACTION), equalTo(PERMIT.toString()), Schema.STRING),
+            hasColumn(
+                COL_DIFF,
+                equalTo(new BgpRouteDiffs(ImmutableSet.of(diff))),
+                Schema.BGP_ROUTE_DIFFS)));
+  }
+
+  /** Tests that differences in tag2 are detected. */
+  @Test
+  public void testSetTag2Difference() {
+    RoutingPolicy policyReference =
+        acceptAfter(_policyBuilderDelta, new SetTag2(new LiteralLong(5)));
+    RoutingPolicy policyNew = acceptAfter(_policyBuilderBase, new SetTag2(new LiteralLong(7)));
+
+    assertThat(
+        compare(policyNew, policyReference).getRows().getData(),
+        bothPermitWithDiff(anything(), new BgpRouteDiff(BgpRoute.PROP_TAG2, "5", "7")));
+  }
+
+  /** Tests that setting color in only one policy is detected, using an input route without it. */
+  @Test
+  public void testSetColorDifference() {
+    RoutingPolicy policyReference = acceptAfter(_policyBuilderDelta);
+    RoutingPolicy policyNew = acceptAfter(_policyBuilderBase, new SetColor(new LiteralLong(3)));
+
+    assertThat(
+        compare(policyNew, policyReference).getRows().getData(),
+        bothPermitWithDiff(
+            hasProperty("color", equalTo(0L)), new BgpRouteDiff(BgpRoute.PROP_COLOR, "0", "3")));
+  }
+
+  /** Tests that differences in color2 are detected. */
+  @Test
+  public void testSetColor2Difference() {
+    RoutingPolicy policyReference =
+        acceptAfter(_policyBuilderDelta, new SetColor2(new LiteralLong(3)));
+    RoutingPolicy policyNew = acceptAfter(_policyBuilderBase, new SetColor2(new LiteralLong(4)));
+
+    assertThat(
+        compare(policyNew, policyReference).getRows().getData(),
+        bothPermitWithDiff(anything(), new BgpRouteDiff(BgpRoute.PROP_COLOR2, "3", "4")));
+  }
+
+  /**
+   * Tests that a difference only for routes with a given color is found, with an input route that
+   * has that color.
+   */
+  @Test
+  public void testDifferenceForMatchedColor() {
+    RoutingPolicy policyReference =
+        acceptAfter(
+            _policyBuilderDelta,
+            new If(
+                new MatchColor(9),
+                ImmutableList.of(
+                    new SetTag2(new LiteralLong(5)), new StaticStatement(Statements.ExitAccept))),
+            new StaticStatement(Statements.ExitReject));
+    RoutingPolicy policyNew =
+        acceptAfter(
+            _policyBuilderBase,
+            new If(
+                new MatchColor(9),
+                ImmutableList.of(
+                    new SetTag2(new LiteralLong(6)), new StaticStatement(Statements.ExitAccept))),
+            new StaticStatement(Statements.ExitReject));
+
+    assertThat(
+        compare(policyNew, policyReference).getRows().getData(),
+        bothPermitWithDiff(
+            hasProperty("color", equalTo(9L)), new BgpRouteDiff(BgpRoute.PROP_TAG2, "5", "6")));
   }
 
   /** Tests that setting the tag to the default value is still found as a difference. */

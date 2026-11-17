@@ -6,10 +6,13 @@ import static org.batfish.datamodel.BgpRoute.PROP_COMMUNITIES;
 import static org.batfish.datamodel.BgpRoute.PROP_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.OriginMechanism.LEARNED;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_ADMINISTRATIVE_DISTANCE;
+import static org.batfish.datamodel.questions.BgpRoute.PROP_COLOR;
+import static org.batfish.datamodel.questions.BgpRoute.PROP_COLOR2;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_NEXT_HOP;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_ORIGINATOR_IP;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_ORIGIN_TYPE;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_TAG;
+import static org.batfish.datamodel.questions.BgpRoute.PROP_TAG2;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_WEIGHT;
 import static org.batfish.datamodel.questions.BgpRouteDiff.routeDiffs;
@@ -102,6 +105,16 @@ public class BgpRouteDiffTest {
     route2 = builder().setMetric(2).build();
     assertThat(
         routeDiffs(route1, route2).getDiffs(), contains(new BgpRouteDiff(PROP_METRIC, "1", "2")));
+
+    // change tag2, color and color2
+    route1 = builder().setTag2(1).setColor(2).setColor2(3).build();
+    route2 = builder().setTag2(4).setColor(5).setColor2(6).build();
+    assertThat(
+        routeDiffs(route1, route2).getDiffs(),
+        containsInAnyOrder(
+            new BgpRouteDiff(PROP_TAG2, "1", "4"),
+            new BgpRouteDiff(PROP_COLOR, "2", "5"),
+            new BgpRouteDiff(PROP_COLOR2, "3", "6")));
 
     // change administrative distance
     route1 = builder().setAdminDist(1L).build();
