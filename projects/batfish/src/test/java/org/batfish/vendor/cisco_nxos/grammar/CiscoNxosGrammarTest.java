@@ -9405,6 +9405,11 @@ public final class CiscoNxosGrammarTest {
       assertNull(iface.getEigrpDelay());
       assertFalse(iface.getEigrpPassive());
     }
+    {
+      // Interface with passive-interface negated
+      Interface iface = vc.getInterfaces().get("Ethernet1/5");
+      assertFalse(iface.getEigrpPassive());
+    }
   }
 
   @Test

@@ -15,8 +15,9 @@ ip_access_list
 ip_access_list_inner
 :
   acl_fragments
+  | acl_ignore_null
   | acl_line
-  | acl_null
+  | acl_statistics_null
 ;
 
 acl_fragments
@@ -535,11 +536,5 @@ acll_remark
   REMARK text = REMARK_TEXT NEWLINE
 ;
 
-acl_null
-:
-  NO?
-  (
-    IGNORE
-    | STATISTICS
-  ) null_rest_of_line
-;
+acl_ignore_null: NO? IGNORE null_rest_of_line;
+acl_statistics_null: NO? STATISTICS null_rest_of_line;

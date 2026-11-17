@@ -427,6 +427,7 @@ import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.Iisis_networkContex
 import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.Il_min_linksContext;
 import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.Inherit_sequence_numberContext;
 import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.Inoip_forwardContext;
+import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.Inoip_passive_interfaceContext;
 import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.Inoip_proxy_arpContext;
 import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.Inoipo_passive_interfaceContext;
 import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosParser.Inos_accessContext;
@@ -6275,6 +6276,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitInoip_forward(Inoip_forwardContext ctx) {
     _currentInterfaces.forEach(i -> i.setIpForward(false));
+  }
+
+  @Override
+  public void exitInoip_passive_interface(Inoip_passive_interfaceContext ctx) {
+    _currentInterfaces.forEach(iface -> iface.setEigrpPassive(false));
   }
 
   @Override

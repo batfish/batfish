@@ -1436,6 +1436,7 @@ i_no_ip
     | inoip_dhcp_null
     | inoip_forward
     | inoip_ospf
+    | inoip_passive_interface
     | inoip_port_unreachable_null
     | inoip_proxy_arp
     | inoip_redirects_null
@@ -1472,6 +1473,11 @@ inoip_forward
 inoip_ospf
 :
   OSPF inoipo_passive_interface
+;
+
+inoip_passive_interface
+:
+  PASSIVE_INTERFACE EIGRP router_eigrp_process_tag NEWLINE
 ;
 
 inoip_proxy_arp
