@@ -100,10 +100,32 @@ ro_auto_cost
 
 ro_common
 :
-   ro_authentication
+   ro_area_null
+   | ro_authentication
+   | ro_auto_cost_null
+   | ro_bfd_null
+   | ro_capability_null
+   | ro_dead_interval_null
+   | ro_discard_route_null
+   | ro_fast_reroute_null
+   | ro_graceful_restart_null
+   | ro_hello_interval_null
+   | ro_ip_null
+   | ro_ispf_null
+   | ro_log_adj_changes_null
+   | ro_log_adjacency_changes_null
+   | ro_log_null
+   | ro_max_lsa_null
+   | ro_maximum_null
+   | ro_message_digest_key_null
+   | ro_mtu_ignore_null
+   | ro_no_null
+   | ro_nsf_null
+   | ro_nsr_null
    | ro_nssa
    | ro_rfc1583_compatibility
-   | ro_null
+   | ro_snmp_null
+   | ro_timers_null
 ;
 
 ro_default_information
@@ -243,58 +265,29 @@ ro_nssa
    )* NEWLINE
 ;
 
-ro_null
-:
-   NO?
-   (
-      (
-         AREA variable AUTHENTICATION
-      )
-      | AUTO_COST
-      | BFD
-      | CAPABILITY
-      | DEAD_INTERVAL
-      | DISCARD_ROUTE
-      | FAST_REROUTE
-      | GRACEFUL_RESTART
-      | HELLO_INTERVAL
-      |
-      (
-         IP
-         (
-            OSPF
-            (
-               EVENT_HISTORY
-            )
-         )
-      )
-      | ISPF
-      | LOG
-      | LOG_ADJ_CHANGES
-      | LOG_ADJACENCY_CHANGES
-      | MAX_LSA
-      |
-      (
-         MAXIMUM
-         (
-            REDISTRIBUTED_PREFIXES
-         )
-      )
-      | MESSAGE_DIGEST_KEY
-      | MTU_IGNORE
-      |
-      (
-         NO
-         (
-            DEFAULT_INFORMATION
-         )
-      )
-      | NSF
-      | NSR
-      | SNMP
-      | TIMERS
-   ) null_rest_of_line
-;
+ro_area_null: NO? AREA variable AUTHENTICATION null_rest_of_line;
+ro_auto_cost_null: NO? AUTO_COST null_rest_of_line;
+ro_bfd_null: NO? BFD null_rest_of_line;
+ro_capability_null: NO? CAPABILITY null_rest_of_line;
+ro_dead_interval_null: NO? DEAD_INTERVAL null_rest_of_line;
+ro_discard_route_null: NO? DISCARD_ROUTE null_rest_of_line;
+ro_fast_reroute_null: NO? FAST_REROUTE null_rest_of_line;
+ro_graceful_restart_null: NO? GRACEFUL_RESTART null_rest_of_line;
+ro_hello_interval_null: NO? HELLO_INTERVAL null_rest_of_line;
+ro_ip_null: NO? IP OSPF EVENT_HISTORY null_rest_of_line;
+ro_ispf_null: NO? ISPF null_rest_of_line;
+ro_log_null: NO? LOG null_rest_of_line;
+ro_log_adj_changes_null: NO? LOG_ADJ_CHANGES null_rest_of_line;
+ro_log_adjacency_changes_null: NO? LOG_ADJACENCY_CHANGES null_rest_of_line;
+ro_max_lsa_null: NO? MAX_LSA null_rest_of_line;
+ro_maximum_null: NO? MAXIMUM REDISTRIBUTED_PREFIXES null_rest_of_line;
+ro_message_digest_key_null: NO? MESSAGE_DIGEST_KEY null_rest_of_line;
+ro_mtu_ignore_null: NO? MTU_IGNORE null_rest_of_line;
+ro_no_null: NO? NO DEFAULT_INFORMATION null_rest_of_line;
+ro_nsf_null: NO? NSF null_rest_of_line;
+ro_nsr_null: NO? NSR null_rest_of_line;
+ro_snmp_null: NO? SNMP null_rest_of_line;
+ro_timers_null: NO? TIMERS null_rest_of_line;
 
 ro_rfc1583_compatibility
 :

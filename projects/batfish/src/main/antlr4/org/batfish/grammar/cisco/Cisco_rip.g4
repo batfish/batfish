@@ -53,19 +53,10 @@ rr_network
    NETWORK network = IP_ADDRESS NEWLINE
 ;
 
-rr_null
-:
-   NO?
-   (
-      AUTO_SUMMARY
-      |
-      (
-         NO SHUTDOWN
-      )
-      | TIMERS
-      | VERSION
-   ) null_rest_of_line
-;
+rr_auto_summary_null: NO? AUTO_SUMMARY null_rest_of_line;
+rr_no_null: NO? NO SHUTDOWN null_rest_of_line;
+rr_timers_null: NO? TIMERS null_rest_of_line;
+rr_version_null: NO? VERSION null_rest_of_line;
 
 rr_passive_interface
 :
@@ -86,14 +77,17 @@ s_router_rip
 :
    ROUTER RIP NEWLINE
    (
-      rr_default_metric
+      rr_auto_summary_null
+      | rr_default_metric
       | rr_default_information
       | rr_distance
       | rr_distribute_list
       | rr_network
-      | rr_null
+      | rr_no_null
       | rr_passive_interface
       | rr_passive_interface_default
       | rr_redistribute
+      | rr_timers_null
+      | rr_version_null
    )*
 ;

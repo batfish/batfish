@@ -314,27 +314,31 @@ aaa_authentication_captive_portal
 :
    CAPTIVE_PORTAL null_rest_of_line
    (
-      aaa_authentication_captive_portal_null
+      aaa_authentication_captive_portal_default_guest_role_null
+      | aaa_authentication_captive_portal_default_role_null
+      | aaa_authentication_captive_portal_enable_welcome_page_null
+      | aaa_authentication_captive_portal_guest_logon_null
+      | aaa_authentication_captive_portal_login_page_null
+      | aaa_authentication_captive_portal_max_authentication_failures_null
+      | aaa_authentication_captive_portal_protocol_http_null
+      | aaa_authentication_captive_portal_redirect_pause_null
+      | aaa_authentication_captive_portal_server_group_null
+      | aaa_authentication_captive_portal_welcome_page_null
+      | aaa_authentication_captive_portal_white_list_null
    )*
 ;
 
-aaa_authentication_captive_portal_null
-:
-   NO?
-   (
-      DEFAULT_GUEST_ROLE
-      | DEFAULT_ROLE
-      | ENABLE_WELCOME_PAGE
-      | GUEST_LOGON
-      | LOGIN_PAGE
-      | MAX_AUTHENTICATION_FAILURES
-      | PROTOCOL_HTTP
-      | REDIRECT_PAUSE
-      | SERVER_GROUP
-      | WELCOME_PAGE
-      | WHITE_LIST
-   ) null_rest_of_line
-;
+aaa_authentication_captive_portal_default_guest_role_null: NO? DEFAULT_GUEST_ROLE null_rest_of_line;
+aaa_authentication_captive_portal_default_role_null: NO? DEFAULT_ROLE null_rest_of_line;
+aaa_authentication_captive_portal_enable_welcome_page_null: NO? ENABLE_WELCOME_PAGE null_rest_of_line;
+aaa_authentication_captive_portal_guest_logon_null: NO? GUEST_LOGON null_rest_of_line;
+aaa_authentication_captive_portal_login_page_null: NO? LOGIN_PAGE null_rest_of_line;
+aaa_authentication_captive_portal_max_authentication_failures_null: NO? MAX_AUTHENTICATION_FAILURES null_rest_of_line;
+aaa_authentication_captive_portal_protocol_http_null: NO? PROTOCOL_HTTP null_rest_of_line;
+aaa_authentication_captive_portal_redirect_pause_null: NO? REDIRECT_PAUSE null_rest_of_line;
+aaa_authentication_captive_portal_server_group_null: NO? SERVER_GROUP null_rest_of_line;
+aaa_authentication_captive_portal_welcome_page_null: NO? WELCOME_PAGE null_rest_of_line;
+aaa_authentication_captive_portal_white_list_null: NO? WHITE_LIST null_rest_of_line;
 
 aaa_authentication_dot1x
 :
@@ -350,24 +354,23 @@ aaa_authentication_dot1x
       (
          double_quoted_string NEWLINE
          (
-            aaa_authentication_dot1x_null
+            aaa_authentication_dot1x_machine_authentication_null
+            | aaa_authentication_dot1x_max_authentication_failures_null
+            | aaa_authentication_dot1x_reauthentication_null
+            | aaa_authentication_dot1x_termination_null
+            | aaa_authentication_dot1x_timer_null
+            | aaa_authentication_dot1x_wpa_fast_handover_null
          )*
       )
    )
 ;
 
-aaa_authentication_dot1x_null
-:
-   NO?
-   (
-      MACHINE_AUTHENTICATION
-      | MAX_AUTHENTICATION_FAILURES
-      | REAUTHENTICATION
-      | TERMINATION
-      | TIMER
-      | WPA_FAST_HANDOVER
-   ) null_rest_of_line
-;
+aaa_authentication_dot1x_machine_authentication_null: NO? MACHINE_AUTHENTICATION null_rest_of_line;
+aaa_authentication_dot1x_max_authentication_failures_null: NO? MAX_AUTHENTICATION_FAILURES null_rest_of_line;
+aaa_authentication_dot1x_reauthentication_null: NO? REAUTHENTICATION null_rest_of_line;
+aaa_authentication_dot1x_termination_null: NO? TERMINATION null_rest_of_line;
+aaa_authentication_dot1x_timer_null: NO? TIMER null_rest_of_line;
+aaa_authentication_dot1x_wpa_fast_handover_null: NO? WPA_FAST_HANDOVER null_rest_of_line;
 
 aaa_authentication_enable
 :
@@ -536,38 +539,31 @@ aaa_authentication_mac
 :
    MAC double_quoted_string NEWLINE
    (
-      aaa_authentication_mac_null
+      aaa_authentication_mac_case_null
+      | aaa_authentication_mac_delimiter_null
+      | aaa_authentication_mac_max_authentication_failures_null
+      | aaa_authentication_mac_reauthentication_null
+      | aaa_authentication_mac_timer_null
    )*
 ;
 
-aaa_authentication_mac_null
-:
-   NO?
-   (
-      CASE
-      | DELIMITER
-      | MAX_AUTHENTICATION_FAILURES
-      | REAUTHENTICATION
-      | TIMER
-   ) null_rest_of_line
-;
+aaa_authentication_mac_case_null: NO? CASE null_rest_of_line;
+aaa_authentication_mac_delimiter_null: NO? DELIMITER null_rest_of_line;
+aaa_authentication_mac_max_authentication_failures_null: NO? MAX_AUTHENTICATION_FAILURES null_rest_of_line;
+aaa_authentication_mac_reauthentication_null: NO? REAUTHENTICATION null_rest_of_line;
+aaa_authentication_mac_timer_null: NO? TIMER null_rest_of_line;
 
 aaa_authentication_mgmt
 :
    MGMT NEWLINE
    (
-      aaa_authentication_mgmt_null
+      aaa_authentication_mgmt_enable_null
+      | aaa_authentication_mgmt_server_group_null
    )*
 ;
 
-aaa_authentication_mgmt_null
-:
-   NO?
-   (
-      ENABLE
-      | SERVER_GROUP
-   ) null_rest_of_line
-;
+aaa_authentication_mgmt_enable_null: NO? ENABLE null_rest_of_line;
+aaa_authentication_mgmt_server_group_null: NO? SERVER_GROUP null_rest_of_line;
 
 aaa_authentication_policy
 :
@@ -617,18 +613,13 @@ aaa_authentication_server_tacacs
 :
    TACACS double_quoted_string NEWLINE
    (
-      aaa_authentication_server_tacacs_null
+      aaa_authentication_server_tacacs_host_null
+      | aaa_authentication_server_tacacs_session_authorization_null
    )*
 ;
 
-aaa_authentication_server_tacacs_null
-:
-   NO?
-   (
-      HOST
-      | SESSION_AUTHORIZATION
-   ) null_rest_of_line
-;
+aaa_authentication_server_tacacs_host_null: NO? HOST null_rest_of_line;
+aaa_authentication_server_tacacs_session_authorization_null: NO? SESSION_AUTHORIZATION null_rest_of_line;
 
 aaa_authentication_stateful_dot1x
 :
@@ -963,28 +954,33 @@ aaa_profile
 :
    PROFILE double_quoted_string NEWLINE
    (
-      aaa_profile_null
+      aaa_profile_authentication_dot1x_null
+      | aaa_profile_authentication_mac_null
+      | aaa_profile_dot1x_default_role_null
+      | aaa_profile_dot1x_server_group_null
+      | aaa_profile_enforce_dhcp_null
+      | aaa_profile_initial_role_null
+      | aaa_profile_mac_default_role_null
+      | aaa_profile_mac_server_group_null
+      | aaa_profile_radius_accounting_null
+      | aaa_profile_radius_interim_accounting_null
+      | aaa_profile_rfc_3576_server_null
+      | aaa_profile_wired_to_wireless_roam_null
    )*
 ;
 
-aaa_profile_null
-:
-   NO?
-   (
-      AUTHENTICATION_DOT1X
-      | AUTHENTICATION_MAC
-      | DOT1X_DEFAULT_ROLE
-      | DOT1X_SERVER_GROUP
-      | ENFORCE_DHCP
-      | INITIAL_ROLE
-      | MAC_DEFAULT_ROLE
-      | MAC_SERVER_GROUP
-      | RADIUS_ACCOUNTING
-      | RADIUS_INTERIM_ACCOUNTING
-      | RFC_3576_SERVER
-      | WIRED_TO_WIRELESS_ROAM
-   ) null_rest_of_line
-;
+aaa_profile_authentication_dot1x_null: NO? AUTHENTICATION_DOT1X null_rest_of_line;
+aaa_profile_authentication_mac_null: NO? AUTHENTICATION_MAC null_rest_of_line;
+aaa_profile_dot1x_default_role_null: NO? DOT1X_DEFAULT_ROLE null_rest_of_line;
+aaa_profile_dot1x_server_group_null: NO? DOT1X_SERVER_GROUP null_rest_of_line;
+aaa_profile_enforce_dhcp_null: NO? ENFORCE_DHCP null_rest_of_line;
+aaa_profile_initial_role_null: NO? INITIAL_ROLE null_rest_of_line;
+aaa_profile_mac_default_role_null: NO? MAC_DEFAULT_ROLE null_rest_of_line;
+aaa_profile_mac_server_group_null: NO? MAC_SERVER_GROUP null_rest_of_line;
+aaa_profile_radius_accounting_null: NO? RADIUS_ACCOUNTING null_rest_of_line;
+aaa_profile_radius_interim_accounting_null: NO? RADIUS_INTERIM_ACCOUNTING null_rest_of_line;
+aaa_profile_rfc_3576_server_null: NO? RFC_3576_SERVER null_rest_of_line;
+aaa_profile_wired_to_wireless_roam_null: NO? WIRED_TO_WIRELESS_ROAM null_rest_of_line;
 
 aaa_rfc_3576_server
 :
@@ -1043,20 +1039,17 @@ aaa_server_group
 :
    SERVER_GROUP double_quoted_string NEWLINE
    (
-      aaa_server_group_null
+      aaa_server_group_allow_fail_through_null
+      | aaa_server_group_auth_server_null
+      | aaa_server_group_load_balance_null
+      | aaa_server_group_set_null
    )*
 ;
 
-aaa_server_group_null
-:
-   NO?
-   (
-      ALLOW_FAIL_THROUGH
-      | AUTH_SERVER
-      | LOAD_BALANCE
-      | SET
-   ) null_rest_of_line
-;
+aaa_server_group_allow_fail_through_null: NO? ALLOW_FAIL_THROUGH null_rest_of_line;
+aaa_server_group_auth_server_null: NO? AUTH_SERVER null_rest_of_line;
+aaa_server_group_load_balance_null: NO? LOAD_BALANCE null_rest_of_line;
+aaa_server_group_set_null: NO? SET null_rest_of_line;
 
 aaa_session_id
 :
