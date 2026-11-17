@@ -1,7 +1,6 @@
 """Validated data models for network security intent."""
 
 from enum import StrEnum
-from ipaddress import IPv4Network, IPv6Network
 from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field, IPvAnyNetwork, field_validator, model_validator
