@@ -27,6 +27,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
@@ -72,6 +73,7 @@ import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.InactiveReason;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
@@ -703,6 +705,32 @@ public class BatfishTest {
         name -> assertThat(c1.getAllInterfaces().get(name).getActive(), equalTo(true)));
     inactiveIfaces.forEach(
         name -> assertThat(c1.getAllInterfaces().get(name).getActive(), equalTo(false)));
+  }
+
+  @Test
+  public void testPostProcessInterfaceDependenciesAggregateMissingChild() throws IOException {
+    String hostname = "bundle-ether-l3-member";
+
+    SortedMap<String, byte[]> configurationsBytes =
+        ImmutableSortedMap.of(
+            hostname, readResourceBytes("org/batfish/main/testconfigs/" + hostname));
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder().setConfigurationBytes(configurationsBytes).build(), _folder);
+
+    Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
+    Configuration c1v = configurations.get(hostname);
+
+    assertThat(c1v.getAllInterfaces(), not(hasKey("HundredGigE0/0/0/1")));
+    assertThat(c1v.getAllInterfaces().get("Bundle-Ether1").getActive(), equalTo(false));
+    assertThat(
+        c1v.getAllInterfaces().get("Bundle-Ether1").getInactiveReason(),
+        equalTo(InactiveReason.INVALID));
+    assertThat(
+        c1v.getAllInterfaces().get("Bundle-Ether1").getDependencies().stream()
+            .map(Dependency::getInterfaceName)
+            .collect(ImmutableSet.toImmutableSet()),
+        equalTo(ImmutableSet.of("HundredGigE0/0/0/1")));
   }
 
   @Test
