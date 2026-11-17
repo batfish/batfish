@@ -3,13 +3,17 @@ package org.batfish.minesweeper.communities;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Pattern;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.routing_policy.communities.AllExtendedCommunities;
 import org.batfish.datamodel.routing_policy.communities.AllLargeCommunities;
 import org.batfish.datamodel.routing_policy.communities.AllStandardCommunities;
@@ -25,6 +29,7 @@ import org.batfish.datamodel.routing_policy.communities.CommunityMatchExprRefere
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchExprVisitor;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.CommunityNot;
+import org.batfish.datamodel.routing_policy.communities.CommunityRendering;
 import org.batfish.datamodel.routing_policy.communities.ExtendedCommunityGlobalAdministratorHighMatch;
 import org.batfish.datamodel.routing_policy.communities.ExtendedCommunityGlobalAdministratorLowMatch;
 import org.batfish.datamodel.routing_policy.communities.ExtendedCommunityGlobalAdministratorMatch;
@@ -32,6 +37,7 @@ import org.batfish.datamodel.routing_policy.communities.ExtendedCommunityLocalAd
 import org.batfish.datamodel.routing_policy.communities.OpaqueExtendedCommunities;
 import org.batfish.datamodel.routing_policy.communities.RouteTargetExtendedCommunities;
 import org.batfish.datamodel.routing_policy.communities.SiteOfOriginExtendedCommunities;
+import org.batfish.datamodel.routing_policy.communities.SpecialCasesRendering;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighMatch;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityLowMatch;
 import org.batfish.datamodel.routing_policy.communities.VpnDistinguisherExtendedCommunities;
@@ -110,10 +116,81 @@ public class CommunityMatchExprVarCollector
   @Override
   public Set<CommunityVar> visitCommunityMatchRegex(
       CommunityMatchRegex communityMatchRegex, Configuration arg) {
+    CommunityRendering rendering = communityMatchRegex.getCommunityRendering();
     checkArgument(
-        communityMatchRegex.getCommunityRendering().equals(ColonSeparatedRendering.instance()),
+        usesColonSeparatedRendering(rendering),
         "Currently only supporting community regexes using the colon-separated rendering");
-    return ImmutableSet.of(CommunityVar.from(communityMatchRegex.getRegex()));
+    return regexToCommunityVars(communityMatchRegex.getRegex(), rendering);
+  }
+
+  /**
+   * Determines which community vars are needed for a regex under the given rendering.
+   *
+   * <p>Always includes a regex var for matching against the colon-separated universe. For
+   * SpecialCasesRendering, also includes exact vars for any special-case community whose rendered
+   * name or colon form interacts with the regex. This ensures atomic predicates are split finely
+   * enough for the BDD builder to correctly include/exclude individual communities.
+   */
+  public static Set<CommunityVar> regexToCommunityVars(String regex, CommunityRendering rendering) {
+    ImmutableSet.Builder<CommunityVar> vars = ImmutableSet.builder();
+    vars.add(CommunityVar.from(regex));
+    Pattern pattern = Pattern.compile(regex);
+    for (Map.Entry<Community, String> entry : getSpecialCases(rendering).entrySet()) {
+      if (pattern.matcher(entry.getValue()).find()
+          || pattern.matcher(entry.getKey().matchString()).find()) {
+        vars.add(CommunityVar.from(entry.getKey()));
+      }
+    }
+    return vars.build();
+  }
+
+  /**
+   * Returns special-case communities whose colon form matches the regex but whose rendered name
+   * does not. These should be subtracted from the regex BDD because FRR evaluates the regex against
+   * the rendered name, not the colon form.
+   */
+  public static Set<CommunityVar> regexExcludedSpecialCases(
+      String regex, CommunityRendering rendering) {
+    ImmutableSet.Builder<CommunityVar> excluded = ImmutableSet.builder();
+    Pattern pattern = Pattern.compile(regex);
+    for (Map.Entry<Community, String> entry : getSpecialCases(rendering).entrySet()) {
+      boolean nameMatches = pattern.matcher(entry.getValue()).find();
+      boolean colonFormMatches = pattern.matcher(entry.getKey().matchString()).find();
+      if (colonFormMatches && !nameMatches) {
+        excluded.add(CommunityVar.from(entry.getKey()));
+      }
+    }
+    return excluded.build();
+  }
+
+  /**
+   * Returns true if the given rendering is effectively colon-separated, either directly or as the
+   * fallback of a {@link SpecialCasesRendering}.
+   */
+  private static boolean usesColonSeparatedRendering(CommunityRendering rendering) {
+    if (rendering.equals(ColonSeparatedRendering.instance())) {
+      return true;
+    }
+    if (rendering instanceof SpecialCasesRendering) {
+      return usesColonSeparatedRendering(
+          ((SpecialCasesRendering) rendering).getFallbackRendering());
+    }
+    return false;
+  }
+
+  /**
+   * Returns the map from community to rendered name for all special cases in the rendering. For
+   * example, {NO_EXPORT -> "no-export", NO_ADVERTISE -> "no-advertise"}. Recurses through nested
+   * {@link SpecialCasesRendering} fallbacks.
+   */
+  public static Map<Community, String> getSpecialCases(CommunityRendering rendering) {
+    if (rendering instanceof SpecialCasesRendering specialCases) {
+      ImmutableMap.Builder<Community, String> builder = ImmutableMap.builder();
+      builder.putAll(specialCases.getSpecialCases());
+      builder.putAll(getSpecialCases(specialCases.getFallbackRendering()));
+      return builder.buildOrThrow();
+    }
+    return ImmutableMap.of();
   }
 
   @Override
