@@ -14,7 +14,11 @@ c_fiber_node
       | quoted_name = double_quoted_string
    ) NEWLINE
    (
-      cfn_null
+      cfn_cable_downstream_null
+      | cfn_cable_upstream_null
+      | cfn_downstream_null
+      | cfn_init_null
+      | cfn_upstream_null
    )*
 ;
 
@@ -171,8 +175,9 @@ c_tag
 :
    TAG num = dec NEWLINE
    (
-      ct_name
-      | ct_null
+      ct_docsis_version_null
+      | ct_exclude_null
+      | ct_name
    )*
 ;
 
@@ -184,24 +189,27 @@ cf_null
    ) null_rest_of_line
 ;
 
-cfn_null
-:
-   NO?
-   (
-      CABLE_DOWNSTREAM
-      | CABLE_UPSTREAM
-      | DOWNSTREAM
-      | INIT
-      | UPSTREAM
-   ) null_rest_of_line
-;
+cfn_cable_downstream_null: NO? CABLE_DOWNSTREAM null_rest_of_line;
+cfn_cable_upstream_null: NO? CABLE_UPSTREAM null_rest_of_line;
+cfn_downstream_null: NO? DOWNSTREAM null_rest_of_line;
+cfn_init_null: NO? INIT null_rest_of_line;
+cfn_upstream_null: NO? UPSTREAM null_rest_of_line;
 
 clb_docsis_group
 :
    DOCSIS_GROUP group = dec NEWLINE
    (
-      clbdg_docsis_policy
-      | clbdg_null
+      clbdg_disable_null
+      | clbdg_docsis_policy
+      | clbdg_downstream_null
+      | clbdg_init_tech_list_null
+      | clbdg_interval_null
+      | clbdg_method_null
+      | clbdg_policy_null
+      | clbdg_restricted_null
+      | clbdg_tag_null
+      | clbdg_threshold_null
+      | clbdg_upstream_null
    )*
 ;
 
@@ -272,22 +280,16 @@ clbdg_docsis_policy
    DOCSIS_POLICY policy = dec NEWLINE
 ;
 
-clbdg_null
-:
-   NO?
-   (
-      DISABLE
-      | DOWNSTREAM
-      | INIT_TECH_LIST
-      | INTERVAL
-      | METHOD
-      | POLICY
-      | RESTRICTED
-      | TAG
-      | THRESHOLD
-      | UPSTREAM
-   ) null_rest_of_line
-;
+clbdg_disable_null: NO? DISABLE null_rest_of_line;
+clbdg_downstream_null: NO? DOWNSTREAM null_rest_of_line;
+clbdg_init_tech_list_null: NO? INIT_TECH_LIST null_rest_of_line;
+clbdg_interval_null: NO? INTERVAL null_rest_of_line;
+clbdg_method_null: NO? METHOD null_rest_of_line;
+clbdg_policy_null: NO? POLICY null_rest_of_line;
+clbdg_restricted_null: NO? RESTRICTED null_rest_of_line;
+clbdg_tag_null: NO? TAG null_rest_of_line;
+clbdg_threshold_null: NO? THRESHOLD null_rest_of_line;
+clbdg_upstream_null: NO? UPSTREAM null_rest_of_line;
 
 cmp_null
 :
@@ -297,37 +299,35 @@ cmp_null
    ) null_rest_of_line
 ;
 
-cntlr_null
-:
-   NO?
-   (
-      ADMIN_STATE
-      | AIS_SHUT
-      | ALARM_REPORT
-      | CABLELENGTH
-      | CHANNEL_GROUP
-      | CLOCK
-      | DESCRIPTION
-      | FDL
-      | FRAMING
-      | G709
-      | LINE_TERMINATION
-      | LINECODE
-      | PM
-      | PRI_GROUP
-      | PROACTIVE
-      | SHUTDOWN
-      | STS_1
-      | WAVELENGTH
-   ) null_rest_of_line
-;
+cntlr_admin_state_null: NO? ADMIN_STATE null_rest_of_line;
+cntlr_ais_shut_null: NO? AIS_SHUT null_rest_of_line;
+cntlr_alarm_report_null: NO? ALARM_REPORT null_rest_of_line;
+cntlr_cablelength_null: NO? CABLELENGTH null_rest_of_line;
+cntlr_channel_group_null: NO? CHANNEL_GROUP null_rest_of_line;
+cntlr_clock_null: NO? CLOCK null_rest_of_line;
+cntlr_description_null: NO? DESCRIPTION null_rest_of_line;
+cntlr_fdl_null: NO? FDL null_rest_of_line;
+cntlr_framing_null: NO? FRAMING null_rest_of_line;
+cntlr_g709_null: NO? G709 null_rest_of_line;
+cntlr_line_termination_null: NO? LINE_TERMINATION null_rest_of_line;
+cntlr_linecode_null: NO? LINECODE null_rest_of_line;
+cntlr_pm_null: NO? PM null_rest_of_line;
+cntlr_pri_group_null: NO? PRI_GROUP null_rest_of_line;
+cntlr_proactive_null: NO? PROACTIVE null_rest_of_line;
+cntlr_shutdown_null: NO? SHUTDOWN null_rest_of_line;
+cntlr_sts_1_null: NO? STS_1 null_rest_of_line;
+cntlr_wavelength_null: NO? WAVELENGTH null_rest_of_line;
 
 cntlr_rf_channel
 :
    NO? RF_CHANNEL channel = dec
    (
       cntlrrfc_depi_tunnel
-      | cntrlrrfc_null
+      | cntrlrrfc_cable_null
+      | cntrlrrfc_frequency_null
+      | cntrlrrfc_network_delay_null
+      | cntrlrrfc_rf_power_null
+      | cntrlrrfc_rf_shutdown_null
    )*
 ;
 
@@ -336,23 +336,20 @@ cntlrrfc_depi_tunnel
    DEPI_TUNNEL name = variable TSID tsid = dec NEWLINE
 ;
 
-cntrlrrfc_null
-:
-   NO?
-   (
-      CABLE
-      | FREQUENCY
-      | NETWORK_DELAY
-      | RF_POWER
-      | RF_SHUTDOWN
-   ) null_rest_of_line
-;
+cntrlrrfc_cable_null: NO? CABLE null_rest_of_line;
+cntrlrrfc_frequency_null: NO? FREQUENCY null_rest_of_line;
+cntrlrrfc_network_delay_null: NO? NETWORK_DELAY null_rest_of_line;
+cntrlrrfc_rf_power_null: NO? RF_POWER null_rest_of_line;
+cntrlrrfc_rf_shutdown_null: NO? RF_SHUTDOWN null_rest_of_line;
 
 cq_enforce_rule
 :
    ENFORCE_RULE name = variable NEWLINE
    (
-      cqer_null
+      cqer_duration_null
+      | cqer_enabled_null
+      | cqer_monitoring_basics_null
+      | cqer_penalty_period_null
       | cqer_service_class
    )*
 ;
@@ -366,16 +363,10 @@ cq_profile_null
    PROFILE null_rest_of_line
 ;
 
-cqer_null
-:
-   NO?
-   (
-      DURATION
-      | ENABLED
-      | MONITORING_BASICS
-      | PENALTY_PERIOD
-   ) null_rest_of_line
-;
+cqer_duration_null: NO? DURATION null_rest_of_line;
+cqer_enabled_null: NO? ENABLED null_rest_of_line;
+cqer_monitoring_basics_null: NO? MONITORING_BASICS null_rest_of_line;
+cqer_penalty_period_null: NO? PENALTY_PERIOD null_rest_of_line;
 
 cqer_service_class
 :
@@ -469,14 +460,8 @@ ct_name
    NAME name = variable NEWLINE
 ;
 
-ct_null
-:
-   NO?
-   (
-      DOCSIS_VERSION
-      | EXCLUDE
-   ) null_rest_of_line
-;
+ct_docsis_version_null: NO? DOCSIS_VERSION null_rest_of_line;
+ct_exclude_null: NO? EXCLUDE null_rest_of_line;
 
 dc_null
 :
@@ -549,8 +534,25 @@ s_controller
 :
    CONTROLLER iname = interface_name NEWLINE
    (
-      cntlr_null
+      cntlr_admin_state_null
+      | cntlr_ais_shut_null
+      | cntlr_alarm_report_null
+      | cntlr_cablelength_null
+      | cntlr_channel_group_null
+      | cntlr_clock_null
+      | cntlr_description_null
+      | cntlr_fdl_null
+      | cntlr_framing_null
+      | cntlr_g709_null
+      | cntlr_line_termination_null
+      | cntlr_linecode_null
+      | cntlr_pm_null
+      | cntlr_pri_group_null
+      | cntlr_proactive_null
       | cntlr_rf_channel
+      | cntlr_shutdown_null
+      | cntlr_sts_1_null
+      | cntlr_wavelength_null
    )*
 ;
 

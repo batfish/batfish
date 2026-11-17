@@ -20,7 +20,10 @@ cc_server
 :
    SERVER NEWLINE
    (
-      ccs_null
+      ccs_cdp_url_null
+      | ccs_issuer_name_null
+      | ccs_shutdown_null
+      | ccs_smtp_null
    )*
 ;
 
@@ -28,7 +31,12 @@ cc_trustpoint
 :
    TRUSTPOINT name = variable NEWLINE
    (
-      cctpoint_null
+      cctpoint_crl_null
+      | cctpoint_enrollment_null
+      | cctpoint_fqdn_null
+      | cctpoint_keypair_null
+      | cctpoint_subject_name_null
+      | cctpoint_validation_usage_null
    )*
 ;
 
@@ -49,29 +57,17 @@ cccc_certificate
    )? certificate QUIT NEWLINE
 ;
 
-ccs_null
-:
-   NO?
-   (
-      CDP_URL
-      | ISSUER_NAME
-      | SHUTDOWN
-      | SMTP
-   ) null_rest_of_line
-;
+ccs_cdp_url_null: NO? CDP_URL null_rest_of_line;
+ccs_issuer_name_null: NO? ISSUER_NAME null_rest_of_line;
+ccs_shutdown_null: NO? SHUTDOWN null_rest_of_line;
+ccs_smtp_null: NO? SMTP null_rest_of_line;
 
-cctpoint_null
-:
-   NO?
-   (
-      CRL
-      | ENROLLMENT
-      | FQDN
-      | KEYPAIR
-      | SUBJECT_NAME
-      | VALIDATION_USAGE
-   ) null_rest_of_line
-;
+cctpoint_crl_null: NO? CRL null_rest_of_line;
+cctpoint_enrollment_null: NO? ENROLLMENT null_rest_of_line;
+cctpoint_fqdn_null: NO? FQDN null_rest_of_line;
+cctpoint_keypair_null: NO? KEYPAIR null_rest_of_line;
+cctpoint_subject_name_null: NO? SUBJECT_NAME null_rest_of_line;
+cctpoint_validation_usage_null: NO? VALIDATION_USAGE null_rest_of_line;
 
 cctpool_null
 :
@@ -167,21 +163,19 @@ ci1_policy
 :
    POLICY name = variable NEWLINE
    (
-      ci1p_null
+      ci1p_authentication_null
+      | ci1p_encryption_null
+      | ci1p_group_null
+      | ci1p_hash_null
+      | ci1p_lifetime_null
    )*
 ;
 
-ci1p_null
-:
-   NO?
-   (
-      AUTHENTICATION
-      | ENCRYPTION
-      | GROUP
-      | HASH
-      | LIFETIME
-   ) null_rest_of_line
-;
+ci1p_authentication_null: NO? AUTHENTICATION null_rest_of_line;
+ci1p_encryption_null: NO? ENCRYPTION null_rest_of_line;
+ci1p_group_null: NO? GROUP null_rest_of_line;
+ci1p_hash_null: NO? HASH null_rest_of_line;
+ci1p_lifetime_null: NO? LIFETIME null_rest_of_line;
 
 ci2_keyring
 :
@@ -204,7 +198,12 @@ ci2_policy
 :
    POLICY name = variable NEWLINE
    (
-      ci2pol_null
+      ci2pol_encryption_null
+      | ci2pol_group_null
+      | ci2pol_integrity_null
+      | ci2pol_lifetime_null
+      | ci2pol_prf_null
+      | ci2pol_proposal_null
    )*
 ;
 
@@ -212,7 +211,9 @@ ci2_profile
 :
    PROFILE name = variable NEWLINE
    (
-      ci2prf_null
+      ci2prf_authentication_null
+      | ci2prf_keyring_null
+      | ci2prf_match_null
    )*
 ;
 
@@ -220,7 +221,9 @@ ci2_proposal
 :
    PROPOSAL name = variable NEWLINE
    (
-      ci2prp_null
+      ci2prp_encryption_null
+      | ci2prp_group_null
+      | ci2prp_integrity_null
    )*
 ;
 
@@ -228,51 +231,28 @@ ci2k_peer
 :
    PEER name = variable NEWLINE
    (
-      ci2kp_null
+      ci2kp_address_null
+      | ci2kp_pre_shared_key_null
    )*
 ;
 
-ci2kp_null
-:
-   NO?
-   (
-      ADDRESS
-      | PRE_SHARED_KEY
-   ) null_rest_of_line
-;
+ci2kp_address_null: NO? ADDRESS null_rest_of_line;
+ci2kp_pre_shared_key_null: NO? PRE_SHARED_KEY null_rest_of_line;
 
-ci2pol_null
-:
-   NO?
-   (
-      ENCRYPTION
-      | GROUP
-      | INTEGRITY
-      | LIFETIME
-      | PRF
-      | PROPOSAL
-   ) null_rest_of_line
-;
+ci2pol_encryption_null: NO? ENCRYPTION null_rest_of_line;
+ci2pol_group_null: NO? GROUP null_rest_of_line;
+ci2pol_integrity_null: NO? INTEGRITY null_rest_of_line;
+ci2pol_lifetime_null: NO? LIFETIME null_rest_of_line;
+ci2pol_prf_null: NO? PRF null_rest_of_line;
+ci2pol_proposal_null: NO? PROPOSAL null_rest_of_line;
 
-ci2prf_null
-:
-   NO?
-   (
-      AUTHENTICATION
-      | KEYRING
-      | MATCH
-   ) null_rest_of_line
-;
+ci2prf_authentication_null: NO? AUTHENTICATION null_rest_of_line;
+ci2prf_keyring_null: NO? KEYRING null_rest_of_line;
+ci2prf_match_null: NO? MATCH null_rest_of_line;
 
-ci2prp_null
-:
-   NO?
-   (
-      ENCRYPTION
-      | GROUP
-      | INTEGRITY
-   ) null_rest_of_line
-;
+ci2prp_encryption_null: NO? ENCRYPTION null_rest_of_line;
+ci2prp_group_null: NO? GROUP null_rest_of_line;
+ci2prp_integrity_null: NO? INTEGRITY null_rest_of_line;
 
 cip_ikev2
 :
@@ -425,7 +405,8 @@ cis_policy
       | cispol_group
       | cispol_hash
       | cispol_lifetime
-      | cispol_null
+      | cispol_prf_null
+      | cispol_version_null
    )*
 ;
 
@@ -433,10 +414,11 @@ cis_profile
 :
    PROFILE name = variable NEWLINE
    (
-      cisprf_keyring
+      cisprf_keepalive_null
+      | cisprf_keyring
       | cisprf_local_address
       | cisprf_match
-      | cisprf_null
+      | cisprf_reverse_route_null
       | cisprf_self_identity
       | cisprf_vrf
    )*
@@ -480,14 +462,8 @@ cispol_lifetime
     LIFETIME dec NEWLINE
 ;
 
-cispol_null
-:
-   NO?
-   (
-      PRF
-      | VERSION
-   ) null_rest_of_line
-;
+cispol_prf_null: NO? PRF null_rest_of_line;
+cispol_version_null: NO? VERSION null_rest_of_line;
 
 cisprf_keyring
 :
@@ -508,14 +484,8 @@ cisprf_match
    MATCH IDENTITY ADDRESS address = IP_ADDRESS mask = IP_ADDRESS? vrf = variable? NEWLINE
 ;
 
-cisprf_null
-:
-   NO?
-   (
-      KEEPALIVE
-      | REVERSE_ROUTE
-   ) null_rest_of_line
-;
+cisprf_keepalive_null: NO? KEEPALIVE null_rest_of_line;
+cisprf_reverse_route_null: NO? REVERSE_ROUTE null_rest_of_line;
 
 cisprf_self_identity
 :
@@ -594,7 +564,10 @@ cpki_server
 :
    SERVER name = variable_permissive NEWLINE
    (
-      cpkis_null
+      cpkis_cdp_url_null
+      | cpkis_database_null
+      | cpkis_grant_null
+      | cpkis_issuer_name_null
    )*
 ;
 
@@ -602,7 +575,12 @@ cpki_trustpoint
 :
    TRUSTPOINT name = variable_permissive NEWLINE
    (
-      cpkit_null
+      cpkit_enrollment_null
+      | cpkit_revocation_check_null
+      | cpkit_rsakeypair_null
+      | cpkit_serial_number_null
+      | cpkit_subject_name_null
+      | cpkit_validation_usage_null
    )*
 ;
 
@@ -615,29 +593,17 @@ cpkicc_certificate
    )? certificate QUIT NEWLINE
 ;
 
-cpkis_null
-:
-   NO?
-   (
-      CDP_URL
-      | DATABASE
-      | GRANT
-      | ISSUER_NAME
-   ) null_rest_of_line
-;
+cpkis_cdp_url_null: NO? CDP_URL null_rest_of_line;
+cpkis_database_null: NO? DATABASE null_rest_of_line;
+cpkis_grant_null: NO? GRANT null_rest_of_line;
+cpkis_issuer_name_null: NO? ISSUER_NAME null_rest_of_line;
 
-cpkit_null
-:
-   NO?
-   (
-      ENROLLMENT
-      | REVOCATION_CHECK
-      | RSAKEYPAIR
-      | SERIAL_NUMBER
-      | SUBJECT_NAME
-      | VALIDATION_USAGE
-   ) null_rest_of_line
-;
+cpkit_enrollment_null: NO? ENROLLMENT null_rest_of_line;
+cpkit_revocation_check_null: NO? REVOCATION_CHECK null_rest_of_line;
+cpkit_rsakeypair_null: NO? RSAKEYPAIR null_rest_of_line;
+cpkit_serial_number_null: NO? SERIAL_NUMBER null_rest_of_line;
+cpkit_subject_name_null: NO? SUBJECT_NAME null_rest_of_line;
+cpkit_validation_usage_null: NO? VALIDATION_USAGE null_rest_of_line;
 
 crypto_ca
 :
@@ -670,7 +636,11 @@ crypto_csr_params
 
 crypto_dynamic_map
 :
-   DYNAMIC_MAP name = variable seq_num = dec crypto_dynamic_map_null?
+   DYNAMIC_MAP name = variable seq_num = dec
+   (
+      crypto_dynamic_map_match_null
+      | crypto_dynamic_map_set_null
+   )?
    (
      NEWLINE
        (
@@ -681,13 +651,8 @@ crypto_dynamic_map
    )
 ;
 
-crypto_dynamic_map_null
-:
-   (
-     MATCH
-     | SET
-   ) ~NEWLINE*
-;
+crypto_dynamic_map_match_null: MATCH ~NEWLINE*;
+crypto_dynamic_map_set_null: SET ~NEWLINE*;
 
 crypto_engine
 :
@@ -829,14 +794,8 @@ crypto_map_t_ii_match_address
    MATCH ADDRESS name = variable NEWLINE
 ;
 
-crypto_map_t_ii_null
-:
-   NO?
-   (
-      DESCRIPTION
-      | REVERSE_ROUTE
-   ) null_rest_of_line
-;
+crypto_map_t_ii_description_null: NO? DESCRIPTION null_rest_of_line;
+crypto_map_t_ii_reverse_route_null: NO? REVERSE_ROUTE null_rest_of_line;
 
 crypto_map_t_ii_set
 :
@@ -889,8 +848,9 @@ crypto_map_t_ipsec_isakmp
    )?
    NEWLINE
    (
-      crypto_map_t_ii_match_address
-      | crypto_map_t_ii_null
+      crypto_map_t_ii_description_null
+      | crypto_map_t_ii_match_address
+      | crypto_map_t_ii_reverse_route_null
       | crypto_map_t_ii_set
    )*
 ;
@@ -943,20 +903,17 @@ key_key
 :
    KEY name = variable NEWLINE
    (
-      kk_null
+      kk_accept_lifetime_null
+      | kk_cryptographic_algorithm_null
+      | kk_key_string_null
+      | kk_send_lifetime_null
    )*
 ;
 
-kk_null
-:
-   NO?
-   (
-      ACCEPT_LIFETIME
-      | CRYPTOGRAPHIC_ALGORITHM
-      | KEY_STRING
-      | SEND_LIFETIME
-   ) null_rest_of_line
-;
+kk_accept_lifetime_null: NO? ACCEPT_LIFETIME null_rest_of_line;
+kk_cryptographic_algorithm_null: NO? CRYPTOGRAPHIC_ALGORITHM null_rest_of_line;
+kk_key_string_null: NO? KEY_STRING null_rest_of_line;
+kk_send_lifetime_null: NO? SEND_LIFETIME null_rest_of_line;
 
 ike_encryption
 :
