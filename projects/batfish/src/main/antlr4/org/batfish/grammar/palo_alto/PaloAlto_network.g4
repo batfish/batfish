@@ -110,8 +110,10 @@ s_network
     (
         sn_ike
         | sn_interface
+        | sn_logical_router
         | sn_profiles
         | sn_qos
+        | sn_routing_profile
         | sn_shared_gateway
         | sn_tunnel
         | sn_virtual_router

@@ -1,6 +1,7 @@
 package org.batfish.representation.palo_alto;
 
 import java.io.Serializable;
+import javax.annotation.Nullable;
 
 /** Stores the administrative distances for a single {@link VirtualRouter}. */
 public class AdminDistances implements Serializable {
@@ -78,6 +79,14 @@ public class AdminDistances implements Serializable {
     _ebgp = admin;
   }
 
+  public @Nullable Integer getBgpLocal() {
+    return _bgpLocal;
+  }
+
+  public void setBgpLocal(@Nullable Integer admin) {
+    _bgpLocal = admin;
+  }
+
   public int getRip() {
     return _rip;
   }
@@ -96,5 +105,6 @@ public class AdminDistances implements Serializable {
   private int _ospfV3Ext = DEFAULT_OSPFv3_EXT;
   private int _ibgp = DEFAULT_IBGP;
   private int _ebgp = DEFAULT_EBGP;
+  private @Nullable Integer _bgpLocal;
   private int _rip = DEFAULT_RIP;
 }

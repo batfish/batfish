@@ -1,0 +1,53 @@
+#RANCID-CONTENT-TYPE: paloalto
+deviceconfig {
+  system {
+    hostname logical-router-4byte-asn;
+  }
+}
+network {
+  interface {
+    ethernet {
+      ethernet1/1 {
+        layer3 {
+          ip {
+            10.0.1.1/24;
+          }
+        }
+      }
+    }
+  }
+  logical-router {
+    LR1 {
+      vrf {
+        default {
+          interface [ ethernet1/1 ];
+          bgp {
+            enable yes;
+            router-id 10.0.1.1;
+            local-as 4200000001;
+            peer-group {
+              PG1 {
+                enable yes;
+                type {
+                  ebgp;
+                }
+                peer {
+                  PEER1 {
+                    enable yes;
+                    peer-as 4200000002;
+                    local-address {
+                      ip 10.0.1.1/24;
+                    }
+                    peer-address {
+                      ip 10.0.1.2;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

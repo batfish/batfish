@@ -36,6 +36,7 @@ svi_network
     NETWORK
     (
         svin_interface
+        | svin_logical_router
     )?
 ;
 
@@ -47,4 +48,9 @@ svi_visible_vsys
 svin_interface
 :
     INTERFACE variable_list?
+;
+
+svin_logical_router
+:
+    LOGICAL_ROUTER variable_list?
 ;
