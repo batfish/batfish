@@ -9,22 +9,22 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.main.Batfish;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosSourceNatAllocationTest {
+final class JunosSourceNatAllocationTest {
 
   private static final String HOSTNAME = "junos-source-nat-allocation";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testSourceNatAllocation() throws IOException {
+  void testSourceNatAllocation() throws IOException {
     Batfish batfish = getBatfish(_folder, HOSTNAME);
     batfish.loadConfigurations(batfish.getSnapshot());
     assertThat(

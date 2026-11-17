@@ -1,7 +1,7 @@
 package org.batfish.common.bdd.util;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Collections;
 import net.sf.javabdd.BDD;
@@ -10,11 +10,11 @@ import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.HeaderSpaceToBDD;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.datamodel.IpProtocol;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class AclPacketMatchValidityCheckerTest {
+class AclPacketMatchValidityCheckerTest {
   @Test
-  public void testAclHasPacketInvariants() {
+  void testAclHasPacketInvariants() {
     BDDPacket pkt = new BDDPacket();
     AclPacketMatchValidityChecker checker =
         new AclPacketMatchValidityChecker(

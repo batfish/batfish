@@ -15,6 +15,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
+import java.io.File;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -27,14 +28,13 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableDiff;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** End-to-end tests of {@link SearchFiltersQuestion} in differential mode. */
-public class SearchFiltersDifferentialTest {
-  @Rule public TemporaryFolder _tmp = new TemporaryFolder();
+class SearchFiltersDifferentialTest {
+  @TempDir public File _tmp;
 
   private static final String ENTER_ALL = "@enter(/.*/)";
 
@@ -47,8 +47,8 @@ public class SearchFiltersDifferentialTest {
   private Interface.Builder _ib;
   private IpAccessList.Builder _ab;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _nf = new NetworkFactory();
     _cb =
         _nf.configurationBuilder()
@@ -63,7 +63,7 @@ public class SearchFiltersDifferentialTest {
   }
 
   @Test
-  public void testAclLineAddedRemoved() {
+  void testAclLineAddedRemoved() {
     Ip ip = Ip.parse("1.2.3.4");
     Configuration baseConfig = _cb.build();
     Configuration deltaConfig = _cb.build();
@@ -99,7 +99,7 @@ public class SearchFiltersDifferentialTest {
   }
 
   @Test
-  public void testDenyWithExplanations() {
+  void testDenyWithExplanations() {
     Ip ip = Ip.parse("1.2.3.4");
     Configuration baseConfig = _cb.build();
     Configuration deltaConfig = _cb.build();

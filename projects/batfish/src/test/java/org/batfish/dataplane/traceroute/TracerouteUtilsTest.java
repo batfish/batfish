@@ -10,9 +10,9 @@ import static org.batfish.dataplane.traceroute.TracerouteUtils.buildSessionsByOr
 import static org.batfish.dataplane.traceroute.TracerouteUtils.getTcpFlagsForReverse;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -35,12 +35,12 @@ import org.batfish.datamodel.flow.SessionAction;
 import org.batfish.datamodel.flow.SessionMatchExpr;
 import org.batfish.datamodel.flow.SessionScope;
 import org.batfish.datamodel.transformation.Transformation;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link TracerouteUtils}. */
-public final class TracerouteUtilsTest {
+final class TracerouteUtilsTest {
   @Test
-  public void returnFlow() {
+  void returnFlow() {
     Ip ip1 = Ip.parse("1.1.1.1");
     int port1 = 1111;
     Ip ip2 = Ip.parse("2.2.2.2");
@@ -86,7 +86,7 @@ public final class TracerouteUtilsTest {
   }
 
   @Test
-  public void testGetTcpFlagsForReverseNoSynNoAck() {
+  void testGetTcpFlagsForReverseNoSynNoAck() {
     // !SYN, !ACK -> !SYN, !ACK
     TcpFlags reverseTcpFlags = getTcpFlagsForReverse(TcpFlags.builder().build());
     assertFalse(reverseTcpFlags.getSyn());
@@ -94,7 +94,7 @@ public final class TracerouteUtilsTest {
   }
 
   @Test
-  public void testGetTcpFlagsForReverseOnlySyn() {
+  void testGetTcpFlagsForReverseOnlySyn() {
     // SYN, !ACK -> SYN, ACK
     TcpFlags reverseTcpFlags = getTcpFlagsForReverse(TcpFlags.builder().setSyn(true).build());
     assertTrue(reverseTcpFlags.getSyn());
@@ -102,7 +102,7 @@ public final class TracerouteUtilsTest {
   }
 
   @Test
-  public void testGetTcpFlagsForReverseSynAck() {
+  void testGetTcpFlagsForReverseSynAck() {
     // SYN, ACK -> !SYN, ACK
     TcpFlags reverseTcpFlags =
         getTcpFlagsForReverse(TcpFlags.builder().setSyn(true).setAck(true).build());
@@ -111,7 +111,7 @@ public final class TracerouteUtilsTest {
   }
 
   @Test
-  public void testGetTcpFlagsForReverseOnlyAck() {
+  void testGetTcpFlagsForReverseOnlyAck() {
     // !SYN, ACK -> !SYN, ACK
     TcpFlags reverseTcpFlags = getTcpFlagsForReverse(TcpFlags.builder().setAck(true).build());
     assertFalse(reverseTcpFlags.getSyn());
@@ -119,7 +119,7 @@ public final class TracerouteUtilsTest {
   }
 
   @Test
-  public void testGetTcpFlagsForReverseAllTrue() {
+  void testGetTcpFlagsForReverseAllTrue() {
     TcpFlags reverseTcpFlags =
         getTcpFlagsForReverse(
             TcpFlags.builder()
@@ -140,7 +140,7 @@ public final class TracerouteUtilsTest {
   }
 
   @Test
-  public void testGetTcpFlagsForReverseAllFalse() {
+  void testGetTcpFlagsForReverseAllFalse() {
     TcpFlags reverseTcpFlags = getTcpFlagsForReverse(TcpFlags.builder().build());
 
     assertFalse(reverseTcpFlags.getRst());
@@ -152,7 +152,7 @@ public final class TracerouteUtilsTest {
   }
 
   @Test
-  public void testSessionTransformation() {
+  void testSessionTransformation() {
     Ip srcIp1 = Ip.parse("1.1.1.1");
     Ip dstIp1 = Ip.parse("2.2.2.2");
     int srcPort1 = 10001;
@@ -200,7 +200,7 @@ public final class TracerouteUtilsTest {
   }
 
   @Test
-  public void testBuildSessionsByIngressInterface() {
+  void testBuildSessionsByIngressInterface() {
     Flow flow =
         Flow.builder()
             .setIngressNode("n1")
@@ -246,7 +246,7 @@ public final class TracerouteUtilsTest {
   }
 
   @Test
-  public void testBuildSessionsByOriginatingVrf() {
+  void testBuildSessionsByOriginatingVrf() {
     Flow flow =
         Flow.builder()
             .setIngressNode("n1")

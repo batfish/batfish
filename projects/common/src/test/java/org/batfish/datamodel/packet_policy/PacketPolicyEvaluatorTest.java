@@ -37,17 +37,17 @@ import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.packet_policy.PacketPolicyEvaluator.PacketPolicyResult;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link PacketPolicyEvaluator} */
-public final class PacketPolicyEvaluatorTest {
+final class PacketPolicyEvaluatorTest {
 
   private Flow _flow;
   private Return _defaultAction;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _flow =
         Flow.builder()
             .setIngressNode("someNode")
@@ -63,7 +63,7 @@ public final class PacketPolicyEvaluatorTest {
   }
 
   @Test
-  public void evaluateReturn() {
+  void evaluateReturn() {
     FibLookup fl = new FibLookup(new LiteralVrfName("vrf"));
     PacketPolicyResult r =
         PacketPolicyEvaluator.evaluate(
@@ -80,7 +80,7 @@ public final class PacketPolicyEvaluatorTest {
   }
 
   @Test
-  public void evaluateIfWithMatch() {
+  void evaluateIfWithMatch() {
     FibLookup fl = new FibLookup(new LiteralVrfName("vrf"));
     PacketPolicyResult r =
         PacketPolicyEvaluator.evaluate(
@@ -98,7 +98,7 @@ public final class PacketPolicyEvaluatorTest {
   }
 
   @Test
-  public void evaluateIfNoMatch() {
+  void evaluateIfNoMatch() {
     FibLookup fl = new FibLookup(new LiteralVrfName("vrf"));
     PacketPolicyResult r =
         PacketPolicyEvaluator.evaluate(
@@ -117,7 +117,7 @@ public final class PacketPolicyEvaluatorTest {
   }
 
   @Test
-  public void testFlowResultEquality() {
+  void testFlowResultEquality() {
     new EqualsTester()
         .addEqualityGroup(
             new PacketPolicyResult(_flow, Drop.instance(), ImmutableList.of()),
@@ -143,7 +143,7 @@ public final class PacketPolicyEvaluatorTest {
   }
 
   @Test
-  public void testEvaluateFindsFirstReachableTerminalAction() {
+  void testEvaluateFindsFirstReachableTerminalAction() {
     // Setup policy
     FibLookup action = new FibLookup(new LiteralVrfName("Matched"));
     PacketPolicy policy =
@@ -175,7 +175,7 @@ public final class PacketPolicyEvaluatorTest {
   }
 
   @Test
-  public void testReturnsDefaultActionWhenNoStatements() {
+  void testReturnsDefaultActionWhenNoStatements() {
     // Setup policy
     PacketPolicy policy = new PacketPolicy("policyName", ImmutableList.of(), _defaultAction);
     // Test:
@@ -195,7 +195,7 @@ public final class PacketPolicyEvaluatorTest {
   }
 
   @Test
-  public void testIndirection() {
+  void testIndirection() {
     String aclName = "acl1";
     String ipSpaceName = "ipSpace1";
     FibLookup fl = new FibLookup(new LiteralVrfName("vrf"));
@@ -227,7 +227,7 @@ public final class PacketPolicyEvaluatorTest {
   }
 
   @Test
-  public void testTrue() {
+  void testTrue() {
     FibLookup fl = new FibLookup(new LiteralVrfName("vrf"));
     PacketPolicyResult r =
         PacketPolicyEvaluator.evaluate(
@@ -246,7 +246,7 @@ public final class PacketPolicyEvaluatorTest {
   }
 
   @Test
-  public void testFalse() {
+  void testFalse() {
     FibLookup fl = new FibLookup(new LiteralVrfName("vrf"));
     PacketPolicyResult r =
         PacketPolicyEvaluator.evaluate(
@@ -265,7 +265,7 @@ public final class PacketPolicyEvaluatorTest {
   }
 
   @Test
-  public void testEvaluateApplyFilter() {
+  void testEvaluateApplyFilter() {
     // Set up an ACL that permits traffic to 1.1.1.0/24
     Prefix permittedPrefix = Prefix.parse("1.1.1.0/24");
     AclLine line =
@@ -326,7 +326,7 @@ public final class PacketPolicyEvaluatorTest {
   }
 
   @Test
-  public void testEvaluateApplyTransformation() {
+  void testEvaluateApplyTransformation() {
     Ip natIp = Ip.parse("8.8.8.8");
     ApplyTransformation transformation =
         new ApplyTransformation(
@@ -347,7 +347,7 @@ public final class PacketPolicyEvaluatorTest {
   }
 
   @Test
-  public void testEvaluateFibLookupOutgoingInterfaceIsOneOf() {
+  void testEvaluateFibLookupOutgoingInterfaceIsOneOf() {
     Prefix dstPrefix = _flow.getDstIp().toPrefix();
     Ip nextVrIp = Ip.parse("5.5.5.5");
     String srcIface = "Eth0";
@@ -463,7 +463,7 @@ public final class PacketPolicyEvaluatorTest {
   }
 
   @Test
-  public void testConjunction() {
+  void testConjunction() {
     FibLookup fl = new FibLookup(new LiteralVrfName("vrf"));
     {
       PacketPolicyResult result =

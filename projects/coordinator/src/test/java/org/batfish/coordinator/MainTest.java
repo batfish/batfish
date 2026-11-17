@@ -14,28 +14,25 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.util.CommonUtil;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests of {@link Main}. */
-@RunWith(JUnit4.class)
-public class MainTest {
+class MainTest {
 
   private static final String DUPLICATE_TEMPLATE_NAME = "duplicate_template";
   private static final String NEW_TEMPLATE_NAME = "new_template";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testReadQuestionTemplateDuplicate() throws Exception {
+  void testReadQuestionTemplateDuplicate() throws Exception {
     Map<String, String> questionTemplates = Maps.newHashMap();
     // already existing question template with key duplicate_template
     questionTemplates.put(DUPLICATE_TEMPLATE_NAME, "template_body");
@@ -47,7 +44,7 @@ public class MainTest {
             .objectNode()
             .put("instanceName", DUPLICATE_TEMPLATE_NAME)
             .put("description", "test question description"));
-    Path questionJsonPath = _folder.newFile("testquestion.json").toPath();
+    Path questionJsonPath = newFile(_folder, "testquestion.json").toPath();
     CommonUtil.writeFile(questionJsonPath, testQuestion.toString());
 
     readQuestionTemplate(questionJsonPath, questionTemplates);
@@ -63,7 +60,7 @@ public class MainTest {
   }
 
   @Test
-  public void testReadQuestionTemplatesCaps() throws Exception {
+  void testReadQuestionTemplatesCaps() throws Exception {
     Map<String, String> questionTemplates = Maps.newHashMap();
     questionTemplates.put(DUPLICATE_TEMPLATE_NAME, "template_body");
 
@@ -74,7 +71,7 @@ public class MainTest {
             .objectNode()
             .put("instanceName", DUPLICATE_TEMPLATE_NAME.toUpperCase())
             .put("description", "test question description"));
-    Path questionJsonPath = _folder.newFile("testquestion.json").toPath();
+    Path questionJsonPath = newFile(_folder, "testquestion.json").toPath();
     CommonUtil.writeFile(questionJsonPath, testQuestion.toString());
 
     readQuestionTemplate(questionJsonPath, questionTemplates);
@@ -91,7 +88,7 @@ public class MainTest {
   }
 
   @Test
-  public void testReadQuestionTemplates() throws Exception {
+  void testReadQuestionTemplates() throws Exception {
     Map<String, String> questionTemplates = Maps.newHashMap();
     questionTemplates.put(DUPLICATE_TEMPLATE_NAME, "template_body");
 
@@ -102,7 +99,7 @@ public class MainTest {
             .objectNode()
             .put("instanceName", NEW_TEMPLATE_NAME)
             .put("description", "test question description"));
-    Path questionJsonPath = _folder.newFile("testquestion.json").toPath();
+    Path questionJsonPath = newFile(_folder, "testquestion.json").toPath();
     CommonUtil.writeFile(questionJsonPath, testQuestion.toString());
 
     readQuestionTemplate(questionJsonPath, questionTemplates);
@@ -120,7 +117,7 @@ public class MainTest {
   }
 
   @Test
-  public void testReadQuestionTemplatesRecursive() throws Exception {
+  void testReadQuestionTemplatesRecursive() throws Exception {
     ObjectNode testQuestion1 = JsonNodeFactory.instance.objectNode();
     testQuestion1.set(
         "instance",
@@ -128,7 +125,7 @@ public class MainTest {
             .objectNode()
             .put("instanceName", "testQuestion1")
             .put("description", "test question one description"));
-    Path question1JsonPath = _folder.newFile("testquestion1.json").toPath();
+    Path question1JsonPath = newFile(_folder, "testquestion1.json").toPath();
     CommonUtil.writeFile(question1JsonPath, testQuestion1.toString());
 
     ObjectNode testQuestion2 = JsonNodeFactory.instance.objectNode();
@@ -138,13 +135,13 @@ public class MainTest {
             .objectNode()
             .put("instanceName", "testQuestion2")
             .put("description", "test question two description"));
-    File nestedFolder = _folder.newFolder("nestedFolder");
+    File nestedFolder = newFolder(_folder, "nestedFolder");
     Path question2JsonPath = nestedFolder.toPath().resolve("testquestions2.json");
     CommonUtil.writeFile(question2JsonPath, testQuestion2.toString());
 
     Map<String, String> questionTemplates = Maps.newHashMap();
 
-    readQuestionTemplates(_folder.getRoot().toPath(), questionTemplates);
+    readQuestionTemplates(_folder.toPath(), questionTemplates);
     assertThat(questionTemplates.keySet(), hasSize(2));
     // Both templates should be present
     assertThat(
@@ -161,7 +158,7 @@ public class MainTest {
   }
 
   @Test
-  public void testEmptyQuestionTemplateDir() throws Exception {
+  void testEmptyQuestionTemplateDir() throws Exception {
     ObjectNode testQuestion = JsonNodeFactory.instance.objectNode();
     testQuestion.set(
         "instance",
@@ -169,13 +166,12 @@ public class MainTest {
             .objectNode()
             .put("instanceName", "testQuestion")
             .put("description", "test question description"));
-    Path questionJsonPath = _folder.newFile("testquestion.json").toPath();
+    Path questionJsonPath = newFile(_folder, "testquestion.json").toPath();
     CommonUtil.writeFile(questionJsonPath, testQuestion.toString());
 
     Main.mainInit(new String[0]);
     Main.setLogger(new BatfishLogger("debug", false));
-    Main.getSettings()
-        .setQuestionTemplateDirs(ImmutableList.of(_folder.getRoot().toPath(), Paths.get("")));
+    Main.getSettings().setQuestionTemplateDirs(ImmutableList.of(_folder.toPath(), Paths.get("")));
 
     Map<String, String> questionTemplates = getQuestionTemplates();
 
@@ -188,5 +184,20 @@ public class MainTest {
             "testquestion",
             "{\"instance\":{\"instanceName\":\"testQuestion\",\"description\":\"test question"
                 + " description\"}}"));
+  }
+
+  private static File newFile(File parent, String child) throws IOException {
+    File result = new File(parent, child);
+    result.createNewFile();
+    return result;
+  }
+
+  private static File newFolder(File root, String... subDirs) throws IOException {
+    String subFolder = String.join("/", subDirs);
+    File result = new File(root, subFolder);
+    if (!result.mkdirs()) {
+      throw new IOException("Couldn't create folders " + root);
+    }
+    return result;
   }
 }

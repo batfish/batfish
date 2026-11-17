@@ -8,12 +8,12 @@ import com.google.common.collect.ImmutableList;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.role.NodeRolesData;
 import org.batfish.role.RoleMapping;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class NodeRolesDataBeanTest extends WorkMgrServiceV2TestBase {
+class NodeRolesDataBeanTest extends WorkMgrServiceV2TestBase {
 
   @Test
-  public void testProperties() {
+  void testProperties() {
     String snapshot = "snapshot1";
     String dimension = "someDimension";
     RoleMapping rMapping = new RoleMapping("mymap", "\\(.*\\)", null, null);

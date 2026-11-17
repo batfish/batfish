@@ -16,8 +16,9 @@ import static org.batfish.datamodel.transformation.ReturnFlowTransformation.STEP
 import static org.batfish.datamodel.transformation.ReturnFlowTransformation.returnFlowTransformation;
 import static org.batfish.datamodel.transformation.Transformation.always;
 import static org.batfish.datamodel.transformation.Transformation.when;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -32,16 +33,13 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link ReturnFlowTransformation}. */
-public final class ReturnFlowTransformationTest {
-  @Rule public ExpectedException _expectedException = ExpectedException.none();
+final class ReturnFlowTransformationTest {
 
   @Test
-  public void testStepVisitor() {
+  void testStepVisitor() {
     // noop
     assertEquals(NOOP_SOURCE_NAT.accept(STEP_VISITOR), NOOP_SOURCE_NAT);
     assertEquals(NOOP_DEST_NAT.accept(STEP_VISITOR), NOOP_DEST_NAT);
@@ -135,7 +133,7 @@ public final class ReturnFlowTransformationTest {
   }
 
   @Test
-  public void testGuardVisitor() {
+  void testGuardVisitor() {
     AclLineMatchExpr dstIp = matchDstIp("1.1.1.1");
     AclLineMatchExpr srcIp = matchSrcIp("1.1.1.1");
 
@@ -199,12 +197,12 @@ public final class ReturnFlowTransformationTest {
     }
 
     // permitted by acl is not allowed
-    _expectedException.expect(IllegalArgumentException.class);
-    new PermittedByAcl("foo").accept(GUARD_VISITOR);
+    assertThrows(
+        IllegalArgumentException.class, () -> new PermittedByAcl("foo").accept(GUARD_VISITOR));
   }
 
   @Test
-  public void testReturnFlowTransformation() {
+  void testReturnFlowTransformation() {
     AclLineMatchExpr matchDst = matchDstIp("1.1.1.1");
     AclLineMatchExpr matchSrc = matchSrcIp("1.1.1.1");
     ShiftIpAddressIntoSubnet shiftDst =

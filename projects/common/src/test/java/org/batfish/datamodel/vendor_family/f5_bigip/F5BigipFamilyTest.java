@@ -1,20 +1,20 @@
 package org.batfish.datamodel.vendor_family.f5_bigip;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link F5BigipFamily}. */
-public final class F5BigipFamilyTest {
+final class F5BigipFamilyTest {
 
   private F5BigipFamily.Builder _builder;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _builder =
         F5BigipFamily.builder()
             .addDevice(Device.builder().setName("n").build())
@@ -27,7 +27,7 @@ public final class F5BigipFamilyTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     F5BigipFamily obj = _builder.build();
     new EqualsTester()
         .addEqualityGroup(obj, obj, _builder.build())
@@ -42,7 +42,7 @@ public final class F5BigipFamilyTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     F5BigipFamily obj = _builder.build();
     assertEquals(obj, SerializationUtils.clone(obj));
   }

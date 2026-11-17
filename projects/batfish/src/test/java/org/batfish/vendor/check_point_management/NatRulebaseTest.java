@@ -2,7 +2,7 @@ package org.batfish.vendor.check_point_management;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
@@ -10,13 +10,13 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link NatRulebase}. */
-public final class NatRulebaseTest {
+final class NatRulebaseTest {
 
   @Test
-  public void testJacksonDeserialization() throws JsonProcessingException {
+  void testJacksonDeserialization() throws JsonProcessingException {
     String input =
         "{"
             + "\"GARBAGE\":0,"
@@ -30,7 +30,7 @@ public final class NatRulebaseTest {
   }
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     NatRulebase obj =
         new NatRulebase(
             ImmutableMap.of(Uid.of("0"), AddressRangeTest.TEST_INSTANCE),
@@ -40,7 +40,7 @@ public final class NatRulebaseTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     NatRulebase obj = new NatRulebase(ImmutableMap.of(), ImmutableList.of(), Uid.of("0"));
     new EqualsTester()
         .addEqualityGroup(obj, new NatRulebase(ImmutableMap.of(), ImmutableList.of(), Uid.of("0")))

@@ -18,7 +18,7 @@ import org.batfish.common.Warnings;
 import org.batfish.config.Settings;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests that {@link SrosSilentSyntax} reports the statements {@link SrosFeatureExtractor} does not
@@ -27,7 +27,7 @@ import org.junit.Test;
  * change that stops reading a path must surface it as ignored, and one that starts reading a path
  * must stop reporting it.
  */
-public final class SrosSilentSyntaxTest {
+final class SrosSilentSyntaxTest {
 
   private static final String TESTCONFIGS_PREFIX = "org/batfish/vendor/sros/grammar/testconfigs/";
 
@@ -37,7 +37,7 @@ public final class SrosSilentSyntaxTest {
    * both — are reported as silently ignored; modeled leaves are not.
    */
   @Test
-  public void testR1SilentlyIgnored() {
+  void testR1SilentlyIgnored() {
     List<String> ignored = silentlyIgnored("r1_admin_show_configuration.txt");
 
     // The two unmodeled subtrees are each reported once, at their block header, and nothing else.
@@ -65,7 +65,7 @@ public final class SrosSilentSyntaxTest {
 
   /** A config that is entirely modeled reports nothing as silently ignored. */
   @Test
-  public void testFullyModeledReportsNothing() {
+  void testFullyModeledReportsNothing() {
     assertThat(silentlyIgnored("hostname.txt"), empty());
   }
 

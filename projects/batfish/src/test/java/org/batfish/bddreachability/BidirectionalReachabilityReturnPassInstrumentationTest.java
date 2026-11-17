@@ -1,6 +1,6 @@
 package org.batfish.bddreachability;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableMap;
 import net.sf.javabdd.BDD;
@@ -9,21 +9,21 @@ import org.batfish.symbolic.state.NodeInterfaceInsufficientInfo;
 import org.batfish.symbolic.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.symbolic.state.Query;
 import org.batfish.symbolic.state.StateExpr;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link BidirectionalReachabilityReturnPassInstrumentation}. */
-public class BidirectionalReachabilityReturnPassInstrumentationTest {
+class BidirectionalReachabilityReturnPassInstrumentationTest {
   private BDD _constraint;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     BDDPacket bddPacket = new BDDPacket();
     _constraint = bddPacket.getDstIp().value(1);
   }
 
   @Test
-  public void testNeighborUnreachable() {
+  void testNeighborUnreachable() {
     StateExpr stateExpr = new NodeInterfaceNeighborUnreachable("NODE", "IFACE");
     BidirectionalReachabilityReturnPassInstrumentation instrumentation =
         new BidirectionalReachabilityReturnPassInstrumentation(
@@ -36,7 +36,7 @@ public class BidirectionalReachabilityReturnPassInstrumentationTest {
   }
 
   @Test
-  public void testInsufficientInfo() {
+  void testInsufficientInfo() {
     StateExpr stateExpr = new NodeInterfaceInsufficientInfo("NODE", "IFACE");
     BidirectionalReachabilityReturnPassInstrumentation instrumentation =
         new BidirectionalReachabilityReturnPassInstrumentation(

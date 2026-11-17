@@ -8,7 +8,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcPort;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
@@ -38,23 +38,23 @@ import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.vendor.VendorStructureId;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class AclEraserTest {
+class AclEraserTest {
   private AclEraser _eraser;
   private TraceElement _traceElem;
   private VendorStructureId _vsId;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _eraser = AclEraser.INSTANCE;
     _traceElem = TraceElement.of("trace elem");
     _vsId = new VendorStructureId("file", "type", "name");
   }
 
   @Test
-  public void testAclLineMatchExprs() {
+  void testAclLineMatchExprs() {
     TrueExpr trueExpr = new TrueExpr(_traceElem);
     assertEquals(TrueExpr.INSTANCE, _eraser.visit(trueExpr));
     assertEquals(FalseExpr.INSTANCE, _eraser.visit(new FalseExpr(_traceElem)));
@@ -117,7 +117,7 @@ public class AclEraserTest {
   }
 
   @Test
-  public void testAclLines() {
+  void testAclLines() {
     assertEquals(
         new AclAclLine("name", "acl"),
         _eraser.visit(new AclAclLine("name", "acl", _traceElem, _vsId)));

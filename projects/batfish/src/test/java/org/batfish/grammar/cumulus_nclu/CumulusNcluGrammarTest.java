@@ -69,14 +69,15 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Range;
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
@@ -154,17 +155,14 @@ import org.batfish.representation.cumulus_nclu.RouteMap;
 import org.batfish.representation.cumulus_nclu.RouteMapMatchInterface;
 import org.batfish.representation.cumulus_nclu.StaticRoute;
 import org.batfish.vendor.VendorConfiguration;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class CumulusNcluGrammarTest {
+final class CumulusNcluGrammarTest {
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/cumulus_nclu/testconfigs/";
   private static final String TESTRIGS_PREFIX = "org/batfish/grammar/cumulus_nclu/testrigs/";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+  @TempDir public File _folder;
 
   private void assertRoutingPolicyDeniesNetwork(RoutingPolicy routingPolicy, Prefix network) {
     assertFalse(
@@ -224,7 +222,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testEbgpUnnumbered() throws IOException {
+  void testEbgpUnnumbered() throws IOException {
     /*
     node1 and node2 should have an eBGP unnumbered session between them. Both redistribute static
     routes. node1 has static route 5.5.5.5/32 and node2 has static route 6.6.6.6/32, so should see
@@ -295,7 +293,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testBgpConversion() throws IOException {
+  void testBgpConversion() throws IOException {
     String hostname = "cumulus_nclu_bgp";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
@@ -418,7 +416,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testBgpExtraction() {
+  void testBgpExtraction() {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_bgp");
 
     // bgp process should be created
@@ -434,7 +432,7 @@ public final class CumulusNcluGrammarTest {
 
     // Multipath relax
     assertTrue(
-        "Ensure as-path multipath-relax is set", proc.getDefaultVrf().getAsPathMultipathRelax());
+        proc.getDefaultVrf().getAsPathMultipathRelax(), "Ensure as-path multipath-relax is set");
 
     // ipv4 unicast
     assertThat(
@@ -465,9 +463,9 @@ public final class CumulusNcluGrammarTest {
     assertThat("Ensure l2vpn evpn is enabled", proc.getDefaultVrf().getL2VpnEvpn(), notNullValue());
     BgpL2vpnEvpnAddressFamily l2vpnEvpn = proc.getDefaultVrf().getL2VpnEvpn();
 
-    assertTrue("Ensure l2vpn evpn advertise-all-vni is extracted", l2vpnEvpn.getAdvertiseAllVni());
+    assertTrue(l2vpnEvpn.getAdvertiseAllVni(), "Ensure l2vpn evpn advertise-all-vni is extracted");
     assertTrue(
-        "Ensure l2vpn evpn advertise-default-gw is extracted", l2vpnEvpn.getAdvertiseDefaultGw());
+        l2vpnEvpn.getAdvertiseDefaultGw(), "Ensure l2vpn evpn advertise-default-gw is extracted");
     assertThat(
         "Ensure l2vpn evpn advertise ipv4 unicast is extracted",
         l2vpnEvpn.getAdvertiseIpv4Unicast(),
@@ -487,8 +485,8 @@ public final class CumulusNcluGrammarTest {
 
     // l2vpn evpn route activation and reflector settings
     assertTrue(
-        "Ensure swp2 has l2vpn evpn activated",
-        proc.getDefaultVrf().getNeighbors().get("swp2").getL2vpnEvpnAddressFamily().getActivated());
+        proc.getDefaultVrf().getNeighbors().get("swp2").getL2vpnEvpnAddressFamily().getActivated(),
+        "Ensure swp2 has l2vpn evpn activated");
     assertThat(
         "Ensure swp2 does not have route reflector client enabled (wrong order)",
         proc.getDefaultVrf()
@@ -498,15 +496,15 @@ public final class CumulusNcluGrammarTest {
             .getRouteReflectorClient(),
         nullValue());
     assertTrue(
-        "Ensure swp3 has l2vpn evpn activated",
-        proc.getDefaultVrf().getNeighbors().get("swp3").getL2vpnEvpnAddressFamily().getActivated());
+        proc.getDefaultVrf().getNeighbors().get("swp3").getL2vpnEvpnAddressFamily().getActivated(),
+        "Ensure swp3 has l2vpn evpn activated");
     assertTrue(
-        "Ensure swp3 has route reflector client enabled",
         proc.getDefaultVrf()
             .getNeighbors()
             .get("swp3")
             .getL2vpnEvpnAddressFamily()
-            .getRouteReflectorClient());
+            .getRouteReflectorClient(),
+        "Ensure swp3 has route reflector client enabled");
 
     // router-id
     assertThat(
@@ -551,7 +549,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testBgpPeerGroup() throws IOException {
+  void testBgpPeerGroup() throws IOException {
     Configuration c = parseConfig("cumulus_nclu_bgp_peer_group");
     String swp1 = "swp1";
     long internalAs = 65500L;
@@ -573,13 +571,13 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testBgpInvalidInterfaceNeighbor() throws IOException {
+  void testBgpInvalidInterfaceNeighbor() throws IOException {
     CumulusNcluConfiguration c = parseVendorConfig("cumulus_nclu_bgp_invalid_interface_neighbor");
     assertThat(c.getBgpProcess().getDefaultVrf().getNeighbors(), anEmptyMap());
   }
 
   @Test
-  public void testBgpIpNeighbor() throws IOException {
+  void testBgpIpNeighbor() throws IOException {
     Configuration c = parseConfig("cumulus_nclu_bgp_ip_neighbor");
     long internalAs = 65500L;
 
@@ -594,7 +592,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testBondConversion() throws IOException {
+  void testBondConversion() throws IOException {
     Configuration c = parseConfig("cumulus_nclu_bond");
 
     // bond1
@@ -644,7 +642,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testBondExtraction() {
+  void testBondExtraction() {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_bond");
     String bond1Name = "bond1";
     String bond2Name = "bond2";
@@ -682,7 +680,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testBondReferences() throws IOException {
+  void testBondReferences() throws IOException {
     String hostname = "cumulus_nclu_bond_references";
     String filename = String.format("configs/%s", hostname);
     Batfish bf = getBatfishForConfigurationNames(hostname);
@@ -693,7 +691,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testBridgeConversion() throws IOException {
+  void testBridgeConversion() throws IOException {
     Configuration c = parseConfig("cumulus_nclu_bridge");
 
     IntegerSpace bridgeVlans =
@@ -759,7 +757,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testBridgeExtraction() {
+  void testBridgeExtraction() {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_bridge");
 
     // bridge
@@ -779,10 +777,10 @@ public final class CumulusNcluGrammarTest {
 
     assertThat(
         "bond1 is in access mode using VLAN 1000", bond1.getBridge().getAccess(), equalTo(1000));
-    assertTrue("bond1 has no vids", bond1.getBridge().getVids().isEmpty());
+    assertTrue(bond1.getBridge().getVids().isEmpty(), "bond1 has no vids");
     assertThat("bond1 has no pvid", bond1.getBridge().getPvid(), nullValue());
     assertThat("bond2 has no access VLAN", bond2.getBridge().getAccess(), nullValue());
-    assertTrue("bond2 has no vids (inherits from bridge)", bond2.getBridge().getVids().isEmpty());
+    assertTrue(bond2.getBridge().getVids().isEmpty(), "bond2 has no vids (inherits from bridge)");
     assertThat("bond2 has manual pvid 1", bond2.getBridge().getPvid(), equalTo(1));
     assertThat("bond3 has no access VLAN", bond3.getBridge().getAccess(), nullValue());
     assertThat(
@@ -790,7 +788,7 @@ public final class CumulusNcluGrammarTest {
     assertThat(
         "bond3 has no pvid (inherits from bridge)", bond3.getBridge().getPvid(), nullValue());
     assertThat("bond4 has no access VLAN", bond4.getBridge().getAccess(), nullValue());
-    assertTrue("bond4 has no vids", bond4.getBridge().getVids().isEmpty());
+    assertTrue(bond4.getBridge().getVids().isEmpty(), "bond4 has no vids");
     assertThat("bond4 has no pvid", bond4.getBridge().getPvid(), nullValue());
 
     // swp
@@ -801,22 +799,22 @@ public final class CumulusNcluGrammarTest {
 
     assertThat(
         "swp5 is in access mode using VLAN 1000", swp5.getBridge().getAccess(), equalTo(1000));
-    assertTrue("swp5 has no vids", swp5.getBridge().getVids().isEmpty());
+    assertTrue(swp5.getBridge().getVids().isEmpty(), "swp5 has no vids");
     assertThat("swp5 has no pvid", swp5.getBridge().getPvid(), nullValue());
     assertThat("swp6 has no access VLAN", swp6.getBridge().getAccess(), nullValue());
-    assertTrue("swp6 has no vids (inherits from bridge)", swp6.getBridge().getVids().isEmpty());
+    assertTrue(swp6.getBridge().getVids().isEmpty(), "swp6 has no vids (inherits from bridge)");
     assertThat("swp6 has manual pvid 1", swp6.getBridge().getPvid(), equalTo(1));
     assertThat("swp7 has no access VLAN", swp7.getBridge().getAccess(), nullValue());
     assertThat(
         "swp7 has has manual vids 7", swp7.getBridge().getVids(), equalTo(IntegerSpace.of(7)));
     assertThat("swp7 has no pvid (inherits from bridge)", swp7.getBridge().getPvid(), nullValue());
     assertThat("swp8 has no access VLAN", swp8.getBridge().getAccess(), nullValue());
-    assertTrue("swp8 has no vids", swp8.getBridge().getVids().isEmpty());
+    assertTrue(swp8.getBridge().getVids().isEmpty(), "swp8 has no vids");
     assertThat("swp8 has no pvid", swp8.getBridge().getPvid(), nullValue());
   }
 
   @Test
-  public void testClagConversion() throws IOException {
+  void testClagConversion() throws IOException {
     Configuration c = parseConfig("cumulus_nclu_clag");
 
     assertThat(
@@ -833,7 +831,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testClagExtranctionLinkLocalPeer() {
+  void testClagExtranctionLinkLocalPeer() {
     CumulusNcluConfiguration c = parseVendorConfig("cumulus_nclu_clag_linklocal");
 
     String ifaceName = "peerlink.4094";
@@ -841,7 +839,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testClagConversionLinkLocalPeer() throws IOException {
+  void testClagConversionLinkLocalPeer() throws IOException {
     final String testrigName = "clag-linklocal-peering";
     final String node1 = "n1";
     final String node2 = "n2";
@@ -864,14 +862,14 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testDnsConversion() throws IOException {
+  void testDnsConversion() throws IOException {
     Configuration c = parseConfig("cumulus_nclu_dns");
 
     assertThat(c.getDnsServers(), containsInAnyOrder("192.0.2.3", "192.0.2.4"));
   }
 
   @Test
-  public void testDnsExtraction() {
+  void testDnsExtraction() {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_dns");
 
     assertThat(vc.getIpv4Nameservers(), contains(Ip.parse("192.0.2.3"), Ip.parse("192.0.2.4")));
@@ -879,7 +877,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testHostname() throws IOException {
+  void testHostname() throws IOException {
     String filename = "cumulus_nclu_hostname";
     String hostname = "custom_hostname";
     Batfish batfish = getBatfishForConfigurationNames(filename);
@@ -889,7 +887,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testInterfaceConversion() throws IOException {
+  void testInterfaceConversion() throws IOException {
     Configuration c = parseConfig("cumulus_nclu_interface");
 
     assertThat(
@@ -993,7 +991,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testInterfaceExtraction() {
+  void testInterfaceExtraction() {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_interface");
 
     assertThat(
@@ -1113,7 +1111,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testInterfaceReferences() throws IOException {
+  void testInterfaceReferences() throws IOException {
     String hostname = "cumulus_nclu_interface_references";
     String filename = String.format("configs/%s", hostname);
     Batfish bf = getBatfishForConfigurationNames(hostname);
@@ -1125,7 +1123,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testLoopbackConversion() throws IOException {
+  void testLoopbackConversion() throws IOException {
     Configuration c = parseConfig("cumulus_nclu_loopback");
 
     assertThat(c, hasInterface("lo", hasAddress(ConcreteInterfaceAddress.parse("10.0.0.1/32"))));
@@ -1144,10 +1142,10 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testLoopbackExtraction() {
+  void testLoopbackExtraction() {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_loopback");
 
-    assertTrue("Ensure loopback is configured", vc.getLoopback().getConfigured());
+    assertTrue(vc.getLoopback().getConfigured(), "Ensure loopback is configured");
     assertThat(
         "Ensure clag vxlan-anycast-ip is extracted",
         vc.getLoopback().getClagVxlanAnycastIp(),
@@ -1162,14 +1160,14 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testLoopbackMissingExtraction() {
+  void testLoopbackMissingExtraction() {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_loopback_missing");
 
-    assertFalse("Ensure loopback is disabled", vc.getLoopback().getConfigured());
+    assertFalse(vc.getLoopback().getConfigured(), "Ensure loopback is disabled");
   }
 
   @Test
-  public void testLoopbackReferences() throws IOException {
+  void testLoopbackReferences() throws IOException {
     String hostname = "cumulus_nclu_loopback_references";
     String filename = String.format("configs/%s", hostname);
     Batfish bf = getBatfishForConfigurationNames(hostname);
@@ -1185,7 +1183,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testRouteMapReferences() throws IOException {
+  void testRouteMapReferences() throws IOException {
     String hostname = "cumulus_nclu_route_map_references";
     String filename = String.format("configs/%s", hostname);
     Batfish bf = getBatfishForConfigurationNames(hostname);
@@ -1195,7 +1193,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testRoutingConversion() throws IOException {
+  void testRoutingConversion() throws IOException {
     Configuration c = parseConfig("cumulus_nclu_routing");
 
     org.batfish.datamodel.StaticRoute.Builder builder =
@@ -1265,7 +1263,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testRoutingExtraction() {
+  void testRoutingExtraction() {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_routing");
 
     // static route (main vrf)
@@ -1336,7 +1334,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testVendorFamilyClag() throws IOException {
+  void testVendorFamilyClag() throws IOException {
     Configuration c = parseConfig("cumulus_nclu_clag");
 
     assertThat(c.getVendorFamily().getCumulus(), notNullValue());
@@ -1359,7 +1357,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testVlanConversion() throws IOException {
+  void testVlanConversion() throws IOException {
     Configuration c = parseConfig("cumulus_nclu_vlan");
 
     // vlan interfaces should be put in correct vrfs
@@ -1399,7 +1397,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testVlanExtraction() {
+  void testVlanExtraction() {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_vlan");
 
     // vlan interfaces
@@ -1453,7 +1451,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testVrfConversion() throws IOException {
+  void testVrfConversion() throws IOException {
     Configuration c = parseConfig("cumulus_nclu_vrf");
 
     // vrf presence and loopbacks
@@ -1473,7 +1471,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testVrfExtraction() {
+  void testVrfExtraction() {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_vrf");
 
     // vrfs
@@ -1500,7 +1498,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testVrfReferences() throws IOException {
+  void testVrfReferences() throws IOException {
     String hostname = "cumulus_nclu_vrf_references";
     String filename = String.format("configs/%s", hostname);
     Batfish bf = getBatfishForConfigurationNames(hostname);
@@ -1512,7 +1510,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testVxlanExtraction() {
+  void testVxlanExtraction() {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_vxlan");
 
     // vxlan interfaces
@@ -1567,7 +1565,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testVxlanConversion() throws IOException {
+  void testVxlanConversion() throws IOException {
     Configuration c = parseConfig("cumulus_nclu_vxlan_vrfs");
     assertThat(
         c.getDefaultVrf().getLayer2Vnis(),
@@ -1594,7 +1592,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testVxlanReferences() throws IOException {
+  void testVxlanReferences() throws IOException {
     String hostname = "cumulus_nclu_vxlan_references";
     String filename = String.format("configs/%s", hostname);
     Batfish bf = getBatfishForConfigurationNames(hostname);
@@ -1604,7 +1602,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testEvpnConversions() throws IOException {
+  void testEvpnConversions() throws IOException {
     Configuration c = parseConfig("cumulus_nclu_evpn");
 
     BgpUnnumberedPeerConfig bgpPeer =
@@ -1668,7 +1666,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testEvpnConversions4byteAS() throws IOException {
+  void testEvpnConversions4byteAS() throws IOException {
     Configuration c = parseConfig("cumulus_nclu_evpn_4byte_as");
 
     BgpUnnumberedPeerConfig bgpPeer =

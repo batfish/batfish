@@ -10,16 +10,16 @@ import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.SessionVrfScope.SpecificVrf;
 import org.batfish.datamodel.dataplane.rib.RibGroup;
 import org.batfish.datamodel.dataplane.rib.RibId;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link BgpPeerConfig}. */
-public final class BgpPeerConfigTest {
+final class BgpPeerConfigTest {
   private static Object[] withToBuilder(BgpPeerConfig peer) {
     return new Object[] {peer, peer.toBuilder().build()};
   }
 
   @Test
-  public void testActiveEquals() {
+  void testActiveEquals() {
     BgpAuthenticationSettings authenticationSettings = new BgpAuthenticationSettings();
     authenticationSettings.setAuthenticationAlgorithm(BgpAuthenticationAlgorithm.TCP_ENHANCED_MD5);
     BgpActivePeerConfig peer =
@@ -69,7 +69,7 @@ public final class BgpPeerConfigTest {
   }
 
   @Test
-  public void testPassiveEquals() {
+  void testPassiveEquals() {
     BgpPassivePeerConfig peer =
         BgpPassivePeerConfig.builder()
             .setLocalAs(1L)

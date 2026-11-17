@@ -8,11 +8,11 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.DeliveredStep.DeliveredStepDetail;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class DeliveredStepTest {
+class DeliveredStepTest {
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     DeliveredStep step =
         DeliveredStep.builder()
             .setAction(StepAction.DELIVERED_TO_SUBNET)
@@ -32,7 +32,7 @@ public class DeliveredStepTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new Object())
         .addEqualityGroup(

@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -12,12 +13,12 @@ import com.google.common.collect.ImmutableList;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.representation.aws.TransitGatewayConverter.TransitGatewayWithMetadata;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class TransitGatewayConverterTest {
+class TransitGatewayConverterTest {
 
   @Test
-  public void testFindOriginalGateway() {
+  void testFindOriginalGateway() {
     TransitGateway tgw1 = mock(TransitGateway.class);
     when(tgw1.getId()).thenReturn("id1");
     when(tgw1.getOwnerId()).thenReturn("account1");
@@ -33,7 +34,7 @@ public class TransitGatewayConverterTest {
   }
 
   @Test
-  public void testFindOriginalGatewayNonAmbiguous() {
+  void testFindOriginalGatewayNonAmbiguous() {
     TransitGateway tgw1 = mock(TransitGateway.class);
     when(tgw1.getId()).thenReturn("id1");
     when(tgw1.getOwnerId()).thenReturn("account1");
@@ -44,7 +45,7 @@ public class TransitGatewayConverterTest {
   }
 
   @Test
-  public void testFindOriginalGatewayFailure() {
+  void testFindOriginalGatewayFailure() {
     TransitGateway tgw1 = mock(TransitGateway.class);
     when(tgw1.getId()).thenReturn("id1");
     when(tgw1.getOwnerId()).thenReturn("account1");
@@ -59,26 +60,32 @@ public class TransitGatewayConverterTest {
     assertThat(TransitGatewayConverter.findOriginalGateway(ImmutableList.of(t1, t2)), nullValue());
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void testFindOriginalGatewayEmpty() {
-    TransitGatewayConverter.findOriginalGateway(ImmutableList.of());
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void testFindOriginalGatewayNotAllSameId() {
-    TransitGateway tgw1 = mock(TransitGateway.class);
-    when(tgw1.getId()).thenReturn("id1");
-    TransitGateway tgw2 = mock(TransitGateway.class);
-    when(tgw2.getId()).thenReturn("id2");
-    TransitGatewayWithMetadata t1 =
-        new TransitGatewayWithMetadata(tgw1, new Region("r1"), "account1");
-    TransitGatewayWithMetadata t2 =
-        new TransitGatewayWithMetadata(tgw2, new Region("r1"), "account1");
-    TransitGatewayConverter.findOriginalGateway(ImmutableList.of(t1, t2));
+  @Test
+  void testFindOriginalGatewayEmpty() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> TransitGatewayConverter.findOriginalGateway(ImmutableList.of()));
   }
 
   @Test
-  public void testGetUniqueTransitGateways() {
+  void testFindOriginalGatewayNotAllSameId() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> {
+          TransitGateway tgw1 = mock(TransitGateway.class);
+          when(tgw1.getId()).thenReturn("id1");
+          TransitGateway tgw2 = mock(TransitGateway.class);
+          when(tgw2.getId()).thenReturn("id2");
+          TransitGatewayWithMetadata t1 =
+              new TransitGatewayWithMetadata(tgw1, new Region("r1"), "account1");
+          TransitGatewayWithMetadata t2 =
+              new TransitGatewayWithMetadata(tgw2, new Region("r1"), "account1");
+          TransitGatewayConverter.findOriginalGateway(ImmutableList.of(t1, t2));
+        });
+  }
+
+  @Test
+  void testGetUniqueTransitGateways() {
     TransitGateway tgw1 = mock(TransitGateway.class);
     when(tgw1.getId()).thenReturn("id1");
     when(tgw1.getOwnerId()).thenReturn("account1");
@@ -103,7 +110,7 @@ public class TransitGatewayConverterTest {
   }
 
   @Test
-  public void testGetUniqueTransitGatewaysLogFailure() {
+  void testGetUniqueTransitGatewaysLogFailure() {
     TransitGateway tgw1 = mock(TransitGateway.class);
     when(tgw1.getId()).thenReturn("id1");
     when(tgw1.getOwnerId()).thenReturn("account1");

@@ -5,19 +5,19 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDstPort;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class TcpApplicationTest {
+class TcpApplicationTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             TcpApplication.ALL,
@@ -35,7 +35,7 @@ public class TcpApplicationTest {
   }
 
   @Test
-  public void testToString() {
+  void testToString() {
     assertThat(TcpApplication.ALL.toString(), equalTo("tcp"));
     assertThat(new TcpApplication(80).toString(), equalTo("tcp/80"));
     assertThat(
@@ -47,7 +47,7 @@ public class TcpApplicationTest {
   }
 
   @Test
-  public void toAclLineMatchExpr() {
+  void toAclLineMatchExpr() {
     assertEquals(
         new TcpApplication(ImmutableList.of(new SubRange(10, 20), new SubRange(20, 30)))
             .toAclLineMatchExpr(),

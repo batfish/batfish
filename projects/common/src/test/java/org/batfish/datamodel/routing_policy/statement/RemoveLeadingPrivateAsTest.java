@@ -16,10 +16,10 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link Statements#RemoveLeadingPrivateAs}. */
-public class RemoveLeadingPrivateAsTest {
+class RemoveLeadingPrivateAsTest {
   private static final Configuration C =
       new NetworkFactory()
           .configurationBuilder()
@@ -56,34 +56,34 @@ public class RemoveLeadingPrivateAsTest {
   }
 
   @Test
-  public void testRemovesLeadingPrivateAs() {
+  void testRemovesLeadingPrivateAs() {
     assertThat(
         execute(AsPath.ofSingletonAsSets(65001L, 1L, 65002L), 2L),
         equalTo(AsPath.ofSingletonAsSets(1L, 65002L)));
   }
 
   @Test
-  public void testWithoutSession() {
+  void testWithoutSession() {
     assertThat(
         execute(AsPath.ofSingletonAsSets(65001L, 1L), null), equalTo(AsPath.ofSingletonAsSets(1L)));
   }
 
   @Test
-  public void testStopsAtPrivateRemoteAs() {
+  void testStopsAtPrivateRemoteAs() {
     assertThat(
         execute(AsPath.ofSingletonAsSets(65001L, 65100L, 65002L), 65100L),
         equalTo(AsPath.ofSingletonAsSets(65100L, 65002L)));
   }
 
   @Test
-  public void testPublicRemoteAsLaterInPath() {
+  void testPublicRemoteAsLaterInPath() {
     assertThat(
         execute(AsPath.ofSingletonAsSets(65001L, 1L, 2L), 2L),
         equalTo(AsPath.ofSingletonAsSets(1L, 2L)));
   }
 
   @Test
-  public void testRemoteAsFirst() {
+  void testRemoteAsFirst() {
     assertThat(
         execute(AsPath.ofSingletonAsSets(65100L, 65001L), 65100L),
         equalTo(AsPath.ofSingletonAsSets(65100L, 65001L)));

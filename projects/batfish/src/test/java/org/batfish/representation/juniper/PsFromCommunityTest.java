@@ -14,11 +14,11 @@ import org.batfish.datamodel.routing_policy.communities.HasCommunity;
 import org.batfish.datamodel.routing_policy.communities.InputCommunities;
 import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class PsFromCommunityTest {
+class PsFromCommunityTest {
   @Test
-  public void testFrom() {
+  void testFrom() {
     PsFromCommunity undefined = new PsFromCommunity("undefined");
     PsFromCommunity c1 = new PsFromCommunity("c1");
     PsFromCommunity c2 = new PsFromCommunity("c2");

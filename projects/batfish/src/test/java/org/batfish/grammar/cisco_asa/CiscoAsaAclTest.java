@@ -14,6 +14,7 @@ import static org.hamcrest.Matchers.hasKey;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import org.batfish.datamodel.AclLine;
@@ -21,17 +22,13 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.main.BatfishTestUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-@RunWith(JUnit4.class)
-public class CiscoAsaAclTest {
+class CiscoAsaAclTest {
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/cisco_asa/testconfigs/";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private Configuration parseConfig(String hostname) throws IOException {
     String[] names = new String[] {TESTCONFIGS_PREFIX + hostname};
@@ -43,7 +40,7 @@ public class CiscoAsaAclTest {
   }
 
   @Test
-  public void testAclMasks() throws IOException {
+  void testAclMasks() throws IOException {
     Configuration c = parseConfig("aclAsa");
     IpAccessList acl = c.getIpAccessLists().get("acl");
     AclLine line = Iterables.getOnlyElement(acl.getLines());

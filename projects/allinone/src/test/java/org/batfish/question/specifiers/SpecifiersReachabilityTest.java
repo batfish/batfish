@@ -19,6 +19,7 @@ import static org.hamcrest.Matchers.not;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
@@ -36,13 +37,12 @@ import org.batfish.question.traceroute.TracerouteAnswerer;
 import org.batfish.specifier.DispositionSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceAssignmentSpecifier;
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** End-to-end tests of {@link SpecifiersReachabilityQuestion}. */
-public class SpecifiersReachabilityTest {
+class SpecifiersReachabilityTest {
   private static final String LOOPBACK = "Loopback0";
   private static final String NODE1 = "node1";
   private static final String NODE2 = "node2";
@@ -54,14 +54,14 @@ public class SpecifiersReachabilityTest {
   private static final String TESTRIG_NAME = "specifiers-reachability";
   private static final List<String> TESTRIG_NODE_NAMES = ImmutableList.of(NODE1, NODE2);
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private static final String ALL = ".*";
 
   private Batfish _batfish;
 
-  @Before
-  public void setup() throws IOException {
+  @BeforeEach
+  void setup() throws IOException {
     _batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
@@ -77,7 +77,7 @@ public class SpecifiersReachabilityTest {
    * InferFromLocationIpSpaceAssignmentSpecifier}) are correct for the network.
    */
   @Test
-  public void testInferSrcIpFromLocation() {
+  void testInferSrcIpFromLocation() {
     SpecifiersReachabilityQuestion question =
         SpecifiersReachabilityQuestion.builder()
             .setPathConstraints(
@@ -104,7 +104,7 @@ public class SpecifiersReachabilityTest {
    * not be one of those configured in the network.
    */
   @Test
-  public void testNoRoute() {
+  void testNoRoute() {
     SpecifiersReachabilityQuestion question =
         SpecifiersReachabilityQuestion.builder()
             .setPathConstraints(
@@ -139,7 +139,7 @@ public class SpecifiersReachabilityTest {
    * node to itself).
    */
   @Test
-  public void testForbiddenTransitNodes() {
+  void testForbiddenTransitNodes() {
     SpecifiersReachabilityQuestion question =
         SpecifiersReachabilityQuestion.builder()
             .setPathConstraints(
@@ -186,7 +186,7 @@ public class SpecifiersReachabilityTest {
    * from one node to the other).
    */
   @Test
-  public void testRequiredTransitNodes() {
+  void testRequiredTransitNodes() {
     SpecifiersReachabilityQuestion question =
         SpecifiersReachabilityQuestion.builder()
             .setPathConstraints(
@@ -231,7 +231,7 @@ public class SpecifiersReachabilityTest {
    * from one node to the other).
    */
   @Test
-  public void testInvertSearch() {
+  void testInvertSearch() {
     // 1. with no constraints, we get some flows, all with port=0
     AnswerElement answer =
         new SpecifiersReachabilityAnswerer(

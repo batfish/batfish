@@ -5,16 +5,16 @@ import static org.batfish.representation.aws.AwsConfigurationTestUtils.testSetup
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testTrace;
 
 import com.google.common.collect.ImmutableList;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NamedPort;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * E2e tests for transit gateway. The configuration was pulled after creating two VPCs A and B and
@@ -22,7 +22,7 @@ import org.junit.rules.TemporaryFolder;
  * routing table of only of those points to the transit gateway attachment. VPC B has only one
  * subnet, which is connected to the attachment.
  */
-public class AwsConfigurationTransitGatewayMultiAccountTest {
+class AwsConfigurationTransitGatewayMultiAccountTest {
 
   private static final String TESTCONFIGS_DIR =
       "org/batfish/representation/aws/test-transit-gateway-multi-account";
@@ -68,18 +68,18 @@ public class AwsConfigurationTransitGatewayMultiAccountTest {
   private static Ip _instanceAIp = Ip.parse("10.1.1.100");
   private static Ip _instanceBIp = Ip.parse("10.2.1.183");
 
-  @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public static File _folder;
 
   private static IBatfish _batfish;
 
-  @BeforeClass
-  public static void setup() throws IOException {
+  @BeforeAll
+  static void setup() throws IOException {
     _batfish = testSetup(TESTCONFIGS_DIR, fileNames, _folder);
   }
 
   /** Test connectivity from A to B */
   @Test
-  public void testFromAtoB() {
+  void testFromAtoB() {
     testTrace(
         getTcpFlow(_instanceA, _instanceBIp, NamedPort.SSH.number(), _batfish),
         FlowDisposition.ACCEPTED,
@@ -89,7 +89,7 @@ public class AwsConfigurationTransitGatewayMultiAccountTest {
 
   /** Test connectivity from B to A */
   @Test
-  public void testFromBtoA() {
+  void testFromBtoA() {
     testTrace(
         getTcpFlow(_instanceB, _instanceAIp, NamedPort.SSH.number(), _batfish),
         FlowDisposition.ACCEPTED,

@@ -10,11 +10,11 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.routing_policy.expr.DecrementAdministrativeCost;
 import org.batfish.datamodel.routing_policy.expr.IncrementAdministrativeCost;
 import org.batfish.datamodel.routing_policy.expr.LiteralAdministrativeCost;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class SetAdministrativeCostTest {
+class SetAdministrativeCostTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new SetAdministrativeCost(new LiteralAdministrativeCost(5)),
@@ -27,7 +27,7 @@ public class SetAdministrativeCostTest {
   }
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     SetAdministrativeCost obj = new SetAdministrativeCost(new LiteralAdministrativeCost(123));
     assertThat(SerializationUtils.clone(obj), equalTo(obj));
     assertThat(BatfishObjectMapper.clone(obj, Statement.class), equalTo(obj));

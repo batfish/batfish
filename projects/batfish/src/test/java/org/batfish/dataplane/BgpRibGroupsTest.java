@@ -10,6 +10,7 @@ import static org.hamcrest.Matchers.hasSize;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
@@ -46,19 +47,18 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.dataplane.ibdp.IncrementalDataPlane;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Test of RIB groups applied to BGP neighbors */
-public class BgpRibGroupsTest {
+class BgpRibGroupsTest {
   private static final String EXPORT_STATIC = "EXPORT_STATIC";
   private static final String RG_POLICY_NAME = "RG_IMPORT_POLICY";
   private static final String VRF_2 = "vrf2";
   private static final int ADMIN_OVERWRITE = 123;
   private static final String EXPORT_ALL = "EXPORT_ALL";
 
-  @Rule public TemporaryFolder folder = new TemporaryFolder();
+  @TempDir public File folder;
 
   /*
 
@@ -264,7 +264,7 @@ public class BgpRibGroupsTest {
   }
 
   @Test
-  public void testBgpRibGroupAcrossVrfs() throws IOException {
+  void testBgpRibGroupAcrossVrfs() throws IOException {
     SortedMap<String, Configuration> configs = makeTestNetwork();
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs, folder);

@@ -11,13 +11,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -60,15 +61,14 @@ import org.batfish.question.filterlinereachability.FilterLineReachabilityUtils.B
 import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.SpecifierContext;
 import org.batfish.vendor.VendorStructureId;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests of {@link FilterLineReachabilityAnswerer}. */
-public class FilterLineReachabilityAnswererTest {
+class FilterLineReachabilityAnswererTest {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private Configuration _c1;
   private Configuration _c2;
@@ -82,8 +82,8 @@ public class FilterLineReachabilityAnswererTest {
   private final BDDPacket _pkt = new BDDPacket();
   private final BDD _zero = _pkt.getFactory().zero();
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -103,7 +103,7 @@ public class FilterLineReachabilityAnswererTest {
   }
 
   @Test
-  public void testIdenticalAclsCombine() {
+  void testIdenticalAclsCombine() {
     // acl1 and acl2 are identical; should result in a single AclSpec
     _aclb
         .setLines(
@@ -135,7 +135,7 @@ public class FilterLineReachabilityAnswererTest {
   }
 
   @Test
-  public void testIgnoreTraceElements() {
+  void testIgnoreTraceElements() {
     // acl1 and acl2 are identical up to trace elements; should result in a single AclSpec
     _aclb.setLines(ImmutableList.of(rejecting(TrueExpr.INSTANCE))).build();
     _aclb2
@@ -147,7 +147,7 @@ public class FilterLineReachabilityAnswererTest {
   }
 
   @Test
-  public void testIgnoreVendorStructureIds() {
+  void testIgnoreVendorStructureIds() {
     // acl1 and acl2 are identical up to VendorStructureIds; should result in a single AclSpec
     _aclb.setLines(ImmutableList.of(rejecting(TrueExpr.INSTANCE))).build();
     _aclb2
@@ -165,7 +165,7 @@ public class FilterLineReachabilityAnswererTest {
   }
 
   @Test
-  public void testAclReferenceInAndOrNotExprIsFound() {
+  void testAclReferenceInAndOrNotExprIsFound() {
     _aclb.setLines(ImmutableList.of()).setName("acl0").build();
 
     // acl1 references acl0 in permittedbyacl concealed within and expr; should have that dependency
@@ -216,7 +216,7 @@ public class FilterLineReachabilityAnswererTest {
   }
 
   @Test
-  public void testIgnoreGeneratedFilters() {
+  void testIgnoreGeneratedFilters() {
     // generate unreachable
     IpAccessList aclGenerated =
         _aclb
@@ -241,7 +241,7 @@ public class FilterLineReachabilityAnswererTest {
   }
 
   @Test
-  public void testIpSpaceReferenceInAndOrNotExprIsFound() {
+  void testIpSpaceReferenceInAndOrNotExprIsFound() {
     MatchHeaderSpace ipSpaceReference =
         new MatchHeaderSpace(
             HeaderSpace.builder().setSrcIps(new IpSpaceReference("ipSpace")).build());
@@ -297,7 +297,7 @@ public class FilterLineReachabilityAnswererTest {
   }
 
   @Test
-  public void testInterfaceReferenceInAndOrNotExprIsFound() {
+  void testInterfaceReferenceInAndOrNotExprIsFound() {
     _c1.setInterfaces(
         ImmutableSortedMap.of(
             "iface1",
@@ -336,7 +336,7 @@ public class FilterLineReachabilityAnswererTest {
   }
 
   @Test
-  public void testCircularReferences() {
+  void testCircularReferences() {
     // acl0 permits anything acl1 permits
     // acl1 permits anything acl2 permits
     // acl2 permits anything acl0 permits
@@ -388,7 +388,7 @@ public class FilterLineReachabilityAnswererTest {
   }
 
   @Test
-  public void testUndefinedReference() {
+  void testUndefinedReference() {
     _aclb
         .setLines(
             ImmutableList.of(
@@ -405,7 +405,7 @@ public class FilterLineReachabilityAnswererTest {
   }
 
   @Test
-  public void testWithIpSpaceReference() {
+  void testWithIpSpaceReference() {
     _aclb
         .setLines(
             ImmutableList.of(
@@ -432,7 +432,7 @@ public class FilterLineReachabilityAnswererTest {
   }
 
   @Test
-  public void testWithIpSpaceReferenceChain() {
+  void testWithIpSpaceReferenceChain() {
     // Make sure it correctly dereferences a whole chain of IpSpaceReferences
     _c1.setIpSpaces(
         ImmutableSortedMap.of(
@@ -469,7 +469,7 @@ public class FilterLineReachabilityAnswererTest {
   }
 
   @Test
-  public void testWithCircularIpSpaceReferenceChain() {
+  void testWithCircularIpSpaceReferenceChain() {
     // Make sure it identifies an undefined reference for a circular chain of IpSpaceReferences
     _c1.setIpSpaces(
         ImmutableSortedMap.of(
@@ -501,7 +501,7 @@ public class FilterLineReachabilityAnswererTest {
   }
 
   @Test
-  public void testWithUndefinedIpSpaceReference() {
+  void testWithUndefinedIpSpaceReference() {
     _aclb
         .setLines(
             ImmutableList.of(
@@ -521,7 +521,7 @@ public class FilterLineReachabilityAnswererTest {
   }
 
   @Test
-  public void testWithUndefinedIpSpaceReferenceChain() {
+  void testWithUndefinedIpSpaceReferenceChain() {
     // Make sure it correctly interprets a chain of IpSpaceReferences ending with an undefined ref
     _c1.setIpSpaces(
         ImmutableSortedMap.of(
@@ -551,7 +551,7 @@ public class FilterLineReachabilityAnswererTest {
   }
 
   @Test
-  public void testReferencedAclUsesSrcInterface() {
+  void testReferencedAclUsesSrcInterface() {
     // Create ACL that references an ACL that references an interface
     _aclb
         .setLines(
@@ -580,7 +580,7 @@ public class FilterLineReachabilityAnswererTest {
   }
 
   @Test
-  public void testWithUndefinedSrcInterfaceReference() {
+  void testWithUndefinedSrcInterfaceReference() {
     _aclb
         .setLines(
             ImmutableList.of(
@@ -598,7 +598,7 @@ public class FilterLineReachabilityAnswererTest {
   }
 
   @Test
-  public void testWithAclIpSpaceWithGoodRefs() {
+  void testWithAclIpSpaceWithGoodRefs() {
     // ACL contains an AclIpSpace that references the same valid named IpSpace twice
     _aclb
         .setLines(
@@ -631,7 +631,7 @@ public class FilterLineReachabilityAnswererTest {
   }
 
   @Test
-  public void testWithAclIpSpaceWithCircularRef() {
+  void testWithAclIpSpaceWithCircularRef() {
     // Named IP spaces includes AclIpSpace "aclIpSpace".
     // "aclIpSpace" contains an IpSpaceReference to itself. Rip
     _c1.setIpSpaces(
@@ -659,7 +659,7 @@ public class FilterLineReachabilityAnswererTest {
   }
 
   @Test
-  public void testSmallBlockersIgnored() {
+  void testSmallBlockersIgnored() {
     // deny IP <ddos src> any
     BDD ddos1 = _pkt.getSrcIp().value(Ip.parse("1.2.3.1").asLong());
     BDD ddos2 = _pkt.getSrcIp().value(Ip.parse("1.2.3.2").asLong());
@@ -696,7 +696,7 @@ public class FilterLineReachabilityAnswererTest {
   }
 
   @Test
-  public void testPartialOverlaps() {
+  void testPartialOverlaps() {
     BDD first32 = _pkt.getDstIp().value(Ip.parse("1.2.3.4").asLong());
     BDD second32 = _pkt.getDstIp().value(Ip.parse("1.2.3.5").asLong());
     BDD slash31 = first32.or(second32);
@@ -724,7 +724,7 @@ public class FilterLineReachabilityAnswererTest {
   }
 
   @Test
-  public void testPartialOverlapsDominateFull() {
+  void testPartialOverlapsDominateFull() {
     BDD first32 = _pkt.getDstIp().value(Ip.parse("1.2.3.4").asLong());
     BDD second32 = _pkt.getDstIp().value(Ip.parse("1.2.3.5").asLong());
     BDD slash31 = first32.or(second32);
@@ -745,7 +745,7 @@ public class FilterLineReachabilityAnswererTest {
   }
 
   @Test
-  public void testDifferentActionPreservation() {
+  void testDifferentActionPreservation() {
     BDD slash32 = _pkt.getDstIp().value(Ip.parse("1.2.3.4").asLong());
     BDD tcp = _pkt.getIpProtocol().value(IpProtocol.TCP);
     BDD not80 = tcp.and(_pkt.getDstPort().value(80).not());
@@ -783,7 +783,7 @@ public class FilterLineReachabilityAnswererTest {
   // This is really a documentation test for a case where we might want #0 to be reported, but
   // it won't be.
   @Test
-  public void testSameActionNotReported() {
+  void testSameActionNotReported() {
     BDD tcp = _pkt.getIpProtocol().value(IpProtocol.TCP);
     BDD tcpEstablished = _pkt.getTcpAck().or(_pkt.getTcpRst());
     BDD slash32 = _pkt.getDstIp().value(Ip.parse("1.2.3.4").asLong());
@@ -813,7 +813,7 @@ public class FilterLineReachabilityAnswererTest {
   }
 
   @Test
-  public void testFindBlockingLines_AclAclLine() {
+  void testFindBlockingLines_AclAclLine() {
     // prefix1 contains ip1; prefix2 contains ip2; the prefixes do not overlap.
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("2.2.2.2");

@@ -43,14 +43,14 @@ import org.batfish.vendor.sros.representation.Router;
 import org.batfish.vendor.sros.representation.RouterInterface;
 import org.batfish.vendor.sros.representation.SrosConfiguration;
 import org.batfish.vendor.sros.representation.StaticRoute;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of SR-OS feature extraction: the canonical tree, the preprocessor, and the model. */
-public final class SrosExtractionTest {
+final class SrosExtractionTest {
 
   /** The captured r1 config extracts the full characterized feature set with no warnings. */
   @Test
-  public void testR1Extraction() {
+  void testR1Extraction() {
     SrosConfiguration vc = parseVendorConfig("r1_admin_show_configuration.txt");
     assertThat(vc.getWarnings().getParseWarnings(), empty());
     assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
@@ -124,7 +124,7 @@ public final class SrosExtractionTest {
    * only {@code system name} is read from the system subtree.
    */
   @Test
-  public void testR1UnmodeledSubtreesSilentlySkipped() {
+  void testR1UnmodeledSubtreesSilentlySkipped() {
     SrosConfiguration vc = parseVendorConfig("r1_admin_show_configuration.txt");
     assertThat(vc.getHostname(), equalTo("r1"));
     assertThat(vc.getWarnings().getUnimplementedWarnings(), empty());
@@ -133,7 +133,7 @@ public final class SrosExtractionTest {
 
   /** A `system name` leaf becomes the Batfish hostname. */
   @Test
-  public void testHostnameExtraction() {
+  void testHostnameExtraction() {
     SrosConfiguration vc = parseVendorConfig("hostname.txt");
     assertThat(vc.getHostname(), equalTo("sros-r1"));
   }
@@ -143,7 +143,7 @@ public final class SrosExtractionTest {
    * preference/metric leaves (with their YANG defaults when absent).
    */
   @Test
-  public void testStaticRoutesExtraction() {
+  void testStaticRoutesExtraction() {
     SrosConfiguration vc = parseVendorConfig("static_routes.txt");
     assertThat(vc.getWarnings().getParseWarnings(), empty());
     assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
@@ -196,7 +196,7 @@ public final class SrosExtractionTest {
 
   /** aggregates extraction: the aggregate prefix and its {@code summary-only} flag. */
   @Test
-  public void testAggregateExtraction() {
+  void testAggregateExtraction() {
     SrosConfiguration vc = parseVendorConfig("aggregate.txt");
     assertThat(vc.getWarnings().getParseWarnings(), empty());
     assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
@@ -213,7 +213,7 @@ public final class SrosExtractionTest {
    * expression.
    */
   @Test
-  public void testComprehensivePolicyExtraction() {
+  void testComprehensivePolicyExtraction() {
     SrosConfiguration vc = parseVendorConfig("policy_comprehensive.txt");
     assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
     assertThat(vc.getAsPathLists(), hasKey("via-65003"));
@@ -235,7 +235,7 @@ public final class SrosExtractionTest {
 
   /** LAG extraction: the lag name, admin-state, and its member ports. */
   @Test
-  public void testLagExtraction() {
+  void testLagExtraction() {
     SrosConfiguration vc = parseVendorConfig("lag.txt");
     assertThat(vc.getWarnings().getParseWarnings(), empty());
     assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
@@ -254,7 +254,7 @@ public final class SrosExtractionTest {
    * the {@code through-length}/{@code start-length}/{@code end-length} prefix-list bounds.
    */
   @Test
-  public void testPolicySetClausesExtraction() {
+  void testPolicySetClausesExtraction() {
     SrosConfiguration vc = parseVendorConfig("policy_set_clauses.txt");
     assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
 
@@ -301,7 +301,7 @@ public final class SrosExtractionTest {
    * OSPF extraction: instance, router-id, admin-state, areas, and per-area interface type/metric.
    */
   @Test
-  public void testOspfExtraction() {
+  void testOspfExtraction() {
     SrosConfiguration vc = parseVendorConfig("ospf.txt");
     assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
     org.batfish.vendor.sros.representation.OspfProcess proc =
@@ -328,7 +328,7 @@ public final class SrosExtractionTest {
    * per-interface interface-type/passive.
    */
   @Test
-  public void testIsisExtraction() {
+  void testIsisExtraction() {
     SrosConfiguration vc = parseVendorConfig("isis.txt");
     assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
     org.batfish.vendor.sros.representation.IsisProcess proc =
@@ -358,7 +358,7 @@ public final class SrosExtractionTest {
    * VPRN extraction: a {@code service vprn "<name>"} becomes a {@link Router} with its interfaces.
    */
   @Test
-  public void testVprnExtraction() {
+  void testVprnExtraction() {
     SrosConfiguration vc = parseVendorConfig("vprn.txt");
     assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
     assertThat(vc.getRouters().keySet(), containsInAnyOrder("Base", "red"));
@@ -378,7 +378,7 @@ public final class SrosExtractionTest {
 
   /** Route-reflector extraction: a group's cluster-id and next-hop-self inherit to its neighbor. */
   @Test
-  public void testRouteReflectorExtraction() {
+  void testRouteReflectorExtraction() {
     SrosConfiguration vc = parseVendorConfig("route_reflector.txt");
     assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
     BgpGroup clients = vc.getRouters().get("Base").getBgpProcess().getGroups().get("clients");
@@ -392,7 +392,7 @@ public final class SrosExtractionTest {
 
   /** from-protocol extraction: {@code from protocol name [static]} on a policy entry. */
   @Test
-  public void testFromProtocolExtraction() {
+  void testFromProtocolExtraction() {
     SrosConfiguration vc = parseVendorConfig("redistribute_static.txt");
     assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
     PolicyStatement ps = vc.getPolicyStatements().get("export-redist");
@@ -407,7 +407,7 @@ public final class SrosExtractionTest {
    * Each is a line-stamped parse warning.
    */
   @Test
-  public void testExtractionWarnings() {
+  void testExtractionWarnings() {
     SrosConfiguration vc = parseVendorConfig("warnings.txt");
     // through entry with no through-length, and an inverted range.
     warningOnLine(vc, "prefix-list 'through' entry is missing through-length");
@@ -430,7 +430,7 @@ public final class SrosExtractionTest {
    * group.
    */
   @Test
-  public void testBgpNeighborInheritsFromGroup() {
+  void testBgpNeighborInheritsFromGroup() {
     SrosConfiguration vc = parseVendorConfig("bgp_type_and_inheritance.txt");
     assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
     BgpNeighbor neighbor =
@@ -445,7 +445,7 @@ public final class SrosExtractionTest {
    * "ebgp" peer-as}, while the locally-configured import policy is preserved (local wins).
    */
   @Test
-  public void testApplyGroupsExpansion() {
+  void testApplyGroupsExpansion() {
     SrosConfiguration vc = parseVendorConfig("apply_groups.txt");
     assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
     BgpGroup ebgp = vc.getRouters().get("Base").getBgpProcess().getGroups().get("ebgp");
@@ -458,7 +458,7 @@ public final class SrosExtractionTest {
    * and {@code apply-groups-exclude} suppresses inheritance at a branch.
    */
   @Test
-  public void testApplyGroupsRegexAndExclude() {
+  void testApplyGroupsRegexAndExclude() {
     SrosConfiguration vc = parseVendorConfig("apply_groups_regex.txt");
     assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
     Router base = vc.getRouters().get("Base");
@@ -473,7 +473,7 @@ public final class SrosExtractionTest {
    * that interface from the materialized model, leaving the others.
    */
   @Test
-  public void testDeleteEdit() {
+  void testDeleteEdit() {
     SrosConfiguration vc = parseVendorConfig("delete_edit.txt");
     assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
     Router base = vc.getRouters().get("Base");
@@ -486,7 +486,7 @@ public final class SrosExtractionTest {
    * line 4 and an out-of-range prefix-length on line 9.
    */
   @Test
-  public void testBadValuesWarnWithLines() {
+  void testBadValuesWarnWithLines() {
     SrosConfiguration vc = parseVendorConfig("bad_values.txt");
 
     // No silent red-flags: the value problems are reported as ParseWarnings instead.
@@ -510,7 +510,7 @@ public final class SrosExtractionTest {
    * out-of-range autonomous-system inside the group on line 9.
    */
   @Test
-  public void testApplyGroupsInheritedBadValueCitesGroupLine() {
+  void testApplyGroupsInheritedBadValueCitesGroupLine() {
     SrosConfiguration vc = parseVendorConfig("apply_groups_bad_value.txt");
     assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
     assertThat(
@@ -523,7 +523,7 @@ public final class SrosExtractionTest {
    * entry is dropped. {@code bad_prefix_type.txt} has {@code type bogus} on line 8.
    */
   @Test
-  public void testUnrecognizedPrefixTypeWarns() {
+  void testUnrecognizedPrefixTypeWarns() {
     SrosConfiguration vc = parseVendorConfig("bad_prefix_type.txt");
     assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
     assertThat(warningOnLine(vc, "unrecognized prefix-list match type 'bogus'"), equalTo(8));
@@ -537,7 +537,7 @@ public final class SrosExtractionTest {
    * {@code admin-state bogus-state} on line 7 and {@code action-type bogus-action} on line 13.
    */
   @Test
-  public void testUnrecognizedEnumsWarn() {
+  void testUnrecognizedEnumsWarn() {
     SrosConfiguration vc = parseVendorConfig("bad_enums.txt");
     assertThat(vc.getWarnings().getRedFlagWarnings(), empty());
     assertThat(warningOnLine(vc, "unrecognized admin-state 'bogus-state'"), equalTo(7));

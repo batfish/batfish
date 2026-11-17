@@ -3,20 +3,17 @@ package org.batfish.common.plugin;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
+import java.io.File;
 import java.nio.file.Path;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-@RunWith(JUnit4.class)
-public class PluginConsumerTest {
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+class PluginConsumerTest {
+  @TempDir public File _folder;
 
   @Test
-  public void testSerializingAndDeserializing() throws Exception {
-    Path serializeFile = _folder.newFile().toPath();
+  void testSerializingAndDeserializing() throws Exception {
+    Path serializeFile = File.createTempFile("junit", null, _folder).toPath();
 
     int[] ints = new int[] {1, 2, 3};
     PluginConsumer.serializeObject(ints, serializeFile);

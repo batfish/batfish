@@ -206,7 +206,7 @@ grep -r "System.currentTimeMillis" projects/*/src/test/
 - Use proper synchronization
 - Always close resources in `finally` blocks or try-with-resources
 - Use explicit waits with timeouts instead of `Thread.sleep()`
-- Reset shared state in `@Before` or `@After` methods
+- Reset shared state in `@BeforeEach` or `@AfterEach` methods
 
 ---
 

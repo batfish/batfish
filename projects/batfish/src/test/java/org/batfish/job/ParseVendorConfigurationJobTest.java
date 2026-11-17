@@ -19,10 +19,10 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link ParseVendorConfigurationJob}. */
-public class ParseVendorConfigurationJobTest {
+class ParseVendorConfigurationJobTest {
   private static final String HOST_TESTCONFIGS_PREFIX = "org/batfish/job/host/";
 
   private static ParseVendorConfigurationResult parseHost(String resourcePath) {
@@ -37,21 +37,21 @@ public class ParseVendorConfigurationJobTest {
   }
 
   @Test
-  public void testHost() {
+  void testHost() {
     ParseVendorConfigurationResult result = parseHost(HOST_TESTCONFIGS_PREFIX + "host.json");
     // Confirm a good host file results in no failure cause
     assertThat(result.getFailureCause(), equalTo(null));
   }
 
   @Test
-  public void testHostInvalid() {
+  void testHostInvalid() {
     ParseVendorConfigurationResult result = parseHost(HOST_TESTCONFIGS_PREFIX + "hostInvalid.json");
     // Confirm a bad host file does not cause a crash but results in failure cause
     assertThat(result.getFailureCause(), not(equalTo(null)));
   }
 
   @Test
-  public void testFormatUnsupported() {
+  void testFormatUnsupported() {
     ParseResult result =
         new ParseVendorConfigurationJob(
                 new Settings(),
@@ -68,7 +68,7 @@ public class ParseVendorConfigurationJobTest {
   }
 
   @Test
-  public void testNokiaSrosDetectedAndParsed() {
+  void testNokiaSrosDetectedAndParsed() {
     // SR-OS is detected (P2) and, as of P3, parsed by the SR-OS grammar/extractor. A detected
     // SR-OS config now flows through the job to a non-null vendor configuration with status PASSED.
     String sros = "# TiMOS-B-26.3.R1 both/x86_64 Nokia 7750 SR-1\nconfigure {\n}\n";
@@ -89,7 +89,7 @@ public class ParseVendorConfigurationJobTest {
 
   // Tests that empty files are detected as empty, even when another format is provided.
   @Test
-  public void testDetectFormatEmpty() {
+  void testDetectFormatEmpty() {
     String[] empties = {
       "", "\n", "\t", " ", "\r\n", "   \r\n\r\n\t\n\n   ",
     };
@@ -105,7 +105,7 @@ public class ParseVendorConfigurationJobTest {
 
   // Tests that empty files are detected as empty, even if content is ignored.
   @Test
-  public void testDetectFormatEmptyBeatsIgnored() {
+  void testDetectFormatEmptyBeatsIgnored() {
     Settings settings = new Settings();
     settings.setIgnoreFilesWithStrings(ImmutableList.of("\n"));
     assertThat(
@@ -118,7 +118,7 @@ public class ParseVendorConfigurationJobTest {
 
   // Tests that empty files are detected as empty, even if format is given.
   @Test
-  public void testDetectFormatEmptyBeatsFormat() {
+  void testDetectFormatEmptyBeatsFormat() {
     assertThat(
         detectFormat(ImmutableMap.of("file", ""), new Settings(), ConfigurationFormat.HOST),
         equalTo(ConfigurationFormat.EMPTY));
@@ -126,7 +126,7 @@ public class ParseVendorConfigurationJobTest {
 
   // Tests that files with ignored content are ignored even if another format is provided.
   @Test
-  public void testDetectFormatIgnored() {
+  void testDetectFormatIgnored() {
     String fileText = "!RANCID-CONTENT-TYPE: cisco-nx\n\n\nfoo\nbar\n";
     Settings settings = new Settings();
     // Nothing ignored, is Cisco NX-OS.

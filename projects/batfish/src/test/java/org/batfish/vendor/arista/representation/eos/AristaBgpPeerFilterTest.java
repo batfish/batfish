@@ -6,19 +6,19 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.collect.Range;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.LongSpace;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link AristaBgpPeerFilter} */
-public class AristaBgpPeerFilterTest {
+class AristaBgpPeerFilterTest {
 
   @Test
-  public void testEmpty() {
+  void testEmpty() {
     AristaBgpPeerFilter pf = new AristaBgpPeerFilter("name");
     assertThat(pf.toLongSpace(), equalTo(BgpPeerConfig.ALL_AS_NUMBERS));
   }
 
   @Test
-  public void testAddNoSeq() {
+  void testAddNoSeq() {
     AristaBgpPeerFilter pf = new AristaBgpPeerFilter("name");
     pf.addLine(LongSpace.of(10), AristaBgpPeerFilterLine.Action.ACCEPT);
     pf.addLine(LongSpace.of(20), AristaBgpPeerFilterLine.Action.ACCEPT);
@@ -27,7 +27,7 @@ public class AristaBgpPeerFilterTest {
   }
 
   @Test
-  public void testAddWithSeq() {
+  void testAddWithSeq() {
     AristaBgpPeerFilter pf = new AristaBgpPeerFilter("name");
     pf.addLine(1, LongSpace.of(10), AristaBgpPeerFilterLine.Action.ACCEPT);
     pf.addLine(LongSpace.of(Range.closed(11L, 20L)), AristaBgpPeerFilterLine.Action.ACCEPT);
@@ -42,7 +42,7 @@ public class AristaBgpPeerFilterTest {
   }
 
   @Test
-  public void testUnreachableReject() {
+  void testUnreachableReject() {
     AristaBgpPeerFilter pf = new AristaBgpPeerFilter("name");
     pf.addLine(LongSpace.of(10), AristaBgpPeerFilterLine.Action.ACCEPT);
     pf.addLine(LongSpace.of(Range.closed(11L, 20L)), AristaBgpPeerFilterLine.Action.ACCEPT);
@@ -52,7 +52,7 @@ public class AristaBgpPeerFilterTest {
   }
 
   @Test
-  public void testUnreachableAccept() {
+  void testUnreachableAccept() {
     AristaBgpPeerFilter pf = new AristaBgpPeerFilter("name");
     pf.addLine(LongSpace.of(Range.closed(10L, 20L)), AristaBgpPeerFilterLine.Action.ACCEPT);
     pf.addLine(LongSpace.of(15), AristaBgpPeerFilterLine.Action.REJECT);

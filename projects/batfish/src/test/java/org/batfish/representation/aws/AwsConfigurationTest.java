@@ -16,7 +16,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -39,13 +39,13 @@ import org.batfish.representation.aws.LoadBalancerTargetHealth.HealthState;
 import org.batfish.representation.aws.LoadBalancerTargetHealth.TargetHealth;
 import org.batfish.representation.aws.LoadBalancerTargetHealth.TargetHealthDescription;
 import org.batfish.specifier.LocationInfo;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class AwsConfigurationTest {
+class AwsConfigurationTest {
 
   /** Test that nothing is created if we have no data */
   @Test
-  public void testToVendorConfigurations_noData() {
+  void testToVendorConfigurations_noData() {
     AwsConfiguration awsConfiguration = new AwsConfiguration();
     List<Configuration> c = awsConfiguration.toVendorIndependentConfigurations();
     assertThat(c, equalTo(ImmutableList.of()));
@@ -53,7 +53,7 @@ public class AwsConfigurationTest {
 
   /** Test that the AWS services gateway node is created if we have an account */
   @Test
-  public void testToVendorConfigurations_awsServicesGatewayNode() {
+  void testToVendorConfigurations_awsServicesGatewayNode() {
     AwsConfiguration awsConfiguration = new AwsConfiguration();
     awsConfiguration.addOrGetAccount("123");
     List<Configuration> c = awsConfiguration.toVendorIndependentConfigurations();
@@ -61,7 +61,7 @@ public class AwsConfigurationTest {
   }
 
   @Test
-  public void testPopulatePrecomputedMaps() {
+  void testPopulatePrecomputedMaps() {
     AwsConfiguration c = new AwsConfiguration();
     Account account = c.addOrGetAccount("123");
     String vpcId = "vpc";
@@ -153,7 +153,7 @@ public class AwsConfigurationTest {
   }
 
   @Test
-  public void testGenerateAwsServicesGateway() {
+  void testGenerateAwsServicesGateway() {
     Configuration cfg = generateAwsServicesGateway();
 
     assertThat(cfg.getDeviceModel(), equalTo(DeviceModel.AWS_SERVICES_GATEWAY));

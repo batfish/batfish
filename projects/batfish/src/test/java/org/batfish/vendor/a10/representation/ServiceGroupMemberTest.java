@@ -6,12 +6,12 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.vendor.a10.representation.ServiceGroupMember.NameAndPort;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link ServiceGroupMember} */
-public class ServiceGroupMemberTest {
+class ServiceGroupMemberTest {
   @Test
-  public void testNameAndPortEquality() {
+  void testNameAndPortEquality() {
     NameAndPort obj = new NameAndPort("name", 1);
     new EqualsTester()
         .addEqualityGroup(obj, new NameAndPort("name", 1))
@@ -21,7 +21,7 @@ public class ServiceGroupMemberTest {
   }
 
   @Test
-  public void testNameAndPortSerialization() {
+  void testNameAndPortSerialization() {
     NameAndPort obj = new NameAndPort("name", 1);
     NameAndPort clone = SerializationUtils.clone(obj);
     assertThat(obj, equalTo(clone));

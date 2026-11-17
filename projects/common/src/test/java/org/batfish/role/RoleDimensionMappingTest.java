@@ -9,12 +9,12 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.Set;
 import java.util.SortedMap;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class RoleDimensionMappingTest {
+class RoleDimensionMappingTest {
 
   @Test
-  public void testRegex() {
+  void testRegex() {
     RoleDimensionMapping rdMap = new RoleDimensionMapping("x(.+)y.*");
     Set<String> nodes = ImmutableSet.of("xbordery", "core", "xbordery2", "xcorey");
     SortedMap<String, String> nodeRolesMap = rdMap.createNodeRolesMap(nodes);
@@ -25,7 +25,7 @@ public class RoleDimensionMappingTest {
   }
 
   @Test
-  public void testNodeRole() {
+  void testNodeRole() {
     NodeRole nr = new NodeRole("name", "x(.+)y.*");
     RoleDimensionMapping rdMap = new RoleDimensionMapping(nr);
     Set<String> nodes = ImmutableSet.of("xbordery", "core", "xbordery2", "xcorey");
@@ -36,7 +36,7 @@ public class RoleDimensionMappingTest {
   }
 
   @Test
-  public void testGroups() {
+  void testGroups() {
     RoleDimensionMapping rdMap =
         new RoleDimensionMapping("x(b.*d)(.+)y.*", ImmutableList.of(2, 1), null);
     Set<String> nodes = ImmutableSet.of("xbordery", "core", "xbordery2", "xcorey");
@@ -47,7 +47,7 @@ public class RoleDimensionMappingTest {
   }
 
   @Test
-  public void testCanonicalNameMap() {
+  void testCanonicalNameMap() {
     RoleDimensionMapping rdMap =
         new RoleDimensionMapping("x(.+)y.*", null, ImmutableMap.of("border", "something"));
     Set<String> nodes = ImmutableSet.of("xbordery", "core", "xbordery2", "xcorey");

@@ -1,18 +1,18 @@
 package org.batfish.vendor.check_point_management;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link ManagementPackage}. */
-public final class ManagementPackageTest {
+final class ManagementPackageTest {
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     ManagementPackage obj =
         new ManagementPackage(
             ImmutableList.of(),
@@ -28,7 +28,7 @@ public final class ManagementPackageTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     ManagementPackage obj =
         new ManagementPackage(
             ImmutableList.of(),

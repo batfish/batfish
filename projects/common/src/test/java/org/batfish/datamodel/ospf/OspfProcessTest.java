@@ -2,8 +2,10 @@ package org.batfish.datamodel.ospf;
 
 import static org.batfish.datamodel.AbstractRoute.MAX_ADMIN_DISTANCE;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableSortedMap;
 import org.batfish.datamodel.Configuration;
@@ -13,19 +15,13 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.TestInterface;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link org.batfish.datamodel.ospf.OspfProcess} */
-@RunWith(JUnit4.class)
-public class OspfProcessTest {
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class OspfProcessTest {
 
   @Test
-  public void testAdminCosts() {
+  void testAdminCosts() {
     OspfProcess process =
         OspfProcess.builder()
             .setAllAdminCosts(MAX_ADMIN_DISTANCE)
@@ -40,7 +36,7 @@ public class OspfProcessTest {
   }
 
   @Test
-  public void testComputeInterfaceCost() {
+  void testComputeInterfaceCost() {
     Interface.Builder ib =
         TestInterface.builder()
             .setName("eth0")
@@ -66,13 +62,16 @@ public class OspfProcessTest {
     cost = OspfProcess.computeInterfaceCost(1e6, i);
     assertThat(cost, equalTo(1000));
 
-    _thrown.expectMessage("Interface eth0 on r1 is missing bandwidth");
-    _thrown.expect(IllegalStateException.class);
-    OspfProcess.computeInterfaceCost(1e6, ib.setBandwidth(null).build());
+    Throwable exception =
+        assertThrows(
+            IllegalStateException.class,
+            () -> OspfProcess.computeInterfaceCost(1e6, ib.setBandwidth(null).build()));
+
+    assertThat(exception.getMessage(), containsString("Interface eth0 on r1 is missing bandwidth"));
   }
 
   @Test
-  public void testInitInterfaceCosts() {
+  void testInitInterfaceCosts() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c1 =
         nf.configurationBuilder()
@@ -144,24 +143,27 @@ public class OspfProcessTest {
   }
 
   @Test
-  public void setAreasMismatchedNumbers() {
+  void setAreasMismatchedNumbers() {
     OspfProcess proc =
         OspfProcess.builder()
             .setProcessId("1")
             .setRouterId(Ip.ZERO)
             .setReferenceBandwidth(10e8)
             .build();
-    _thrown.expect(IllegalArgumentException.class);
-    proc.setAreas(ImmutableSortedMap.of(1L, OspfArea.builder().setNumber(2L).build()));
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> proc.setAreas(ImmutableSortedMap.of(1L, OspfArea.builder().setNumber(2L).build())));
   }
 
   @Test
-  public void setAreasMismatchedNumbersOnBuild() {
-    _thrown.expect(IllegalArgumentException.class);
-    OspfProcess.builder()
-        .setProcessId("1")
-        .setReferenceBandwidth(10e8)
-        .setAreas(ImmutableSortedMap.of(1L, OspfArea.builder().setNumber(2L).build()))
-        .build();
+  void setAreasMismatchedNumbersOnBuild() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            OspfProcess.builder()
+                .setProcessId("1")
+                .setReferenceBandwidth(10e8)
+                .setAreas(ImmutableSortedMap.of(1L, OspfArea.builder().setNumber(2L).build()))
+                .build());
   }
 }

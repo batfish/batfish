@@ -2,14 +2,14 @@ package org.batfish.representation.juniper;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class InterfaceTest {
+class InterfaceTest {
 
   @Test
-  public void testInheritUnsetPhysicalFields() {
+  void testInheritUnsetPhysicalFields() {
     // only set one of the fields
     Interface i1 = new Interface("i1");
     i1.setMtu(1200);

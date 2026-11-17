@@ -12,12 +12,12 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.routing_policy.statement.Statement;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class PsThenDampingTest {
+final class PsThenDampingTest {
 
   @Test
-  public void testApplyTo() {
+  void testApplyTo() {
     PsThenDamping damping = new PsThenDamping("enabled");
     List<Statement> statements = new ArrayList<>();
     damping.applyTo(
@@ -33,7 +33,7 @@ public final class PsThenDampingTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new PsThenDamping("a"), new PsThenDamping("a"))
         .addEqualityGroup(new PsThenDamping("b"))
@@ -41,7 +41,7 @@ public final class PsThenDampingTest {
   }
 
   @Test
-  public void testLastWins() {
+  void testLastWins() {
     PsThens thens = new PsThens();
     PsThenDamping first = new PsThenDamping("first");
     PsThenDamping second = new PsThenDamping("second");

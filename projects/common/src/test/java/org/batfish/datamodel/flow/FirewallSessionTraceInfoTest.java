@@ -7,17 +7,17 @@ import com.google.common.testing.EqualsTester;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link FirewallSessionTraceInfo}. */
-public final class FirewallSessionTraceInfoTest {
+final class FirewallSessionTraceInfoTest {
   private static final SessionMatchExpr SESSION1 =
       new SessionMatchExpr(IpProtocol.TCP, Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"), null, null);
   private static final SessionMatchExpr SESSION2 =
       new SessionMatchExpr(IpProtocol.TCP, Ip.parse("2.2.2.2"), Ip.parse("1.1.1.1"), null, null);
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new FirewallSessionTraceInfo(

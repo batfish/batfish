@@ -7,12 +7,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class AsPathAccessListTest {
+class AsPathAccessListTest {
 
   @Test
-  public void testPermits() {
+  void testPermits() {
     // Single permit line
     AsPathAccessList permitAcl =
         new AsPathAccessList(
@@ -78,7 +78,7 @@ public class AsPathAccessListTest {
   }
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     AsPathAccessList acl =
         new AsPathAccessList(
             "test", ImmutableList.of(new AsPathAccessListLine(LineAction.PERMIT, ".*65001.*")));
@@ -90,7 +90,7 @@ public class AsPathAccessListTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new AsPathAccessList(

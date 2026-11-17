@@ -2,7 +2,7 @@ package org.batfish.datamodel;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -12,9 +12,9 @@ import java.util.Set;
 import java.util.SortedSet;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class TopologyTest {
+class TopologyTest {
 
   // Set up two edges with 3 nodes with 1 interface each:
   // n1:i1 -> n2:i2
@@ -28,7 +28,7 @@ public class TopologyTest {
       ImmutableSortedSet.of(new Edge(_nip1, _nip2), new Edge(_nip2, _nip3));
 
   @Test
-  public void testEmptyTopology() {
+  void testEmptyTopology() {
     SortedSet<Edge> edges = ImmutableSortedSet.of();
     Topology topo = new Topology(edges);
 
@@ -39,7 +39,7 @@ public class TopologyTest {
   }
 
   @Test
-  public void testOneEdge() {
+  void testOneEdge() {
     NodeInterfacePair nip1 = NodeInterfacePair.of("n1", "i1");
     NodeInterfacePair nip2 = NodeInterfacePair.of("n2", "i2");
     Edge edge = new Edge(nip1, nip2);
@@ -54,7 +54,7 @@ public class TopologyTest {
   }
 
   @Test
-  public void testTwoEdges() {
+  void testTwoEdges() {
     Topology topo = new Topology(_bothEdges);
     assertThat(topo.getEdges(), equalTo(_bothEdges));
     assertThat(
@@ -66,7 +66,7 @@ public class TopologyTest {
   }
 
   @Test
-  public void testPruneEdge() {
+  void testPruneEdge() {
     Topology topo =
         new Topology(_bothEdges).prune(_edge1to2Set, ImmutableSet.of(), ImmutableSet.of());
     assertThat(topo.getEdges(), equalTo(_edge2to3Set));
@@ -78,7 +78,7 @@ public class TopologyTest {
   }
 
   @Test
-  public void testPruneNode1() {
+  void testPruneNode1() {
     Topology topo =
         new Topology(_bothEdges).prune(ImmutableSet.of(), ImmutableSet.of("n1"), ImmutableSet.of());
     assertThat(topo.getEdges(), equalTo(_edge2to3Set));
@@ -89,7 +89,7 @@ public class TopologyTest {
   }
 
   @Test
-  public void testPruneNode2() {
+  void testPruneNode2() {
     Topology topo =
         new Topology(_bothEdges).prune(ImmutableSet.of(), ImmutableSet.of("n2"), ImmutableSet.of());
     assertThat(topo.getEdges(), equalTo(ImmutableSet.of()));
@@ -99,7 +99,7 @@ public class TopologyTest {
   }
 
   @Test
-  public void testPruneNode3() {
+  void testPruneNode3() {
     Topology topo =
         new Topology(_bothEdges).prune(ImmutableSet.of(), ImmutableSet.of("n3"), ImmutableSet.of());
     assertThat(topo.getEdges(), equalTo(_edge1to2Set));
@@ -110,7 +110,7 @@ public class TopologyTest {
   }
 
   @Test
-  public void testPruneInterface1() {
+  void testPruneInterface1() {
     Topology topo =
         new Topology(_bothEdges)
             .prune(ImmutableSet.of(), ImmutableSet.of(), ImmutableSet.of(_nip1));
@@ -122,7 +122,7 @@ public class TopologyTest {
   }
 
   @Test
-  public void testPruneInterface2() {
+  void testPruneInterface2() {
     Topology topo =
         new Topology(_bothEdges)
             .prune(ImmutableSet.of(), ImmutableSet.of(), ImmutableSet.of(_nip2));
@@ -133,7 +133,7 @@ public class TopologyTest {
   }
 
   @Test
-  public void testPruneInterface3() {
+  void testPruneInterface3() {
     Topology topo =
         new Topology(_bothEdges)
             .prune(ImmutableSet.of(), ImmutableSet.of(), ImmutableSet.of(_nip3));
@@ -145,7 +145,7 @@ public class TopologyTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new Object())
         .addEqualityGroup(Topology.EMPTY, Topology.EMPTY, new Topology(ImmutableSortedSet.of()))
@@ -154,7 +154,7 @@ public class TopologyTest {
   }
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     Topology topo = new Topology(_bothEdges);
     assertEquals(BatfishObjectMapper.clone(topo, Topology.class), topo);
   }

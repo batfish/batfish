@@ -55,11 +55,11 @@ import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.representation.aws.IpPermissions.AddressType;
 import org.batfish.representation.aws.IpPermissions.IpRange;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link SecurityGroup}. */
-public class SecurityGroupsTest {
+class SecurityGroupsTest {
 
   private List<SecurityGroup> _securityGroups;
   private Flow.Builder _flowBuilder;
@@ -88,8 +88,8 @@ public class SecurityGroupsTest {
         IntegerSpace.of(new SubRange(fromPort, toPort)), traceElementForDstPorts(fromPort, toPort));
   }
 
-  @Before
-  public void setup() throws IOException {
+  @BeforeEach
+  void setup() throws IOException {
     JsonNode json =
         BatfishObjectMapper.mapper()
             .readTree(readResource("org/batfish/representation/aws/SecurityGroupTest.json", UTF_8));
@@ -104,7 +104,7 @@ public class SecurityGroupsTest {
   }
 
   @Test
-  public void testDeser() throws IOException {
+  void testDeser() throws IOException {
     String text = readResource("org/batfish/representation/aws/SecurityGroupTestDeser.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
@@ -153,7 +153,7 @@ public class SecurityGroupsTest {
   }
 
   @Test
-  public void testSinglePort() {
+  void testSinglePort() {
     SecurityGroup sg = _securityGroups.get(0);
     String rangeDesc =
         Iterables.getOnlyElement(Iterables.getOnlyElement(sg.getIpPermsIngress()).getIpRanges())
@@ -169,7 +169,7 @@ public class SecurityGroupsTest {
   }
 
   @Test
-  public void testBeginningHalfOpenInterval() {
+  void testBeginningHalfOpenInterval() {
     SecurityGroup sg = _securityGroups.get(1);
     String rangeDesc =
         Iterables.getOnlyElement(Iterables.getOnlyElement(sg.getIpPermsIngress()).getIpRanges())
@@ -185,7 +185,7 @@ public class SecurityGroupsTest {
   }
 
   @Test
-  public void testEndHalfOpenInterval() {
+  void testEndHalfOpenInterval() {
     SecurityGroup sg = _securityGroups.get(2);
     String rangeDesc =
         Iterables.getOnlyElement(Iterables.getOnlyElement(sg.getIpPermsIngress()).getIpRanges())
@@ -201,7 +201,7 @@ public class SecurityGroupsTest {
   }
 
   @Test
-  public void testFullInterval() {
+  void testFullInterval() {
     SecurityGroup sg = _securityGroups.get(3);
     String rangeDesc =
         Iterables.getOnlyElement(Iterables.getOnlyElement(sg.getIpPermsIngress()).getIpRanges())
@@ -216,7 +216,7 @@ public class SecurityGroupsTest {
   }
 
   @Test
-  public void testIcmpType() {
+  void testIcmpType() {
     SecurityGroup sg = _securityGroups.get(9);
     String rangeDesc =
         Iterables.getOnlyElement(Iterables.getOnlyElement(sg.getIpPermsIngress()).getIpRanges())
@@ -237,7 +237,7 @@ public class SecurityGroupsTest {
   }
 
   @Test
-  public void testIcmpTypeAndCode() {
+  void testIcmpTypeAndCode() {
     SecurityGroup sg = _securityGroups.get(10);
     String rangeDesc =
         Iterables.getOnlyElement(Iterables.getOnlyElement(sg.getIpPermsIngress()).getIpRanges())
@@ -261,7 +261,7 @@ public class SecurityGroupsTest {
   }
 
   @Test
-  public void testIcmpInvalidCodeOnly() {
+  void testIcmpInvalidCodeOnly() {
     SecurityGroup sg = _securityGroups.get(11);
     List<AclLine> inboundRules = sg.toAclLines(_region, true, _warnings);
 
@@ -277,7 +277,7 @@ public class SecurityGroupsTest {
   }
 
   @Test
-  public void testAllTrafficAllowed() {
+  void testAllTrafficAllowed() {
     SecurityGroup sg = _securityGroups.get(4);
     String rangeDesc =
         Iterables.getOnlyElement(Iterables.getOnlyElement(sg.getIpPermsIngress()).getIpRanges())
@@ -292,7 +292,7 @@ public class SecurityGroupsTest {
   }
 
   @Test
-  public void testClosedInterval() {
+  void testClosedInterval() {
     SecurityGroup sg = _securityGroups.get(5);
     String rangeDesc =
         Iterables.getOnlyElement(Iterables.getOnlyElement(sg.getIpPermsIngress()).getIpRanges())
@@ -308,7 +308,7 @@ public class SecurityGroupsTest {
   }
 
   @Test
-  public void testInvalidStartInterval() {
+  void testInvalidStartInterval() {
     SecurityGroup sg = _securityGroups.get(6);
     String rangeDesc =
         Iterables.getOnlyElement(Iterables.getOnlyElement(sg.getIpPermsIngress()).getIpRanges())
@@ -324,7 +324,7 @@ public class SecurityGroupsTest {
   }
 
   @Test
-  public void testInvalidEndInterval() {
+  void testInvalidEndInterval() {
     SecurityGroup sg = _securityGroups.get(7);
     String rangeDesc =
         Iterables.getOnlyElement(Iterables.getOnlyElement(sg.getIpPermsIngress()).getIpRanges())
@@ -340,7 +340,7 @@ public class SecurityGroupsTest {
   }
 
   @Test
-  public void testStatefulTcpRules() {
+  void testStatefulTcpRules() {
     SecurityGroup sg = _securityGroups.get(8);
     String rangeDesc =
         Iterables.getOnlyElement(Iterables.getOnlyElement(sg.getIpPermsIngress()).getIpRanges())
@@ -373,7 +373,7 @@ public class SecurityGroupsTest {
   }
 
   @Test
-  public void testDeniedSynOnlyResponse() {
+  void testDeniedSynOnlyResponse() {
     SecurityGroup sg = _securityGroups.get(8);
 
     IpAccessList outFilter =
@@ -398,7 +398,7 @@ public class SecurityGroupsTest {
   }
 
   @Test
-  public void testDeniedWrongIpResponse() {
+  void testDeniedWrongIpResponse() {
     SecurityGroup sg = _securityGroups.get(8);
 
     IpAccessList outFilter =
@@ -423,7 +423,7 @@ public class SecurityGroupsTest {
   }
 
   @Test
-  public void testPrefixList() {
+  void testPrefixList() {
     String prefixListId = "pl-7ba54012";
     Prefix prefix = Prefix.parse("10.10.10.0/24");
 
@@ -477,7 +477,7 @@ public class SecurityGroupsTest {
   }
 
   @Test
-  public void testToAclLines() {
+  void testToAclLines() {
     String rangeDesc = "IP range description";
     SecurityGroup sg =
         new SecurityGroup(

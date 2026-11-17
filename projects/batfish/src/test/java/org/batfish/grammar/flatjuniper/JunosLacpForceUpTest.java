@@ -10,6 +10,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -17,18 +18,17 @@ import org.batfish.main.Batfish;
 import org.batfish.representation.juniper.Interface;
 import org.batfish.representation.juniper.JuniperConfiguration;
 import org.batfish.representation.juniper.LogicalSystem;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosLacpForceUpTest {
+final class JunosLacpForceUpTest {
 
   private static final String HOSTNAME = "junos-lacp-force-up";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testLacpForceUp() throws IOException {
+  void testLacpForceUp() throws IOException {
     Batfish batfish = getBatfish(_folder, HOSTNAME);
     JuniperConfiguration jc = getVendorConfiguration(batfish, HOSTNAME);
     LogicalSystem logicalSystem = jc.getMasterLogicalSystem();

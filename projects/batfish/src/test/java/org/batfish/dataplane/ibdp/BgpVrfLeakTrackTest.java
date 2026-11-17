@@ -10,6 +10,7 @@ import static org.hamcrest.Matchers.not;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -33,9 +34,8 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.TrackMethods;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * A BGP VRF leak whose import policy reads a track must be re-evaluated when that track changes.
@@ -43,8 +43,8 @@ import org.junit.rules.TemporaryFolder;
  * <p>Leaks are otherwise driven by the source VRF's per-round deltas, so a route the policy
  * rejected while the track was failing would never be offered again once it held.
  */
-public final class BgpVrfLeakTrackTest {
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+final class BgpVrfLeakTrackTest {
+  @TempDir public File _folder;
 
   private static final Prefix TRACKED = Prefix.parse("10.9.0.0/24");
   private static final Prefix LEAKED = Prefix.parse("10.9.1.0/24");
@@ -182,12 +182,12 @@ public final class BgpVrfLeakTrackTest {
   }
 
   @Test
-  public void testALeakGatedOnALateTrackLeaksOnceItHolds() throws IOException {
+  void testALeakGatedOnALateTrackLeaksOnceItHolds() throws IOException {
     assertThat(leakedInto(TRACKED), hasItem(LEAKED));
   }
 
   @Test
-  public void testALeakGatedOnAFailingTrackLeaksNothing() throws IOException {
+  void testALeakGatedOnAFailingTrackLeaksNothing() throws IOException {
     // The companion: the route is not leaked by default, only because the track came to hold.
     assertThat(leakedInto(Prefix.parse("10.9.9.0/24")), not(hasItem(LEAKED)));
   }

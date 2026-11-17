@@ -20,18 +20,17 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests for {@code irb} interfaces. */
-public final class JuniperIrbTest {
+final class JuniperIrbTest {
 
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/juniper/testconfigs/";
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testIrbDeactivate() {
+  void testIrbDeactivate() {
     Configuration c = parseConfig(_folder, "irb-deactivate");
     assertThat(c, hasInterface("irb.2", isActive()));
     assertThat(c, hasInterface("irb.5", isActive(false)));
@@ -43,7 +42,7 @@ public final class JuniperIrbTest {
    * line-down, the IRB that depended on it should also be deactivated.
    */
   @Test
-  public void testIrbVxlanAutostate() throws IOException {
+  void testIrbVxlanAutostate() throws IOException {
     String hostname = "irb-vxlan-autostate";
 
     // Without runtime data: VLAN100 has a trunk member (xe-0/0/0), VLAN200 does not.

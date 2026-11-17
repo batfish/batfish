@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Table;
+import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -16,20 +17,17 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public class RipAndBgpTest {
+class RipAndBgpTest {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+  @TempDir public File _folder;
 
   private static String TESTRIGS_PREFIX = "org/batfish/dataplane/testrigs/";
 
   @Test
-  public void testOutputRoutes() throws IOException {
+  void testOutputRoutes() throws IOException {
     String testrigResourcePrefix = TESTRIGS_PREFIX + "rip";
     Set<String> configurations = ImmutableSet.of("r1", "r2", "r3");
 

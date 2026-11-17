@@ -5,8 +5,8 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
@@ -15,15 +15,15 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.bgp.SessionVrfScope.AnyVrf;
 import org.batfish.datamodel.bgp.SessionVrfScope.OwnVrf;
 import org.batfish.datamodel.bgp.SessionVrfScope.SpecificVrf;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link SessionVrfScope}. */
-public class SessionVrfScopeTest {
+class SessionVrfScopeTest {
 
   private static final ImmutableSet<String> NODE_VRFS = ImmutableSet.of("default", "blue", "green");
 
   @Test
-  public void testOriginVrf() {
+  void testOriginVrf() {
     assertThat(OwnVrf.instance().originVrf("blue"), equalTo("blue"));
     assertThat(new SpecificVrf("default").originVrf("blue"), equalTo("default"));
     // AnyVrf collapses to the config VRF for origination.
@@ -31,7 +31,7 @@ public class SessionVrfScopeTest {
   }
 
   @Test
-  public void testListenVrfs() {
+  void testListenVrfs() {
     assertThat(OwnVrf.instance().listenVrfs("blue", NODE_VRFS), contains("blue"));
     assertThat(new SpecificVrf("default").listenVrfs("blue", NODE_VRFS), contains("default"));
     // AnyVrf registers under every VRF on the node.
@@ -41,7 +41,7 @@ public class SessionVrfScopeTest {
   }
 
   @Test
-  public void testAcceptsIngressVrf() {
+  void testAcceptsIngressVrf() {
     assertTrue(OwnVrf.instance().acceptsIngressVrf("blue", "blue"));
     assertFalse(OwnVrf.instance().acceptsIngressVrf("green", "blue"));
 
@@ -54,14 +54,14 @@ public class SessionVrfScopeTest {
   }
 
   @Test
-  public void testDisplayString() {
+  void testDisplayString() {
     assertThat(OwnVrf.instance().displayString(), nullValue());
     assertThat(new SpecificVrf("default").displayString(), equalTo("default"));
     assertThat(AnyVrf.instance().displayString(), equalTo("*"));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(OwnVrf.instance(), new OwnVrf())
         .addEqualityGroup(AnyVrf.instance(), new AnyVrf())
@@ -71,7 +71,7 @@ public class SessionVrfScopeTest {
   }
 
   @Test
-  public void testJsonSerialization() throws IOException {
+  void testJsonSerialization() throws IOException {
     for (SessionVrfScope scope :
         new SessionVrfScope[] {OwnVrf.instance(), new SpecificVrf("blue"), AnyVrf.instance()}) {
       assertThat(BatfishObjectMapper.clone(scope, SessionVrfScope.class), equalTo(scope));

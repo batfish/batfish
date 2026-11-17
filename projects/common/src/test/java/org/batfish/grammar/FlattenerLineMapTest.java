@@ -4,11 +4,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import org.batfish.grammar.flattener.FlattenerLineMap;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class FlattenerLineMapTest {
+class FlattenerLineMapTest {
   @Test
-  public void testFlattenerLineMap() {
+  void testFlattenerLineMap() {
     FlattenerLineMap lineMap = new FlattenerLineMap();
     lineMap.setOriginalLine(1, 4, 1);
     lineMap.setOriginalLine(1, 6, 2);

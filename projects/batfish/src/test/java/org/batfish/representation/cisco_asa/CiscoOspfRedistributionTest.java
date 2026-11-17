@@ -19,13 +19,10 @@ import org.batfish.datamodel.routing_policy.expr.RouteIsClassful;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-@RunWith(JUnit4.class)
-public class CiscoOspfRedistributionTest {
+class CiscoOspfRedistributionTest {
   private static AsaConfiguration makeConfig() {
     AsaConfiguration config = new AsaConfiguration();
     config.setVendor(ConfigurationFormat.CISCO_ASA);
@@ -35,14 +32,14 @@ public class CiscoOspfRedistributionTest {
   private AsaConfiguration _config;
   private OspfProcess _proc;
 
-  @Before
-  public void before() {
+  @BeforeEach
+  void before() {
     _proc = new OspfProcess("10");
     _config = makeConfig();
   }
 
   @Test
-  public void testBasicConvertRedistributionPolicy() {
+  void testBasicConvertRedistributionPolicy() {
     OspfRedistributionPolicy rp = new OspfRedistributionPolicy(BGP);
     rp.setOnlyClassfulRoutes(true);
     rp.setOspfMetricType(OspfMetricType.E2);
@@ -67,7 +64,7 @@ public class CiscoOspfRedistributionTest {
   }
 
   @Test
-  public void testConvertRedistributionPolicyMetric() {
+  void testConvertRedistributionPolicyMetric() {
     OspfRedistributionPolicy rp = new OspfRedistributionPolicy(BGP);
     rp.setOspfMetricType(OspfMetricType.E2);
 

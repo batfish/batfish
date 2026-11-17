@@ -7,10 +7,10 @@ import com.google.common.collect.ImmutableMap;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link CommunitySetExprEvaluator}. */
-public final class CommunitySetExprEvaluatorTest {
+final class CommunitySetExprEvaluatorTest {
 
   private static final CommunityContext CTX = CommunityContext.builder().build();
 
@@ -19,7 +19,7 @@ public final class CommunitySetExprEvaluatorTest {
   }
 
   @Test
-  public void testVisitInputCommunities() {
+  void testVisitInputCommunities() {
     CommunitySet cs = CommunitySet.of(StandardCommunity.of(1L));
     CommunityContext ctx = CommunityContext.builder().setInputCommunitySet(cs).build();
 
@@ -28,7 +28,7 @@ public final class CommunitySetExprEvaluatorTest {
   }
 
   @Test
-  public void testVisitCommunityExprsSet() {
+  void testVisitCommunityExprsSet() {
     assertThat(
         eval(
             CommunityExprsSet.of(
@@ -37,7 +37,7 @@ public final class CommunitySetExprEvaluatorTest {
   }
 
   @Test
-  public void testVisitCommunitySetDifference() {
+  void testVisitCommunitySetDifference() {
     CommunitySet cs = CommunitySet.of(StandardCommunity.of(1L), StandardCommunity.of(2L));
 
     assertThat(
@@ -48,7 +48,7 @@ public final class CommunitySetExprEvaluatorTest {
   }
 
   @Test
-  public void testVisitCommunitySetExprReference() {
+  void testVisitCommunitySetExprReference() {
     CommunitySet cs = CommunitySet.of(StandardCommunity.of(1L));
     CommunityContext ctx =
         CommunityContext.builder()
@@ -61,7 +61,7 @@ public final class CommunitySetExprEvaluatorTest {
   }
 
   @Test
-  public void testVisitCommunitySetReference() {
+  void testVisitCommunitySetReference() {
     CommunitySet cs = CommunitySet.of(StandardCommunity.of(1L));
     CommunityContext ctx =
         CommunityContext.builder().setCommunitySets(ImmutableMap.of("defined", cs)).build();
@@ -72,7 +72,7 @@ public final class CommunitySetExprEvaluatorTest {
   }
 
   @Test
-  public void testVisitCommunitySetUnion() {
+  void testVisitCommunitySetUnion() {
     CommunitySet cs1 = CommunitySet.of(StandardCommunity.of(1L));
     CommunitySet cs2 = CommunitySet.of(StandardCommunity.of(2L));
 
@@ -82,7 +82,7 @@ public final class CommunitySetExprEvaluatorTest {
   }
 
   @Test
-  public void testVisitLiteralCommunitySet() {
+  void testVisitLiteralCommunitySet() {
     CommunitySet cs = CommunitySet.of(StandardCommunity.of(1L));
 
     assertThat(

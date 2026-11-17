@@ -12,14 +12,14 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link Service} */
-public class ServiceTest {
+class ServiceTest {
   private final BddTestbed _tb = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
 
   @Test
-  public void testToMatchExpr() {
+  void testToMatchExpr() {
     Warnings w = new Warnings();
     // Protocol, no ports
     {

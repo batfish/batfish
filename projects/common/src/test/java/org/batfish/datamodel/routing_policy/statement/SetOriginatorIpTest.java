@@ -4,8 +4,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
@@ -19,25 +19,25 @@ import org.batfish.datamodel.OspfExternalType1Route;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.expr.LiteralIp;
 import org.batfish.datamodel.routing_policy.expr.NextHopIp;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link SetOriginatorIp}. */
-public final class SetOriginatorIpTest {
+final class SetOriginatorIpTest {
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     Statement obj = SetOriginatorIp.of(LiteralIp.of(Ip.ZERO));
     assertEquals(obj, SerializationUtils.clone(obj));
   }
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     Statement obj = SetOriginatorIp.of(LiteralIp.of(Ip.ZERO));
     assertEquals(obj, BatfishObjectMapper.clone(obj, Statement.class));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     Statement obj = SetOriginatorIp.of(LiteralIp.of(Ip.ZERO));
     new EqualsTester()
         .addEqualityGroup(obj, SetOriginatorIp.of(LiteralIp.of(Ip.ZERO)))
@@ -46,7 +46,7 @@ public final class SetOriginatorIpTest {
   }
 
   @Test
-  public void testExecute() {
+  void testExecute() {
     Ip oldOriginatorIp = Ip.parse("1.1.1.1");
     Ip newOriginatorIp = Ip.parse("2.2.2.2");
     Statement obj = SetOriginatorIp.of(LiteralIp.of(newOriginatorIp));
@@ -64,7 +64,7 @@ public final class SetOriginatorIpTest {
   }
 
   @Test
-  public void testExecute_writeIntermediate() {
+  void testExecute_writeIntermediate() {
     Ip oldOriginatorIp = Ip.parse("1.1.1.1");
     Ip newOriginatorIp = Ip.parse("2.2.2.2");
     Statement obj = SetOriginatorIp.of(LiteralIp.of(newOriginatorIp));
@@ -84,7 +84,7 @@ public final class SetOriginatorIpTest {
   }
 
   @Test
-  public void testExecute_notHasWritableOriginatorIp() {
+  void testExecute_notHasWritableOriginatorIp() {
     Ip newOriginatorIp = Ip.parse("2.2.2.2");
     Statement obj = SetOriginatorIp.of(LiteralIp.of(newOriginatorIp));
     Configuration c = Configuration.builder().setHostname("h").build();

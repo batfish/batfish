@@ -6,8 +6,10 @@ import static org.batfish.datamodel.bgp.community.CommunityStructuresVerifier.CO
 import static org.batfish.datamodel.bgp.community.CommunityStructuresVerifier.COMMUNITY_SET_MATCH_EXPR_VERIFIER;
 import static org.batfish.datamodel.bgp.community.CommunityStructuresVerifier.STATEMENT_VERIFIER;
 import static org.batfish.datamodel.bgp.community.CommunityStructuresVerifier.verify;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -99,17 +101,13 @@ import org.batfish.datamodel.routing_policy.statement.SetVarMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link CommunityStructuresVerifier}. */
-public final class CommunityStructuresVerifierTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+final class CommunityStructuresVerifierTest {
 
   @Test
-  public void testBooleanExprVerifierUnrelated() {
+  void testBooleanExprVerifierUnrelated() {
     // no exception should be thrown while verifying non-community-related structures
     CommunityStructuresVerifierContext ctx = CommunityStructuresVerifierContext.builder().build();
 
@@ -141,7 +139,7 @@ public final class CommunityStructuresVerifierTest {
   }
 
   @Test
-  public void testStatementVerifierUnrelated() {
+  void testStatementVerifierUnrelated() {
     // no exception should be thrown while verifying non-community-related structures
     CommunityStructuresVerifierContext ctx = CommunityStructuresVerifierContext.builder().build();
 
@@ -177,55 +175,54 @@ public final class CommunityStructuresVerifierTest {
   }
 
   @Test
-  public void testVerify() {
+  void testVerify() {
     Configuration c = new Configuration("c", ConfigurationFormat.CISCO_IOS);
     c.setCommunityMatchExprs(
         ImmutableMap.of("referenceToUndefined", new CommunityMatchExprReference("undefined")));
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    verify(c);
+    Throwable exception = assertThrows(VendorConversionException.class, () -> verify(c));
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVerifyCommunityMatchExprs() {
+  void testVerifyCommunityMatchExprs() {
     Configuration c = new Configuration("c", ConfigurationFormat.CISCO_IOS);
     c.setCommunityMatchExprs(
         ImmutableMap.of("referenceToUndefined", new CommunityMatchExprReference("undefined")));
     CommunityStructuresVerifier v = new CommunityStructuresVerifier(c);
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    v.verifyCommunityMatchExprs();
+    Throwable exception =
+        assertThrows(VendorConversionException.class, () -> v.verifyCommunityMatchExprs());
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVerifyCommunitySetMatchExprs() {
+  void testVerifyCommunitySetMatchExprs() {
     Configuration c = new Configuration("c", ConfigurationFormat.CISCO_IOS);
     c.setCommunitySetMatchExprs(
         ImmutableMap.of("referenceToUndefined", new CommunitySetMatchExprReference("undefined")));
     CommunityStructuresVerifier v = new CommunityStructuresVerifier(c);
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    v.verifyCommunitySetMatchExprs();
+    Throwable exception =
+        assertThrows(VendorConversionException.class, () -> v.verifyCommunitySetMatchExprs());
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVerifyCommunitySetExprs() {
+  void testVerifyCommunitySetExprs() {
     Configuration c = new Configuration("c", ConfigurationFormat.CISCO_IOS);
 
     c.setCommunitySetExprs(
         ImmutableMap.of("referenceToUndefined", new CommunitySetExprReference("undefined")));
     CommunityStructuresVerifier v = new CommunityStructuresVerifier(c);
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    v.verifyCommunitySetExprs();
+    Throwable exception =
+        assertThrows(VendorConversionException.class, () -> v.verifyCommunitySetExprs());
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVerifyRoutingPolicies() {
+  void testVerifyRoutingPolicies() {
     Configuration c = new Configuration("c", ConfigurationFormat.CISCO_IOS);
     RoutingPolicy rp = new RoutingPolicy("rp", c);
     rp.setStatements(
@@ -233,13 +230,13 @@ public final class CommunityStructuresVerifierTest {
     c.setRoutingPolicies(ImmutableMap.of("rp", rp));
     CommunityStructuresVerifier v = new CommunityStructuresVerifier(c);
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    v.verifyRoutingPolicies();
+    Throwable exception =
+        assertThrows(VendorConversionException.class, () -> v.verifyRoutingPolicies());
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVisitCommunityMatchExprReferenceDefined() {
+  void testVisitCommunityMatchExprReferenceDefined() {
     CommunityStructuresVerifierContext ctx =
         CommunityStructuresVerifierContext.builder()
             .setCommunityMatchExprs(ImmutableMap.of("defined", AllStandardCommunities.instance()))
@@ -250,29 +247,37 @@ public final class CommunityStructuresVerifierTest {
   }
 
   @Test
-  public void testVisitCommunityMatchExprReferenceUndefined() {
+  void testVisitCommunityMatchExprReferenceUndefined() {
     CommunityStructuresVerifierContext ctx = CommunityStructuresVerifierContext.builder().build();
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    new CommunityMatchExprReference("undefined").accept(COMMUNITY_MATCH_EXPR_VERIFIER, ctx);
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () ->
+                new CommunityMatchExprReference("undefined")
+                    .accept(COMMUNITY_MATCH_EXPR_VERIFIER, ctx));
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVisitCommunityMatchExprReferenceCircular() {
+  void testVisitCommunityMatchExprReferenceCircular() {
     CommunityStructuresVerifierContext ctx =
         CommunityStructuresVerifierContext.builder()
             .setCommunityMatchExprs(
                 ImmutableMap.of("circular", new CommunityMatchExprReference("circular")))
             .build();
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Circular reference"));
-    new CommunityMatchExprReference("circular").accept(COMMUNITY_MATCH_EXPR_VERIFIER, ctx);
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () ->
+                new CommunityMatchExprReference("circular")
+                    .accept(COMMUNITY_MATCH_EXPR_VERIFIER, ctx));
+    assertThat(exception.getMessage(), containsString("Circular reference"));
   }
 
   @Test
-  public void testVisitCommunitySetMatchExprReferenceDefined() {
+  void testVisitCommunitySetMatchExprReferenceDefined() {
     CommunityStructuresVerifierContext ctx =
         CommunityStructuresVerifierContext.builder()
             .setCommunitySetMatchExprs(
@@ -289,29 +294,37 @@ public final class CommunityStructuresVerifierTest {
   }
 
   @Test
-  public void testVisitCommunitySetMatchExprReferenceUndefined() {
+  void testVisitCommunitySetMatchExprReferenceUndefined() {
     CommunityStructuresVerifierContext ctx = CommunityStructuresVerifierContext.builder().build();
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    new CommunitySetMatchExprReference("undefined").accept(COMMUNITY_SET_MATCH_EXPR_VERIFIER, ctx);
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () ->
+                new CommunitySetMatchExprReference("undefined")
+                    .accept(COMMUNITY_SET_MATCH_EXPR_VERIFIER, ctx));
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVisitCommunitySetMatchExprReferenceCircular() {
+  void testVisitCommunitySetMatchExprReferenceCircular() {
     CommunityStructuresVerifierContext ctx =
         CommunityStructuresVerifierContext.builder()
             .setCommunitySetMatchExprs(
                 ImmutableMap.of("circular", new CommunitySetMatchExprReference("circular")))
             .build();
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Circular reference"));
-    new CommunitySetMatchExprReference("circular").accept(COMMUNITY_SET_MATCH_EXPR_VERIFIER, ctx);
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () ->
+                new CommunitySetMatchExprReference("circular")
+                    .accept(COMMUNITY_SET_MATCH_EXPR_VERIFIER, ctx));
+    assertThat(exception.getMessage(), containsString("Circular reference"));
   }
 
   @Test
-  public void testVisitCommunitySetExprReferenceDefined() {
+  void testVisitCommunitySetExprReferenceDefined() {
     CommunityStructuresVerifierContext ctx =
         CommunityStructuresVerifierContext.builder()
             .setCommunitySetExprs(ImmutableMap.of("defined", CommunitySetExprs.empty()))
@@ -321,29 +334,36 @@ public final class CommunityStructuresVerifierTest {
   }
 
   @Test
-  public void testVisitCommunitySetExprReferenceUndefined() {
+  void testVisitCommunitySetExprReferenceUndefined() {
     CommunityStructuresVerifierContext ctx = CommunityStructuresVerifierContext.builder().build();
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    new CommunitySetExprReference("undefined").accept(COMMUNITY_SET_EXPR_VERIFIER, ctx);
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () ->
+                new CommunitySetExprReference("undefined")
+                    .accept(COMMUNITY_SET_EXPR_VERIFIER, ctx));
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVisitCommunitySetExprReferenceCircular() {
+  void testVisitCommunitySetExprReferenceCircular() {
     CommunityStructuresVerifierContext ctx =
         CommunityStructuresVerifierContext.builder()
             .setCommunitySetExprs(
                 ImmutableMap.of("circular", new CommunitySetExprReference("circular")))
             .build();
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Circular reference"));
-    new CommunitySetExprReference("circular").accept(COMMUNITY_SET_EXPR_VERIFIER, ctx);
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () ->
+                new CommunitySetExprReference("circular").accept(COMMUNITY_SET_EXPR_VERIFIER, ctx));
+    assertThat(exception.getMessage(), containsString("Circular reference"));
   }
 
   @Test
-  public void testVisitCommunitySetReferenceDefined() {
+  void testVisitCommunitySetReferenceDefined() {
     CommunityStructuresVerifierContext ctx =
         CommunityStructuresVerifierContext.builder()
             .setCommunitySets(ImmutableMap.of("defined", CommunitySet.empty()))
@@ -353,16 +373,18 @@ public final class CommunityStructuresVerifierTest {
   }
 
   @Test
-  public void testVisitCommunitySetReferenceUndefined() {
+  void testVisitCommunitySetReferenceUndefined() {
     CommunityStructuresVerifierContext ctx = CommunityStructuresVerifierContext.builder().build();
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    new CommunitySetReference("undefined").accept(COMMUNITY_SET_EXPR_VERIFIER, ctx);
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () -> new CommunitySetReference("undefined").accept(COMMUNITY_SET_EXPR_VERIFIER, ctx));
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVisitCommunitySetUnionDefined() {
+  void testVisitCommunitySetUnionDefined() {
     CommunityStructuresVerifierContext ctx =
         CommunityStructuresVerifierContext.builder()
             .setCommunitySetExprs(ImmutableMap.of("defined", CommunitySetExprs.empty()))
@@ -374,17 +396,20 @@ public final class CommunityStructuresVerifierTest {
   }
 
   @Test
-  public void testVisitCommunitySetUnionUndefined() {
+  void testVisitCommunitySetUnionUndefined() {
     CommunityStructuresVerifierContext ctx = CommunityStructuresVerifierContext.builder().build();
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    CommunitySetUnion.of(new CommunitySetExprReference("undefined"))
-        .accept(COMMUNITY_SET_EXPR_VERIFIER, ctx);
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () ->
+                CommunitySetUnion.of(new CommunitySetExprReference("undefined"))
+                    .accept(COMMUNITY_SET_EXPR_VERIFIER, ctx));
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVisitCommunitySetDifferenceSetDefined() {
+  void testVisitCommunitySetDifferenceSetDefined() {
     CommunityStructuresVerifierContext ctx =
         CommunityStructuresVerifierContext.builder()
             .setCommunitySetExprs(ImmutableMap.of("defined", CommunitySetExprs.empty()))
@@ -397,18 +422,22 @@ public final class CommunityStructuresVerifierTest {
   }
 
   @Test
-  public void testVisitCommunitySetDifferenceSetUndefined() {
+  void testVisitCommunitySetDifferenceSetUndefined() {
     CommunityStructuresVerifierContext ctx = CommunityStructuresVerifierContext.builder().build();
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    new CommunitySetDifference(
-            new CommunitySetExprReference("undefined"), AllStandardCommunities.instance())
-        .accept(COMMUNITY_SET_EXPR_VERIFIER, ctx);
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () ->
+                new CommunitySetDifference(
+                        new CommunitySetExprReference("undefined"),
+                        AllStandardCommunities.instance())
+                    .accept(COMMUNITY_SET_EXPR_VERIFIER, ctx));
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVisitCommunitySetDifferenceMatchDefined() {
+  void testVisitCommunitySetDifferenceMatchDefined() {
     CommunityStructuresVerifierContext ctx =
         CommunityStructuresVerifierContext.builder()
             .setCommunityMatchExprs(ImmutableMap.of("defined", AllStandardCommunities.instance()))
@@ -421,70 +450,89 @@ public final class CommunityStructuresVerifierTest {
   }
 
   @Test
-  public void testVisitCommunitySetDifferenceMatchUndefined() {
+  void testVisitCommunitySetDifferenceMatchUndefined() {
     CommunityStructuresVerifierContext ctx = CommunityStructuresVerifierContext.builder().build();
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    new CommunitySetDifference(
-            CommunitySetExprs.empty(), new CommunityMatchExprReference("undefined"))
-        .accept(COMMUNITY_SET_EXPR_VERIFIER, ctx);
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () ->
+                new CommunitySetDifference(
+                        CommunitySetExprs.empty(), new CommunityMatchExprReference("undefined"))
+                    .accept(COMMUNITY_SET_EXPR_VERIFIER, ctx));
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVisitConjunction() {
+  void testVisitConjunction() {
     CommunityStructuresVerifierContext ctx = CommunityStructuresVerifierContext.builder().build();
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    new Conjunction(
-            ImmutableList.of(
-                new MatchCommunities(
-                    InputCommunities.instance(), new CommunitySetMatchExprReference("undefined"))))
-        .accept(BOOLEAN_EXPR_VERIFIER, ctx);
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () ->
+                new Conjunction(
+                        ImmutableList.of(
+                            new MatchCommunities(
+                                InputCommunities.instance(),
+                                new CommunitySetMatchExprReference("undefined"))))
+                    .accept(BOOLEAN_EXPR_VERIFIER, ctx));
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVisitConjunctionChain() {
+  void testVisitConjunctionChain() {
     CommunityStructuresVerifierContext ctx = CommunityStructuresVerifierContext.builder().build();
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    new ConjunctionChain(
-            ImmutableList.of(
-                new MatchCommunities(
-                    InputCommunities.instance(), new CommunitySetMatchExprReference("undefined"))))
-        .accept(BOOLEAN_EXPR_VERIFIER, ctx);
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () ->
+                new ConjunctionChain(
+                        ImmutableList.of(
+                            new MatchCommunities(
+                                InputCommunities.instance(),
+                                new CommunitySetMatchExprReference("undefined"))))
+                    .accept(BOOLEAN_EXPR_VERIFIER, ctx));
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVisitDisjunction() {
+  void testVisitDisjunction() {
     CommunityStructuresVerifierContext ctx = CommunityStructuresVerifierContext.builder().build();
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    new Disjunction(
-            ImmutableList.of(
-                new MatchCommunities(
-                    InputCommunities.instance(), new CommunitySetMatchExprReference("undefined"))))
-        .accept(BOOLEAN_EXPR_VERIFIER, ctx);
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () ->
+                new Disjunction(
+                        ImmutableList.of(
+                            new MatchCommunities(
+                                InputCommunities.instance(),
+                                new CommunitySetMatchExprReference("undefined"))))
+                    .accept(BOOLEAN_EXPR_VERIFIER, ctx));
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVisitFirstMatchChain() {
+  void testVisitFirstMatchChain() {
     CommunityStructuresVerifierContext ctx = CommunityStructuresVerifierContext.builder().build();
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    new FirstMatchChain(
-            ImmutableList.of(
-                new MatchCommunities(
-                    InputCommunities.instance(), new CommunitySetMatchExprReference("undefined"))))
-        .accept(BOOLEAN_EXPR_VERIFIER, ctx);
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () ->
+                new FirstMatchChain(
+                        ImmutableList.of(
+                            new MatchCommunities(
+                                InputCommunities.instance(),
+                                new CommunitySetMatchExprReference("undefined"))))
+                    .accept(BOOLEAN_EXPR_VERIFIER, ctx));
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVisitTrackSucceeded() {
+  void testVisitTrackSucceeded() {
     CommunityStructuresVerifierContext ctx = CommunityStructuresVerifierContext.builder().build();
 
     // In the future, RibExpr is anticipated to potentially include communities.
@@ -492,142 +540,174 @@ public final class CommunityStructuresVerifierTest {
   }
 
   @Test
-  public void testVisitIfGuard() {
+  void testVisitIfGuard() {
     CommunityStructuresVerifierContext ctx = CommunityStructuresVerifierContext.builder().build();
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    new If(
-            new MatchCommunities(
-                InputCommunities.instance(), new CommunitySetMatchExprReference("undefined")),
-            ImmutableList.of(),
-            ImmutableList.of())
-        .accept(STATEMENT_VERIFIER, ctx);
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () ->
+                new If(
+                        new MatchCommunities(
+                            InputCommunities.instance(),
+                            new CommunitySetMatchExprReference("undefined")),
+                        ImmutableList.of(),
+                        ImmutableList.of())
+                    .accept(STATEMENT_VERIFIER, ctx));
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVisitIfTrue() {
+  void testVisitIfTrue() {
     CommunityStructuresVerifierContext ctx = CommunityStructuresVerifierContext.builder().build();
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    new If(
-            BooleanExprs.TRUE,
-            ImmutableList.of(new SetCommunities(new CommunitySetExprReference("undefined"))),
-            ImmutableList.of())
-        .accept(STATEMENT_VERIFIER, ctx);
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () ->
+                new If(
+                        BooleanExprs.TRUE,
+                        ImmutableList.of(
+                            new SetCommunities(new CommunitySetExprReference("undefined"))),
+                        ImmutableList.of())
+                    .accept(STATEMENT_VERIFIER, ctx));
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVisitIfFalse() {
+  void testVisitIfFalse() {
     CommunityStructuresVerifierContext ctx = CommunityStructuresVerifierContext.builder().build();
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    new If(
-            BooleanExprs.TRUE,
-            ImmutableList.of(),
-            ImmutableList.of(new SetCommunities(new CommunitySetExprReference("undefined"))))
-        .accept(STATEMENT_VERIFIER, ctx);
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () ->
+                new If(
+                        BooleanExprs.TRUE,
+                        ImmutableList.of(),
+                        ImmutableList.of(
+                            new SetCommunities(new CommunitySetExprReference("undefined"))))
+                    .accept(STATEMENT_VERIFIER, ctx));
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVisitMatchCommunities() {
+  void testVisitMatchCommunities() {
     CommunityStructuresVerifierContext ctx = CommunityStructuresVerifierContext.builder().build();
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    new MatchCommunities(
-            InputCommunities.instance(), new CommunitySetMatchExprReference("undefined"))
-        .accept(BOOLEAN_EXPR_VERIFIER, ctx);
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () ->
+                new MatchCommunities(
+                        InputCommunities.instance(),
+                        new CommunitySetMatchExprReference("undefined"))
+                    .accept(BOOLEAN_EXPR_VERIFIER, ctx));
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVisitNot() {
+  void testVisitNot() {
     CommunityStructuresVerifierContext ctx = CommunityStructuresVerifierContext.builder().build();
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    new Not(
-            new MatchCommunities(
-                InputCommunities.instance(), new CommunitySetMatchExprReference("undefined")))
-        .accept(BOOLEAN_EXPR_VERIFIER, ctx);
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () ->
+                new Not(
+                        new MatchCommunities(
+                            InputCommunities.instance(),
+                            new CommunitySetMatchExprReference("undefined")))
+                    .accept(BOOLEAN_EXPR_VERIFIER, ctx));
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVisitSetCommunities() {
+  void testVisitSetCommunities() {
     CommunityStructuresVerifierContext ctx = CommunityStructuresVerifierContext.builder().build();
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    new SetCommunities(new CommunitySetExprReference("undefined")).accept(STATEMENT_VERIFIER, ctx);
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () ->
+                new SetCommunities(new CommunitySetExprReference("undefined"))
+                    .accept(STATEMENT_VERIFIER, ctx));
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVisitTraceableStatement() {
+  void testVisitTraceableStatement() {
     CommunityStructuresVerifierContext ctx = CommunityStructuresVerifierContext.builder().build();
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    new TraceableStatement(
-            TraceElement.of("text"),
-            ImmutableList.of(new SetCommunities(new CommunitySetExprReference("undefined"))))
-        .accept(STATEMENT_VERIFIER, ctx);
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () ->
+                new TraceableStatement(
+                        TraceElement.of("text"),
+                        ImmutableList.of(
+                            new SetCommunities(new CommunitySetExprReference("undefined"))))
+                    .accept(STATEMENT_VERIFIER, ctx));
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVisitWithEnvironmentExpr() {
+  void testVisitWithEnvironmentExpr() {
     CommunityStructuresVerifierContext ctx = CommunityStructuresVerifierContext.builder().build();
     WithEnvironmentExpr expr = new WithEnvironmentExpr();
     expr.setExpr(
         new MatchCommunities(
             InputCommunities.instance(), new CommunitySetMatchExprReference("undefined")));
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class, () -> expr.accept(BOOLEAN_EXPR_VERIFIER, ctx));
 
-    expr.accept(BOOLEAN_EXPR_VERIFIER, ctx);
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVisitWithEnvironmentPost() {
+  void testVisitWithEnvironmentPost() {
     CommunityStructuresVerifierContext ctx = CommunityStructuresVerifierContext.builder().build();
     WithEnvironmentExpr expr = new WithEnvironmentExpr();
     expr.setExpr(BooleanExprs.TRUE);
     expr.setPostStatements(
         ImmutableList.of(new SetCommunities(new CommunitySetExprReference("undefined"))));
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class, () -> expr.accept(BOOLEAN_EXPR_VERIFIER, ctx));
 
-    expr.accept(BOOLEAN_EXPR_VERIFIER, ctx);
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVisitWithEnvironmentPostTrue() {
+  void testVisitWithEnvironmentPostTrue() {
     CommunityStructuresVerifierContext ctx = CommunityStructuresVerifierContext.builder().build();
     WithEnvironmentExpr expr = new WithEnvironmentExpr();
     expr.setExpr(BooleanExprs.TRUE);
     expr.setPostTrueStatements(
         ImmutableList.of(new SetCommunities(new CommunitySetExprReference("undefined"))));
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class, () -> expr.accept(BOOLEAN_EXPR_VERIFIER, ctx));
 
-    expr.accept(BOOLEAN_EXPR_VERIFIER, ctx);
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVisitWithEnvironmentPre() {
+  void testVisitWithEnvironmentPre() {
     CommunityStructuresVerifierContext ctx = CommunityStructuresVerifierContext.builder().build();
     WithEnvironmentExpr expr = new WithEnvironmentExpr();
     expr.setExpr(BooleanExprs.TRUE);
     expr.setPreStatements(
         ImmutableList.of(new SetCommunities(new CommunitySetExprReference("undefined"))));
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class, () -> expr.accept(BOOLEAN_EXPR_VERIFIER, ctx));
 
-    expr.accept(BOOLEAN_EXPR_VERIFIER, ctx);
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 }

@@ -6,30 +6,30 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link LocalRoute} */
-public class LocalRouteTest {
+class LocalRouteTest {
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     LocalRoute lr = new LocalRoute(ConcreteInterfaceAddress.parse("1.1.1.1/24"), "Ethernet0");
     assertThat(SerializationUtils.clone(lr), equalTo(lr));
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     LocalRoute lr = new LocalRoute(ConcreteInterfaceAddress.parse("1.1.1.1/24"), "Ethernet0");
     assertThat(BatfishObjectMapper.clone(lr, LocalRoute.class), equalTo(lr));
   }
 
   @Test
-  public void testToBuilder() {
+  void testToBuilder() {
     LocalRoute lr = new LocalRoute(ConcreteInterfaceAddress.parse("1.1.1.1/24"), "Ethernet0");
     assertThat(lr, equalTo(lr.toBuilder().build()));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     LocalRoute.Builder lr =
         LocalRoute.builder()
             .setNetwork(Prefix.parse("1.1.1.1/32"))

@@ -2,22 +2,20 @@ package org.batfish.datamodel.bgp.community;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.testing.EqualsTester;
 import java.math.BigInteger;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link StandardCommunity} */
-public class StandardCommunityTest {
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class StandardCommunityTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     StandardCommunity sc = StandardCommunity.of(1L);
     new EqualsTester()
         .addEqualityGroup(sc, sc, StandardCommunity.of(1L), StandardCommunity.of(0, 1))
@@ -27,132 +25,120 @@ public class StandardCommunityTest {
   }
 
   @Test
-  public void testBoundaryConditions() {
+  void testBoundaryConditions() {
     assertThat(StandardCommunity.of(65535, 65535), equalTo(StandardCommunity.of(4294967295L)));
   }
 
   @Test
-  public void testOfNegative() {
-    _thrown.expect(IllegalArgumentException.class);
-    StandardCommunity.of(-1);
+  void testOfNegative() {
+    assertThrows(IllegalArgumentException.class, () -> StandardCommunity.of(-1));
   }
 
   @Test
-  public void testOfTooLarge() {
-    _thrown.expect(IllegalArgumentException.class);
-    StandardCommunity.of(1L << 32);
+  void testOfTooLarge() {
+    assertThrows(IllegalArgumentException.class, () -> StandardCommunity.of(1L << 32));
   }
 
   @Test
-  public void testOfTwoFirstNegative() {
-    _thrown.expect(IllegalArgumentException.class);
-    StandardCommunity.of(-1, 2);
+  void testOfTwoFirstNegative() {
+    assertThrows(IllegalArgumentException.class, () -> StandardCommunity.of(-1, 2));
   }
 
   @Test
-  public void testOfTwoSecondNegative() {
-    _thrown.expect(IllegalArgumentException.class);
-    StandardCommunity.of(23, -1);
+  void testOfTwoSecondNegative() {
+    assertThrows(IllegalArgumentException.class, () -> StandardCommunity.of(23, -1));
   }
 
   @Test
-  public void testOfTwoFirstTooLarge() {
-    _thrown.expect(IllegalArgumentException.class);
-    StandardCommunity.of(1 << 16, 1);
+  void testOfTwoFirstTooLarge() {
+    assertThrows(IllegalArgumentException.class, () -> StandardCommunity.of(1 << 16, 1));
   }
 
   @Test
-  public void testOfTwoSecondTooLarge() {
-    _thrown.expect(IllegalArgumentException.class);
-    StandardCommunity.of(1, 1 << 16);
+  void testOfTwoSecondTooLarge() {
+    assertThrows(IllegalArgumentException.class, () -> StandardCommunity.of(1, 1 << 16));
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     assertThat(SerializationUtils.clone(StandardCommunity.of(1)), equalTo(StandardCommunity.of(1)));
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     assertThat(
         BatfishObjectMapper.clone(StandardCommunity.of(1), StandardCommunity.class),
         equalTo(StandardCommunity.of(1)));
   }
 
   @Test
-  public void testParse() {
+  void testParse() {
     assertThat(StandardCommunity.parse("0:1"), equalTo(StandardCommunity.of(1)));
     assertThat(StandardCommunity.parse("1:1"), equalTo(StandardCommunity.of(65537)));
   }
 
   @Test
-  public void testParseGarbage() {
-    _thrown.expect(IllegalArgumentException.class);
-    StandardCommunity.parse("0:x");
+  void testParseGarbage() {
+    assertThrows(IllegalArgumentException.class, () -> StandardCommunity.parse("0:x"));
   }
 
   @Test
-  public void testParseToMany() {
-    _thrown.expect(IllegalArgumentException.class);
-    StandardCommunity.parse("1:1:1");
+  void testParseToMany() {
+    assertThrows(IllegalArgumentException.class, () -> StandardCommunity.parse("1:1:1"));
   }
 
   @Test
-  public void testParseFirstNegative() {
-    _thrown.expect(IllegalArgumentException.class);
-    StandardCommunity.parse("-1:1");
+  void testParseFirstNegative() {
+    assertThrows(IllegalArgumentException.class, () -> StandardCommunity.parse("-1:1"));
   }
 
   @Test
-  public void testParseSecondNegative() {
-    _thrown.expect(IllegalArgumentException.class);
-    StandardCommunity.parse("1:-1");
+  void testParseSecondNegative() {
+    assertThrows(IllegalArgumentException.class, () -> StandardCommunity.parse("1:-1"));
   }
 
   @Test
-  public void testParseFirstTooLarge() {
-    _thrown.expect(IllegalArgumentException.class);
-    StandardCommunity.parse("65555:1");
+  void testParseFirstTooLarge() {
+    assertThrows(IllegalArgumentException.class, () -> StandardCommunity.parse("65555:1"));
   }
 
   @Test
-  public void testParseSecondTooLarge() {
-    _thrown.expect(IllegalArgumentException.class);
-    StandardCommunity.parse("1:65555");
+  void testParseSecondTooLarge() {
+    assertThrows(IllegalArgumentException.class, () -> StandardCommunity.parse("1:65555"));
   }
 
   @Test
-  public void testToString() {
+  void testToString() {
     assertThat(StandardCommunity.of(1, 1).toString(), equalTo("1:1"));
   }
 
   @Test
-  public void testMatchString() {
+  void testMatchString() {
     StandardCommunity sc = StandardCommunity.parse("2:3");
     assertThat(sc.toString(), equalTo("2:3"));
     assertThat(sc.matchString(), equalTo(sc.toString()));
   }
 
   @Test
-  public void testNotTransitive() {
+  void testNotTransitive() {
     assertFalse(StandardCommunity.of(1, 1).isTransitive());
   }
 
   @Test
-  public void testToBigInt() {
+  void testToBigInt() {
     assertThat(StandardCommunity.of(0).asBigInt(), equalTo(BigInteger.ZERO));
     assertThat(
         StandardCommunity.of(65535, 65535).asBigInt(), equalTo(BigInteger.valueOf(4294967295L)));
   }
 
   @Test
-  public void testAsLong() {
+  void testAsLong() {
     StandardCommunity c = StandardCommunity.of(65535, 65534);
     assertThat(c.asLong(), equalTo((long) 65535 << 16 | 65534));
   }
 
   @Test
-  public void testHighAndLow() {
+  void testHighAndLow() {
     StandardCommunity c = StandardCommunity.of(65535, 65534);
     assertThat(c.high(), equalTo(65535));
     assertThat(c.low(), equalTo(65534));

@@ -6,23 +6,23 @@ import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import java.io.File;
 import java.io.IOException;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Test integration of batfish and forwarding analysis impl */
-public class ForwardingAnalysisImplIntegrationTest {
-  @Rule public TemporaryFolder temp = new TemporaryFolder();
+class ForwardingAnalysisImplIntegrationTest {
+  @TempDir public File temp;
 
   /**
    * When there is a non-forwarding route in the rib with no shorter matching route, the route's
    * network should not be routable.
    */
   @Test
-  public void testNonForwardingRoute_noShorterMatch() throws IOException {
+  void testNonForwardingRoute_noShorterMatch() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
@@ -62,7 +62,7 @@ public class ForwardingAnalysisImplIntegrationTest {
    * non-forwarding route's network should not routed using the shorter matching route.
    */
   @Test
-  public void testNonForwardingRoute_shorterMatch() throws IOException {
+  void testNonForwardingRoute_shorterMatch() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
@@ -125,7 +125,7 @@ public class ForwardingAnalysisImplIntegrationTest {
   }
 
   @Test
-  public void testDispositionWithStaticArpIp() throws IOException {
+  void testDispositionWithStaticArpIp() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration c1 =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();

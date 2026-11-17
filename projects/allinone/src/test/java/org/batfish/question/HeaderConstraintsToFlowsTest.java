@@ -13,8 +13,10 @@ import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
@@ -26,18 +28,15 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests for {@link HeaderConstraintsToFlows}. */
-public class HeaderConstraintsToFlowsTest {
+class HeaderConstraintsToFlowsTest {
   private IBatfish _batfish;
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
-  @Rule public ExpectedException thrown = ExpectedException.none();
+  @TempDir public File _folder;
 
   private static final String FAST_ETHERNET = "FastEthernet0/0";
   private static final String LOOPBACK = "Loopback0";
@@ -53,8 +52,8 @@ public class HeaderConstraintsToFlowsTest {
   private static final Ip NODE1_FAST_ETHERNET_IP = Ip.parse("1.1.1.2");
   private static final Ip NODE1_LOOPBACK_IP = Ip.parse("1.1.1.1");
 
-  @Before
-  public void setup() throws IOException {
+  @BeforeEach
+  void setup() throws IOException {
     _batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
@@ -66,7 +65,7 @@ public class HeaderConstraintsToFlowsTest {
   }
 
   @Test
-  public void testGetFlows_interfaceSource() {
+  void testGetFlows_interfaceSource() {
     HeaderConstraintsToFlows helper =
         new HeaderConstraintsToFlows(
             PacketHeaderConstraints.builder().setDstIp("2.2.2.2").build(),
@@ -96,19 +95,18 @@ public class HeaderConstraintsToFlowsTest {
   }
 
   @Test
-  public void testGetFlows_interfaceLinkSourceNoSourceIp() {
+  void testGetFlows_interfaceLinkSourceNoSourceIp() {
     HeaderConstraintsToFlows helper =
         new HeaderConstraintsToFlows(
             PacketHeaderConstraints.builder().setDstIp("2.2.2.2").build(),
             "@enter(node1)",
             _batfish.specifierContext(_batfish.getSnapshot()),
             FlowPreference.TRACEROUTE);
-    thrown.expect(IllegalArgumentException.class);
-    helper.getFlows();
+    assertThrows(IllegalArgumentException.class, helper::getFlows);
   }
 
   @Test
-  public void testGetFlows_interfaceLinkSource() {
+  void testGetFlows_interfaceLinkSource() {
     HeaderConstraintsToFlows helper =
         new HeaderConstraintsToFlows(
             PacketHeaderConstraints.builder().setSrcIp("1.1.1.0").setDstIp("2.2.2.2").build(),
@@ -141,7 +139,7 @@ public class HeaderConstraintsToFlowsTest {
   }
 
   @Test
-  public void testGetFlows_dst() {
+  void testGetFlows_dst() {
     HeaderConstraintsToFlows helper =
         new HeaderConstraintsToFlows(
             PacketHeaderConstraints.builder().setDstIp("node2").build(),

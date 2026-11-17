@@ -12,12 +12,9 @@ import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-@RunWith(JUnit4.class)
-public class RouteIsClassfulTest {
+class RouteIsClassfulTest {
   private static boolean evaluateIsClassful(Prefix network) {
     Configuration c = new Configuration("host", ConfigurationFormat.CISCO_IOS);
     ConnectedRoute route = new ConnectedRoute(network, "Ethernet0");
@@ -27,13 +24,13 @@ public class RouteIsClassfulTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     RouteIsClassful ric = RouteIsClassful.instance();
     assertThat(SerializationUtils.clone(ric), equalTo(ric));
   }
 
   @Test
-  public void testRouteIsClassful() {
+  void testRouteIsClassful() {
     List<String> classful =
         Lists.newArrayList("16.0.0.0/8", "128.0.0.0/16", "128.0.0.0/2", "192.168.1.0/24");
     for (String prefixStr : classful) {
@@ -43,7 +40,7 @@ public class RouteIsClassfulTest {
   }
 
   @Test
-  public void testRouteIsNotClassful() {
+  void testRouteIsNotClassful() {
     List<String> notClassful = Lists.newArrayList("16.0.0.0/9", "128.0.0.0/17", "192.168.1.0/25");
     for (String prefixStr : notClassful) {
       Prefix network = Prefix.parse(prefixStr);

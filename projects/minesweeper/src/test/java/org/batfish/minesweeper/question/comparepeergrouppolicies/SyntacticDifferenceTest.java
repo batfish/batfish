@@ -1,12 +1,13 @@
 package org.batfish.minesweeper.question.comparepeergrouppolicies;
 
 import static org.batfish.datamodel.LineAction.PERMIT;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
+import java.io.File;
 import java.io.IOException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -22,13 +23,12 @@ import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public class SyntacticDifferenceTest {
-  @Rule public TemporaryFolder _tempFolder = new TemporaryFolder();
+class SyntacticDifferenceTest {
+  @TempDir public File _tempFolder;
 
   Batfish _batfish;
 
@@ -43,8 +43,8 @@ public class SyntacticDifferenceTest {
   private RoutingPolicy.Builder _policyBuilderBase;
   private RoutingPolicy.Builder _policyBuilderBaseOther;
 
-  @Before
-  public void setup() throws IOException {
+  @BeforeEach
+  void setup() throws IOException {
     NetworkFactory nf = new NetworkFactory();
 
     Configuration baseConfig =
@@ -105,7 +105,7 @@ public class SyntacticDifferenceTest {
   }
 
   @Test
-  public void testSameDifferenceBothDevices() {
+  void testSameDifferenceBothDevices() {
     RoutingPolicy base =
         _policyBuilderBase
             .addStatement(new Statements.StaticStatement(Statements.ExitAccept))
@@ -129,7 +129,7 @@ public class SyntacticDifferenceTest {
   }
 
   @Test
-  public void testSameDifferenceDifferentName() {
+  void testSameDifferenceDifferentName() {
     RoutingPolicy base =
         _policyBuilderBase
             .setName("NEW_RM")
@@ -154,7 +154,7 @@ public class SyntacticDifferenceTest {
   }
 
   @Test
-  public void testDifferentDifference_current() {
+  void testDifferentDifference_current() {
     RoutingPolicy base =
         _policyBuilderBase
             .addStatement(new SetLocalPreference(new LiteralLong(100L)))
@@ -179,7 +179,7 @@ public class SyntacticDifferenceTest {
   }
 
   @Test
-  public void testDifferentDifference_reference() {
+  void testDifferentDifference_reference() {
     RoutingPolicy base =
         _policyBuilderBase
             .addStatement(new Statements.StaticStatement(Statements.ExitAccept))
@@ -205,7 +205,7 @@ public class SyntacticDifferenceTest {
 
   /** The routing policies are equal but the contexts differ */
   @Test
-  public void testDifferentDifference_context() {
+  void testDifferentDifference_context() {
     RoutingPolicy base =
         _policyBuilderBase
             .addStatement(new Statements.StaticStatement(Statements.ExitAccept))
@@ -243,7 +243,7 @@ public class SyntacticDifferenceTest {
 
   /* Differences in nested calls do not matter. */
   @Test
-  public void testDifference_recursive() {
+  void testDifference_recursive() {
     RoutingPolicy calledPolicyBase =
         _policyBuilderBase
             .setName("RM2")

@@ -3,6 +3,7 @@ package org.batfish.datamodel.pojo;
 import static org.batfish.datamodel.pojo.Link.interfaceTypesToLinkType;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.io.IOException;
@@ -10,23 +11,20 @@ import java.util.HashMap;
 import java.util.Map;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.InterfaceType;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-public class LinkTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class LinkTest {
 
   @Test
-  public void constructorFail() throws IOException {
+  void constructorFail() {
     String linkStr = "{\"nofield\" : \"test\"}";
-    _thrown.expect(com.fasterxml.jackson.databind.exc.ValueInstantiationException.class);
-    BatfishObjectMapper.mapper().readValue(linkStr, Link.class);
+    assertThrows(
+        com.fasterxml.jackson.databind.exc.ValueInstantiationException.class,
+        () -> BatfishObjectMapper.mapper().readValue(linkStr, Link.class));
   }
 
   @Test
-  public void constructorBasic() throws IOException {
+  void constructorBasic() throws IOException {
     String linkStr = "{\"srcId\" : \"src\", \"dstId\" : \"dst\"}";
     Link link = BatfishObjectMapper.mapper().readValue(linkStr, Link.class);
 
@@ -36,7 +34,7 @@ public class LinkTest {
   }
 
   @Test
-  public void constructorProperties() throws IOException {
+  void constructorProperties() throws IOException {
     String linkStr =
         "{\"srcId\" : \"src\", \"dstId\" : \"dst\", \"properties\" : { \"key\": \"value\"}}";
     Link link = BatfishObjectMapper.mapper().readValue(linkStr, Link.class);
@@ -49,7 +47,7 @@ public class LinkTest {
   }
 
   @Test
-  public void serialization() {
+  void serialization() {
     Link link = new Link("src", "dst");
     Map<String, String> properties = new HashMap<>();
     properties.put("key", "value");
@@ -63,7 +61,7 @@ public class LinkTest {
   }
 
   @Test
-  public void testLinkTypeSymmetric() {
+  void testLinkTypeSymmetric() {
     for (InterfaceType t1 : InterfaceType.values()) {
       for (InterfaceType t2 : InterfaceType.values()) {
         assertThat(interfaceTypesToLinkType(t1, t2), equalTo(interfaceTypesToLinkType(t2, t1)));

@@ -1,16 +1,16 @@
 package org.batfish.dataplane.rib;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class AnnotatedRibTest {
+class AnnotatedRibTest {
   @Test
-  public void testContainsRoute() {
+  void testContainsRoute() {
     Rib rib = new Rib();
     StaticRoute sr =
         StaticRoute.testBuilder()

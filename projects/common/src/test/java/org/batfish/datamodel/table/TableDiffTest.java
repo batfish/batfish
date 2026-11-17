@@ -2,7 +2,7 @@ package org.batfish.datamodel.table;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -11,9 +11,9 @@ import java.util.List;
 import java.util.Map;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.table.Row.RowBuilder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class TableDiffTest {
+class TableDiffTest {
 
   private static ColumnMetadata colBoth =
       new ColumnMetadata("both", Schema.STRING, "both", true, true);
@@ -40,7 +40,7 @@ public class TableDiffTest {
   }
 
   @Test
-  public void buildMapNoKeyColumn() {
+  void buildMapNoKeyColumn() {
     // Column metadata has no keys; so all rows should match
     List<ColumnMetadata> columns =
         ImmutableList.of(new ColumnMetadata("k1", Schema.STRING, "desc", false, true));
@@ -54,7 +54,7 @@ public class TableDiffTest {
   }
 
   @Test
-  public void buildMapMixKeyValueColumns() {
+  void buildMapMixKeyValueColumns() {
     List<ColumnMetadata> columns =
         ImmutableList.of(
             new ColumnMetadata("key", Schema.STRING, "desc", true, false),
@@ -78,7 +78,7 @@ public class TableDiffTest {
   }
 
   @Test
-  public void diffMetadata() {
+  void diffMetadata() {
     List<ColumnMetadata> inputColumns = mixColumns();
 
     /**
@@ -106,7 +106,7 @@ public class TableDiffTest {
   }
 
   @Test
-  public void diffRowValues() {
+  void diffRowValues() {
     Row baseRow = mixRow("key1", "both1", "value1", null);
     Row deltaRow = mixRow(null, null, null, "neither2");
 
@@ -132,7 +132,7 @@ public class TableDiffTest {
 
   /** One of the rows is null */
   @Test
-  public void diffRowValuesNull() {
+  void diffRowValuesNull() {
     Row row = Row.of("key", "value");
     TableMetadata metadata =
         new TableMetadata(
@@ -156,7 +156,7 @@ public class TableDiffTest {
 
   /** Checks if we get back the expected number of rows based on ignoring missing keys. */
   @Test
-  public void diffTablesTestIncludeOneTableKeys() {
+  void diffTablesTestIncludeOneTableKeys() {
     List<ColumnMetadata> columns =
         ImmutableList.of(
             new ColumnMetadata("key", Schema.STRING, "key", true, false),
@@ -190,7 +190,7 @@ public class TableDiffTest {
    * should be thrown out, and the same value across two tables should not be reported.
    */
   @Test
-  public void diffTablesTestRowCount() {
+  void diffTablesTestRowCount() {
     List<ColumnMetadata> columns =
         ImmutableList.of(
             new ColumnMetadata("key", Schema.STRING, "key", true, false),
@@ -223,7 +223,7 @@ public class TableDiffTest {
 
   /** Checks if the content of the Rows we get back after diffing tables is what we expect */
   @Test
-  public void diffTablesTestRowContent() {
+  void diffTablesTestRowContent() {
     List<ColumnMetadata> columns = mixColumns();
     TableMetadata metadata = new TableMetadata(columns, "desc");
 
@@ -251,7 +251,7 @@ public class TableDiffTest {
 
   /** Checks if we properly handle tables where all columns are keys */
   @Test
-  public void diffTablesTestAllKeys() {
+  void diffTablesTestAllKeys() {
     TableMetadata noKeys =
         new TableMetadata(
             ImmutableList.of(new ColumnMetadata("key", Schema.STRING, "key", true, false)), "desc");

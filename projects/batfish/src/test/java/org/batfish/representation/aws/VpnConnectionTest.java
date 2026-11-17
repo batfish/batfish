@@ -18,7 +18,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -47,13 +47,13 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.representation.aws.VpnConnection.GatewayType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link VpnConnection} */
-public class VpnConnectionTest {
+class VpnConnectionTest {
 
   @Test
-  public void testDeserialization() throws IOException {
+  void testDeserialization() throws IOException {
     String text = readResource("org/batfish/representation/aws/VpnConnectionTest.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
@@ -207,7 +207,7 @@ public class VpnConnectionTest {
   }
 
   @Test
-  public void testDeserializationWithTunnelOptions() throws IOException {
+  void testDeserializationWithTunnelOptions() throws IOException {
     String text2 =
         readResource("org/batfish/representation/aws/VpnConnectionWithTunnelOptions.json", UTF_8);
 
@@ -281,7 +281,7 @@ public class VpnConnectionTest {
    * would discard every VPN connection in the file.
    */
   @Test
-  public void testDeserializationSecretsManagerPreSharedKey() throws IOException {
+  void testDeserializationSecretsManagerPreSharedKey() throws IOException {
     String text =
         readResource("org/batfish/representation/aws/VpnConnectionSecretsManagerPsk.json", UTF_8);
 
@@ -292,7 +292,7 @@ public class VpnConnectionTest {
   }
 
   @Test
-  public void testDeserializationTransitGateway() throws IOException {
+  void testDeserializationTransitGateway() throws IOException {
     String text =
         readResource("org/batfish/representation/aws/VpnConnectionTransitGatewayTest.json", UTF_8);
 
@@ -450,7 +450,7 @@ public class VpnConnectionTest {
   }
 
   @Test
-  public void testInitVpnConnection() {
+  void testInitVpnConnection() {
     Configuration vgwConfig = Utils.newAwsConfiguration("vgw", "awstest");
     VpnConnection.initVpnConnectionsInfrastructure(vgwConfig);
 
@@ -470,7 +470,7 @@ public class VpnConnectionTest {
    * GCM for the IPsec SA. The IKE phase 1 proposals must come from the phase 1 lists.
    */
   @Test
-  public void testIkePhase1ProposalsUsePhase1Algorithms() {
+  void testIkePhase1ProposalsUsePhase1Algorithms() {
     VpnGateway vgw = new VpnGateway("vpn", ImmutableList.of(), ImmutableMap.of(), 64666L);
     Configuration vgwConfig = Utils.newAwsConfiguration(vgw.getId(), "awstest");
     VpnConnection.initVpnConnectionsInfrastructure(vgwConfig);
@@ -529,7 +529,7 @@ public class VpnConnectionTest {
    * peer configured for that cipher can match.
    */
   @Test
-  public void testIpsecPhase2ProposalsAeadHasNoAuthentication() {
+  void testIpsecPhase2ProposalsAeadHasNoAuthentication() {
     VpnGateway vgw = new VpnGateway("vpn", ImmutableList.of(), ImmutableMap.of(), 64666L);
     Configuration vgwConfig = Utils.newAwsConfiguration(vgw.getId(), "awstest");
     VpnConnection.initVpnConnectionsInfrastructure(vgwConfig);
@@ -586,7 +586,7 @@ public class VpnConnectionTest {
   }
 
   @Test
-  public void testApplyToGateway() {
+  void testApplyToGateway() {
     VpnGateway vgw = new VpnGateway("vpn", ImmutableList.of(), ImmutableMap.of(), 64666L);
     Configuration vgwConfig = Utils.newAwsConfiguration(vgw.getId(), "awstest");
     VpnConnection.initVpnConnectionsInfrastructure(vgwConfig);

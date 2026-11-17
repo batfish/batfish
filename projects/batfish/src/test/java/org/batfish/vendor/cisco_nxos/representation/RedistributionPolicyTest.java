@@ -4,12 +4,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.testing.EqualsTester;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link RedistributionPolicy}. */
-public class RedistributionPolicyTest {
+class RedistributionPolicyTest {
   @Test
-  public void testConstruction() {
+  void testConstruction() {
     RedistributionPolicy policy =
         new RedistributionPolicy(RoutingProtocolInstance.ospf("tag"), "map");
     assertThat(policy.getRouteMap(), equalTo("map"));
@@ -17,7 +17,7 @@ public class RedistributionPolicyTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(5)
         .addEqualityGroup(

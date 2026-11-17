@@ -7,11 +7,11 @@ import com.google.common.testing.EqualsTester;
 import java.util.Optional;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class GlobalBroadcastNoPointToPointTest {
+class GlobalBroadcastNoPointToPointTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             GlobalBroadcastNoPointToPoint.instance(),
@@ -20,7 +20,7 @@ public class GlobalBroadcastNoPointToPointTest {
   }
 
   @Test
-  public void testMethods() {
+  void testMethods() {
     NodeInterfacePair nip = NodeInterfacePair.of("h", "i");
     NodeInterfacePair nip2 = NodeInterfacePair.of("h2", "i2");
     assertThat(

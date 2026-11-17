@@ -1,34 +1,34 @@
 package org.batfish.coordinator;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link WorkQueueMgr}. */
-public final class WorkDetailsTest {
+final class WorkDetailsTest {
 
   private WorkDetails.Builder _builder;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _builder =
         WorkDetails.builder().setNetworkId(new NetworkId("foo")).setWorkType(WorkType.UNKNOWN);
   }
 
   @Test
-  public void isOverlappingInputMatchingBases() {
+  void isOverlappingInputMatchingBases() {
     WorkDetails details1 = _builder.setSnapshotId(new SnapshotId("t1")).build();
     WorkDetails details2 = _builder.build();
     assertTrue(details1.isOverlappingInput(details2));
   }
 
   @Test
-  public void isOverlappingInputMatchingBaseDelta() {
+  void isOverlappingInputMatchingBaseDelta() {
     WorkDetails details1 = _builder.setSnapshotId(new SnapshotId("t1")).build();
     WorkDetails details2 =
         _builder
@@ -40,7 +40,7 @@ public final class WorkDetailsTest {
   }
 
   @Test
-  public void isOverlappingInputMatchingDeltaBase() {
+  void isOverlappingInputMatchingDeltaBase() {
     WorkDetails details1 =
         _builder
             .setSnapshotId(new SnapshotId("t1"))
@@ -58,7 +58,7 @@ public final class WorkDetailsTest {
   }
 
   @Test
-  public void isOverlappingInputMatchingDeltas() {
+  void isOverlappingInputMatchingDeltas() {
     WorkDetails details1 =
         _builder
             .setSnapshotId(new SnapshotId("t1"))
@@ -76,7 +76,7 @@ public final class WorkDetailsTest {
   }
 
   @Test
-  public void isOverlappingInputNoMatchBase() {
+  void isOverlappingInputNoMatchBase() {
     WorkDetails details1 = _builder.setSnapshotId(new SnapshotId("t1")).build();
     WorkDetails details2 = _builder.setSnapshotId(new SnapshotId("t3")).build();
 
@@ -84,7 +84,7 @@ public final class WorkDetailsTest {
   }
 
   @Test
-  public void isOverlappingInputNoMatchDelta() {
+  void isOverlappingInputNoMatchDelta() {
     WorkDetails details1 =
         _builder
             .setSnapshotId(new SnapshotId("t1"))
@@ -102,7 +102,7 @@ public final class WorkDetailsTest {
   }
 
   @Test
-  public void isOverlappingInputNoMatchBaseDelta() {
+  void isOverlappingInputNoMatchBaseDelta() {
     WorkDetails details1 =
         _builder
             .setSnapshotId(new SnapshotId("t1"))

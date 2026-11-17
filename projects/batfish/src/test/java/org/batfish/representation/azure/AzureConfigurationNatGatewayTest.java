@@ -5,6 +5,7 @@ import static org.batfish.representation.azure.AzureConfigurationTestUtils.testS
 import static org.batfish.representation.azure.AzureConfigurationTestUtils.testTrace;
 
 import com.google.common.collect.ImmutableList;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.batfish.common.plugin.IBatfish;
@@ -12,12 +13,11 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public class AzureConfigurationNatGatewayTest {
+class AzureConfigurationNatGatewayTest {
 
   private static final String TESTCONFIGS_DIR = "org/batfish/representation/azure/test-nat-gateway";
 
@@ -51,12 +51,12 @@ public class AzureConfigurationNatGatewayTest {
   private static final Ip VM_2_PUBLIC_IP = Ip.parse("80.41.19.20");
   private static final Ip DNS_CLOUDFLARE_IP = Ip.parse("1.1.1.1");
 
-  @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public static File _folder;
 
   private static IBatfish _batfish;
 
-  @BeforeClass
-  public static void setup() throws IOException {
+  @BeforeAll
+  static void setup() throws IOException {
     _batfish = testSetup(TESTCONFIGS_DIR, fileNames, _folder);
   }
 
@@ -67,7 +67,7 @@ public class AzureConfigurationNatGatewayTest {
   // therefore any traffic leaving VM2 towards Internet will use its own public ip address
 
   @Test
-  public void testVm1ToVm2() {
+  void testVm1ToVm2() {
     testBidirectionalTrace(
         Flow.builder()
             .setIngressNode(VM_1)
@@ -97,7 +97,7 @@ public class AzureConfigurationNatGatewayTest {
   }
 
   @Test
-  public void testVm1ToVm2_uni() {
+  void testVm1ToVm2_uni() {
     testTrace(
         Flow.builder()
             .setIngressNode(VM_1)
@@ -120,7 +120,7 @@ public class AzureConfigurationNatGatewayTest {
   }
 
   @Test
-  public void testVm1ToCloudflare() {
+  void testVm1ToCloudflare() {
     testTrace(
         Flow.builder()
             .setIngressNode(VM_1)

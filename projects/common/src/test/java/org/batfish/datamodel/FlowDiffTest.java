@@ -10,15 +10,15 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link FlowDiff}. */
-public final class FlowDiffTest {
+final class FlowDiffTest {
   @Test
-  public void testFlowDiffs() {
+  void testFlowDiffs() {
     Ip dst1 = Ip.parse("1.1.1.1");
     Ip src1 = Ip.parse("2.2.2.2");
     Ip dst2 = Ip.parse("3.3.3.3");
@@ -40,7 +40,7 @@ public final class FlowDiffTest {
   }
 
   @Test
-  public void testReturnFlowDiffs() {
+  void testReturnFlowDiffs() {
     Ip dst1 = Ip.parse("1.1.1.1");
     Ip src1 = Ip.parse("2.2.2.2");
     Ip dst2 = Ip.parse("3.3.3.3");
@@ -65,13 +65,13 @@ public final class FlowDiffTest {
   }
 
   @Test
-  public void testJackson() {
+  void testJackson() {
     FlowDiff fd = new FlowDiff(PROP_DST_IP, "old", "new");
     assertEquals(BatfishObjectMapper.clone(fd, FlowDiff.class), fd);
   }
 
   @Test
-  public void testFlowDiffPort() {
+  void testFlowDiffPort() {
     int dstport1 = 2000;
     int srcport1 = 3000;
     int dstport2 = 4000;
@@ -101,7 +101,7 @@ public final class FlowDiffTest {
   }
 
   @Test
-  public void testReturnFlowDiffPort() {
+  void testReturnFlowDiffPort() {
     int dstport1 = 2000;
     int srcport1 = 3000;
     int dstport2 = 4000;

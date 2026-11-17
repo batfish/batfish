@@ -121,11 +121,11 @@ import org.batfish.datamodel.vxlan.VxlanNode;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.datamodel.vxlan.VxlanTopologyUtils;
 import org.batfish.question.edges.EdgesQuestion.EdgeType;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link EdgesAnswerer} */
-public class EdgesAnswererTest {
+class EdgesAnswererTest {
 
   private static final int VXLAN_VNI = 5000;
   private static final String VXLAN_NODE1 = "n1";
@@ -184,8 +184,8 @@ public class EdgesAnswererTest {
   private Set<String> _includeNodes;
   private Set<String> _includeRemoteNodes;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -214,7 +214,7 @@ public class EdgesAnswererTest {
   }
 
   @Test
-  public void testGetIpsecEdges() {
+  void testGetIpsecEdges() {
     MutableValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology =
         ValueGraphBuilder.directed().allowsSelfLoops(false).build();
 
@@ -285,7 +285,7 @@ public class EdgesAnswererTest {
   }
 
   @Test
-  public void testGetEigrpEdges() {
+  void testGetEigrpEdges() {
     MutableNetwork<EigrpNeighborConfigId, EigrpEdge> eigrpTopology =
         NetworkBuilder.directed().allowsParallelEdges(false).allowsSelfLoops(false).build();
 
@@ -317,7 +317,7 @@ public class EdgesAnswererTest {
   }
 
   @Test
-  public void testGetBgpEdges() {
+  void testGetBgpEdges() {
     BgpProcess bgp1 = BgpProcess.testBgpProcess(Ip.parse("1.1.1.1"));
     BgpProcess bgp2 = BgpProcess.testBgpProcess(Ip.parse("2.2.2.2"));
 
@@ -416,7 +416,7 @@ public class EdgesAnswererTest {
   }
 
   @Test
-  public void testGetOspfEdges() {
+  void testGetOspfEdges() {
     NetworkFactory nf = new NetworkFactory();
     OspfProcess ospf1 =
         nf.ospfProcessBuilder().setRouterId(Ip.parse("1.1.1.1")).setReferenceBandwidth(1e8).build();
@@ -494,7 +494,7 @@ public class EdgesAnswererTest {
   }
 
   @Test
-  public void testGetVxlanEdges() {
+  void testGetVxlanEdges() {
     NetworkConfigurations nc = buildVxlanNetworkConfigurations();
     Map<String, Configuration> configurations = nc.getMap();
     VxlanTopology vxlanTopology = VxlanTopologyUtils.computeInitialVxlanTopology(nc.getMap());
@@ -523,7 +523,7 @@ public class EdgesAnswererTest {
   }
 
   @Test
-  public void testVxlanEdgeToRows() {
+  void testVxlanEdgeToRows() {
     NetworkConfigurations nc = buildVxlanNetworkConfigurations();
     Map<String, Configuration> configurations = nc.getMap();
     Set<String> includeNodes = configurations.keySet();
@@ -559,7 +559,7 @@ public class EdgesAnswererTest {
   }
 
   @Test
-  public void testVxlanEdgeToRow() {
+  void testVxlanEdgeToRow() {
     NetworkConfigurations nc = buildVxlanNetworkConfigurations();
 
     assertThat(
@@ -590,7 +590,7 @@ public class EdgesAnswererTest {
   }
 
   @Test
-  public void testGetIsisEdges() {
+  void testGetIsisEdges() {
     IsisNode node1 = new IsisNode("host1", "int1");
     IsisNode node2 = new IsisNode("host2", "int2");
 
@@ -617,7 +617,7 @@ public class EdgesAnswererTest {
   }
 
   @Test
-  public void testGetLayer1Edges() {
+  void testGetLayer1Edges() {
     Layer1Node host1Int1 = new Layer1Node("host1", "int1");
     Layer1Node host1Int10 = new Layer1Node("host1", "int10");
     Layer1Node host2Int2 = new Layer1Node("host2", "int2");
@@ -674,7 +674,7 @@ public class EdgesAnswererTest {
   }
 
   @Test
-  public void testGetLayer3Edges() {
+  void testGetLayer3Edges() {
     Topology layer3Topology =
         new Topology(ImmutableSortedSet.of(Edge.of("host1", "int1", "host2", "int2")));
 
@@ -702,7 +702,7 @@ public class EdgesAnswererTest {
   }
 
   @Test
-  public void testLayer3Order() {
+  void testLayer3Order() {
     Topology layer3Topology =
         new Topology(
             ImmutableSortedSet.of(
@@ -791,7 +791,7 @@ public class EdgesAnswererTest {
   }
 
   @Test
-  public void testEigrpToRow() {
+  void testEigrpToRow() {
     EigrpEdge testEdge =
         new EigrpEdge(
             new EigrpNeighborConfigId(1L, "host1", "int1", "vrf1"),
@@ -810,7 +810,7 @@ public class EdgesAnswererTest {
   }
 
   @Test
-  public void testOspfToRow() {
+  void testOspfToRow() {
     Row row = getOspfEdgeRow("host1", "int1", "host2", "int2");
 
     assertThat(
@@ -825,7 +825,7 @@ public class EdgesAnswererTest {
   }
 
   @Test
-  public void testIsisToRow() {
+  void testIsisToRow() {
     IsisEdge testEdge =
         new IsisEdge(
             IsisLevel.LEVEL_1, new IsisNode("host1", "int1"), new IsisNode("host2", "int2"));
@@ -843,7 +843,7 @@ public class EdgesAnswererTest {
   }
 
   @Test
-  public void testRipToRow() {
+  void testRipToRow() {
     Row row = getRipEdgeRow("host1", "int1", "host2", "int2");
 
     assertThat(
@@ -858,7 +858,7 @@ public class EdgesAnswererTest {
   }
 
   @Test
-  public void testLayer1ToRow() {
+  void testLayer1ToRow() {
     Row row = layer1EdgeToRow(new Layer1Edge("host1", "int1", "host2", "int2"));
     assertThat(
         row,
@@ -872,7 +872,7 @@ public class EdgesAnswererTest {
   }
 
   @Test
-  public void testLayer2ToRow() {
+  void testLayer2ToRow() {
     Row row = layer2EdgeToRow(new Layer2Edge("host1", "int1", 1, "host2", "int2", 2));
     assertThat(
         row,
@@ -888,7 +888,7 @@ public class EdgesAnswererTest {
   }
 
   @Test
-  public void testLayer3ToRow() {
+  void testLayer3ToRow() {
     Map<String, Configuration> configurationMap =
         ImmutableSortedMap.of("host1", _host1, "host2", _host2);
     Row row = layer3EdgeToRow(configurationMap, Edge.of("host1", "int1", "host2", "int2"));
@@ -910,7 +910,7 @@ public class EdgesAnswererTest {
   }
 
   @Test
-  public void testTableMetadataLayer3() {
+  void testTableMetadataLayer3() {
     List<ColumnMetadata> columnMetadata = getTableMetadata(EdgeType.LAYER3).getColumnMetadata();
     assertThat(
         columnMetadata.stream()
@@ -926,7 +926,7 @@ public class EdgesAnswererTest {
   }
 
   @Test
-  public void testTableMetadataBgp() {
+  void testTableMetadataBgp() {
     List<ColumnMetadata> columnMetadata = getTableMetadata(EdgeType.BGP).getColumnMetadata();
     assertThat(
         columnMetadata.stream()
@@ -958,7 +958,7 @@ public class EdgesAnswererTest {
   }
 
   @Test
-  public void testTableMetadataOthers() {
+  void testTableMetadataOthers() {
     List<ColumnMetadata> columnMetadata = getTableMetadata(EdgeType.OSPF).getColumnMetadata();
     assertThat(
         columnMetadata.stream()
@@ -1058,7 +1058,7 @@ public class EdgesAnswererTest {
   }
 
   @Test
-  public void testUserProvidedL1() {
+  void testUserProvidedL1() {
     Layer1Topologies layer1Topologies =
         new Layer1Topologies(
             new Layer1Topology(

@@ -2,18 +2,18 @@ package org.batfish.common.bdd;
 
 import static org.batfish.common.bdd.BDDUtils.bddFactory;
 import static org.batfish.common.bdd.BDDUtils.bitvector;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link PrimedBDDInteger}. */
-public final class PrimedBDDIntegerTest {
+final class PrimedBDDIntegerTest {
 
   @Test
-  public void testBasic() {
+  void testBasic() {
     BDDFactory factory = bddFactory(10);
     PrimedBDDInteger primedInteger =
         new PrimedBDDInteger(

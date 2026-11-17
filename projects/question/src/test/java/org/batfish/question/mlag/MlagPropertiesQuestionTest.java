@@ -4,12 +4,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link org.batfish.question.mlag.MlagPropertiesQuestion} */
-public final class MlagPropertiesQuestionTest {
+final class MlagPropertiesQuestionTest {
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     MlagPropertiesQuestion q = new MlagPropertiesQuestion("nodes", "mlags");
     assertThat(BatfishObjectMapper.clone(q, MlagPropertiesQuestion.class), equalTo(q));
   }

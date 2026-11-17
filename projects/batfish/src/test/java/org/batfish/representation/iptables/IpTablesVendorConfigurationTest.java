@@ -4,7 +4,7 @@ import static org.batfish.representation.iptables.IptablesVendorConfiguration.to
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.Iterables;
 import java.util.HashMap;
@@ -14,16 +14,16 @@ import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Ip;
 import org.batfish.representation.iptables.IptablesMatch.MatchType;
 import org.batfish.representation.iptables.IptablesRule.IptablesActionType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class IpTablesVendorConfigurationTest {
+class IpTablesVendorConfigurationTest {
 
   /**
    * Batfish only supports permit and drop IpTablesActions. Check that we drop those and let others
    * pass.
    */
   @Test
-  public void toIpAccessList_skipUnsupportedActions() {
+  void toIpAccessList_skipUnsupportedActions() {
     Map<AclLine, String> lineInInterfaces = new HashMap<>();
     Map<AclLine, String> lineOutInterfaces = new HashMap<>();
 

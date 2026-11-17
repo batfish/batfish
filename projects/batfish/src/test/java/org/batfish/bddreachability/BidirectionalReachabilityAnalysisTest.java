@@ -35,15 +35,16 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -106,14 +107,12 @@ import org.batfish.symbolic.state.OriginateVrf;
 import org.batfish.symbolic.state.PreInInterface;
 import org.batfish.symbolic.state.StateExpr;
 import org.batfish.symbolic.state.VrfAccept;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests for {@link BidirectionalReachabilityAnalysis}. */
-public final class BidirectionalReachabilityAnalysisTest {
+final class BidirectionalReachabilityAnalysisTest {
   private static final BDDPacket PKT = new BDDPacket();
   private static final Set<FlowDisposition> ALL_DISPOSITIONS =
       ImmutableSet.of(
@@ -182,12 +181,12 @@ public final class BidirectionalReachabilityAnalysisTest {
   private static ForwardingAnalysis FPFN_FORWARDING_ANALYSIS;
   private static IpsRoutedOutInterfacesFactory FPFN_IPS_ROUTED_OUT_INTERFACES_FACTORY;
 
-  @ClassRule public static final TemporaryFolder FPFN_TEMP = new TemporaryFolder();
+  @TempDir public static File FPFN_TEMP;
 
-  @Rule public TemporaryFolder temp = new TemporaryFolder();
+  @TempDir public File temp;
 
-  @BeforeClass
-  public static void setupSessionFiblookupTests() {
+  @BeforeAll
+  static void setupSessionFiblookupTests() {
     SFL_INGRESS_LOCATION = new InterfaceLinkLocation(SFL_INGRESS_NODE, SFL_INGRESS_IFACE);
     SFL_DST_IP_SPACE_SINGLE_NODE =
         AclIpSpace.difference(
@@ -196,8 +195,8 @@ public final class BidirectionalReachabilityAnalysisTest {
     SFL_DST_IP_SPACE_DUAL_NODE = SFL_NEIGHBOR_IFACE_ADDRESS.getIp().toIpSpace();
   }
 
-  @BeforeClass
-  public static void setupForwardPassFinalNodesTests() throws IOException {
+  @BeforeAll
+  static void setupForwardPassFinalNodesTests() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -243,7 +242,7 @@ public final class BidirectionalReachabilityAnalysisTest {
   }
 
   @Test
-  public void testReturnPassQueryConstraints() {
+  void testReturnPassQueryConstraints() {
     BDD dst1 = PKT.getDstIp().value(1L);
     BDD dst2 = PKT.getDstIp().value(2L);
     BDD src1 = PKT.getSrcIp().value(1L);
@@ -273,7 +272,7 @@ public final class BidirectionalReachabilityAnalysisTest {
 
   @SuppressWarnings("unchecked")
   @Test
-  public void testInitializeSessions() throws IOException {
+  void testInitializeSessions() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -533,7 +532,7 @@ public final class BidirectionalReachabilityAnalysisTest {
 
   @SuppressWarnings("unchecked")
   @Test
-  public void testBidirectionalReachabilitySuccess() throws IOException {
+  void testBidirectionalReachabilitySuccess() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -694,7 +693,7 @@ public final class BidirectionalReachabilityAnalysisTest {
 
   @SuppressWarnings("unchecked")
   @Test
-  public void testBidirectionalReachabilityFailure() throws IOException {
+  void testBidirectionalReachabilityFailure() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -901,7 +900,7 @@ public final class BidirectionalReachabilityAnalysisTest {
   }
 
   @Test
-  public void testForwardPassFinalNodesFromInterfaceLocationToNode() {
+  void testForwardPassFinalNodesFromInterfaceLocationToNode() {
     assertForwardPassFinalNodesRespected(
         new InterfaceLocation(FPFN_START_NODE, FPFN_EGRESS_IFACE),
         FPFN_START_EGRESS_ADDRESS.getIp().toIpSpace(),
@@ -909,7 +908,7 @@ public final class BidirectionalReachabilityAnalysisTest {
   }
 
   @Test
-  public void testForwardPassFinalNodesFromInterfaceLinkLocationToNode() {
+  void testForwardPassFinalNodesFromInterfaceLinkLocationToNode() {
     assertForwardPassFinalNodesRespected(
         new InterfaceLinkLocation(FPFN_START_NODE, FPFN_INGRESS_IFACE),
         AclIpSpace.difference(
@@ -919,7 +918,7 @@ public final class BidirectionalReachabilityAnalysisTest {
   }
 
   @Test
-  public void testForwardPassFinalNodesFromInterfaceLocationToInterfaceDisposition() {
+  void testForwardPassFinalNodesFromInterfaceLocationToInterfaceDisposition() {
     assertForwardPassFinalNodesRespected(
         new InterfaceLocation(FPFN_START_NODE, FPFN_EGRESS_IFACE),
         FPFN_START_EGRESS_ADDRESS.getIp().toIpSpace(),
@@ -929,7 +928,7 @@ public final class BidirectionalReachabilityAnalysisTest {
   }
 
   @Test
-  public void testForwardPassFinalNodesFromInterfaceLinkLocationToInterfaceDisposition() {
+  void testForwardPassFinalNodesFromInterfaceLinkLocationToInterfaceDisposition() {
     assertForwardPassFinalNodesRespected(
         new InterfaceLinkLocation(FPFN_START_NODE, FPFN_INGRESS_IFACE),
         AclIpSpace.difference(
@@ -1018,7 +1017,7 @@ public final class BidirectionalReachabilityAnalysisTest {
   }
 
   @Test
-  public void testInboundSession() throws IOException {
+  void testInboundSession() throws IOException {
     /*
     Test that inbound session will be created and matched. Setup:
      1. Create node with interface whose outgoing ACL denies all traffic
@@ -1084,45 +1083,43 @@ public final class BidirectionalReachabilityAnalysisTest {
   }
 
   @Test
-  public void testSessionFibLookupAcceptSingleNodeSingleVrf() throws IOException {
+  void testSessionFibLookupAcceptSingleNodeSingleVrf() throws IOException {
     assertSessionFiblookupAcceptSingleNode(makeSessionFibLookupNetwork(false, false, false, false));
   }
 
   @Test
-  public void testSessionFibLookupAcceptDualNodeSingleVrf() throws IOException {
+  void testSessionFibLookupAcceptDualNodeSingleVrf() throws IOException {
     assertSessionFiblookupAcceptDualNode(makeSessionFibLookupNetwork(true, false, false, false));
   }
 
   @Test
-  public void testSessionFibLookupAcceptSingleNodeSingleVrfBlockNonSessionReverse()
-      throws IOException {
+  void testSessionFibLookupAcceptSingleNodeSingleVrfBlockNonSessionReverse() throws IOException {
     assertSessionFiblookupAcceptSingleNode(makeSessionFibLookupNetwork(false, true, false, false));
   }
 
   @Test
-  public void testSessionFibLookupAcceptDualNodeSingleVrfBlockNonSessionReverse()
-      throws IOException {
+  void testSessionFibLookupAcceptDualNodeSingleVrfBlockNonSessionReverse() throws IOException {
     assertSessionFiblookupAcceptDualNode(makeSessionFibLookupNetwork(true, true, false, false));
   }
 
   @Test
-  public void testSessionFibLookupAcceptSingleNodeDualVrf() throws IOException {
+  void testSessionFibLookupAcceptSingleNodeDualVrf() throws IOException {
     assertSessionFiblookupAcceptSingleNode(makeSessionFibLookupNetwork(false, false, true, false));
   }
 
   @Test
-  public void testSessionFibLookupAcceptDualNodeDualVrf() throws IOException {
+  void testSessionFibLookupAcceptDualNodeDualVrf() throws IOException {
     assertSessionFiblookupAcceptDualNode(makeSessionFibLookupNetwork(true, false, true, false));
   }
 
   @Test
-  public void testSessionFibLookupAcceptSingleNodeDualVrfMissingEgressRoute() throws IOException {
+  void testSessionFibLookupAcceptSingleNodeDualVrfMissingEgressRoute() throws IOException {
     assertSessionFiblookupReturnNoRouteSingleNode(
         makeSessionFibLookupNetwork(false, false, true, true));
   }
 
   @Test
-  public void testSessionFibLookupAcceptDualNodeDualVrfMissingEgressRoute() throws IOException {
+  void testSessionFibLookupAcceptDualNodeDualVrfMissingEgressRoute() throws IOException {
     assertSessionFiblookupReturnNoRouteDualNode(
         makeSessionFibLookupNetwork(true, false, true, true));
   }
@@ -1445,7 +1442,7 @@ public final class BidirectionalReachabilityAnalysisTest {
   }
 
   @Test
-  public void testRequiredTransitNodes_traceroute() throws IOException {
+  void testRequiredTransitNodes_traceroute() throws IOException {
     SortedMap<String, Configuration> configs = makeRequiredTransitNodesNetwork();
     Batfish batfish = getBatfish(configs, temp);
     batfish.computeDataPlane(batfish.getSnapshot());
@@ -1487,7 +1484,7 @@ public final class BidirectionalReachabilityAnalysisTest {
   }
 
   @Test
-  public void testRequiredTransitNodes_noTransitNodesConstraint() throws IOException {
+  void testRequiredTransitNodes_noTransitNodesConstraint() throws IOException {
     SortedMap<String, Configuration> configs = makeRequiredTransitNodesNetwork();
     Batfish batfish = getBatfish(configs, temp);
     batfish.computeDataPlane(batfish.getSnapshot());
@@ -1525,7 +1522,7 @@ public final class BidirectionalReachabilityAnalysisTest {
   }
 
   @Test
-  public void testRequiredTransitNodes_withTransitNodeConstraint() throws IOException {
+  void testRequiredTransitNodes_withTransitNodeConstraint() throws IOException {
     SortedMap<String, Configuration> configs = makeRequiredTransitNodesNetwork();
     Batfish batfish = getBatfish(configs, temp);
     batfish.computeDataPlane(batfish.getSnapshot());

@@ -1,8 +1,10 @@
 package org.batfish.common.bdd;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.oneOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -21,14 +23,11 @@ import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Test the visitor in {@link IpAccessListToBdd} that converts lines and exprs to BDD. */
-public class IpAccessListToBddConverterTest {
-  @Rule public ExpectedException exception = ExpectedException.none();
+class IpAccessListToBddConverterTest {
 
   private static final String IFACE1 = "iface1";
 
@@ -40,15 +39,15 @@ public class IpAccessListToBddConverterTest {
 
   private IpAccessListToBdd _toBDD;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _pkt = new BDDPacket();
     _sourceMgr = BDDSourceManager.forInterfaces(_pkt, ImmutableSet.of(IFACE1, IFACE2));
     _toBDD = new IpAccessListToBddImpl(_pkt, _sourceMgr, ImmutableMap.of(), ImmutableMap.of());
   }
 
   @Test
-  public void testPermittedByAcl() {
+  void testPermittedByAcl() {
     Ip fooIp = Ip.parse("1.1.1.1");
     BDD fooIpBDD = _pkt.getDstIp().value(fooIp.asLong());
     PermittedByAcl permittedByAcl = new PermittedByAcl("foo");
@@ -66,17 +65,17 @@ public class IpAccessListToBddConverterTest {
   }
 
   @Test
-  public void testPermittedByAcl_undefined() {
+  void testPermittedByAcl_undefined() {
     PermittedByAcl permittedByAcl = new PermittedByAcl("foo");
     IpAccessListToBdd toBDD =
         new IpAccessListToBddImpl(_pkt, _sourceMgr, ImmutableMap.of(), ImmutableMap.of());
-    exception.expect(IllegalArgumentException.class);
-    exception.expectMessage("Undefined filter reference: foo");
-    toBDD.toBdd(permittedByAcl);
+    Throwable exception =
+        assertThrows(IllegalArgumentException.class, () -> toBDD.toBdd(permittedByAcl));
+    assertThat(exception.getMessage(), containsString("Undefined filter reference: foo"));
   }
 
   @Test
-  public void testPermittedByAcl_circular() {
+  void testPermittedByAcl_circular() {
     PermittedByAcl permittedByAcl = new PermittedByAcl("foo");
     Map<String, IpAccessList> namedAclBDDs =
         ImmutableMap.of(
@@ -88,13 +87,12 @@ public class IpAccessListToBddConverterTest {
     IpAccessListToBdd toBDD =
         new IpAccessListToBddImpl(
             _pkt, BDDSourceManager.empty(_pkt), namedAclBDDs, ImmutableMap.of());
-    exception.expect(BatfishException.class);
-    exception.expectMessage("Circular filter reference: foo");
-    toBDD.toBdd(permittedByAcl);
+    Throwable exception = assertThrows(BatfishException.class, () -> toBDD.toBdd(permittedByAcl));
+    assertThat(exception.getMessage(), containsString("Circular filter reference: foo"));
   }
 
   @Test
-  public void testMatchSrcInterface() {
+  void testMatchSrcInterface() {
     MatchSrcInterface matchSrcInterface1 = new MatchSrcInterface(ImmutableList.of(IFACE1));
     BDD iface1BDD = _sourceMgr.getSourceInterfaceBDD(IFACE1);
     BDD iface2BDD = _sourceMgr.getSourceInterfaceBDD(IFACE2);
@@ -120,7 +118,7 @@ public class IpAccessListToBddConverterTest {
   }
 
   @Test
-  public void testOriginateFromInterface() {
+  void testOriginateFromInterface() {
     assertThat(
         _toBDD.toBdd(OriginatingFromDevice.INSTANCE),
         equalTo(_sourceMgr.getOriginatingFromDeviceBDD()));

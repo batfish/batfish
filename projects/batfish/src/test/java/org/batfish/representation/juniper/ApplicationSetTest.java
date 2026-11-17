@@ -1,6 +1,6 @@
 package org.batfish.representation.juniper;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
@@ -8,13 +8,13 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.OrMatchExpr;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link ApplicationSet} */
-public class ApplicationSetTest {
+class ApplicationSetTest {
 
   @Test
-  public void testToAclLineMatchExpr() {
+  void testToAclLineMatchExpr() {
     /*
     masterAppSet
     - app1
@@ -58,7 +58,7 @@ public class ApplicationSetTest {
   }
 
   @Test
-  public void testToAclLineMatchExpr_builtIn() {
+  void testToAclLineMatchExpr_builtIn() {
     JuniperConfiguration jc = new JuniperConfiguration();
     jc.setFilename("host");
     String parentAppSetName = "PARENT_BUILT_IN";

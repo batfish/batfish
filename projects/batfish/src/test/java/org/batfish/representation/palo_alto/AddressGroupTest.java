@@ -13,13 +13,13 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.batfish.datamodel.Ip;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link AddressGroup} */
-public class AddressGroupTest {
+class AddressGroupTest {
 
   @Test
-  public void testGetDescendantObjectsBase() {
+  void testGetDescendantObjectsBase() {
     AddressGroup ag = new AddressGroup("group");
     Map<String, AddressObject> addressObjects =
         ImmutableMap.of("ad1", new AddressObject("ad1"), "ad2", new AddressObject("ad2"));
@@ -32,7 +32,7 @@ public class AddressGroupTest {
   }
 
   @Test
-  public void testGetDescendantObjectsCircular() {
+  void testGetDescendantObjectsCircular() {
     Map<String, AddressGroup> addressGroups =
         ImmutableMap.of(
             "parentGroup",
@@ -59,7 +59,7 @@ public class AddressGroupTest {
   }
 
   @Test
-  public void testGetDescendantObjectsEmpty() {
+  void testGetDescendantObjectsEmpty() {
     AddressGroup ag = new AddressGroup("group");
     assertThat(
         ag.getDescendantObjects(ImmutableMap.of(), ImmutableMap.of(), new HashSet<>()),
@@ -67,7 +67,7 @@ public class AddressGroupTest {
   }
 
   @Test
-  public void testGetDescendantObjectsIndirect() {
+  void testGetDescendantObjectsIndirect() {
     Map<String, AddressGroup> addressGroups =
         ImmutableMap.of(
             "parentGroup",
@@ -88,7 +88,7 @@ public class AddressGroupTest {
   }
 
   @Test
-  public void testGetDynamicDescendantObjectsConjunction() {
+  void testGetDynamicDescendantObjectsConjunction() {
     String filter = "'tag1' and 'tag2'";
     AddressGroup ag = new AddressGroup("name");
     ag.setFilter(filter);
@@ -125,19 +125,19 @@ public class AddressGroupTest {
   }
 
   @Test
-  public void testGetFilterConjunctsNoQuotes() {
+  void testGetFilterConjunctsNoQuotes() {
     String filter = "tag";
     assertThat(getFilterConjuncts(filter), contains("tag"));
   }
 
   @Test
-  public void testGetFilterConjuncts() {
+  void testGetFilterConjuncts() {
     String filter = "'tag1' and 'tag2'";
     assertThat(getFilterConjuncts(filter), contains("tag1", "tag2"));
   }
 
   @Test
-  public void testGetIpRangeSet() {
+  void testGetIpRangeSet() {
     // For an empty address group
     AddressGroup group = new AddressGroup("group");
     Map<String, AddressGroup> groupMap = ImmutableMap.of(group.getName(), group);

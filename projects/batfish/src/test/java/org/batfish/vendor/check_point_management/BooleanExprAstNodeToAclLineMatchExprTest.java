@@ -47,10 +47,10 @@ import org.batfish.vendor.check_point_management.parsing.serviceother.UdpAstNode
 import org.batfish.vendor.check_point_management.parsing.serviceother.UhDportAstNode;
 import org.batfish.vendor.check_point_management.parsing.serviceother.Uint16AstNode;
 import org.batfish.vendor.check_point_management.parsing.serviceother.UnhandledAstNode;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link BooleanExprAstNodeToAclLineMatchExpr}. */
-public final class BooleanExprAstNodeToAclLineMatchExprTest {
+final class BooleanExprAstNodeToAclLineMatchExprTest {
 
   private final BddTestbed _tb = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
 
@@ -70,7 +70,7 @@ public final class BooleanExprAstNodeToAclLineMatchExprTest {
           .build();
 
   @Test
-  public void testConvertConjunction() {
+  void testConvertConjunction() {
     assertBddsEqual(convert(new ConjunctionAstNode(), true), TRUE);
     assertBddsEqual(convert(new ConjunctionAstNode(UnhandledAstNode.of("foo")), true), TRUE);
     assertBddsEqual(convert(new ConjunctionAstNode(UnhandledAstNode.of("foo")), false), FALSE);
@@ -91,7 +91,7 @@ public final class BooleanExprAstNodeToAclLineMatchExprTest {
   }
 
   @Test
-  public void testConvertDisjunction() {
+  void testConvertDisjunction() {
     assertBddsEqual(convert(new DisjunctionAstNode(), true), FALSE);
     assertBddsEqual(convert(new DisjunctionAstNode(UnhandledAstNode.of("foo")), true), TRUE);
     assertBddsEqual(convert(new DisjunctionAstNode(UnhandledAstNode.of("foo")), false), FALSE);
@@ -112,7 +112,7 @@ public final class BooleanExprAstNodeToAclLineMatchExprTest {
   }
 
   @Test
-  public void testConvertDport() {
+  void testConvertDport() {
     assertBddsEqual(
         convert(new DportAstNode("foo", EqualsAstNode.instance(), Uint16AstNode.of(1)), true),
         matchDstPort(1));
@@ -135,19 +135,19 @@ public final class BooleanExprAstNodeToAclLineMatchExprTest {
   }
 
   @Test
-  public void testConvertEmpty() {
+  void testConvertEmpty() {
     assertBddsEqual(convert(EmptyAstNode.instance(), true), TRUE);
     assertBddsEqual(convert(EmptyAstNode.instance(), false), TRUE);
   }
 
   @Test
-  public void testConvertError() {
+  void testConvertError() {
     assertBddsEqual(convert(ErrorAstNode.instance(), true), FALSE);
     assertBddsEqual(convert(ErrorAstNode.instance(), false), FALSE);
   }
 
   @Test
-  public void testConvertIncoming() {
+  void testConvertIncoming() {
     // TODO: support direction
     assertBddsEqual(convert(new IncomingAstNode("foo"), true), TRUE);
     assertBddsEqual(convert(new IncomingAstNode("foo"), false), FALSE);
@@ -161,7 +161,7 @@ public final class BooleanExprAstNodeToAclLineMatchExprTest {
   }
 
   @Test
-  public void testConvertOutgoing() {
+  void testConvertOutgoing() {
     // TODO: support direction
     assertBddsEqual(convert(new OutgoingAstNode("foo"), true), TRUE);
     assertBddsEqual(convert(new OutgoingAstNode("foo"), false), FALSE);
@@ -175,7 +175,7 @@ public final class BooleanExprAstNodeToAclLineMatchExprTest {
   }
 
   @Test
-  public void testConvertTcp() {
+  void testConvertTcp() {
     assertBddsEqual(convert(TcpAstNode.instance(), true), matchIpProtocol(TCP));
     assertBddsEqual(convert(TcpAstNode.instance(), false), matchIpProtocol(TCP));
 
@@ -193,7 +193,7 @@ public final class BooleanExprAstNodeToAclLineMatchExprTest {
   }
 
   @Test
-  public void testConvertUdp() {
+  void testConvertUdp() {
     assertBddsEqual(convert(UdpAstNode.instance(), true), matchIpProtocol(UDP));
     assertBddsEqual(convert(UdpAstNode.instance(), false), matchIpProtocol(UDP));
 
@@ -211,7 +211,7 @@ public final class BooleanExprAstNodeToAclLineMatchExprTest {
   }
 
   @Test
-  public void testConvertUhDport() {
+  void testConvertUhDport() {
     assertBddsEqual(
         convert(new UhDportAstNode("foo", EqualsAstNode.instance(), Uint16AstNode.of(1)), true),
         and(matchIpProtocol(UDP), matchDstPort(1)));
@@ -234,7 +234,7 @@ public final class BooleanExprAstNodeToAclLineMatchExprTest {
   }
 
   @Test
-  public void testConvertUnhandled() {
+  void testConvertUnhandled() {
     assertBddsEqual(convert(UnhandledAstNode.of("foo"), true), TRUE);
     assertBddsEqual(convert(UnhandledAstNode.of("foo"), false), FALSE);
 
@@ -247,7 +247,7 @@ public final class BooleanExprAstNodeToAclLineMatchExprTest {
   }
 
   @Test
-  public void testPortRangeToIntegerSpaceEquals() {
+  void testPortRangeToIntegerSpaceEquals() {
     assertThat(portRangeToIntegerSpace(EqualsAstNode.instance(), 5), equalTo(IntegerSpace.of(5)));
     assertThat(portRangeToIntegerSpace(EqualsAstNode.instance(), -5), equalTo(IntegerSpace.EMPTY));
     assertThat(
@@ -255,7 +255,7 @@ public final class BooleanExprAstNodeToAclLineMatchExprTest {
   }
 
   @Test
-  public void testPortRangeToIntegerSpaceGreaterThan() {
+  void testPortRangeToIntegerSpaceGreaterThan() {
     assertThat(
         portRangeToIntegerSpace(GreaterThanAstNode.instance(), 5),
         equalTo(IntegerSpace.of(Range.closed(6, MAX_PORT_NUMBER))));
@@ -268,7 +268,7 @@ public final class BooleanExprAstNodeToAclLineMatchExprTest {
   }
 
   @Test
-  public void testPortRangeToIntegerSpaceGreaterThanOrEquals() {
+  void testPortRangeToIntegerSpaceGreaterThanOrEquals() {
     assertThat(
         portRangeToIntegerSpace(GreaterThanOrEqualsAstNode.instance(), 5),
         equalTo(IntegerSpace.of(Range.closed(5, MAX_PORT_NUMBER))));
@@ -279,7 +279,7 @@ public final class BooleanExprAstNodeToAclLineMatchExprTest {
   }
 
   @Test
-  public void testPortRangeToIntegerSpaceLessThan() {
+  void testPortRangeToIntegerSpaceLessThan() {
     assertThat(
         portRangeToIntegerSpace(LessThanAstNode.instance(), 5),
         equalTo(IntegerSpace.of(Range.closed(0, 4))));
@@ -289,7 +289,7 @@ public final class BooleanExprAstNodeToAclLineMatchExprTest {
   }
 
   @Test
-  public void testPortRangeToIntegerSpaceLessThanOrEquals() {
+  void testPortRangeToIntegerSpaceLessThanOrEquals() {
     assertThat(
         portRangeToIntegerSpace(LessThanOrEqualsAstNode.instance(), 5),
         equalTo(IntegerSpace.of(Range.closed(0, 5))));
@@ -300,12 +300,12 @@ public final class BooleanExprAstNodeToAclLineMatchExprTest {
   }
 
   @Test
-  public void testInspectTraceElement() {
+  void testInspectTraceElement() {
     assertThat(inspectTraceElement("foo"), equalTo(TraceElement.of("Matched: 'foo'")));
   }
 
   @Test
-  public void testUnhandledInspectTraceElement() {
+  void testUnhandledInspectTraceElement() {
     assertThat(
         unhandledInspectTraceElement("foo"),
         equalTo(TraceElement.of("Assumed matched since unsupported: 'foo'")));

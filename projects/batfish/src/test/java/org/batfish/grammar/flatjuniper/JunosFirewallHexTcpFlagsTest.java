@@ -7,18 +7,18 @@ import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.grammar.JunosGrammarTestUtils.parseConfig;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import java.io.File;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosFirewallHexTcpFlagsTest {
+final class JunosFirewallHexTcpFlagsTest {
 
   private static final String HOSTNAME = "firewall-hex-tcp-flags";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private static Flow.Builder tcpFlow() {
     return Flow.builder()
@@ -31,7 +31,7 @@ public final class JunosFirewallHexTcpFlagsTest {
   }
 
   @Test
-  public void testConversion() {
+  void testConversion() {
     Configuration config = parseConfig(_folder, HOSTNAME);
     Flow syn = tcpFlow().setTcpFlagsSyn(true).build();
     Flow synFin = tcpFlow().setTcpFlagsSyn(true).setTcpFlagsFin(true).build();

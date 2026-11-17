@@ -7,9 +7,9 @@ import static org.hamcrest.Matchers.not;
 import java.util.HashSet;
 import java.util.Set;
 import org.batfish.datamodel.Flow;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class MatchSrcInterfaceTest {
+class MatchSrcInterfaceTest {
   private static Flow createFlow() {
     Flow.Builder b = Flow.builder();
     b.setIngressNode("ingressNode");
@@ -17,7 +17,7 @@ public class MatchSrcInterfaceTest {
   }
 
   @Test
-  public void testSrcInterface() {
+  void testSrcInterface() {
     // Test source interface matching
 
     Set<String> interfaceNames = new HashSet<>();

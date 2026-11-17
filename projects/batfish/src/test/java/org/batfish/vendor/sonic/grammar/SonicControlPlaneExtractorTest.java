@@ -2,20 +2,17 @@ package org.batfish.vendor.sonic.grammar;
 
 import static org.batfish.vendor.sonic.grammar.SonicControlPlaneExtractor.getSonicFileMap;
 import static org.batfish.vendor.sonic.grammar.SonicControlPlaneExtractor.getSonicFrrFilename;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableMap;
 import org.batfish.vendor.sonic.grammar.SonicControlPlaneExtractor.SonicFileType;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-public class SonicControlPlaneExtractorTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class SonicControlPlaneExtractorTest {
 
   @Test
-  public void testGetSonicFileMap() {
+  void testGetSonicFileMap() {
     assertEquals(
         ImmutableMap.of(
             SonicFileType.FRR_CONF, "frr.conf", SonicFileType.CONFIG_DB_JSON, "config_db.json"),
@@ -38,7 +35,7 @@ public class SonicControlPlaneExtractorTest {
   }
 
   @Test
-  public void testGetSonicFileMap_Snmp() {
+  void testGetSonicFileMap_Snmp() {
     assertEquals(
         ImmutableMap.of(
             SonicFileType.FRR_CONF,
@@ -65,7 +62,7 @@ public class SonicControlPlaneExtractorTest {
   }
 
   @Test
-  public void testGetSonicFileMap_Resolv() {
+  void testGetSonicFileMap_Resolv() {
     assertEquals(
         ImmutableMap.of(
             SonicFileType.FRR_CONF,
@@ -92,32 +89,39 @@ public class SonicControlPlaneExtractorTest {
   }
 
   @Test
-  public void testGetSonicFileMap_missingConfigDb() {
-    _thrown.expect(IllegalArgumentException.class);
-    getSonicFileMap(ImmutableMap.of("frr.conf", "hello"));
+  void testGetSonicFileMap_missingConfigDb() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> getSonicFileMap(ImmutableMap.of("frr.conf", "hello")));
   }
 
   @Test
-  public void testGetSonicFileMap_missingFrr() {
-    _thrown.expect(IllegalArgumentException.class);
-    getSonicFileMap(ImmutableMap.of("config_db.json", "{}"));
+  void testGetSonicFileMap_missingFrr() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> getSonicFileMap(ImmutableMap.of("config_db.json", "{}")));
   }
 
   @Test
-  public void testGetSonicFileMap_duplicateType() {
-    _thrown.expect(IllegalArgumentException.class);
-    getSonicFileMap(ImmutableMap.of("config_db.json", "{}", "device_config_db.json", "{}"));
+  void testGetSonicFileMap_duplicateType() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            getSonicFileMap(
+                ImmutableMap.of("config_db.json", "{}", "device_config_db.json", "{}")));
   }
 
   @Test
-  public void testGetSonicFileMap_unknownType() {
-    _thrown.expect(IllegalArgumentException.class);
-    // frr is not a valid tail, and config_db's content is not json
-    getSonicFileMap(ImmutableMap.of("frr", "hello", "config_db,json", "not json"));
+  void testGetSonicFileMap_unknownType() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            // frr is not a valid tail, and config_db's content is not json
+            getSonicFileMap(ImmutableMap.of("frr", "hello", "config_db,json", "not json")));
   }
 
   @Test
-  public void testGetSonicFileMap_deprecated() {
+  void testGetSonicFileMap_deprecated() {
     // this will delegate to getSonicFrrFilename because frr filename is not legal
     assertEquals(
         ImmutableMap.of(
@@ -131,12 +135,15 @@ public class SonicControlPlaneExtractorTest {
         getSonicFileMap(ImmutableMap.of("frr.conf", "hello", "config_db", "{}")));
 
     // fail -- don't delegate when there are more than 2 files
-    _thrown.expect(IllegalArgumentException.class);
-    getSonicFileMap(ImmutableMap.of("frr", "hello", "config_db.json", "{}", "resolv.conf", "blah"));
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            getSonicFileMap(
+                ImmutableMap.of("frr", "hello", "config_db.json", "{}", "resolv.conf", "blah")));
   }
 
   @Test
-  public void testGetSonicFrrFilename() {
+  void testGetSonicFrrFilename() {
     assertEquals(
         "frr", getSonicFrrFilename(ImmutableMap.of("frr", "hello", "configdb.json", "{}")));
 
@@ -146,26 +153,29 @@ public class SonicControlPlaneExtractorTest {
   }
 
   @Test
-  public void testGetSonicFrrFilename_twoJsonFiles() {
-    _thrown.expect(IllegalArgumentException.class);
-    getSonicFrrFilename(ImmutableMap.of("f1", "{}", "f2", "{}"));
+  void testGetSonicFrrFilename_twoJsonFiles() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> getSonicFrrFilename(ImmutableMap.of("f1", "{}", "f2", "{}")));
   }
 
   @Test
-  public void testGetSonicFrrFilename_noJsonFiles() {
-    _thrown.expect(IllegalArgumentException.class);
-    getSonicFrrFilename(ImmutableMap.of("f1", "aa", "f2", "ab"));
+  void testGetSonicFrrFilename_noJsonFiles() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> getSonicFrrFilename(ImmutableMap.of("f1", "aa", "f2", "ab")));
   }
 
   @Test
-  public void testGetSonicFrrFilename_oneFile() {
-    _thrown.expect(IllegalArgumentException.class);
-    getSonicFrrFilename(ImmutableMap.of("frr", "hello"));
+  void testGetSonicFrrFilename_oneFile() {
+    assertThrows(
+        IllegalArgumentException.class, () -> getSonicFrrFilename(ImmutableMap.of("frr", "hello")));
   }
 
   @Test
-  public void testGetSonicFrrFilename_manyFiles() {
-    _thrown.expect(IllegalArgumentException.class);
-    getSonicFrrFilename(ImmutableMap.of("frr", "hello", "a", "{}", "b", "{}"));
+  void testGetSonicFrrFilename_manyFiles() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> getSonicFrrFilename(ImmutableMap.of("frr", "hello", "a", "{}", "b", "{}")));
   }
 }

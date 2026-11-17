@@ -1,18 +1,15 @@
 package org.batfish.datamodel;
 
 import com.google.common.testing.EqualsTester;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link VerboseEdge}. */
-@RunWith(JUnit4.class)
-public class VerboseEdgeTest {
+class VerboseEdgeTest {
   /**
    * Tests that two edges that have the same interface definition but different nodes are not equal.
    */
   @Test
-  public void testEquals() {
+  void testEquals() {
     Interface i1 = TestInterface.builder().setName("eth0").build();
     new EqualsTester()
         .addEqualityGroup(

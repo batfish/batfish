@@ -8,12 +8,12 @@ import com.google.common.collect.ImmutableSortedSet;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link AddressRangeAddressBookEntry}. */
-public class AddressRangeAddressBookEntryTest {
+class AddressRangeAddressBookEntryTest {
   @Test
-  public void testRange() {
+  void testRange() {
     assertThat(
         rangeToWildcards(Ip.ZERO, Ip.MAX),
         equalTo(ImmutableSortedSet.of(IpWildcard.create(Prefix.ZERO))));

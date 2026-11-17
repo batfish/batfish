@@ -1,19 +1,19 @@
 package org.batfish.representation.juniper;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link FwFromPacketLength} */
-public class FwFromPacketLengthTest {
+class FwFromPacketLengthTest {
 
   @Test
-  public void testToAclLineMatchExpr() {
+  void testToAclLineMatchExpr() {
     SubRange range = new SubRange(2, 3);
     FwFromPacketLength from = new FwFromPacketLength(range, false);
 
@@ -25,7 +25,7 @@ public class FwFromPacketLengthTest {
   }
 
   @Test
-  public void testToAclLineMatchExpr_except() {
+  void testToAclLineMatchExpr_except() {
     SubRange range = SubRange.singleton(1);
     FwFromPacketLength from = new FwFromPacketLength(range, true);
 

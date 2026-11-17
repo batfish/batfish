@@ -9,22 +9,22 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IntComparison;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link HasSize}. */
-public final class HasSizeTest {
+final class HasSizeTest {
 
   private static final HasSize EXPR =
       new HasSize(new IntComparison(IntComparator.EQ, new LiteralInt(5)));
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     assertThat(SerializationUtils.clone(EXPR), equalTo(EXPR));
     assertThat(BatfishObjectMapper.clone(EXPR, CommunitySetMatchExpr.class), equalTo(EXPR));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(EXPR, EXPR, new HasSize(EXPR.getExpr()))
         .addEqualityGroup(new HasSize(new IntComparison(IntComparator.GT, new LiteralInt(5))))

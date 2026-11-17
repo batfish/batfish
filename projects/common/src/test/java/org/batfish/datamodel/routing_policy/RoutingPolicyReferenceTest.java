@@ -20,14 +20,11 @@ import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statement;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests reference tracking in {@link RoutingPolicy}. */
-@RunWith(JUnit4.class)
-public class RoutingPolicyReferenceTest {
+class RoutingPolicyReferenceTest {
 
   private static Configuration _c;
 
@@ -35,8 +32,8 @@ public class RoutingPolicyReferenceTest {
 
   private static Warnings _w;
 
-  @Before
-  public void initializeFactory() {
+  @BeforeEach
+  void initializeFactory() {
     NetworkFactory nf = new NetworkFactory();
     _c = nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
     _rpb = nf.routingPolicyBuilder().setOwner(_c);
@@ -45,7 +42,7 @@ public class RoutingPolicyReferenceTest {
 
   /** Policy with actual circular reference as statement */
   @Test
-  public void testRoutingPolicyCircularReference() {
+  void testRoutingPolicyCircularReference() {
     String parentPolicyName = "parent";
     _rpb.setName(parentPolicyName)
         .setStatements(ImmutableList.of(new CallStatement(parentPolicyName)))
@@ -63,7 +60,7 @@ public class RoutingPolicyReferenceTest {
 
   /** Policy with actual circular reference as expr */
   @Test
-  public void testRoutingPolicyCircularReferenceExpr() {
+  void testRoutingPolicyCircularReferenceExpr() {
     String parentPolicyName = "parent";
 
     CallExpr callExpr = new CallExpr(parentPolicyName);
@@ -84,7 +81,7 @@ public class RoutingPolicyReferenceTest {
 
   /** Policy with actual circular reference deep in the policy */
   @Test
-  public void testRoutingPolicyDeepCircularReference() {
+  void testRoutingPolicyDeepCircularReference() {
     String parentPolicyName = "parent";
 
     CallStatement callStatement = new CallStatement(parentPolicyName);
@@ -142,7 +139,7 @@ public class RoutingPolicyReferenceTest {
 
   /** Policy with two copies of same call statement - should not contain circular reference */
   @Test
-  public void testRoutingPolicyTwoCopiesCallStatement() {
+  void testRoutingPolicyTwoCopiesCallStatement() {
     RoutingPolicy calledPolicy = _rpb.build();
     Statement callStatement = new CallStatement(calledPolicy.getName());
     _rpb.setStatements(ImmutableList.of(callStatement, callStatement)).build();
@@ -157,7 +154,7 @@ public class RoutingPolicyReferenceTest {
    * reference
    */
   @Test
-  public void testRoutingPolicyTwoDifferentCallStatementsSamePolicy() {
+  void testRoutingPolicyTwoDifferentCallStatementsSamePolicy() {
     RoutingPolicy calledPolicy = _rpb.build();
     Statement callStatement1 = new CallStatement(calledPolicy.getName());
     Statement callStatement2 = new CallStatement(calledPolicy.getName());

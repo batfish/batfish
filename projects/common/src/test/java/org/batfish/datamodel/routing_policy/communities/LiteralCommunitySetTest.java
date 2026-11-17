@@ -7,25 +7,25 @@ import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link LiteralCommunitySet}. */
-public final class LiteralCommunitySetTest {
+final class LiteralCommunitySetTest {
 
   private static final LiteralCommunitySet OBJ = new LiteralCommunitySet(CommunitySet.empty());
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     assertThat(BatfishObjectMapper.clone(OBJ, LiteralCommunitySet.class), equalTo(OBJ));
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     assertThat(SerializationUtils.clone(OBJ), equalTo(OBJ));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(OBJ, OBJ, new LiteralCommunitySet(CommunitySet.empty()))
         .addEqualityGroup(new LiteralCommunitySet(CommunitySet.of(StandardCommunity.of(1L))))

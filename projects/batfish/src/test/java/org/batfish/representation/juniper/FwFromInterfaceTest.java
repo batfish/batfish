@@ -4,20 +4,20 @@ import static org.batfish.common.matchers.WarningMatchers.hasText;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.MatchSrcInterface;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link FwFromInterface} */
-public class FwFromInterfaceTest {
+class FwFromInterfaceTest {
 
   @Test
-  public void testToAclLineMatchExpr() {
+  void testToAclLineMatchExpr() {
     JuniperConfiguration jc = new JuniperConfiguration();
     Interface physical = new Interface("iface");
     Interface logical = new Interface("iface.0");
@@ -50,7 +50,7 @@ public class FwFromInterfaceTest {
   }
 
   @Test
-  public void testToAclLineMatchExpr_undefinedInterface() {
+  void testToAclLineMatchExpr_undefinedInterface() {
     FwFromInterface from = new FwFromInterface("iface");
     JuniperConfiguration jc = new JuniperConfiguration();
     Warnings warnings = new Warnings(true, true, true);

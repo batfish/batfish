@@ -5,15 +5,15 @@ import static org.batfish.representation.aws.AwsConfigurationTestUtils.testSetup
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testTrace;
 
 import com.google.common.collect.ImmutableList;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * E2e tests for transit gateway. The configuration was pulled after creating two VPCs A and B and
@@ -21,7 +21,7 @@ import org.junit.rules.TemporaryFolder;
  * routing table of only of those points to the transit gateway attachment. VPC B has only one
  * subnet, which is connected to the attachment.
  */
-public class AwsConfigurationTransitGatewayTest {
+class AwsConfigurationTransitGatewayTest {
 
   private static final String TESTCONFIGS_DIR =
       "org/batfish/representation/aws/test-transit-gateway";
@@ -62,18 +62,18 @@ public class AwsConfigurationTransitGatewayTest {
   private static Ip _instanceA2Ip = Ip.parse("10.10.20.154");
   private static Ip _instanceBIp = Ip.parse("192.168.1.106");
 
-  @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public static File _folder;
 
   private static IBatfish _batfish;
 
-  @BeforeClass
-  public static void setup() throws IOException {
+  @BeforeAll
+  static void setup() throws IOException {
     _batfish = testSetup(TESTCONFIGS_DIR, fileNames, _folder);
   }
 
   /** Test connectivity from A to B */
   @Test
-  public void testFromAtoB() {
+  void testFromAtoB() {
     testTrace(
         getAnyFlow(_instanceA, _instanceBIp, _batfish),
         FlowDisposition.DENIED_IN,
@@ -83,7 +83,7 @@ public class AwsConfigurationTransitGatewayTest {
 
   /** Test connectivity from B to A */
   @Test
-  public void testFromBtoA() {
+  void testFromBtoA() {
     testTrace(
         getAnyFlow(_instanceB, _instanceAIp, _batfish),
         FlowDisposition.DENIED_IN,
@@ -93,7 +93,7 @@ public class AwsConfigurationTransitGatewayTest {
 
   /** Test connectivity from A2 to B -- should die at the subnet router */
   @Test
-  public void testFromA2toB() {
+  void testFromA2toB() {
     testTrace(
         getAnyFlow(_instanceA2, _instanceBIp, _batfish),
         FlowDisposition.NULL_ROUTED,
@@ -106,7 +106,7 @@ public class AwsConfigurationTransitGatewayTest {
    * outgoing traffic, not incoming traffic.
    */
   @Test
-  public void testFromBtoA2() {
+  void testFromBtoA2() {
     testTrace(
         getAnyFlow(_instanceB, _instanceA2Ip, _batfish),
         FlowDisposition.DENIED_IN,

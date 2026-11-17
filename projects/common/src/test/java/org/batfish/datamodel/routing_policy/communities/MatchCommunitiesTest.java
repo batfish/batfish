@@ -2,8 +2,8 @@ package org.batfish.datamodel.routing_policy.communities;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.testing.EqualsTester;
@@ -13,27 +13,27 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.Environment;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link MatchCommunities}. */
-public final class MatchCommunitiesTest {
+final class MatchCommunitiesTest {
 
   private static final MatchCommunities EXPR =
       new MatchCommunities(
           new CommunitySetExprReference("a"), new CommunitySetMatchExprReference("a"));
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     assertThat(BatfishObjectMapper.clone(EXPR, MatchCommunities.class), equalTo(EXPR));
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     assertThat(SerializationUtils.clone(EXPR), equalTo(EXPR));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             EXPR,
@@ -51,7 +51,7 @@ public final class MatchCommunitiesTest {
   }
 
   @Test
-  public void testEvaluate() {
+  void testEvaluate() {
     Configuration c = new Configuration("h", ConfigurationFormat.CISCO_IOS);
     c.setCommunitySetMatchExprs(
         ImmutableMap.of("a", new HasCommunity(new CommunityIs(StandardCommunity.of(1L)))));

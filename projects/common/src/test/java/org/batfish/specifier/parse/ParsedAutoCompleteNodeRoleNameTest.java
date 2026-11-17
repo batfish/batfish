@@ -19,7 +19,7 @@ import org.batfish.role.RoleDimensionMapping;
 import org.batfish.specifier.Grammar;
 import org.batfish.specifier.parse.Anchor.Type;
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for node role name auto completion in {@link ParsedAutoComplete}. The testing strategy is
@@ -35,7 +35,7 @@ import org.junit.Test;
  *       potential partial things (thus helping validate the assumptions made in testFind*)
  * </ol>
  */
-public class ParsedAutoCompleteNodeRoleNameTest {
+class ParsedAutoCompleteNodeRoleNameTest {
 
   private static NodeRolesData testNodeRolesData =
       NodeRolesData.builder()
@@ -77,7 +77,7 @@ public class ParsedAutoCompleteNodeRoleNameTest {
 
   /** Context-sensitive completion of node role name after dimension name */
   @Test
-  public void testAutoCompleteNodeRoleName() {
+  void testAutoCompleteNodeRoleName() {
     PathElement anchor = new PathElement(NODE_ROLE_NAME, null, 1, 42);
     PotentialMatch pm = new PotentialMatch(anchor, "", ImmutableList.of());
 
@@ -96,7 +96,7 @@ public class ParsedAutoCompleteNodeRoleNameTest {
    * present
    */
   @Test
-  public void testAutoCompleteNodeRoleNamePrefix() {
+  void testAutoCompleteNodeRoleNamePrefix() {
     ParsedAutoComplete pac = getPAC();
 
     PathElement anchor = new PathElement(Type.NODE_ROLE_NAME, null, 1, 42);
@@ -124,7 +124,7 @@ public class ParsedAutoCompleteNodeRoleNameTest {
    * role names
    */
   @Test
-  public void testE2eNoTailNoMatchingDimension() {
+  void testE2eNoTailNoMatchingDimension() {
     String query = "@role(nodim";
     assertThat(
         getPAC(query, Grammar.NODE_SPECIFIER).run(),
@@ -139,7 +139,7 @@ public class ParsedAutoCompleteNodeRoleNameTest {
   }
 
   @Test
-  public void testE2eNoTailMatchingDimension() {
+  void testE2eNoTailMatchingDimension() {
     String query = "@role(dim";
     assertThat(
         getPAC(query, Grammar.NODE_SPECIFIER).run(),
@@ -159,7 +159,7 @@ public class ParsedAutoCompleteNodeRoleNameTest {
 
   /** The role name portion has started but no prefix yet */
   @Test
-  public void testE2eNoRoleNamePrefix() {
+  void testE2eNoRoleNamePrefix() {
     String query = "@role(dim1,";
 
     Set<ParsedAutoCompleteSuggestion> expected =
@@ -175,7 +175,7 @@ public class ParsedAutoCompleteNodeRoleNameTest {
 
   /** The role name portion has started but no prefix yet */
   @Test
-  public void testE2eRoleNamePrefix() {
+  void testE2eRoleNamePrefix() {
     String query = "@role(dim1,r11";
 
     Set<ParsedAutoCompleteSuggestion> expected =
@@ -191,7 +191,7 @@ public class ParsedAutoCompleteNodeRoleNameTest {
 
   /** Test auto completion when embedded within a location function */
   @Test
-  public void testE2eLocationFuncNoRoleNamePrefix() {
+  void testE2eLocationFuncNoRoleNamePrefix() {
     String query = "@enter(@role(dim1,";
     assertThat(
         getPAC(query, Grammar.LOCATION_SPECIFIER).run(),
@@ -201,7 +201,7 @@ public class ParsedAutoCompleteNodeRoleNameTest {
   }
 
   @Test
-  public void testE2eLocationFuncRoleNamePrefix() {
+  void testE2eLocationFuncRoleNamePrefix() {
     String query = "@enter(@role(dim1,r11";
     assertThat(
         getPAC(query, Grammar.LOCATION_SPECIFIER).run(),
@@ -212,7 +212,7 @@ public class ParsedAutoCompleteNodeRoleNameTest {
 
   /** Test that spaces do not disrupt us */
   @Test
-  public void testE2eSpacesNoRoleNamePrefix() {
+  void testE2eSpacesNoRoleNamePrefix() {
     String query = " @role ( dim1 ,";
     assertThat(
         getPAC(query, Grammar.NODE_SPECIFIER).run(),
@@ -222,7 +222,7 @@ public class ParsedAutoCompleteNodeRoleNameTest {
   }
 
   @Test
-  public void testE2eSpacesRoleNamePrefix() {
+  void testE2eSpacesRoleNamePrefix() {
     String query = " @role ( dim1 , r11";
     assertThat(
         getPAC(query, Grammar.LOCATION_SPECIFIER).run(),

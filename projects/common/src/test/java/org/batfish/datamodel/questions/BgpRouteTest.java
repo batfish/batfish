@@ -16,13 +16,13 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.TunnelEncapsulationAttribute;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.questions.BgpRoute.Builder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link BgpRoute} */
-public class BgpRouteTest {
+class BgpRouteTest {
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     BgpRoute br =
         BgpRoute.builder()
             .setClusterList(ImmutableSet.of(0L))
@@ -39,7 +39,7 @@ public class BgpRouteTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     Builder brb =
         BgpRoute.builder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
@@ -74,7 +74,7 @@ public class BgpRouteTest {
   }
 
   @Test
-  public void testToBuilder() {
+  void testToBuilder() {
     BgpRoute br =
         BgpRoute.builder()
             .setAsPath(AsPath.ofSingletonAsSets(1L, 1L))
@@ -108,14 +108,14 @@ public class BgpRouteTest {
   }
 
   @Test
-  public void testJsonSerializationLocalAttributes() {
+  void testJsonSerializationLocalAttributes() {
     BgpRoute br = minimalBuilder().setTag2(2).setColor(3).setColor2(4).build();
 
     assertThat(BatfishObjectMapper.clone(br, BgpRoute.class), equalTo(br));
   }
 
   @Test
-  public void testJsonOmitsUnsetLocalAttributes() {
+  void testJsonOmitsUnsetLocalAttributes() {
     JsonNode json = BatfishObjectMapper.mapper().valueToTree(minimalBuilder().build());
 
     assertThat(json.has(BgpRoute.PROP_TAG2), equalTo(false));
@@ -124,7 +124,7 @@ public class BgpRouteTest {
   }
 
   @Test
-  public void testJsonIncludesSetLocalAttributes() {
+  void testJsonIncludesSetLocalAttributes() {
     JsonNode json =
         BatfishObjectMapper.mapper()
             .valueToTree(minimalBuilder().setTag2(2).setColor(3).setColor2(4).build());

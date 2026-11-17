@@ -17,13 +17,13 @@ import org.batfish.vendor.VendorStructureId;
 import org.batfish.vendor.arista.representation.eos.AristaBgpPeerFilter;
 import org.batfish.vendor.arista.representation.eos.AristaBgpPeerFilterLine;
 import org.batfish.vendor.arista.representation.eos.AristaBgpV4DynamicNeighbor;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link AristaConversions} */
-public class AristaConversionsTest {
+class AristaConversionsTest {
 
   @Test
-  public void testGetAsnSpaceSingularAs() {
+  void testGetAsnSpaceSingularAs() {
     AristaBgpV4DynamicNeighbor neighbor =
         new AristaBgpV4DynamicNeighbor(Prefix.parse("1.1.1.0/24"));
     neighbor.setRemoteAs(1L);
@@ -31,14 +31,14 @@ public class AristaConversionsTest {
   }
 
   @Test
-  public void testGetAsnSpaceNoAs() {
+  void testGetAsnSpaceNoAs() {
     AristaBgpV4DynamicNeighbor neighbor =
         new AristaBgpV4DynamicNeighbor(Prefix.parse("1.1.1.0/24"));
     assertThat(getAsnSpace(neighbor, ImmutableMap.of()), equalTo(LongSpace.EMPTY));
   }
 
   @Test
-  public void testGetAsnSpaceUndefinedPeerList() {
+  void testGetAsnSpaceUndefinedPeerList() {
     AristaBgpV4DynamicNeighbor neighbor =
         new AristaBgpV4DynamicNeighbor(Prefix.parse("1.1.1.0/24"));
     neighbor.setPeerFilter("PF");
@@ -46,7 +46,7 @@ public class AristaConversionsTest {
   }
 
   @Test
-  public void testGetAsnSpaceDefinedPeerList() {
+  void testGetAsnSpaceDefinedPeerList() {
     AristaBgpV4DynamicNeighbor neighbor =
         new AristaBgpV4DynamicNeighbor(Prefix.parse("1.1.1.0/24"));
     neighbor.setPeerFilter("PF");
@@ -57,7 +57,7 @@ public class AristaConversionsTest {
 
   /** Check that vendorStructureId is set when extended ACL is converted to route filter list */
   @Test
-  public void testToRouterFilterList_extendedAccessList_vendorStructureId() {
+  void testToRouterFilterList_extendedAccessList_vendorStructureId() {
     ExtendedAccessList acl = new ExtendedAccessList("name");
     RouteFilterList rfl = toRouteFilterList(acl, "file");
     assertThat(
@@ -69,7 +69,7 @@ public class AristaConversionsTest {
 
   /** Check that vendorStructureId is set when standard ACL is converted to route filter list */
   @Test
-  public void testToRouterFilterList_standardAccessList_vendorStructureId() {
+  void testToRouterFilterList_standardAccessList_vendorStructureId() {
     StandardAccessList acl = new StandardAccessList("name");
     RouteFilterList rfl = toRouteFilterList(acl, "file");
     assertThat(
@@ -81,7 +81,7 @@ public class AristaConversionsTest {
 
   /** Check that source name and type is set when prefix list is converted to route filter list */
   @Test
-  public void testToRouterFilterList_prefixList_vendorStructureId() {
+  void testToRouterFilterList_prefixList_vendorStructureId() {
     PrefixList plist = new PrefixList("name");
     RouteFilterList rfl = toRouteFilterList(plist, "file");
     assertThat(
@@ -92,7 +92,7 @@ public class AristaConversionsTest {
   }
 
   @Test
-  public void testToOspfRedistributionProtocols() {
+  void testToOspfRedistributionProtocols() {
     assertThat(
         toOspfRedistributionProtocols(RedistributionSourceProtocol.BGP_ANY),
         containsInAnyOrder(RoutingProtocol.BGP, RoutingProtocol.AGGREGATE, RoutingProtocol.IBGP));

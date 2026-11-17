@@ -20,17 +20,13 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.specifier.Grammar;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link Parser} producing {@link FilterAstNode}. */
-public class ParserFilterTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class ParserFilterTest {
 
   @Test
-  public void testCompletionEmpty() {
+  void testCompletionEmpty() {
     String query = "";
 
     CompletionMetadata completionMetadata =
@@ -69,7 +65,7 @@ public class ParserFilterTest {
   }
 
   @Test
-  public void testCompletionPartialName() {
+  void testCompletionPartialName() {
     String query = "filter1"; // this could be a complete term or a partial name
 
     CompletionMetadata completionMetadata =
@@ -102,7 +98,7 @@ public class ParserFilterTest {
   }
 
   @Test
-  public void testParseFilterDirectionIn() {
+  void testParseFilterDirectionIn() {
     InFilterAstNode expectedAst = new InFilterAstNode(new NameInterfaceAstNode("eth0"));
 
     assertThat(
@@ -115,7 +111,7 @@ public class ParserFilterTest {
   }
 
   @Test
-  public void testParseFilterDirectionOut() {
+  void testParseFilterDirectionOut() {
     OutFilterAstNode expectedAst = new OutFilterAstNode(new NameInterfaceAstNode("eth0"));
 
     assertThat(
@@ -128,7 +124,7 @@ public class ParserFilterTest {
   }
 
   @Test
-  public void testParseFilterName() {
+  void testParseFilterName() {
     String filterName = "filt-er";
     NameFilterAstNode expectedAst = new NameFilterAstNode(filterName);
 
@@ -140,7 +136,7 @@ public class ParserFilterTest {
   }
 
   @Test
-  public void testParseFilterNameRegex() {
+  void testParseFilterNameRegex() {
     String regex = "^filter 0-0:1\\/0.*.?$";
     String regexWithSlashes = "/" + regex + "/";
     NameRegexFilterAstNode expectedAst = new NameRegexFilterAstNode(regex);
@@ -154,7 +150,7 @@ public class ParserFilterTest {
   }
 
   @Test
-  public void testParseFilterNameRegexDeprecated() {
+  void testParseFilterNameRegexDeprecated() {
     String regex = "filter.*";
     NameRegexFilterAstNode expectedAst = new NameRegexFilterAstNode(regex);
 
@@ -165,7 +161,7 @@ public class ParserFilterTest {
   }
 
   @Test
-  public void testParseFilterParens() {
+  void testParseFilterParens() {
     assertThat(
         SpecifierAstBuilder.getAst(Grammar.FILTER_SPECIFIER, "(filter)"),
         equalTo(new NameFilterAstNode("filter")));
@@ -180,7 +176,7 @@ public class ParserFilterTest {
   }
 
   @Test
-  public void testParseFilterDifference() {
+  void testParseFilterDifference() {
     DifferenceFilterAstNode expectedNode =
         new DifferenceFilterAstNode(
             new NameFilterAstNode("filter1"), new NameFilterAstNode("filter2"));
@@ -194,7 +190,7 @@ public class ParserFilterTest {
   }
 
   @Test
-  public void testParseFilterIntersection() {
+  void testParseFilterIntersection() {
     IntersectionFilterAstNode expectedNode =
         new IntersectionFilterAstNode(
             new NameFilterAstNode("filter1"), new NameFilterAstNode("filter2"));
@@ -208,7 +204,7 @@ public class ParserFilterTest {
   }
 
   @Test
-  public void testParseFilterWithNodeSimple() {
+  void testParseFilterWithNodeSimple() {
     FilterAstNode expectedAst =
         new FilterWithNodeFilterAstNode(new NameNodeAstNode("n"), new NameFilterAstNode("e"));
 
@@ -218,7 +214,7 @@ public class ParserFilterTest {
   }
 
   @Test
-  public void testParseFilterWithNodeComplexNodeTerm() {
+  void testParseFilterWithNodeComplexNodeTerm() {
     FilterAstNode expectedAst =
         new FilterWithNodeFilterAstNode(
             new UnionNodeAstNode(new NameNodeAstNode("n1"), new NameNodeAstNode("n2")),
@@ -236,7 +232,7 @@ public class ParserFilterTest {
   }
 
   @Test
-  public void testParseFilterUnion() {
+  void testParseFilterUnion() {
     UnionFilterAstNode expectedNode =
         new UnionFilterAstNode(new NameFilterAstNode("filter1"), new NameFilterAstNode("filter2"));
 
@@ -250,7 +246,7 @@ public class ParserFilterTest {
 
   /** Test if we got the precedence of set operators right. Intersection is higher priority. */
   @Test
-  public void testParseFilterSetOpPrecedence() {
+  void testParseFilterSetOpPrecedence() {
     assertThat(
         SpecifierAstBuilder.getAst(Grammar.FILTER_SPECIFIER, "filter1\\filter2&filter3"),
         equalTo(

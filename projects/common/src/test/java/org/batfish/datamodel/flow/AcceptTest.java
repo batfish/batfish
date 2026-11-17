@@ -6,14 +6,14 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.testing.EqualsTester;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link Accept}. */
 @ParametersAreNonnullByDefault
-public final class AcceptTest {
+final class AcceptTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new Object())
         .addEqualityGroup(Accept.INSTANCE, Accept.INSTANCE)
@@ -21,7 +21,7 @@ public final class AcceptTest {
   }
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     SessionAction clone = BatfishObjectMapper.clone(Accept.INSTANCE, SessionAction.class);
     assertThat(clone, equalTo(Accept.INSTANCE));
   }

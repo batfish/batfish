@@ -1,6 +1,6 @@
 package org.batfish.minesweeper.env;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -18,11 +18,11 @@ import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.minesweeper.utils.Tuple;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link SourceVrfCollector}. */
-public class SourceVrfCollectorTest {
+class SourceVrfCollectorTest {
 
   private static final String HOSTNAME = "hostname";
   private Configuration _baseConfig;
@@ -31,8 +31,8 @@ public class SourceVrfCollectorTest {
   private static final MatchSourceVrf VRF1 = new MatchSourceVrf("first");
   private static final MatchSourceVrf VRF2 = new MatchSourceVrf("second");
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder()
@@ -45,7 +45,7 @@ public class SourceVrfCollectorTest {
   }
 
   @Test
-  public void testVisitConjunction() {
+  void testVisitConjunction() {
 
     Conjunction c = new Conjunction(ImmutableList.of(VRF1, VRF2));
 
@@ -57,7 +57,7 @@ public class SourceVrfCollectorTest {
   }
 
   @Test
-  public void testVisitConjunctionChain() {
+  void testVisitConjunctionChain() {
 
     ConjunctionChain cc = new ConjunctionChain(ImmutableList.of(VRF1, VRF2));
 
@@ -70,7 +70,7 @@ public class SourceVrfCollectorTest {
   }
 
   @Test
-  public void testVisitDisjunction() {
+  void testVisitDisjunction() {
 
     Disjunction d = new Disjunction(ImmutableList.of(VRF1, VRF2));
 
@@ -82,7 +82,7 @@ public class SourceVrfCollectorTest {
   }
 
   @Test
-  public void testVisitFirstMatchChain() {
+  void testVisitFirstMatchChain() {
 
     FirstMatchChain fmc = new FirstMatchChain(ImmutableList.of(VRF1, VRF2));
 
@@ -95,14 +95,14 @@ public class SourceVrfCollectorTest {
   }
 
   @Test
-  public void testVisitMatchSourceVrf() {
+  void testVisitMatchSourceVrf() {
     assertEquals(
         _collector.visitMatchSourceVrf(VRF1, new Tuple<>(new HashSet<>(), _baseConfig)),
         ImmutableSet.of("first"));
   }
 
   @Test
-  public void testVisitNot() {
+  void testVisitNot() {
 
     Not n = new Not(VRF1);
 
@@ -114,7 +114,7 @@ public class SourceVrfCollectorTest {
   }
 
   @Test
-  public void testVisitWithEnvironmentExpr() {
+  void testVisitWithEnvironmentExpr() {
 
     MatchSourceVrf vrf3 = new MatchSourceVrf("third");
     MatchSourceVrf vrf4 = new MatchSourceVrf("fourth");

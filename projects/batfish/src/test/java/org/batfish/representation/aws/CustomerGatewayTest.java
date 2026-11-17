@@ -10,13 +10,13 @@ import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link org.batfish.representation.aws.CustomerGateway} */
-public class CustomerGatewayTest {
+class CustomerGatewayTest {
 
   @Test
-  public void testDeserialization() throws IOException {
+  void testDeserialization() throws IOException {
     String text = readResource("org/batfish/representation/aws/CustomerGatewayTest.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);

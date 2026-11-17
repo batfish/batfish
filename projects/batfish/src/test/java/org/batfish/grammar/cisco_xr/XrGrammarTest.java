@@ -162,17 +162,19 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -331,22 +333,18 @@ import org.batfish.representation.cisco_xr.XrRoutePolicyDeleteCommunityStatement
 import org.batfish.representation.cisco_xr.XrRoutePolicySetCommunity;
 import org.batfish.representation.cisco_xr.XrWildcardCommunitySetElem;
 import org.batfish.vendor.VendorStructureId;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests for {@link CiscoXrParser} and {@link CiscoXrControlPlaneExtractor}. */
-public final class XrGrammarTest {
+final class XrGrammarTest {
   private final BddTestbed _bddTestbed = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
   private final IpAccessListToBdd _aclToBdd = _bddTestbed.getAclToBdd();
 
   static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/cisco_xr/testconfigs/";
   static final String SNAPSHOTS_PREFIX = "org/batfish/grammar/cisco_xr/snapshots/";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+  @TempDir public File _folder;
 
   private Batfish getBatfishForConfigurationNames(String... configurationNames) {
     String[] names =
@@ -428,7 +426,7 @@ public final class XrGrammarTest {
 
   /** Check reference tracking for interfaces */
   @Test
-  public void testInterface() {
+  void testInterface() {
     String hostname = "interface";
     String filename = String.format("configs/%s", hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -442,7 +440,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testInterfaceAclExtraction() {
+  void testInterfaceAclExtraction() {
     CiscoXrConfiguration c = parseVendorConfig("interface-acl");
 
     assertThat(c.getInterfaces(), hasKey("Bundle-Ether1"));
@@ -452,7 +450,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testInterfaceAclCommonExtraction() {
+  void testInterfaceAclCommonExtraction() {
     CiscoXrConfiguration c = parseVendorConfig("interface-acl-common");
 
     // Interface with both common and interface-specific ACL
@@ -478,7 +476,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testAclExtraction() {
+  void testAclExtraction() {
     CiscoXrConfiguration c = parseVendorConfig("acl");
     assertThat(c.getIpv4Acls(), hasKeys("acl"));
     Ipv4AccessList acl = c.getIpv4Acls().get("acl");
@@ -498,7 +496,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testAclConversion() {
+  void testAclConversion() {
     Configuration c = parseConfig("acl");
     assertThat(c.getIpAccessLists(), hasKeys("acl"));
     IpAccessList acl = c.getIpAccessLists().get("acl");
@@ -535,7 +533,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testInterfaceAclCommonConversion() {
+  void testInterfaceAclCommonConversion() {
     Configuration c = parseConfig("interface-acl-common");
     String hostname = c.getHostname();
     String ifaceName = "GigabitEthernet0/0/0/0";
@@ -578,7 +576,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testInterfaceAclCommonAbfConversion() {
+  void testInterfaceAclCommonAbfConversion() {
     Configuration c = parseConfig("interface-acl-common-abf");
 
     // Chained with ABF in common ACL - should use chained packet policy
@@ -607,7 +605,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testBanner() {
+  void testBanner() {
     Configuration c = parseConfig("banner");
     assertThat(
         c.getVendorFamily().getCiscoXr().getBanners(),
@@ -620,7 +618,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testBundleEtherSubInterfaces() {
+  void testBundleEtherSubInterfaces() {
     Configuration c = parseConfig("bundle-ether-subif");
     assertThat(
         c.getAllInterfaces(),
@@ -649,13 +647,13 @@ public final class XrGrammarTest {
    * diagnostics.
    */
   @Test
-  public void testBgpNeighborCrash() {
+  void testBgpNeighborCrash() {
     // Don't crash.
     parseConfig("bgp-neighbor-crash");
   }
 
   @Test
-  public void testBgpNeighborRefs() throws IOException {
+  void testBgpNeighborRefs() throws IOException {
     String hostname = "bgp-neighbor-refs";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -693,13 +691,13 @@ public final class XrGrammarTest {
    * (fat-fingered).
    */
   @Test
-  public void testMultipleRouterCrash() {
+  void testMultipleRouterCrash() {
     // Don't crash.
     parseConfig("bgp-multiple-routers");
   }
 
   @Test
-  public void testRoutePolicyCommunityInlineExtraction() {
+  void testRoutePolicyCommunityInlineExtraction() {
     String hostname = "rp-community-inline";
     CiscoXrConfiguration vc = parseVendorConfig(hostname);
     assertThat(
@@ -873,7 +871,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testCommunitySetExtraction() {
+  void testCommunitySetExtraction() {
     String hostname = "community-set";
     CiscoXrConfiguration vc = parseVendorConfig(hostname);
 
@@ -920,7 +918,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testRoutePolicyImplicitActionsConversion() {
+  void testRoutePolicyImplicitActionsConversion() {
     Configuration c = parseConfig("route-policy-implicit-actions");
 
     Prefix prefixNoMatch = Prefix.parse("10.11.0.0/16");
@@ -957,7 +955,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testCommunitySetConversion() {
+  void testCommunitySetConversion() {
     Configuration c = parseConfig("community-set");
     CommunityContext ctx = CommunityContext.builder().build();
 
@@ -1229,7 +1227,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testExtcommunitySetRtConversion() {
+  void testExtcommunitySetRtConversion() {
     Configuration c = parseConfig("ios-xr-extcommunity-set-rt");
     CommunityContext ctx = CommunityContext.builder().build();
 
@@ -1384,7 +1382,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testExtcommunitySetRtExtraction() {
+  void testExtcommunitySetRtExtraction() {
     CiscoXrConfiguration c = parseVendorConfig("ios-xr-extcommunity-set-rt");
 
     assertThat(c.getExtcommunitySetRts(), hasKeys("rt1"));
@@ -1401,7 +1399,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testOspfInterfaceCost() {
+  void testOspfInterfaceCost() {
     Configuration c = parseConfig("ospf-interface-cost");
     String ifaceEth1Name = "GigabitEthernet0/0/0/1";
     String ifaceEth2Name = "GigabitEthernet0/0/0/2";
@@ -1429,7 +1427,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testOspfInterface() {
+  void testOspfInterface() {
     Configuration c = parseConfig("ospf-interface");
     String ifaceName = "Bundle-Ether201";
     Map<String, Interface> ifaces = c.getAllInterfaces();
@@ -1441,7 +1439,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testOspfInterfaceUndefined() {
+  void testOspfInterfaceUndefined() {
     // OSPF settings mention an undefined interface Bundle-Ether201
     String hostname = "ospf-interface-undefined";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -1459,7 +1457,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testOspfCost() {
+  void testOspfCost() {
     Configuration manual = parseConfig("ospf-cost");
     assertThat(
         manual.getDefaultVrf().getOspfProcesses().get("1").getReferenceBandwidth(), equalTo(10e6d));
@@ -1471,7 +1469,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testOspfDefaultInformationOriginateExtraction() {
+  void testOspfDefaultInformationOriginateExtraction() {
     CiscoXrConfiguration c = parseVendorConfig("ospf-default-information");
     assertThat(c.getDefaultVrf().getOspfProcesses(), hasKeys("1", "2", "3", "4"));
     {
@@ -1510,7 +1508,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testOspfDefaultInformationOriginateConversion() {
+  void testOspfDefaultInformationOriginateConversion() {
     Configuration c = parseConfig("ospf-default-information");
     assertThat(c.getDefaultVrf().getOspfProcesses(), hasKeys("1", "2", "3", "4"));
     GeneratedRoute.Builder defaultRouteBuilder =
@@ -1602,7 +1600,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testOspfDistributeListExtraction() {
+  void testOspfDistributeListExtraction() {
     CiscoXrConfiguration c = parseVendorConfig("ospf-distribute-list");
     assertThat(c.getDefaultVrf().getOspfProcesses(), hasKeys("1", "2", "3"));
     OspfProcess proc1 = c.getDefaultVrf().getOspfProcesses().get("1");
@@ -1674,7 +1672,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testOspfDistributeListConversion() {
+  void testOspfDistributeListConversion() {
     Configuration c = parseConfig("ospf-distribute-list");
     assertThat(c.getDefaultVrf().getOspfProcesses(), hasKeys("1", "2", "3"));
     {
@@ -1749,7 +1747,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testOspfRedistributionRoutePolicy() {
+  void testOspfRedistributionRoutePolicy() {
     String hostname = "ospf-redist-policy";
     Configuration c = parseConfig(hostname);
 
@@ -1806,7 +1804,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testPrefixSet() {
+  void testPrefixSet() {
     String hostname = "prefix-set";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
@@ -1841,7 +1839,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testRoutePolicyDone() {
+  void testRoutePolicyDone() {
     String hostname = "route-policy-done";
     Configuration c = parseConfig(hostname);
 
@@ -1877,7 +1875,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testRoutePolicyValidationStateExtraction() {
+  void testRoutePolicyValidationStateExtraction() {
     CiscoXrConfiguration c = parseVendorConfig("rp-validation-state");
     assertThat(c.getRoutePolicies(), hasKeys("validation-state-testing"));
     RoutePolicy p = c.getRoutePolicies().get("validation-state-testing");
@@ -1898,7 +1896,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testPolicyMap() {
+  void testPolicyMap() {
     String hostname = "policy-map";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
 
@@ -1925,7 +1923,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testVrfRouteTargetExtraction() {
+  void testVrfRouteTargetExtraction() {
     String hostname = "xr-vrf-route-target";
     CiscoXrConfiguration vc = parseVendorConfig(hostname);
     assertThat(
@@ -1991,7 +1989,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testVrfRoutePolicyExtraction() {
+  void testVrfRoutePolicyExtraction() {
     String hostname = "xr-vrf-route-policy";
     CiscoXrConfiguration vc = parseVendorConfig(hostname);
     assertThat(vc.getVrfs(), hasKeys(DEFAULT_VRF_NAME, "v0", "v1", "v2"));
@@ -2016,7 +2014,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testVrfRoutePolicyReferences() {
+  void testVrfRoutePolicyReferences() {
     String hostname = "xr-vrf-route-policy";
     String filename = String.format("configs/%s", hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -2035,7 +2033,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testAccessListReferences() {
+  void testAccessListReferences() {
     String hostname = "xr-access-list-refs";
     String filename = String.format("configs/%s", hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -2128,21 +2126,21 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testBfdParsing() {
+  void testBfdParsing() {
     String hostname = "xr-bfd";
     // Do not crash
     assertNotNull(parseVendorConfig(hostname));
   }
 
   @Test
-  public void testIpv6AccessListParsing() {
+  void testIpv6AccessListParsing() {
     String hostname = "xr-ipv6-access-list";
     // Do not crash
     assertNotNull(parseVendorConfig(hostname));
   }
 
   @Test
-  public void testInterfaceAddressExtraction() {
+  void testInterfaceAddressExtraction() {
     String hostname = "xr-interface-address";
     CiscoXrConfiguration vc = parseVendorConfig(hostname);
 
@@ -2163,7 +2161,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testRdSetExtraction() {
+  void testRdSetExtraction() {
     String hostname = "rd-set";
     CiscoXrConfiguration vc = parseVendorConfig(hostname);
 
@@ -2200,14 +2198,14 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testBgpParsing() {
+  void testBgpParsing() {
     String hostname = "xr-bgp";
     // Do not crash
     assertNotNull(parseVendorConfig(hostname));
   }
 
   @Test
-  public void testRdSetReferences() {
+  void testRdSetReferences() {
     String hostname = "xr-rd-set-refs";
     String filename = String.format("configs/%s", hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -2219,7 +2217,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testMiscIgnoredParsing() {
+  void testMiscIgnoredParsing() {
     String hostname = "xr-misc-ignored";
     CiscoXrConfiguration vc = parseVendorConfig(hostname);
 
@@ -2234,13 +2232,13 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testHostNameDomain() {
+  void testHostNameDomain() {
     Configuration c = parseConfig("xr-hostname.domain");
     assertThat(c.getHumanName(), equalTo("xr-hostname.domain"));
   }
 
   @Test
-  public void testHsrpExtraction() {
+  void testHsrpExtraction() {
     CiscoXrConfiguration config = parseVendorConfig("hsrp");
     assertThat(config.getHsrp(), notNullValue());
     Hsrp hsrp = config.getHsrp();
@@ -2279,7 +2277,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testHsrpConversion() {
+  void testHsrpConversion() {
     Configuration c = parseConfig("hsrp");
     assertThat(
         c,
@@ -2321,13 +2319,13 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testHumanName() {
+  void testHumanName() {
     Configuration c = parseConfig("xr-humanname");
     assertThat(c.getHumanName(), equalTo("XR-humanname"));
   }
 
   @Test
-  public void testIgmpReferences() {
+  void testIgmpReferences() {
     String hostname = "xr-igmp-references";
     String filename = String.format("configs/%s", hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -2362,7 +2360,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testMldReferences() {
+  void testMldReferences() {
     String hostname = "xr-mld-references";
     String filename = String.format("configs/%s", hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -2397,7 +2395,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testPimReferences() {
+  void testPimReferences() {
     String hostname = "xr-pim-references";
     String filename = String.format("configs/%s", hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -2506,7 +2504,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testMsdpReferences() {
+  void testMsdpReferences() {
     String hostname = "xr-msdp-references";
     String filename = String.format("configs/%s", hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -2556,7 +2554,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testMulticastRoutingReferences() {
+  void testMulticastRoutingReferences() {
     String hostname = "xr-multicast-routing-references";
     String filename = String.format("configs/%s", hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -2583,7 +2581,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testFlowReferences() {
+  void testFlowReferences() {
     String hostname = "xr-flow";
     String filename = String.format("configs/%s", hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -2627,14 +2625,14 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testMplsParsing() {
+  void testMplsParsing() {
     String hostname = "xr-mpls";
     // Do not crash
     assertNotNull(parseVendorConfig(hostname));
   }
 
   @Test
-  public void testSnmpServerParsing() {
+  void testSnmpServerParsing() {
     String hostname = "xr-snmp-server";
     String filename = String.format("configs/%s", hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -2653,7 +2651,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testOspfParsing() {
+  void testOspfParsing() {
     String hostname = "xr-ospf";
     // Do not crash
     assertNotNull(parseVendorConfig(hostname));
@@ -2661,7 +2659,7 @@ public final class XrGrammarTest {
 
   /** Test that the parser stays within a vrf context the entire time. */
   @Test
-  public void testOspfVrfGrammar() {
+  void testOspfVrfGrammar() {
     String hostname = "xr-ospf-vrf-grammar";
     CiscoXrConfiguration vc = parseVendorConfig(hostname);
     assertThat(
@@ -2673,14 +2671,14 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testTftpParsing() {
+  void testTftpParsing() {
     String hostname = "xr-tftp";
     // Do not crash
     assertNotNull(parseVendorConfig(hostname));
   }
 
   @Test
-  public void testEthernetServicesDefinitions() {
+  void testEthernetServicesDefinitions() {
     String hostname = "xr-ethernet-services";
     String filename = String.format("configs/%s", hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -2691,14 +2689,14 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testLogging() {
+  void testLogging() {
     String hostname = "xr-logging";
     // Do not crash
     assertNotNull(parseVendorConfig(hostname));
   }
 
   @Test
-  public void testDscpExtraction() {
+  void testDscpExtraction() {
     String hostname = "xr-dscp";
     CiscoXrConfiguration vc = parseVendorConfig(hostname);
     String aclName = "ipv4dscpacl";
@@ -2849,7 +2847,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testBgpRedistributionRoutePolicy() {
+  void testBgpRedistributionRoutePolicy() {
     /*
      * Config has static routes 1.2.3.4/32, 1.2.3.5/32, and 2.0.0.0/8. Static routes are
      * redistributed into BGP with a route-map that permits the first two (using keywords "done" and
@@ -2891,7 +2889,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testAggregateAddressExtraction() {
+  void testAggregateAddressExtraction() {
     String hostname = "xr-aggregate-address";
     CiscoXrConfiguration vc = parseVendorConfig(hostname);
     Map<Prefix, BgpAggregateIpv4Network> aggs =
@@ -2938,7 +2936,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testNoAggregateAddressExtraction() {
+  void testNoAggregateAddressExtraction() {
     String hostname = "xr-no-aggregate-address";
     CiscoXrConfiguration vc = parseVendorConfig(hostname);
     Map<Prefix, BgpAggregateIpv4Network> aggs =
@@ -2952,7 +2950,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testNoAggregateAddressExtractionWarning() {
+  void testNoAggregateAddressExtractionWarning() {
     String hostname = "xr-no-aggregate-address";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
 
@@ -2972,7 +2970,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testAggregateAddressConversion() {
+  void testAggregateAddressConversion() {
     String hostname = "xr-aggregate-address";
     Configuration c = parseConfig(hostname);
 
@@ -3044,7 +3042,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testBgpAggregateWithLocalSuppressedRoutes() {
+  void testBgpAggregateWithLocalSuppressedRoutes() {
     /*
      * Config has static routes:
      * - 1.1.1.0/24
@@ -3148,7 +3146,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testBgpAggregateWithLearnedSuppressedRoutes() throws IOException {
+  void testBgpAggregateWithLearnedSuppressedRoutes() throws IOException {
     /*
      * Snapshot contains c1, c2, and c3. c1 redistributes static routes 1.1.1.0/16 and 2.2.2.0/16
      * into BGP and advertises them to c2. c2 has aggregates 1.1.0.0/16 (not summary-only) and
@@ -3240,7 +3238,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testBgpDefaultImportExport() {
+  void testBgpDefaultImportExport() {
     // BGP peers with no import/export filters defined deny all routes in XR
     String hostname = "bgp-default-import-export";
     Configuration c = parseConfig(hostname);
@@ -3270,28 +3268,28 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testConflictPolicyHighestIpParsing() {
+  void testConflictPolicyHighestIpParsing() {
     String hostname = "xr-conflict-policy-highest-ip";
     // Do not crash
     assertNotNull(parseVendorConfig(hostname));
   }
 
   @Test
-  public void testConflictPolicyLongestPrefixParsing() {
+  void testConflictPolicyLongestPrefixParsing() {
     String hostname = "xr-conflict-policy-longest-prefix";
     // Do not crash
     assertNotNull(parseVendorConfig(hostname));
   }
 
   @Test
-  public void testConflictPolicyStaticParsing() {
+  void testConflictPolicyStaticParsing() {
     String hostname = "xr-conflict-policy-static";
     // Do not crash
     assertNotNull(parseVendorConfig(hostname));
   }
 
   @Test
-  public void testAsPathSetExtraction() {
+  void testAsPathSetExtraction() {
     String hostname = "xr-as-path-set";
     CiscoXrConfiguration vc = parseVendorConfig(hostname);
 
@@ -3327,14 +3325,14 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testAsPathSetConversion() {
+  void testAsPathSetConversion() {
     String hostname = "xr-as-path-set";
     // Do not crash
     assertNotNull(parseConfig(hostname));
   }
 
   @Test
-  public void testAsPathBooleanExtraction() {
+  void testAsPathBooleanExtraction() {
     String hostname = "xr-as-path-boolean";
     CiscoXrConfiguration vc = parseVendorConfig(hostname);
 
@@ -3465,7 +3463,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testAsPathBooleanConversion() {
+  void testAsPathBooleanConversion() {
     String hostname = "xr-as-path-boolean";
     Configuration c = parseConfig(hostname);
 
@@ -3699,7 +3697,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testResolutionPolicyFiltering() throws IOException {
+  void testResolutionPolicyFiltering() throws IOException {
     String hostname = "resolution_policy";
     Configuration c = parseConfig(hostname);
     assertThat(c.getRoutingPolicies(), hasKey(RESOLUTION_POLICY_NAME));
@@ -3718,7 +3716,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testResolutionPolicyRibRoutes() throws IOException {
+  void testResolutionPolicyRibRoutes() throws IOException {
     String hostname = "resolution_policy";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     batfish.loadConfigurations(batfish.getSnapshot());
@@ -3739,7 +3737,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testOspfNetworkType() {
+  void testOspfNetworkType() {
     String hostname = "ospf-network-type";
     CiscoXrConfiguration c = parseVendorConfig(hostname);
     OspfProcess ospfProcess = c.getDefaultVrf().getOspfProcesses().get("65100");
@@ -3775,7 +3773,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testOspfNetworkTypeOverrideExtraction() {
+  void testOspfNetworkTypeOverrideExtraction() {
     String hostname = "ospf-network-type-override";
     CiscoXrConfiguration vc = parseVendorConfig(hostname);
     OspfProcess ospfProcess = vc.getDefaultVrf().getOspfProcesses().get("65100");
@@ -3798,7 +3796,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testOspfNetworkTypeOverrideConversion() {
+  void testOspfNetworkTypeOverrideConversion() {
     String hostname = "ospf-network-type-override";
     Configuration c = parseConfig(hostname);
 
@@ -3819,7 +3817,7 @@ public final class XrGrammarTest {
 
   /** Test extraction of ACL based forwarding constructs in IP access-lists */
   @Test
-  public void testAbfExtraction() {
+  void testAbfExtraction() {
     String hostname = "abf_extraction";
     CiscoXrConfiguration vc = parseVendorConfig(hostname);
 
@@ -3868,7 +3866,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testAbfExtractionWarning() {
+  void testAbfExtractionWarning() {
     String hostname = "abf_extraction";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
 
@@ -3896,7 +3894,7 @@ public final class XrGrammarTest {
 
   /** Test conversion of ACL based forwarding constructs in IP access-lists */
   @Test
-  public void testAbfConversion() {
+  void testAbfConversion() {
     String hostname = "abf_conversion";
     Configuration c = parseConfig(hostname);
     String abfPolicyName = computeAbfIpv4PolicyName("aclv4");
@@ -4014,7 +4012,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testAbfConversionWarning() {
+  void testAbfConversionWarning() {
     String hostname = "abf_conversion_warning";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
 
@@ -4065,7 +4063,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testNoRoute() {
+  void testNoRoute() {
     String hostname = "xr-no-route";
     CiscoXrConfiguration vc = parseVendorConfig(hostname);
 
@@ -4086,7 +4084,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testNoRouteWarning() {
+  void testNoRouteWarning() {
     String hostname = "xr-no-route";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
 
@@ -4109,7 +4107,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testL2vpnExtraction() {
+  void testL2vpnExtraction() {
     String hostname = "l2vpn";
     CiscoXrConfiguration vc = parseVendorConfig(hostname);
 
@@ -4138,7 +4136,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testL2vpnReferences() {
+  void testL2vpnReferences() {
     String hostname = "l2vpn";
     String filename = String.format("configs/%s", hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -4167,7 +4165,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testInterfaceL2transportExtraction() {
+  void testInterfaceL2transportExtraction() {
     String hostname = "interface_l2transport";
     CiscoXrConfiguration vc = parseVendorConfig(hostname);
 
@@ -4203,7 +4201,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testInterfaceL2transportWarning() {
+  void testInterfaceL2transportWarning() {
     String hostname = "interface_l2transport_warning";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
 
@@ -4227,7 +4225,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testOspfRouterId_firstLoopbackPreferred() {
+  void testOspfRouterId_firstLoopbackPreferred() {
     String hostname = "first-loopback-preferred";
     Batfish batfish = getBatfishForConfigurationNames("ospf-router-id/" + hostname);
 
@@ -4242,7 +4240,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testOspfRouterId_shutVrfLoopbackIgnored() {
+  void testOspfRouterId_shutVrfLoopbackIgnored() {
     String hostname = "shut-vrf-loopback-ignored";
     Batfish batfish = getBatfishForConfigurationNames("ospf-router-id/" + hostname);
 
@@ -4256,7 +4254,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testOspfRouterId_vrfLoopbackAccepted() {
+  void testOspfRouterId_vrfLoopbackAccepted() {
     String hostname = "vrf-loopback-accepted";
     Batfish batfish = getBatfishForConfigurationNames("ospf-router-id/" + hostname);
 
@@ -4269,7 +4267,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testOspfRouterId_firstInprocessInterfacePreferred() {
+  void testOspfRouterId_firstInprocessInterfacePreferred() {
     String hostname = "first-inprocess-interface-preferred";
     Batfish batfish = getBatfishForConfigurationNames("ospf-router-id/" + hostname);
 
@@ -4284,7 +4282,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testOspfRouterId_shutOutprocessInterfaceIgnored() {
+  void testOspfRouterId_shutOutprocessInterfaceIgnored() {
     String hostname = "shut-outprocess-interface-ignored";
     Batfish batfish = getBatfishForConfigurationNames("ospf-router-id/" + hostname);
 
@@ -4294,7 +4292,7 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testOspfRouterId_noActiveInterface() {
+  void testOspfRouterId_noActiveInterface() {
     String hostname = "no-active-interface";
     Batfish batfish = getBatfishForConfigurationNames("ospf-router-id/" + hostname);
 
@@ -4303,25 +4301,34 @@ public final class XrGrammarTest {
     assertNull(c.getDefaultVrf().getOspfProcesses().get("100"));
   }
 
-  @Test(expected = AssertionError.class) // https://github.com/batfish/batfish/issues/7868
-  public void testOspfRouterId_routeridConflict() {
-    String hostname = "routerid-conflict";
-    Batfish batfish = getBatfishForConfigurationNames("ospf-router-id/" + hostname);
+  // https://github.com/batfish/batfish/issues/7868
+  @Test
+  void testOspfRouterId_routeridConflict() {
+    assertThrows(
+        AssertionError.class,
+        () -> {
+          String hostname = "routerid-conflict";
+          Batfish batfish = getBatfishForConfigurationNames("ospf-router-id/" + hostname);
 
-    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
-    Set<Ip> routerIds =
-        ImmutableSet.of(
-            c.getDefaultVrf().getOspfProcesses().get("100").getRouterId(),
-            c.getDefaultVrf().getOspfProcesses().get("101").getRouterId());
-    assertEquals(2, routerIds.size()); // unique router ids
-    assertThat(routerIds, hasItem(Ip.parse("1.1.1.1")));
-    assertThat(routerIds, not(hasItem(Ip.parse("2.1.1.1"))));
+          Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+          Set<Ip> routerIds =
+              ImmutableSet.of(
+                  c.getDefaultVrf().getOspfProcesses().get("100").getRouterId(),
+                  c.getDefaultVrf().getOspfProcesses().get("101").getRouterId());
+          assertEquals(2, routerIds.size()); // unique router ids
+          assertThat(routerIds, hasItem(Ip.parse("1.1.1.1")));
+          assertThat(routerIds, not(hasItem(Ip.parse("2.1.1.1"))));
+        });
   }
 
-  @Test(expected = ParserBatfishException.class)
-  public void testInterfaceNve() {
-    String hostname = "xr-nve";
-    // don't crash
-    parseVendorConfig(hostname);
+  @Test
+  void testInterfaceNve() {
+    assertThrows(
+        ParserBatfishException.class,
+        () -> {
+          String hostname = "xr-nve";
+          // don't crash
+          parseVendorConfig(hostname);
+        });
   }
 }

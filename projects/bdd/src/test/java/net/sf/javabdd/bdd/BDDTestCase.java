@@ -33,8 +33,9 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
-import junit.framework.TestCase;
 import net.sf.javabdd.BDDFactory;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 /**
  * BDDTestCase
@@ -42,7 +43,7 @@ import net.sf.javabdd.BDDFactory;
  * @author John Whaley
  * @version $Id: BDDTestCase.java,v 1.8 2005/06/29 08:01:54 joewhaley Exp $
  */
-public abstract class BDDTestCase extends TestCase implements Iterator<BDDFactory> {
+public abstract class BDDTestCase implements Iterator<BDDFactory> {
 
   public static final String[] factoryNames = {
     "net.sf.javabdd.JFactory",
@@ -82,8 +83,8 @@ public abstract class BDDTestCase extends TestCase implements Iterator<BDDFactor
     this(1000, 1000);
   }
 
-  @Override
-  protected void setUp() {
+  @BeforeEach
+  public void setUp() {
     // System.out.println("Doing setUp()");
     initFactories();
     reset();
@@ -108,8 +109,8 @@ public abstract class BDDTestCase extends TestCase implements Iterator<BDDFactor
     i = factories.iterator();
   }
 
-  @Override
-  protected void tearDown() {
+  @AfterEach
+  public void tearDown() {
     // System.out.println("Doing tearDown()");
     // destroyFactories();
   }

@@ -12,12 +12,12 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.routing_policy.statement.Statement;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class PsThenMetricExpressionTest {
+final class PsThenMetricExpressionTest {
 
   @Test
-  public void testConversion() {
+  void testConversion() {
     PsThenMetricExpression expression =
         new PsThenMetricExpression(
             PsThenMetricExpression.Target.METRIC, PsThenMetricExpression.Source.METRIC2, 2L, -50L);
@@ -36,7 +36,7 @@ public final class PsThenMetricExpressionTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new PsThenMetricExpression(
@@ -77,7 +77,7 @@ public final class PsThenMetricExpressionTest {
   }
 
   @Test
-  public void testMergeSourcesAndReplaceSource() {
+  void testMergeSourcesAndReplaceSource() {
     PsThens thens = new PsThens();
     PsThenMetricExpression metric =
         new PsThenMetricExpression(
@@ -104,7 +104,7 @@ public final class PsThenMetricExpressionTest {
   }
 
   @Test
-  public void testMergeSourcesInCanonicalOrder() {
+  void testMergeSourcesInCanonicalOrder() {
     PsThens thens = new PsThens();
     PsThenMetricExpression metric2 =
         new PsThenMetricExpression(
@@ -118,7 +118,7 @@ public final class PsThenMetricExpressionTest {
   }
 
   @Test
-  public void testExpressionReplacesLiteralMetric2() {
+  void testExpressionReplacesLiteralMetric2() {
     PsThens thens = new PsThens();
     thens.addPsThen(new PsThenMetric2(10L, PsThenMetric2.Operator.SET));
     PsThenMetricExpression expression =
@@ -129,7 +129,7 @@ public final class PsThenMetricExpressionTest {
   }
 
   @Test
-  public void testLiteralMetricReplacesExpression() {
+  void testLiteralMetricReplacesExpression() {
     PsThens thens = new PsThens();
     thens.addPsThen(
         new PsThenMetricExpression(

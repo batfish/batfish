@@ -7,12 +7,12 @@ import java.util.Arrays;
 import org.batfish.datamodel.vendor_family.VendorFamily.Type;
 import org.batfish.datamodel.vendor_family.cisco.CiscoFamily;
 import org.batfish.datamodel.vendor_family.juniper.JuniperFamily;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class VendorFamilyTest {
+class VendorFamilyTest {
 
   @Test
-  public void toStringMulitipleFamilies() {
+  void toStringMulitipleFamilies() {
     VendorFamily family = new VendorFamily();
     family.setCisco(new CiscoFamily());
     family.setJuniper(new JuniperFamily());
@@ -22,13 +22,13 @@ public class VendorFamilyTest {
   }
 
   @Test
-  public void toStringNoFamily() {
+  void toStringNoFamily() {
     VendorFamily family = new VendorFamily();
     assertThat(family.toString(), equalTo(""));
   }
 
   @Test
-  public void toStringOneFamily() {
+  void toStringOneFamily() {
     VendorFamily family = new VendorFamily();
     family.setCisco(new CiscoFamily());
     assertThat(family.toString(), equalTo(Type.CISCO.toString()));

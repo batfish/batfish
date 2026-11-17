@@ -5,36 +5,33 @@ import static org.batfish.datamodel.MacAddress.of;
 import static org.batfish.datamodel.MacAddress.parse;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.testing.EqualsTester;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 @ParametersAreNonnullByDefault
-public final class MacAddressTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+final class MacAddressTest {
 
   @Test
-  public void testAsLong() {
+  void testAsLong() {
     assertThat(parse("00:00:00:00:00:00").asLong(), equalTo(0L));
     assertThat(parse("01:23:45:Ab:cD:EF").asLong(), equalTo(0x012345ABCDEFL));
     assertThat(parse("FF:FF:FF:FF:FF:FF").asLong(), equalTo(0xFFFFFFFFFFFFL));
   }
 
   @Test
-  public void testAsMacAddressString() {
+  void testAsMacAddressString() {
     assertThat(asMacAddressString(0L), equalTo("00:00:00:00:00:00"));
     assertThat(asMacAddressString(0x012345ABCDEFL), equalTo("01:23:45:ab:cd:ef"));
     assertThat(asMacAddressString(0xFFFFFFFFFFFFL), equalTo("ff:ff:ff:ff:ff:ff"));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     MacAddress macAddress = of(0L);
     new EqualsTester()
         .addEqualityGroup(new Object())
@@ -45,33 +42,31 @@ public final class MacAddressTest {
   }
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     MacAddress macAddress = of(5L);
 
     assertThat(BatfishObjectMapper.clone(macAddress, MacAddress.class), equalTo(macAddress));
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     MacAddress macAddress = of(5L);
 
     assertThat(SerializationUtils.clone(macAddress), equalTo(macAddress));
   }
 
   @Test
-  public void testOfInvalidNegative() {
-    _thrown.expect(IllegalArgumentException.class);
-    of(-1L);
+  void testOfInvalidNegative() {
+    assertThrows(IllegalArgumentException.class, () -> of(-1L));
   }
 
   @Test
-  public void testOfInvalidTooHigh() {
-    _thrown.expect(IllegalArgumentException.class);
-    of(0xFFFFFFFFFFFFFL);
+  void testOfInvalidTooHigh() {
+    assertThrows(IllegalArgumentException.class, () -> of(0xFFFFFFFFFFFFFL));
   }
 
   @Test
-  public void testOfValid() {
+  void testOfValid() {
     // Don't crash
     of(0L);
     of(0x012345ABCDEFL);
@@ -79,25 +74,22 @@ public final class MacAddressTest {
   }
 
   @Test
-  public void testParseInvalidBadChar() {
-    _thrown.expect(IllegalArgumentException.class);
-    parse("00:11:22:33:44:GG");
+  void testParseInvalidBadChar() {
+    assertThrows(IllegalArgumentException.class, () -> parse("00:11:22:33:44:GG"));
   }
 
   @Test
-  public void testParseInvalidTooLong() {
-    _thrown.expect(IllegalArgumentException.class);
-    parse("00:11:22:33:44:55:66");
+  void testParseInvalidTooLong() {
+    assertThrows(IllegalArgumentException.class, () -> parse("00:11:22:33:44:55:66"));
   }
 
   @Test
-  public void testParseMisingColons() {
-    _thrown.expect(IllegalArgumentException.class);
-    parse("001122334455");
+  void testParseMisingColons() {
+    assertThrows(IllegalArgumentException.class, () -> parse("001122334455"));
   }
 
   @Test
-  public void testParseValid() {
+  void testParseValid() {
     // Don't crash
     parse("00:00:00:00:00:00");
     parse("01:23:45:Ab:cD:EF");

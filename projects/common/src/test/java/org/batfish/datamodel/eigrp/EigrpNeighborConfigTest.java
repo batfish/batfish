@@ -8,11 +8,11 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.eigrp.EigrpNeighborConfig.Builder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class EigrpNeighborConfigTest {
+class EigrpNeighborConfigTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     Builder builder =
         EigrpNeighborConfig.builder()
             .setAsn(2L)
@@ -35,7 +35,7 @@ public class EigrpNeighborConfigTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     EigrpNeighborConfig c =
         EigrpNeighborConfig.builder()
             .setAsn(1L)
@@ -49,7 +49,7 @@ public class EigrpNeighborConfigTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     EigrpNeighborConfig c =
         EigrpNeighborConfig.builder()
             .setAsn(1L)

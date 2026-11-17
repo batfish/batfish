@@ -16,12 +16,12 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.vendor.VendorStructureId;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class TracingHintsStripperTest {
+class TracingHintsStripperTest {
 
   @Test
-  public void testVisitIf() {
+  void testVisitIf() {
     List<Statement> trueStatements =
         ImmutableList.of(
             new TraceableStatement(TraceElement.of("true"), ImmutableList.of(new If())));
@@ -44,7 +44,7 @@ public class TracingHintsStripperTest {
   }
 
   @Test
-  public void testVisitTraceableStatement() {
+  void testVisitTraceableStatement() {
     TraceableStatement strippedStatement =
         (TraceableStatement)
             new TraceableStatement(
@@ -67,7 +67,7 @@ public class TracingHintsStripperTest {
   }
 
   @Test
-  public void testVisitExcludeAsPath() {
+  void testVisitExcludeAsPath() {
     ExcludeAsPath excludeAsPath =
         new ExcludeAsPath(new LiteralAsList(ImmutableList.of(new ExplicitAs(1L))));
 

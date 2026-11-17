@@ -48,10 +48,10 @@ import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.isis.IsisTopology;
 import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-public class IsisTest {
+class IsisTest {
 
   private static final String R1 = "r1";
   private static final String R2 = "r2";
@@ -185,7 +185,7 @@ public class IsisTest {
   }
 
   @Test
-  public void testIsisPassiveL1() {
+  void testIsisPassiveL1() {
     // Test with passive level 1 on r1. Should see each other's loopback addresses in L2 RIB, but
     // not L1, and both should have routes to the other's loopback with ISIS_L2 protocol.
     IbdpResult dp = setUpPassiveIsis(true, false);
@@ -244,7 +244,7 @@ public class IsisTest {
   }
 
   @Test
-  public void testIsisPassiveL2() {
+  void testIsisPassiveL2() {
     // Test with passive level 2 on r1. Should see each other's loopback addresses in L1 RIB, but
     // not L2, and both should have routes to the other's loopback with ISIS_L1 protocol.
     IbdpResult dp = setUpPassiveIsis(false, true);
@@ -472,7 +472,7 @@ public class IsisTest {
   }
 
   @Test
-  public void testL1AndL2Routes() {
+  void testL1AndL2Routes() {
     IbdpResult dp = computeDataPlane();
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes((IncrementalDataPlane) dp._dataPlane);
@@ -675,7 +675,7 @@ public class IsisTest {
   }
 
   @Test
-  public void testIsisOverload() {
+  void testIsisOverload() {
     /*
      All routers have IS-IS configured on level 1 on all interfaces; R2 also has level 2 configured.
      R2 is overloaded; R3 has outgoing IS-IS metric of 20 on both interfaces.
@@ -728,9 +728,9 @@ public class IsisTest {
     assertIsisRoute(routes, RoutingProtocol.ISIS_L1, R2, r4LoopbackPrefix, 10, R4_TO_R2_IP, false);
   }
 
-  @Ignore("https://github.com/batfish/batfish/issues/1703")
+  @Disabled("https://github.com/batfish/batfish/issues/1703")
   @Test
-  public void testLeakedRoutes() {
+  void testLeakedRoutes() {
     IbdpResult dp = computeDataPlane();
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes((IncrementalDataPlane) dp._dataPlane);
@@ -748,9 +748,9 @@ public class IsisTest {
     assertInterAreaRoute(routes, R5, R2_R3_PREFIX, 148L);
   }
 
-  @Ignore("https://github.com/batfish/batfish/issues/1703")
+  @Disabled("https://github.com/batfish/batfish/issues/1703")
   @Test
-  public void testRedistributedRoutes() {
+  void testRedistributedRoutes() {
     IbdpResult dp = computeDataPlane();
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes((IncrementalDataPlane) dp._dataPlane);

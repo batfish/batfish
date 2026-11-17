@@ -4,17 +4,17 @@ import static org.batfish.datamodel.flow.TransformationStep.TransformationType.D
 import static org.batfish.datamodel.flow.TransformationStep.TransformationType.SOURCE_NAT;
 import static org.batfish.datamodel.transformation.IpField.DESTINATION;
 import static org.batfish.datamodel.transformation.IpField.SOURCE;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link AssignIpAddressFromPool}. */
-public class AssignIpAddressFromPoolTest {
+class AssignIpAddressFromPoolTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("2.2.2.2");
     new EqualsTester()
@@ -29,7 +29,7 @@ public class AssignIpAddressFromPoolTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     AssignIpAddressFromPool assignIpAddressFromPool =
         new AssignIpAddressFromPool(
             DEST_NAT, DESTINATION, Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"));

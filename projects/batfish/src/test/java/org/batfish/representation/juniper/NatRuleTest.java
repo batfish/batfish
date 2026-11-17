@@ -20,12 +20,12 @@ import org.batfish.datamodel.transformation.ShiftIpAddressIntoSubnet;
 import org.batfish.datamodel.transformation.Transformation.Builder;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.representation.juniper.Nat.Type;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link NatRule}. */
-public class NatRuleTest {
+class NatRuleTest {
   @Test
-  public void testToLocation() {
+  void testToLocation() {
     Nat snat = new Nat(Type.SOURCE);
     Nat dnat = new Nat(Type.DESTINATION);
     Nat staticNat = new Nat(Type.STATIC);

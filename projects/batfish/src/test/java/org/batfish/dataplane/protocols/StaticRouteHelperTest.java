@@ -6,8 +6,8 @@ import static org.batfish.dataplane.protocols.StaticRouteHelper.resolveStaticNex
 import static org.batfish.dataplane.protocols.StaticRouteHelper.shouldActivateNextHopIpRoute;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
@@ -17,11 +17,11 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.ResolutionRestriction;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.dataplane.rib.Rib;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link StaticRouteHelper} */
-public final class StaticRouteHelperTest {
+final class StaticRouteHelperTest {
 
   private static boolean shouldActivate(
       StaticRoute sr, Rib rib, ResolutionRestriction<AnnotatedRoute<AbstractRoute>> restriction) {
@@ -31,15 +31,15 @@ public final class StaticRouteHelperTest {
 
   private Rib _rib;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     // Empty rib before each test
     _rib = new Rib();
   }
 
   /** Check no static routes are activated if RIB is empty */
   @Test
-  public void testShouldActivateEmptyRib() {
+  void testShouldActivateEmptyRib() {
     Ip nextHop = Ip.parse("1.1.1.1");
     StaticRoute sr =
         StaticRoute.testBuilder()
@@ -52,7 +52,7 @@ public final class StaticRouteHelperTest {
 
   /** Do not activate if no match for nextHop IP exists */
   @Test
-  public void testShouldActivateNoMatch() {
+  void testShouldActivateNoMatch() {
     _rib.mergeRoute(annotateRoute(new ConnectedRoute(Prefix.parse("1.1.1.0/24"), "Eth0")));
 
     // Route in question
@@ -69,7 +69,7 @@ public final class StaticRouteHelperTest {
 
   /** Activate if next hop IP matches a route */
   @Test
-  public void testShouldActivateMatch() {
+  void testShouldActivateMatch() {
     _rib.mergeRoute(
         annotateRoute(
             StaticRoute.testBuilder()
@@ -92,7 +92,7 @@ public final class StaticRouteHelperTest {
 
   /** Do not activate if the route to the next hop IP has same prefix as route in question. */
   @Test
-  public void testShouldActivateSelfReferential() {
+  void testShouldActivateSelfReferential() {
     _rib.mergeRoute(
         annotateRoute(
             StaticRoute.testBuilder()
@@ -118,7 +118,7 @@ public final class StaticRouteHelperTest {
    * already in the RIB
    */
   @Test
-  public void testShouldActivateIfExists() {
+  void testShouldActivateIfExists() {
     StaticRoute matching =
         StaticRoute.testBuilder().setNetwork(Prefix.strict("1.1.1.1/32")).build();
     StaticRoute sr =
@@ -134,7 +134,7 @@ public final class StaticRouteHelperTest {
 
   /** Activate if route exists for the same prefix but next hop is different */
   @Test
-  public void testShouldActivateWithDiffNextHops() {
+  void testShouldActivateWithDiffNextHops() {
     // base route
     _rib.mergeRoute(
         annotateRoute(
@@ -166,7 +166,7 @@ public final class StaticRouteHelperTest {
 
   /** Allow activation in the RIB even if there would be a FIB resolution loop. */
   @Test
-  public void testShouldActivateWithLoop() {
+  void testShouldActivateWithLoop() {
     /*
      * Route dependency graph
      * 9.9.9.0/24 (nh: 1.1.1.1) --> 1.1.1.0/24 (nh=2.2.2.2) -> 2.2.2.0/24 (nh=9.9.9.9) -> 9.9.9.0/24
@@ -203,7 +203,7 @@ public final class StaticRouteHelperTest {
    * hop IP.
    */
   @Test
-  public void testShouldActivateIfCovered() {
+  void testShouldActivateIfCovered() {
     _rib.mergeRoute(annotateRoute(new ConnectedRoute(Prefix.parse("9.9.0.0/16"), "Eth0")));
 
     // Route in question
@@ -222,7 +222,7 @@ public final class StaticRouteHelperTest {
    * Activate if route is recursive and next hop IP matches a route that is permitted by restriction
    */
   @Test
-  public void testShouldActivateRecursiveRestrictionPermits() {
+  void testShouldActivateRecursiveRestrictionPermits() {
     _rib.mergeRoute(
         annotateRoute(
             StaticRoute.testBuilder()
@@ -248,7 +248,7 @@ public final class StaticRouteHelperTest {
    * restriction
    */
   @Test
-  public void testShouldActivateRecursiveRestrictionDenies() {
+  void testShouldActivateRecursiveRestrictionDenies() {
     _rib.mergeRoute(
         annotateRoute(
             StaticRoute.testBuilder()
@@ -274,7 +274,7 @@ public final class StaticRouteHelperTest {
    * non-connected
    */
   @Test
-  public void testShouldActivateNonRecursiveNoConnected() {
+  void testShouldActivateNonRecursiveNoConnected() {
     _rib.mergeRoute(
         annotateRoute(
             StaticRoute.testBuilder()
@@ -301,7 +301,7 @@ public final class StaticRouteHelperTest {
    * connected route does not match the restriction.
    */
   @Test
-  public void testShouldActivateNonRecursiveConnected() {
+  void testShouldActivateNonRecursiveConnected() {
     _rib.mergeRoute(annotateRoute(new ConnectedRoute(Prefix.parse("1.0.0.0/8"), "Eth0")));
 
     // Route in question

@@ -3,21 +3,19 @@ package org.batfish.datamodel.bgp;
 import static org.batfish.datamodel.bgp.VniConfig.importRtPatternForAnyAs;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link Layer3VniConfig} */
-public class Layer3VniConfigTest {
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class Layer3VniConfigTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     Layer3VniConfig.Builder builder =
         Layer3VniConfig.builder()
             .setVni(1)
@@ -39,7 +37,7 @@ public class Layer3VniConfigTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     Layer3VniConfig vni =
         Layer3VniConfig.builder()
             .setVni(1)
@@ -53,7 +51,7 @@ public class Layer3VniConfigTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     Layer3VniConfig vni =
         Layer3VniConfig.builder()
             .setVni(1)
@@ -67,26 +65,23 @@ public class Layer3VniConfigTest {
   }
 
   @Test
-  public void testImportRtPatternForAnyAs() {
+  void testImportRtPatternForAnyAs() {
     assertThat(importRtPatternForAnyAs(1), equalTo("^\\d+:1$"));
     assertThat(importRtPatternForAnyAs(2), equalTo("^\\d+:2$"));
   }
 
   @Test
-  public void testImportRtPatternForAnyAsTooLow() {
-    _thrown.expect(IllegalArgumentException.class);
-    importRtPatternForAnyAs(-1);
+  void testImportRtPatternForAnyAsTooLow() {
+    assertThrows(IllegalArgumentException.class, () -> importRtPatternForAnyAs(-1));
   }
 
   @Test
-  public void testImportRtPatternForAnyAsTooHigh() {
-    _thrown.expect(IllegalArgumentException.class);
-    importRtPatternForAnyAs(16777216);
+  void testImportRtPatternForAnyAsTooHigh() {
+    assertThrows(IllegalArgumentException.class, () -> importRtPatternForAnyAs(16777216));
   }
 
   @Test
-  public void testInvalidPattern() {
-    _thrown.expect(IllegalArgumentException.class);
-    importRtPatternForAnyAs(16777216);
+  void testInvalidPattern() {
+    assertThrows(IllegalArgumentException.class, () -> importRtPatternForAnyAs(16777216));
   }
 }

@@ -5,13 +5,13 @@ import static org.hamcrest.Matchers.equalTo;
 
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.questions.OspfProcessPropertySpecifier;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link OspfProcessConfigurationQuestion} */
-public class OspfProcessConfigurationQuestionTest {
+class OspfProcessConfigurationQuestionTest {
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     OspfProcessConfigurationQuestion q =
         new OspfProcessConfigurationQuestion("nodes", OspfProcessPropertySpecifier.AREAS);
     assertThat(BatfishObjectMapper.clone(q, OspfProcessConfigurationQuestion.class), equalTo(q));

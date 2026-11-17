@@ -11,6 +11,7 @@ import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Prefix;
@@ -19,18 +20,17 @@ import org.batfish.main.Batfish;
 import org.batfish.representation.juniper.BgpGroup;
 import org.batfish.representation.juniper.JuniperConfiguration;
 import org.batfish.representation.juniper.RoutingInstance;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosBgpDisableLinkLocalAddressTest {
+final class JunosBgpDisableLinkLocalAddressTest {
 
   private static final String HOSTNAME = "bgp-disable-linklocal-addr";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testExtractionAndWarnings() throws IOException {
+  void testExtractionAndWarnings() throws IOException {
     Batfish batfish = getBatfish(_folder, HOSTNAME);
     JuniperConfiguration jc = getVendorConfiguration(batfish, HOSTNAME);
     RoutingInstance defaultRi = jc.getMasterLogicalSystem().getDefaultRoutingInstance();

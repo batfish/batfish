@@ -3,11 +3,11 @@ package org.batfish.vendor.arista.representation;
 import com.google.common.testing.EqualsTester;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class StandardAccessListActionLineTest {
+class StandardAccessListActionLineTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new StandardAccessListActionLine(5, LineAction.DENY, "name", IpWildcard.ANY),

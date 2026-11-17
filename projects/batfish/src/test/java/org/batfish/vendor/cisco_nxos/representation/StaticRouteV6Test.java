@@ -3,11 +3,11 @@ package org.batfish.vendor.cisco_nxos.representation;
 import com.google.common.testing.EqualsTester;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Prefix6;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class StaticRouteV6Test {
+class StaticRouteV6Test {
   @Test
-  public void testEquals() {
+  void testEquals() {
     StaticRouteV6.Builder builder = StaticRouteV6.builder(Prefix6.parse("::1/128"));
     new EqualsTester()
         .addEqualityGroup(builder.setDiscard(true).build(), builder.build())

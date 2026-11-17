@@ -8,12 +8,12 @@ import static org.hamcrest.Matchers.not;
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class IpSpaceTest {
+class IpSpaceTest {
 
   @Test
-  public void testIpSpace() {
+  void testIpSpace() {
     IpWildcardSetIpSpace any = IpWildcardSetIpSpace.builder().including(IpWildcard.ANY).build();
     IpWildcardSetIpSpace justMax =
         IpWildcardSetIpSpace.builder().including(IpWildcard.create(Ip.MAX)).build();
@@ -60,7 +60,7 @@ public class IpSpaceTest {
   }
 
   @Test
-  public void testIpSpaceJacksonSerialization() throws IOException {
+  void testIpSpaceJacksonSerialization() throws IOException {
     Ip ip = Ip.parse("1.0.0.0");
     IpIpSpace ipIpSpace = ip.toIpSpace();
     Prefix p = Prefix.create(ip, 24);

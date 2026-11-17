@@ -11,20 +11,20 @@ import org.batfish.datamodel.packet_policy.FibLookup;
 import org.batfish.datamodel.packet_policy.IngressInterfaceVrf;
 import org.batfish.datamodel.packet_policy.LiteralVrfName;
 import org.batfish.datamodel.packet_policy.Return;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link TermFwThenToPacketPolicyStatement} */
-public class TermFwThenToPacketPolicyStatementTest {
+class TermFwThenToPacketPolicyStatementTest {
   private FwTerm _fwTerm;
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
     _fwTerm = new FwTerm("termName");
   }
 
   @Test
-  public void testVisitAccept() {
+  void testVisitAccept() {
     _fwTerm.getThens().add(FwThenAccept.INSTANCE);
     assertThat(
         TermFwThenToPacketPolicyStatement.convert(_fwTerm),
@@ -32,13 +32,13 @@ public class TermFwThenToPacketPolicyStatementTest {
   }
 
   @Test
-  public void testVisitAcceptAfterNextTerm() {
+  void testVisitAcceptAfterNextTerm() {
     _fwTerm.getThens().addAll(ImmutableList.of(FwThenNextTerm.INSTANCE, FwThenAccept.INSTANCE));
     assertThat(TermFwThenToPacketPolicyStatement.convert(_fwTerm), equalTo(ImmutableList.of()));
   }
 
   @Test
-  public void testVisitNextTermAfterAccept() {
+  void testVisitNextTermAfterAccept() {
     _fwTerm.getThens().addAll(ImmutableList.of(FwThenAccept.INSTANCE, FwThenNextTerm.INSTANCE));
     assertThat(
         TermFwThenToPacketPolicyStatement.convert(_fwTerm),
@@ -46,13 +46,13 @@ public class TermFwThenToPacketPolicyStatementTest {
   }
 
   @Test
-  public void testVisitNop() {
+  void testVisitNop() {
     _fwTerm.getThens().add(FwThenNop.INSTANCE);
     assertThat(TermFwThenToPacketPolicyStatement.convert(_fwTerm), equalTo(ImmutableList.of()));
   }
 
   @Test
-  public void testVisitDiscard() {
+  void testVisitDiscard() {
     _fwTerm.getThens().add(FwThenDiscard.INSTANCE);
     assertThat(
         TermFwThenToPacketPolicyStatement.convert(_fwTerm),
@@ -60,26 +60,26 @@ public class TermFwThenToPacketPolicyStatementTest {
   }
 
   @Test
-  public void testVisitDiscardAfterSkip() {
+  void testVisitDiscardAfterSkip() {
     _fwTerm.getThens().addAll(ImmutableList.of(FwThenNextTerm.INSTANCE, FwThenDiscard.INSTANCE));
     assertThat(TermFwThenToPacketPolicyStatement.convert(_fwTerm), empty());
   }
 
   @Test
-  public void testVisitDecapsulate() {
+  void testVisitDecapsulate() {
     _fwTerm.getThens().add(new FwThenDecapsulate(FwThenDecapsulate.Type.GRE, null));
     assertThat(TermFwThenToPacketPolicyStatement.convert(_fwTerm), empty());
   }
 
   @Test
-  public void testVisitNextIp() {
+  void testVisitNextIp() {
     _fwTerm.getThens().add(new FwThenNextIp(Prefix.parse("1.1.1.0/24")));
     // Not implemented yet:
     assertThat(TermFwThenToPacketPolicyStatement.convert(_fwTerm), empty());
   }
 
   @Test
-  public void testVisitRoutingInstance() {
+  void testVisitRoutingInstance() {
     _fwTerm.getThens().add(new FwThenRoutingInstance("otherVRF"));
     assertThat(
         TermFwThenToPacketPolicyStatement.convert(_fwTerm),
@@ -88,7 +88,7 @@ public class TermFwThenToPacketPolicyStatementTest {
 
   /** Tests that Junos master RI is correctly mapped to Batfish default VRF. */
   @Test
-  public void testVisitMasterRoutingInstance() {
+  void testVisitMasterRoutingInstance() {
     _fwTerm.getThens().add(new FwThenRoutingInstance("master"));
     assertThat(
         TermFwThenToPacketPolicyStatement.convert(_fwTerm),
@@ -96,7 +96,7 @@ public class TermFwThenToPacketPolicyStatementTest {
   }
 
   @Test
-  public void testVisitRoutingInstanceAfterSkip() {
+  void testVisitRoutingInstanceAfterSkip() {
     _fwTerm
         .getThens()
         .addAll(ImmutableList.of(FwThenNextTerm.INSTANCE, new FwThenRoutingInstance("otherVRF")));

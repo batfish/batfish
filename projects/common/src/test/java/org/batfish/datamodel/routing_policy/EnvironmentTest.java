@@ -9,11 +9,11 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class EnvironmentTest {
+final class EnvironmentTest {
   @Test
-  public void testNoBgpProperties() {
+  void testNoBgpProperties() {
     Configuration c =
         Configuration.builder()
             .setHostname("c")
@@ -28,7 +28,7 @@ public final class EnvironmentTest {
   }
 
   @Test
-  public void testBgpProperties() {
+  void testBgpProperties() {
     Configuration c =
         Configuration.builder()
             .setHostname("c")

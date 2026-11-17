@@ -17,15 +17,12 @@ import java.util.Set;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link DispositionSpecifier} */
-@RunWith(JUnit4.class)
-public class DispositionSpecifierTest {
+class DispositionSpecifierTest {
   @Test
-  public void testCreationDefault() {
+  void testCreationDefault() {
     assertThat(
         DispositionSpecifier.create(null).getDispositions(),
         equalTo(
@@ -36,28 +33,28 @@ public class DispositionSpecifierTest {
   }
 
   @Test
-  public void testCaseInsensitive() {
+  void testCaseInsensitive() {
     assertThat(
         DispositionSpecifier.create("SUCCESS").getDispositions(),
         equalTo(DispositionSpecifier.create("suCCess").getDispositions()));
   }
 
   @Test
-  public void testSupportsPrimitiveDispositions() {
+  void testSupportsPrimitiveDispositions() {
     assertThat(
         DispositionSpecifier.create("no_route").getDispositions(),
         equalTo(ImmutableSet.of(FlowDisposition.NO_ROUTE)));
   }
 
   @Test
-  public void testTrimming() {
+  void testTrimming() {
     assertThat(
         DispositionSpecifier.create("no_route  ,       null_routed").getDispositions(),
         equalTo(ImmutableSet.of(FlowDisposition.NO_ROUTE, FlowDisposition.NULL_ROUTED)));
   }
 
   @Test
-  public void testSuccess() {
+  void testSuccess() {
     assertThat(
         DispositionSpecifier.create("success").getDispositions(),
         equalTo(
@@ -68,14 +65,14 @@ public class DispositionSpecifierTest {
   }
 
   @Test
-  public void testFailure() {
+  void testFailure() {
     assertThat(
         DispositionSpecifier.create("FAILURE").getDispositions(),
         equalTo(FAILURE_SPECIFIER.getDispositions()));
   }
 
   @Test
-  public void testSuccessDisjointFromFailure() {
+  void testSuccessDisjointFromFailure() {
     Set<FlowDisposition> success = DispositionSpecifier.create("SUCCESS").getDispositions();
     Set<FlowDisposition> failure = DispositionSpecifier.create("FAILURE").getDispositions();
     assertThat(
@@ -85,14 +82,14 @@ public class DispositionSpecifierTest {
   }
 
   @Test
-  public void testAllDispositionsCovered() {
+  void testAllDispositionsCovered() {
     assertThat(
         DispositionSpecifier.create("success,failure").getDispositions(),
         equalTo(Sets.difference(ImmutableSet.copyOf(FlowDisposition.values()), ImmutableSet.of())));
   }
 
   @Test
-  public void serializationCheck() throws IOException {
+  void serializationCheck() throws IOException {
     String serialized = BatfishObjectMapper.writePrettyString(FAILURE_SPECIFIER);
     assertThat(
         BatfishObjectMapper.mapper().readValue(serialized, DispositionSpecifier.class),
@@ -100,7 +97,7 @@ public class DispositionSpecifierTest {
   }
 
   @Test
-  public void testAutocomplete() {
+  void testAutocomplete() {
     // should include values from FlowDisposition enum as well as "success" and "failure"
     assertThat(
         DispositionSpecifier.autoComplete("s").stream()

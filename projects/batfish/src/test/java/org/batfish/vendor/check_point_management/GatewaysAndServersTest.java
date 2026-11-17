@@ -2,7 +2,7 @@ package org.batfish.vendor.check_point_management;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
@@ -11,12 +11,12 @@ import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link GatewaysAndServers}. */
-public final class GatewaysAndServersTest {
+final class GatewaysAndServersTest {
   @Test
-  public void testJacksonDeserialization() throws JsonProcessingException {
+  void testJacksonDeserialization() throws JsonProcessingException {
     String input =
         "{"
             + "\"GARBAGE\":0,"
@@ -182,7 +182,7 @@ public final class GatewaysAndServersTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     GatewaysAndServers obj =
         new GatewaysAndServers(
             ImmutableMap.of(
@@ -197,7 +197,7 @@ public final class GatewaysAndServersTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     GatewaysAndServers obj = new GatewaysAndServers(ImmutableMap.of());
     new EqualsTester()
         .addEqualityGroup(obj, new GatewaysAndServers(ImmutableMap.of()))

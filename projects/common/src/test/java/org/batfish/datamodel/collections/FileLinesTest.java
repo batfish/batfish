@@ -6,11 +6,11 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class FileLinesTest {
+class FileLinesTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(1)
         .addEqualityGroup(
@@ -22,7 +22,7 @@ public class FileLinesTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     FileLines f = new FileLines("a", ImmutableSortedSet.of(1));
     assertThat(f, equalTo(BatfishObjectMapper.clone(f, FileLines.class)));
   }

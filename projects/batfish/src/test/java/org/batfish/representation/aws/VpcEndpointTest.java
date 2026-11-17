@@ -10,12 +10,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class VpcEndpointTest {
+class VpcEndpointTest {
 
   @Test
-  public void testDeserialization() throws IOException {
+  void testDeserialization() throws IOException {
     String text = readResource("org/batfish/representation/aws/VpcEndpointTest.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);

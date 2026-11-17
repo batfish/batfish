@@ -7,12 +7,13 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.graph.ValueGraph;
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
@@ -32,9 +33,8 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * Post-processing tests for SR-OS. Loads the captured {@code sros_ceos_ebgp} lab — an SR-OS r1 and
@@ -55,9 +55,9 @@ import org.junit.rules.TemporaryFolder;
  * removed (that block is L1-only and is not accepted by this Batfish's Arista grammar; it does not
  * affect routing).
  */
-public final class SrosPostProcessingTest {
+final class SrosPostProcessingTest {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private static final String SNAPSHOTS_PREFIX =
       "org/batfish/vendor/sros/grammar/snapshots/sros_ceos_ebgp";
@@ -77,7 +77,7 @@ public final class SrosPostProcessingTest {
    * 1/1/c1/1}, because the port is active and present in the Layer-1 topology.
    */
   @Test
-  public void testSrosInterfacesActiveAfterPostProcessing() throws IOException {
+  void testSrosInterfacesActiveAfterPostProcessing() throws IOException {
     Batfish batfish = getBatfish();
     Configuration r1 = batfish.loadConfigurations(batfish.getSnapshot()).get("r1");
 
@@ -107,7 +107,7 @@ public final class SrosPostProcessingTest {
    * lines up with a real interface, so the edge is not dropped.
    */
   @Test
-  public void testLayer1TopologyApplied() throws IOException {
+  void testLayer1TopologyApplied() throws IOException {
     Batfish batfish = getBatfish();
     // Realize post-processing first; topology is computed from the post-processed configs.
     batfish.loadConfigurations(batfish.getSnapshot());
@@ -133,7 +133,7 @@ public final class SrosPostProcessingTest {
    * topology (via {@code PointToPointComputer}), not only by the same-subnet fallback.
    */
   @Test
-  public void testLayer3EdgeFormsAcrossVendors() throws IOException {
+  void testLayer3EdgeFormsAcrossVendors() throws IOException {
     Batfish batfish = getBatfish();
     batfish.loadConfigurations(batfish.getSnapshot());
     Topology l3 = batfish.getTopologyProvider().getInitialLayer3Topology(batfish.getSnapshot());
@@ -143,7 +143,7 @@ public final class SrosPostProcessingTest {
 
   /** The eBGP session between r1 (AS 65001) and r2 (AS 65002) is established post-processing. */
   @Test
-  public void testEbgpSessionEstablished() throws IOException {
+  void testEbgpSessionEstablished() throws IOException {
     Batfish batfish = getBatfish();
     Map<String, Configuration> configs = batfish.loadConfigurations(batfish.getSnapshot());
     Map<Ip, Map<String, Set<String>>> ipOwners =

@@ -12,24 +12,24 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.representation.juniper.NamedBgpGroup;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosBgpInet6RibGroupTest {
+final class JunosBgpInet6RibGroupTest {
 
   private static final String HOSTNAME = "bgp-inet6-rib-group";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testInet6RibGroup() throws IOException {
+  void testInet6RibGroup() throws IOException {
     Batfish batfish = getBatfish(_folder, HOSTNAME);
     NamedBgpGroup group = getNamedBgpGroup(batfish, HOSTNAME, "PEERS");
 

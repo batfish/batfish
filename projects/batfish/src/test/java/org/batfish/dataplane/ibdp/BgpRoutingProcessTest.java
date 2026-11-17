@@ -30,8 +30,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -118,11 +118,11 @@ import org.batfish.dataplane.rib.Rib;
 import org.batfish.dataplane.rib.RibDelta;
 import org.batfish.dataplane.rib.RouteAdvertisement;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link BgpRoutingProcess} */
-public class BgpRoutingProcessTest {
+class BgpRoutingProcessTest {
 
   private Configuration _c;
   private Vrf _vrf;
@@ -132,8 +132,8 @@ public class BgpRoutingProcessTest {
   private BgpRoutingProcess _routingProcess;
   private NetworkFactory _nf;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _nf = new NetworkFactory();
     _c =
         _nf.configurationBuilder()
@@ -152,7 +152,7 @@ public class BgpRoutingProcessTest {
   }
 
   @Test
-  public void testInitRibsEmpty() {
+  void testInitRibsEmpty() {
     // eBGP
     assertThat(_routingProcess._ebgpv4Rib.getUnannotatedRoutes(), empty());
     // Combined bgp
@@ -207,7 +207,7 @@ public class BgpRoutingProcessTest {
   }
 
   @Test
-  public void testEbgpRibLeftEmptyWithoutAdvertiseExternal() {
+  void testEbgpRibLeftEmptyWithoutAdvertiseExternal() {
     Ip srcIp = Ip.parse("1.1.1.1");
     _bgpProcess.setNeighbors(ImmutableMap.of(srcIp, ebgpNeighbor(srcIp, false)));
     BgpRoutingProcess proc =
@@ -226,7 +226,7 @@ public class BgpRoutingProcessTest {
   }
 
   @Test
-  public void testEbgpRibMaintainedWithAdvertiseExternal() {
+  void testEbgpRibMaintainedWithAdvertiseExternal() {
     Ip srcIp = Ip.parse("1.1.1.1");
     _bgpProcess.setNeighbors(ImmutableMap.of(srcIp, ebgpNeighbor(srcIp, true)));
     BgpRoutingProcess proc =
@@ -299,35 +299,35 @@ public class BgpRoutingProcessTest {
   }
 
   @Test
-  public void testExternalIbgpAdvertisementFromAReflectorClientIsFromAClient() {
+  void testExternalIbgpAdvertisementFromAReflectorClientIsFromAClient() {
     Ip srcIp = Ip.parse("1.1.1.1");
     for (BgpAdvertisementType type :
         ImmutableList.of(BgpAdvertisementType.IBGP_RECEIVED, BgpAdvertisementType.IBGP_SENT)) {
-      assertTrue(type.toString(), externalRouteFromClient(neighbor(srcIp, 1L, true), type));
+      assertTrue(externalRouteFromClient(neighbor(srcIp, 1L, true), type), type.toString());
     }
   }
 
   @Test
-  public void testExternalIbgpAdvertisementFromANonClientIsNotFromAClient() {
+  void testExternalIbgpAdvertisementFromANonClientIsNotFromAClient() {
     Ip srcIp = Ip.parse("1.1.1.1");
     for (BgpAdvertisementType type :
         ImmutableList.of(BgpAdvertisementType.IBGP_RECEIVED, BgpAdvertisementType.IBGP_SENT)) {
-      assertFalse(type.toString(), externalRouteFromClient(neighbor(srcIp, 1L, false), type));
+      assertFalse(externalRouteFromClient(neighbor(srcIp, 1L, false), type), type.toString());
     }
   }
 
   @Test
-  public void testExternalEbgpAdvertisementIsNeverFromAClient() {
+  void testExternalEbgpAdvertisementIsNeverFromAClient() {
     // Route reflection is iBGP only, even if the session is (mis)configured as a client.
     Ip srcIp = Ip.parse("1.1.1.1");
     for (BgpAdvertisementType type :
         ImmutableList.of(BgpAdvertisementType.EBGP_RECEIVED, BgpAdvertisementType.EBGP_SENT)) {
-      assertFalse(type.toString(), externalRouteFromClient(neighbor(srcIp, 2L, true), type));
+      assertFalse(externalRouteFromClient(neighbor(srcIp, 2L, true), type), type.toString());
     }
   }
 
   @Test
-  public void testPreallocatePathIdsDeterministic() {
+  void testPreallocatePathIdsDeterministic() {
     Prefix prefix = Prefix.parse("10.0.0.0/24");
     Bgpv4Route route1 =
         Bgpv4Route.testBuilder()
@@ -364,7 +364,7 @@ public class BgpRoutingProcessTest {
   }
 
   @Test
-  public void testInitEvpnType3Route() {
+  void testInitEvpnType3Route() {
     Ip ip = Ip.parse("1.1.1.1");
     ExtendedCommunity routeTarget = ExtendedCommunity.target(1, 1);
     RouteDistinguisher routeDistinguisher = RouteDistinguisher.from(ip, 1);
@@ -399,7 +399,7 @@ public class BgpRoutingProcessTest {
   }
 
   @Test
-  public void testInitEvpnRoutes() {
+  void testInitEvpnRoutes() {
     // Setup
     Ip localIp = Ip.parse("2.2.2.2");
     int vni = 10001;
@@ -488,7 +488,7 @@ public class BgpRoutingProcessTest {
   }
 
   @Test
-  public void testQueueInitializationAddressFamiliesMustOverlap() {
+  void testQueueInitializationAddressFamiliesMustOverlap() {
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("2.2.2.2");
     long localAs = 1;
@@ -561,7 +561,7 @@ public class BgpRoutingProcessTest {
 
   /** Ensure that we send out EVPN type 3 routes to newly established BGP sessions */
   @Test
-  public void testResendInitializationOnTopologyUpdate() {
+  void testResendInitializationOnTopologyUpdate() {
     // Setup
     long localAs = 2;
     long peerAs = 1;
@@ -711,7 +711,7 @@ public class BgpRoutingProcessTest {
    * defined.
    */
   @Test
-  public void testRedistributionNoPolicy() {
+  void testRedistributionNoPolicy() {
     _routingProcess.redistribute(
         RibDelta.adding(
             new AnnotatedRoute<>(
@@ -724,7 +724,7 @@ public class BgpRoutingProcessTest {
    * the route.
    */
   @Test
-  public void testRedistributionWithPolicy() {
+  void testRedistributionWithPolicy() {
     // Make up a policy
     RoutingPolicy policy =
         RoutingPolicy.builder()
@@ -781,7 +781,7 @@ public class BgpRoutingProcessTest {
    * network policy are defined and allow the route. Assume the transformed routes are distinct.
    */
   @Test
-  public void testRedistributionNetworkAndRedistributionPolicy() {
+  void testRedistributionNetworkAndRedistributionPolicy() {
     Prefix prefix = Prefix.strict("10.0.0.0/24");
     // Policy redistributing by protocol
     RoutingPolicy policyProtocol =
@@ -860,7 +860,7 @@ public class BgpRoutingProcessTest {
   }
 
   @Test
-  public void testMainRibIndependentNetworkPolicy() {
+  void testMainRibIndependentNetworkPolicy() {
     Prefix prefix1 = Prefix.strict("10.0.0.0/8");
     RoutingPolicy policyNetwork =
         RoutingPolicy.builder()
@@ -898,7 +898,7 @@ public class BgpRoutingProcessTest {
   }
 
   @Test
-  public void testCrossVrfImport() {
+  void testCrossVrfImport() {
     // Make up a policy
     Prefix allowedPrefix1 = Prefix.parse("1.1.1.0/24");
     Prefix allowedPrefix2 = Prefix.parse("1.1.1.0/25");
@@ -1031,7 +1031,7 @@ public class BgpRoutingProcessTest {
   }
 
   @Test
-  public void testCrossVrfWithdrawRemovesTheLeakedRoute() {
+  void testCrossVrfWithdrawRemovesTheLeakedRoute() {
     // A leak rewrites the next hop to the source VRF, so what it merged is not the route the
     // source withdraws, and removing the source's route left the leaked one in place.
     BgpVrfLeakConfig leak =
@@ -1066,7 +1066,7 @@ public class BgpRoutingProcessTest {
   }
 
   @Test
-  public void testCrossVrfLeaksFromOneSourceKeepTheirImportsApart() {
+  void testCrossVrfLeaksFromOneSourceKeepTheirImportsApart() {
     // Two leaks from one VRF: one rule's rejection must not take back what the other imported.
     leakPolicy("accept", true);
     leakPolicy("reject", false);
@@ -1088,7 +1088,7 @@ public class BgpRoutingProcessTest {
   }
 
   @Test
-  public void testCrossVrfLeaksStageOnlyTheirNetChange() {
+  void testCrossVrfLeaksStageOnlyTheirNetChange() {
     // Equal routes for one prefix leaked from two VRFs, so arrival order picks between them.
     // Withdrawing and re-adding each in turn moves the best path away and back, and the main RIB
     // must not be left holding the step in between.
@@ -1129,7 +1129,7 @@ public class BgpRoutingProcessTest {
   }
 
   @Test
-  public void testALaterStagingReplacesWhatAnEarlierOneStaged() {
+  void testALaterStagingReplacesWhatAnEarlierOneStaged() {
     // Peer processing stages before the leaks run, and a leak can then displace what it staged: a
     // route at local preference 100, then a better one at 200, with only the second selected.
     RoutingPolicy.builder()
@@ -1167,7 +1167,7 @@ public class BgpRoutingProcessTest {
   }
 
   @Test
-  public void testACrossVrfLeakReofferedUnchangedLeavesTheRibAlone() {
+  void testACrossVrfLeakReofferedUnchangedLeavesTheRibAlone() {
     // Re-offering a route the leak already imported as is must not withdraw and re-add it, which
     // costs as much as the import and resets its arrival order.
     _routingProcess = newRoutingProcess();
@@ -1203,7 +1203,7 @@ public class BgpRoutingProcessTest {
   }
 
   @Test
-  public void testRoutesToLeakAreTheRoundsDeltaLessWhatThisVrfImported() {
+  void testRoutesToLeakAreTheRoundsDeltaLessWhatThisVrfImported() {
     // A route this VRF itself imported from another VRF is in its delta like any other, but is not
     // offered on to the VRFs that leak from this one.
     _c.setExportBgpFromBgpRib(true);
@@ -1235,7 +1235,7 @@ public class BgpRoutingProcessTest {
   }
 
   @Test
-  public void testRoutesToLeakAreFixedAtTheEndOfTheRound() {
+  void testRoutesToLeakAreFixedAtTheEndOfTheRound() {
     // Every VRF runs its iteration, leaks included, in one parallel step, so a VRF leaking from
     // this one may read what this one offers while this one is already importing for its next
     // round. What it reads must not depend on that.
@@ -1273,7 +1273,7 @@ public class BgpRoutingProcessTest {
    * aggregates.
    */
   @Test
-  public void testInitBgpAggregateRoutesFunnelContributors() {
+  void testInitBgpAggregateRoutesFunnelContributors() {
     // Only allow the redistributed connected route to contribute to aggregate 1.0.0.0/16
     List<RouteAdvertisement<Bgpv4Route>> deltaAdverts = initBgpAggregatesTestHelper(32);
 
@@ -1288,7 +1288,7 @@ public class BgpRoutingProcessTest {
 
   /** Test that aggregates can contribute to more general aggregates. */
   @Test
-  public void testInitBgpAggregateRoutesAllowAggregatesToContributeToOtherAggregates() {
+  void testInitBgpAggregateRoutesAllowAggregatesToContributeToOtherAggregates() {
     // Only allow the aggregate 1.0.0.0/24 to contribute to more general aggregate 1.0.0.0/16
     List<RouteAdvertisement<Bgpv4Route>> deltaAdverts = initBgpAggregatesTestHelper(24);
 
@@ -1303,7 +1303,7 @@ public class BgpRoutingProcessTest {
 
   /** Test that generation policy must pass for aggregate to be activated. */
   @Test
-  public void testInitBgpAggregateRoutesMustPassGenerationPolicy() {
+  void testInitBgpAggregateRoutesMustPassGenerationPolicy() {
     // No route has prefix length 20, so the /16 should not be activated.
     List<RouteAdvertisement<Bgpv4Route>> deltaAdverts = initBgpAggregatesTestHelper(20);
 
@@ -1321,7 +1321,7 @@ public class BgpRoutingProcessTest {
    * EOS (batfish/batfish#10094).
    */
   @Test
-  public void testInitBgpAggregateRoutesCommonSequenceAsPath() {
+  void testInitBgpAggregateRoutesCommonSequenceAsPath() {
     // Two contributors to 10.1.0.0/16 with divergent AS_PATHs sharing a leading 65000.
     _routingProcess._bgpv4Rib.mergeRoute(
         aggregateContributorRoute(
@@ -1369,7 +1369,7 @@ public class BgpRoutingProcessTest {
    * routes, so connected routes carry no AS_PATH into the aggregate.
    */
   @Test
-  public void testInitBgpAggregateRoutesCommonSequenceIgnoresNonBgpContributors() {
+  void testInitBgpAggregateRoutesCommonSequenceIgnoresNonBgpContributors() {
     _c.setGenerateBgpAggregatesFromMainRib(true);
     _bgpProcess.addAggregate(
         BgpAggregate.of(
@@ -1409,7 +1409,7 @@ public class BgpRoutingProcessTest {
 
   /** With the default {@link BgpAggregate.AsPathMode#NONE}, the aggregate's AS_PATH is empty. */
   @Test
-  public void testInitBgpAggregateRoutesNoneAsPath() {
+  void testInitBgpAggregateRoutesNoneAsPath() {
     _bgpProcess.addAggregate(BgpAggregate.of(Prefix.strict("10.1.0.0/16"), null, null, null));
     _routingProcess =
         new BgpRoutingProcess(
@@ -1511,7 +1511,7 @@ public class BgpRoutingProcessTest {
   }
 
   @Test
-  public void testProcessExternalBgpAdvertisementImport() {
+  void testProcessExternalBgpAdvertisementImport() {
     Ip neighborIp = Ip.parse("1.1.1.1");
 
     BgpActivePeerConfig peer =
@@ -1558,7 +1558,7 @@ public class BgpRoutingProcessTest {
    * originator IP; the code must fall back to srcIp.
    */
   @Test
-  public void testProcessExternalBgpAdvertisement_nullOriginatorIp() {
+  void testProcessExternalBgpAdvertisement_nullOriginatorIp() {
     Ip srcIp = Ip.parse("1.1.1.1");
 
     // Add a neighbor to the BGP process so processExternalBgpAdvertisement can find it
@@ -1600,7 +1600,7 @@ public class BgpRoutingProcessTest {
   }
 
   @Test
-  public void testToEvpnType5Route() {
+  void testToEvpnType5Route() {
     // ensure tag is copied
     Bgpv4Route inputRoute = Bgpv4Route.testBuilder().setTag(5L).setNetwork(Prefix.ZERO).build();
     assertThat(
@@ -1609,7 +1609,7 @@ public class BgpRoutingProcessTest {
   }
 
   @Test
-  public void testEvpnRouteToBgpv4Route() {
+  void testEvpnRouteToBgpv4Route() {
     // ensure tag is copied
     EvpnType5Route inputRoute =
         EvpnType5Route.builder()
@@ -1633,7 +1633,7 @@ public class BgpRoutingProcessTest {
    * every round keeps the receiver dirty forever when several senders share a peer IP.
    */
   @Test
-  public void testNeighborGeneratedRouteAdvertisedOnceAndWithdrawnOnDeactivation() {
+  void testNeighborGeneratedRouteAdvertisedOnceAndWithdrawnOnDeactivation() {
     Ip localIp = Ip.parse("1.1.1.1");
     Ip peerIp = Ip.parse("1.1.1.2");
     Prefix condition = Prefix.parse("10.0.0.0/24");

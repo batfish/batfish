@@ -5,13 +5,13 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link ConstantEnumSetSpecifier} */
-public class ConstantEnumSetSpecifierTest {
+class ConstantEnumSetSpecifierTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
 
     ConstantEnumSetSpecifier<String> group1Elem1 =
         new ConstantEnumSetSpecifier<>(ImmutableSet.of());
@@ -33,7 +33,7 @@ public class ConstantEnumSetSpecifierTest {
   }
 
   @Test
-  public void testResolve() {
+  void testResolve() {
     assertThat(
         new ConstantEnumSetSpecifier<>(ImmutableSet.of()).resolve(), equalTo(ImmutableSet.of()));
     assertThat(

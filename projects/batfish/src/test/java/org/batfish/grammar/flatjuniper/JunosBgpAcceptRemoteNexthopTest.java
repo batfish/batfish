@@ -8,21 +8,21 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.main.Batfish;
 import org.batfish.representation.juniper.NamedBgpGroup;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosBgpAcceptRemoteNexthopTest {
+final class JunosBgpAcceptRemoteNexthopTest {
 
   private static final String HOSTNAME = "bgp-accept-remote-nexthop";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testAcceptRemoteNexthop() throws IOException {
+  void testAcceptRemoteNexthop() throws IOException {
     Batfish batfish = getBatfish(_folder, HOSTNAME);
     NamedBgpGroup group = getNamedBgpGroup(batfish, HOSTNAME, "EBGP-PEERS");
 

@@ -167,10 +167,11 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -179,6 +180,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -455,13 +457,11 @@ import org.batfish.vendor.cisco_nxos.representation.UdpOptions;
 import org.batfish.vendor.cisco_nxos.representation.Vlan;
 import org.batfish.vendor.cisco_nxos.representation.Vrf;
 import org.batfish.vendor.cisco_nxos.representation.VrfAddressFamily;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 @ParametersAreNonnullByDefault
-public final class CiscoNxosGrammarTest {
+final class CiscoNxosGrammarTest {
 
   private final BddTestbed _bddTestbed = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
   private final IpAccessListToBdd _aclToBdd = _bddTestbed.getAclToBdd();
@@ -472,8 +472,7 @@ public final class CiscoNxosGrammarTest {
       "org/batfish/vendor/cisco_nxos/grammar/testconfigs/";
   private static final String SNAPSHOTS_PREFIX = "org/batfish/vendor/cisco_nxos/grammar/snapshots/";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+  @TempDir public File _folder;
 
   private static @Nonnull OspfExternalRoute.Builder ospfExternalRouteBuilder() {
     return OspfExternalRoute.builder()
@@ -621,7 +620,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testImplicitShutdownSwitchportInference() throws IOException {
+  void testImplicitShutdownSwitchportInference() throws IOException {
     for (String hostname :
         ImmutableList.of(
             "shutdown-switchport-inference-defaultl2", "shutdown-switchport-inference-defaultl3")) {
@@ -653,13 +652,13 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testAaaParsing() {
+  void testAaaParsing() {
     // TODO: make into extraction test
     assertThat(parseVendorConfig("nxos_aaa"), notNullValue());
   }
 
   @Test
-  public void testBannerExtraction() {
+  void testBannerExtraction() {
     String bannerHostname = "nxos_banner";
     String bannerEmptyHostname = "nxos_banner_empty";
     CiscoNxosConfiguration banner = parseVendorConfig(bannerHostname);
@@ -675,7 +674,7 @@ public final class CiscoNxosGrammarTest {
    * moved to parsing ref tests once bit is flipped on new parser.
    */
   @Test
-  public void testBgpParsingTemporary() {
+  void testBgpParsingTemporary() {
     String hostname = "nxos_bgp_parsing_temporary";
 
     // Just test that parser does not choke.
@@ -684,7 +683,7 @@ public final class CiscoNxosGrammarTest {
 
   /** See: https://github.com/batfish/batfish/issues/5081 */
   @Test
-  public void testBgpPeerTemplateGH5081Extraction() {
+  void testBgpPeerTemplateGH5081Extraction() {
     String peerName = "peer-rr-overlay";
 
     CiscoNxosConfiguration vc = parseVendorConfig("nxos_bgp_peer_template");
@@ -710,31 +709,31 @@ public final class CiscoNxosGrammarTest {
 
   /** See: https://github.com/batfish/batfish/issues/5081 */
   @Test
-  public void testBgpPeerTemplateGH5081Conversion() throws IOException {
+  void testBgpPeerTemplateGH5081Conversion() throws IOException {
     Configuration c = parseConfig("nxos_bgp_peer_template");
     assertThat(c, notNullValue());
   }
 
   @Test
-  public void testClassMapParsing() {
+  void testClassMapParsing() {
     // TODO: make into an extraction test
     assertThat(parseVendorConfig("nxos_class_map"), notNullValue());
   }
 
   @Test
-  public void testCryptoParsing() {
+  void testCryptoParsing() {
     // TODO: make into an extraction test
     assertThat(parseVendorConfig("nxos_crypto"), notNullValue());
   }
 
   @Test
-  public void testDhcpParsing() {
+  void testDhcpParsing() {
     // TODO: make into an extraction test, convert what's important
     assertThat(parseVendorConfig("dhcp"), notNullValue());
   }
 
   @Test
-  public void testBgpExtraction() {
+  void testBgpExtraction() {
     CiscoNxosConfiguration vc = parseVendorConfig("nxos_bgp");
     BgpGlobalConfiguration bgpGlobal = vc.getBgpGlobalConfiguration();
     assertThat(bgpGlobal, notNullValue());
@@ -781,7 +780,7 @@ public final class CiscoNxosGrammarTest {
 
   /** Like {@link #testBgpExtraction()}, but for second variants of global parameters. */
   @Test
-  public void testBgpExtraction2() {
+  void testBgpExtraction2() {
     CiscoNxosConfiguration vc = parseVendorConfig("nxos_bgp_2");
 
     BgpGlobalConfiguration bgpGlobal = vc.getBgpGlobalConfiguration();
@@ -797,7 +796,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testBgpNeighborRefs() throws IOException {
+  void testBgpNeighborRefs() throws IOException {
     String hostname = "nxos_bgp_neighbor";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -831,7 +830,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testBgpNexthopRouteMapExtraction() {
+  void testBgpNexthopRouteMapExtraction() {
     String hostname = "nxos_bgp_nexthop_route_map";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -859,7 +858,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testBgpNexthopRouteMapReferences() throws IOException {
+  void testBgpNexthopRouteMapReferences() throws IOException {
     String hostname = "nxos_bgp_nexthop_route_map";
     String filename = String.format("configs/%s", hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -876,7 +875,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testBgpNexthopRouteMapConversion() throws IOException {
+  void testBgpNexthopRouteMapConversion() throws IOException {
     String hostname = "nxos_bgp_nexthop_route_map";
     Configuration c = parseConfig(hostname);
 
@@ -899,7 +898,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testBgpNoNeighbor() throws IOException {
+  void testBgpNoNeighbor() throws IOException {
     /*
      For each neighbor type (IPv4 active/passive, IPv6 active/passive), both within and outside of
      VRF context, tests that:
@@ -959,7 +958,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testBgpNextHopUnchanged() throws IOException {
+  void testBgpNextHopUnchanged() throws IOException {
     Configuration c = parseConfig("nxos_bgp_nh_unchanged");
     RoutingPolicy nhipUnchangedPolicy = c.getRoutingPolicies().get("NHIP-UNCHANGED");
 
@@ -1014,7 +1013,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testBgpDefaultOriginateExtraction() {
+  void testBgpDefaultOriginateExtraction() {
     CiscoNxosConfiguration vc = parseVendorConfig("nxos_bgp_default_originate");
     assertFalse(
         vc.getBgpGlobalConfiguration()
@@ -1027,7 +1026,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testBgpRedistribution() throws IOException {
+  void testBgpRedistribution() throws IOException {
     /*
      * Config contains two VRFs:
      * - VRF1 has static route 1.1.1.1/32 and redistributes static into BGP with a permit-all route-map
@@ -1088,7 +1087,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testBgpRedistFromEigrpConversion() throws IOException {
+  void testBgpRedistFromEigrpConversion() throws IOException {
     // BGP redistributes EIGRP with route-map redist_eigrp, which permits 5.5.5.0/24
     Configuration c = parseConfig("nxos_bgp_eigrp_redistribution");
     RoutingPolicy bgpRedistPolicy =
@@ -1226,7 +1225,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testBgpPeerPrefixList() throws IOException {
+  void testBgpPeerPrefixList() throws IOException {
     String hostname = "nxos_bgp_peer_prefix_list";
     Configuration c = parseConfig(hostname);
 
@@ -1335,7 +1334,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testBootKickstartConversion() throws IOException {
+  void testBootKickstartConversion() throws IOException {
     String hostname = "nxos_boot_kickstart";
     Configuration c = parseConfig(hostname);
 
@@ -1343,7 +1342,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testBootKickstartExtraction() {
+  void testBootKickstartExtraction() {
     String hostname = "nxos_boot_kickstart";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -1353,7 +1352,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testBootKickstartSupExtraction() {
+  void testBootKickstartSupExtraction() {
     String hostname = "nxos_boot_kickstart_sup";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -1363,7 +1362,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testBootNxosConversion() throws IOException {
+  void testBootNxosConversion() throws IOException {
     String hostname = "nxos_boot_nxos";
     Configuration c = parseConfig(hostname);
 
@@ -1371,7 +1370,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testBootNxosExtraction() {
+  void testBootNxosExtraction() {
     String hostname = "nxos_boot_nxos";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -1381,7 +1380,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testBootNxosSupExtraction() {
+  void testBootNxosSupExtraction() {
     String hostname = "nxos_boot_nxos_sup";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -1390,7 +1389,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testBootSystemConversion() throws IOException {
+  void testBootSystemConversion() throws IOException {
     String hostname = "nxos_boot_system";
     Configuration c = parseConfig(hostname);
 
@@ -1398,7 +1397,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testBootSystemExtraction() {
+  void testBootSystemExtraction() {
     String hostname = "nxos_boot_system";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -1408,7 +1407,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testBootSystemSupExtraction() {
+  void testBootSystemSupExtraction() {
     String hostname = "nxos_boot_system_sup";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -1417,7 +1416,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testSwitchnameConversion() throws IOException {
+  void testSwitchnameConversion() throws IOException {
     String hostname = "nxos_switchname";
     Configuration c = parseConfig(hostname);
 
@@ -1425,7 +1424,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testSwitchnameExtraction() {
+  void testSwitchnameExtraction() {
     String hostname = "nxos_switchname";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -1433,7 +1432,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testSystemDefaultSwitchportShutdownConversion() throws IOException {
+  void testSystemDefaultSwitchportShutdownConversion() throws IOException {
     String hostname = "nxos_system_default_switchport_shutdown";
     Configuration c = parseConfig(hostname);
 
@@ -1485,7 +1484,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testSystemDefaultSwitchportShutdownExtraction() {
+  void testSystemDefaultSwitchportShutdownExtraction() {
     String hostname = "nxos_system_default_switchport_shutdown";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -1538,7 +1537,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testNoSystemDefaultSwitchportShutdownConversion() throws IOException {
+  void testNoSystemDefaultSwitchportShutdownConversion() throws IOException {
     String hostname = "nxos_no_system_default_switchport_shutdown";
     Configuration c = parseConfig(hostname);
 
@@ -1590,7 +1589,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testNoSystemDefaultSwitchportShutdownExtraction() {
+  void testNoSystemDefaultSwitchportShutdownExtraction() {
     String hostname = "nxos_no_system_default_switchport_shutdown";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -1643,7 +1642,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testSystemDefaultSwitchportConversion() throws IOException {
+  void testSystemDefaultSwitchportConversion() throws IOException {
     String hostname = "nxos_system_default_switchport";
     Configuration c = parseConfig(hostname);
 
@@ -1662,7 +1661,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testSystemDefaultSwitchportExtraction() {
+  void testSystemDefaultSwitchportExtraction() {
     String hostname = "nxos_system_default_switchport";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -1676,7 +1675,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testNoSystemDefaultSwitchportConversion() throws IOException {
+  void testNoSystemDefaultSwitchportConversion() throws IOException {
     String hostname = "nxos_no_system_default_switchport";
     Configuration c = parseConfig(hostname);
 
@@ -1694,7 +1693,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testNoSystemDefaultSwitchportExtraction() {
+  void testNoSystemDefaultSwitchportExtraction() {
     String hostname = "nxos_no_system_default_switchport";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -1708,7 +1707,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testTacacsServerConversion() throws IOException {
+  void testTacacsServerConversion() throws IOException {
     String hostname = "nxos_tacacs_server";
     Configuration c = parseConfig(hostname);
 
@@ -1717,7 +1716,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testTacacsServerExtraction() {
+  void testTacacsServerExtraction() {
     String hostname = "nxos_tacacs_server";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -1726,7 +1725,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testTemplatePeerBgpAddressFamilyConversion() throws IOException {
+  void testTemplatePeerBgpAddressFamilyConversion() throws IOException {
     Configuration c = parseConfig("nxos_bgp_peer_template_af_inheritance");
 
     BgpActivePeerConfig peer =
@@ -1764,7 +1763,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testTemplatePeerEvpnAddressFamilyConversion() throws IOException {
+  void testTemplatePeerEvpnAddressFamilyConversion() throws IOException {
     Configuration c = parseConfig("nxos_bgp_peer_template_af_inheritance");
 
     BgpActivePeerConfig peer =
@@ -1795,7 +1794,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testEvpnL2L3Vni() throws IOException {
+  void testEvpnL2L3Vni() throws IOException {
     Configuration c = parseConfig("nxos_l2_l3_vnis");
 
     String tenantVrfName = "tenant1";
@@ -1898,7 +1897,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testTrackExtraction() {
+  void testTrackExtraction() {
     String hostname = "nxos_track";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -1940,7 +1939,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testTrackWarnings() {
+  void testTrackWarnings() {
     String hostname = "nxos_track_warn";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -1964,7 +1963,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testTrackConversion() throws IOException {
+  void testTrackConversion() throws IOException {
     String hostname = "nxos_track_conversion";
     Configuration c = parseConfig(hostname);
 
@@ -1985,7 +1984,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testTrackConversionWarnings() throws IOException {
+  void testTrackConversionWarnings() throws IOException {
     String hostname = "nxos_track_conversion_warn";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
@@ -2014,7 +2013,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testEigrpExtraction() {
+  void testEigrpExtraction() {
     String hostname = "nxos_eigrp";
     CiscoNxosConfiguration c = parseVendorConfig(hostname);
     assertThat(c.getEigrpProcesses(), hasKeys("EIGRP1234", "123"));
@@ -2079,7 +2078,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testEigrpConversion() throws Exception {
+  void testEigrpConversion() throws Exception {
     String hostname = "nxos_eigrp";
     Configuration c = parseConfig(hostname);
     assertThat(c.getVrfs(), hasKeys(DEFAULT_VRF_NAME, MANAGEMENT_VRF_NAME, "VRF"));
@@ -2112,7 +2111,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testIsisExtraction() {
+  void testIsisExtraction() {
     CiscoNxosConfiguration c = parseVendorConfig("nxos_isis");
     assertThat(c.getIsisProcesses(), hasKeys("UNDERLAY"));
     IsisProcess proc = c.getIsisProcess("UNDERLAY");
@@ -2142,7 +2141,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testIsisConversion() throws Exception {
+  void testIsisConversion() throws Exception {
     Configuration c = parseConfig("nxos_isis");
     org.batfish.datamodel.isis.IsisProcess proc = c.getDefaultVrf().getIsisProcess();
     assertThat(proc, notNullValue());
@@ -2166,7 +2165,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testIsisReferences() throws Exception {
+  void testIsisReferences() throws Exception {
     String hostname = "nxos_isis";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -2179,7 +2178,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testEigrpRedistributionPolicy() throws Exception {
+  void testEigrpRedistributionPolicy() throws Exception {
     String hostname = "nxos_eigrp_redist";
     Configuration c = parseConfig(hostname);
     RoutingPolicy redistPolicy =
@@ -2350,14 +2349,14 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testEigrpDualProcess() throws Exception {
+  void testEigrpDualProcess() throws Exception {
     // Don't crash.
     parseConfig("nxos_eigrp_double");
     // TODO: real test
   }
 
   @Test
-  public void testEvpnExtraction() {
+  void testEvpnExtraction() {
     CiscoNxosConfiguration vc = parseVendorConfig("nxos_evpn");
     Evpn evpn = vc.getEvpn();
     assertThat(evpn, not(nullValue()));
@@ -2394,37 +2393,37 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testFeatureParsing() {
+  void testFeatureParsing() {
     // TODO: make into extraction test
     assertThat(parseVendorConfig("nxos_feature"), notNullValue());
   }
 
   @Test
-  public void testFexParsing() {
+  void testFexParsing() {
     // TODO: make into extraction test
     assertThat(parseVendorConfig("nxos_fex"), notNullValue());
   }
 
   @Test
-  public void testFlowExtraction() {
+  void testFlowExtraction() {
     // TODO: make into extraction test
     assertThat(parseVendorConfig("nxos_flow"), notNullValue());
   }
 
   @Test
-  public void testHumanName() throws IOException {
+  void testHumanName() throws IOException {
     Configuration c = parseConfig("nxos_hostname");
     assertThat(c.getHumanName(), equalTo("NXOS_hostname"));
   }
 
   @Test
-  public void testIgnore() {
+  void testIgnore() {
     // TODO: make into a ref test
     assertThat(parseVendorConfig("nxos_ignore"), notNullValue());
   }
 
   @Test
-  public void testInterfaceBindDependency() throws IOException {
+  void testInterfaceBindDependency() throws IOException {
     String hostname = "nxos_interface_bind_dependency";
     String ifaceName = "Ethernet1/1";
     String subName = "Ethernet1/1.1";
@@ -2440,13 +2439,13 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testInterfaceBreakoutExtraction() {
+  void testInterfaceBreakoutExtraction() {
     // TODO: make into an extraction test
     assertThat(parseVendorConfig("nxos_interface_breakout"), notNullValue());
   }
 
   @Test
-  public void testInterfaceHsrpConversion() throws IOException {
+  void testInterfaceHsrpConversion() throws IOException {
     String hostname = "nxos_interface_hsrp";
     String ifaceName = "Ethernet1/1";
     Configuration c = parseConfig(hostname);
@@ -2482,7 +2481,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testInterfaceHsrpExtraction() {
+  void testInterfaceHsrpExtraction() {
     String hostname = "nxos_interface_hsrp";
     String ifaceName = "Ethernet1/1";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
@@ -2534,7 +2533,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testInterfaceHsrpWarnings() {
+  void testInterfaceHsrpWarnings() {
     String hostname = "nxos_interface_hsrp_warn";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -2554,13 +2553,13 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testInterfaceHsrpIpv6Extraction() {
+  void testInterfaceHsrpIpv6Extraction() {
     // TODO: turn into extraction test
     assertThat(parseVendorConfig("nxos_interface_hsrp_ipv6"), notNullValue());
   }
 
   @Test
-  public void testInterfaceIpAddressConversion() throws IOException {
+  void testInterfaceIpAddressConversion() throws IOException {
     String hostname = "nxos_interface_ip_address";
     Configuration c = parseConfig(hostname);
 
@@ -2610,7 +2609,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testInterfaceIpAddressExtraction() {
+  void testInterfaceIpAddressExtraction() {
     String hostname = "nxos_interface_ip_address";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -2641,7 +2640,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testInterfaceIpv6AddressExtraction() {
+  void testInterfaceIpv6AddressExtraction() {
     String hostname = "nxos_interface_ipv6_address";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -2668,32 +2667,32 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testInterfaceIpv6DhcpRelayExtraction() {
+  void testInterfaceIpv6DhcpRelayExtraction() {
     // TODO: make into extraction test
     assertThat(parseVendorConfig("nxos_interface_ipv6_dhcp_relay"), notNullValue());
   }
 
   @Test
-  public void testInterfaceIpv6NdExtraction() {
+  void testInterfaceIpv6NdExtraction() {
     // TODO: make into extraction test
     assertThat(parseVendorConfig("nxos_interface_ipv6_nd"), notNullValue());
   }
 
   @Test
-  public void testInterfaceMulticastParsing() throws IOException {
+  void testInterfaceMulticastParsing() throws IOException {
     // TODO: make into extraction test
     parseConfig("nxos_interface_multicast");
     // don't crash.
   }
 
   @Test
-  public void testInterfacePbrExtraction() {
+  void testInterfacePbrExtraction() {
     CiscoNxosConfiguration c = parseVendorConfig("nxos_interface_ip_policy");
     assertThat(c.getInterfaces().get("Ethernet1/1").getPbrPolicy(), equalTo("PBR_POLICY"));
   }
 
   @Test
-  public void testInterfacePbrConversion() throws IOException {
+  void testInterfacePbrConversion() throws IOException {
     String hostname = "nxos_interface_ip_policy";
     Configuration c = parseConfig(hostname);
     String policyName = "PBR_POLICY";
@@ -2744,7 +2743,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testInterfaceRangeConversion() throws IOException {
+  void testInterfaceRangeConversion() throws IOException {
     String hostname = "nxos_interface_range";
     Configuration c = parseConfig(hostname);
 
@@ -2753,7 +2752,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testInterfaceRangeExtraction() {
+  void testInterfaceRangeExtraction() {
     String hostname = "nxos_interface_range";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -2763,7 +2762,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testInterfaceShowRunAll1() throws IOException {
+  void testInterfaceShowRunAll1() throws IOException {
     String hostname = "nxos_interface_show_all_1";
     Configuration c = parseConfig(hostname);
     assertThat(
@@ -2771,7 +2770,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testInterfaceShowRunAll2RetainsSetMode() throws IOException {
+  void testInterfaceShowRunAll2RetainsSetMode() throws IOException {
     String hostname = "nxos_interface_show_all_2";
     Configuration c = parseConfig(hostname);
     assertThat(
@@ -2785,7 +2784,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testInterfaceShutdownConversion() throws IOException {
+  void testInterfaceShutdownConversion() throws IOException {
     String hostname = "nxos_interface_shutdown";
     Configuration c = parseConfig(hostname);
 
@@ -2837,7 +2836,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testInterfaceShutdownExtraction() {
+  void testInterfaceShutdownExtraction() {
     String hostname = "nxos_interface_shutdown";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -2889,13 +2888,13 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testInterfaceSpanningTreeParsing() {
+  void testInterfaceSpanningTreeParsing() {
     // TODO: make into extraction test
     assertThat(parseVendorConfig("nxos_interface_spanning_tree"), notNullValue());
   }
 
   @Test
-  public void testInterfaceRuntimeSpeedConversion() throws IOException {
+  void testInterfaceRuntimeSpeedConversion() throws IOException {
     String snapshotName = "runtime_data";
     String hostname = "c1";
     Batfish batfish =
@@ -2956,7 +2955,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testInterfaceRuntimeBandwidthConversion() throws IOException {
+  void testInterfaceRuntimeBandwidthConversion() throws IOException {
     String snapshotName = "runtime_data";
     String hostname = "c2";
     Batfish batfish =
@@ -3015,7 +3014,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testInterfaceRuntimeBandwidthAndSpeedConversion() throws IOException {
+  void testInterfaceRuntimeBandwidthAndSpeedConversion() throws IOException {
     // For testing interaction between configured and runtime speeds and bandwidths
     String snapshotName = "runtime_data";
     String hostname = "c3";
@@ -3051,7 +3050,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testInterfaceSpeedExtraction() {
+  void testInterfaceSpeedExtraction() {
     String hostname = "nxos_interface_speed";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -3067,13 +3066,13 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testInterfaceStormControlParsing() {
+  void testInterfaceStormControlParsing() {
     // TODO: make into extraction test
     assertThat(parseVendorConfig("nxos_interface_storm_control"), notNullValue());
   }
 
   @Test
-  public void testInterfaceSwitchportConversion() throws IOException {
+  void testInterfaceSwitchportConversion() throws IOException {
     String hostname = "nxos_interface_switchport";
     Configuration c = parseConfig(hostname);
 
@@ -3249,7 +3248,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testInterfaceSwitchportExtraction() {
+  void testInterfaceSwitchportExtraction() {
     String hostname = "nxos_interface_switchport";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -3423,7 +3422,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testInterfaceSwitchportExtractionInvalid() {
+  void testInterfaceSwitchportExtractionInvalid() {
     String hostname = "nxos_interface_switchport_invalid";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -3458,7 +3457,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testInterfacePortChannelParsing() {
+  void testInterfacePortChannelParsing() {
     CiscoNxosConfiguration c = parseVendorConfig("nxos_interface_port_channel");
     assertThat(c.getInterfaces().keySet(), contains("port-channel1"));
     Interface pc1 = c.getInterfaces().get("port-channel1");
@@ -3472,7 +3471,7 @@ public final class CiscoNxosGrammarTest {
    * cases deserves its own unit test. (See, e.g., {@link #testInterfaceSwitchportExtraction()}.
    */
   @Test
-  public void testInterfacePropertiesConversion() throws IOException {
+  void testInterfacePropertiesConversion() throws IOException {
     Configuration c = parseConfig("nxos_interface_properties");
     assertThat(c, hasInterface("Ethernet1/1", any(org.batfish.datamodel.Interface.class)));
 
@@ -3494,7 +3493,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testInterfacePropertiesExtraction() {
+  void testInterfacePropertiesExtraction() {
     CiscoNxosConfiguration vc = parseVendorConfig("nxos_interface_properties");
     assertThat(
         vc.getInterfaces(),
@@ -3533,7 +3532,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testIpAccessListLineVendorStructureId() throws IOException {
+  void testIpAccessListLineVendorStructureId() throws IOException {
     String hostname = "nxos_ip_access_list";
     Configuration c = parseConfig(hostname);
 
@@ -3571,7 +3570,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testIpAccessListConversion() throws IOException {
+  void testIpAccessListConversion() throws IOException {
     String hostname = "nxos_ip_access_list";
     Configuration c = parseConfig(hostname);
     BddTestbed tb = new BddTestbed(c.getIpAccessLists(), c.getIpSpaces());
@@ -4006,7 +4005,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testIpAccessListExtraction() {
+  void testIpAccessListExtraction() {
     String hostname = "nxos_ip_access_list";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -4598,7 +4597,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testIpAccessListReferences() throws IOException {
+  void testIpAccessListReferences() throws IOException {
     String hostname = "nxos_ip_access_list_references";
     String filename = String.format("configs/%s", hostname);
     Batfish bf = getBatfishForConfigurationNames(hostname);
@@ -4610,7 +4609,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testIpAsPathAccessListConversion() throws IOException {
+  void testIpAsPathAccessListConversion() throws IOException {
     String hostname = "nxos_ip_as_path_access_list";
     Configuration c = parseConfig(hostname);
 
@@ -4656,7 +4655,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testIpAsPathAccessListExtraction() {
+  void testIpAsPathAccessListExtraction() {
     String hostname = "nxos_ip_as_path_access_list";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -4687,13 +4686,14 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testIpAsPathAccessListInvalid() {
-    _thrown.expect(ParserBatfishException.class);
-    parseVendorConfig("nxos_ip_as_path_access_list_invalid");
+  void testIpAsPathAccessListInvalid() {
+    assertThrows(
+        ParserBatfishException.class,
+        () -> parseVendorConfig("nxos_ip_as_path_access_list_invalid"));
   }
 
   @Test
-  public void testIpCommunityListExpandedConversion() throws IOException {
+  void testIpCommunityListExpandedConversion() throws IOException {
     String hostname = "nxos_ip_community_list_expanded";
     Configuration c = parseConfig(hostname);
     CommunityContext ctx = CommunityContext.builder().build();
@@ -4778,7 +4778,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testIpCommunityListExpandedExtraction() {
+  void testIpCommunityListExpandedExtraction() {
     String hostname = "nxos_ip_community_list_expanded";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -4829,7 +4829,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testIpCommunityListStandardConversion() throws IOException {
+  void testIpCommunityListStandardConversion() throws IOException {
     String hostname = "nxos_ip_community_list_standard";
     Configuration c = parseConfig(hostname);
     CommunityContext ctx = CommunityContext.builder().build();
@@ -4937,7 +4937,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testIpCommunityListStandardExtraction() {
+  void testIpCommunityListStandardExtraction() {
     String hostname = "nxos_ip_community_list_standard";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -5004,7 +5004,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testIpDomainNameConversion() throws IOException {
+  void testIpDomainNameConversion() throws IOException {
     String hostname = "nxos_ip_domain_name";
     Configuration c = parseConfig(hostname);
 
@@ -5012,7 +5012,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testIpDomainNameExtraction() {
+  void testIpDomainNameExtraction() {
     String hostname = "nxos_ip_domain_name";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -5020,7 +5020,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testIpNameServerConversion() throws IOException {
+  void testIpNameServerConversion() throws IOException {
     String hostname = "nxos_ip_name_server";
     Configuration c = parseConfig(hostname);
 
@@ -5031,7 +5031,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testIpNameServerExtraction() {
+  void testIpNameServerExtraction() {
     String hostname = "nxos_ip_name_server";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -5054,7 +5054,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testIpDnsExtraction() {
+  void testIpDnsExtraction() {
     String hostname = "nxos_ip_dns";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -5076,7 +5076,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testIpDnsReferences() throws IOException {
+  void testIpDnsReferences() throws IOException {
     String hostname = "nxos_ip_dns";
     String filename = String.format("configs/%s", hostname);
     Batfish bf = getBatfishForConfigurationNames(hostname);
@@ -5090,7 +5090,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testIpDomainLookupDisabledExtraction() {
+  void testIpDomainLookupDisabledExtraction() {
     String hostname = "nxos_ip_domain_lookup_disabled";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -5098,7 +5098,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testIpDnsMultiVrfExtraction() {
+  void testIpDnsMultiVrfExtraction() {
     String hostname = "nxos_ip_dns_multi_vrf";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -5147,13 +5147,13 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testIpPimParsing() throws IOException {
+  void testIpPimParsing() throws IOException {
     // Assert that it parses.
     parseConfig("nxos_ip_pim");
   }
 
   @Test
-  public void testIpPrefixListConversion() throws IOException {
+  void testIpPrefixListConversion() throws IOException {
     String hostname = "nxos_ip_prefix_list";
     Configuration c = parseConfig(hostname);
 
@@ -5216,7 +5216,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testIpPrefixListExtraction() {
+  void testIpPrefixListExtraction() {
     String hostname = "nxos_ip_prefix_list";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -5294,7 +5294,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testIpSla() {
+  void testIpSla() {
     String hostname = "nxos_ip_sla";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
     assertThat(vc, notNullValue());
@@ -5302,7 +5302,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testIpv6AccessListExtraction() {
+  void testIpv6AccessListExtraction() {
     CiscoNxosConfiguration vc = parseVendorConfig("nxos_ipv6_access_list");
 
     assertThat(vc.getIpv6AccessLists(), hasKeys("v6acl1"));
@@ -5310,7 +5310,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testIpv6RouteExtraction() {
+  void testIpv6RouteExtraction() {
     CiscoNxosConfiguration c = parseVendorConfig("ipv6_route");
     Map<Prefix6, Collection<StaticRouteV6>> defaultRoutes =
         c.getDefaultVrf().getStaticRoutesV6().asMap();
@@ -5354,13 +5354,13 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testIpv6RouteConversion() throws IOException {
+  void testIpv6RouteConversion() throws IOException {
     parseConfig("ipv6_route");
     // TODO: convert lines
   }
 
   @Test
-  public void testIpv6PrefixListExtraction() {
+  void testIpv6PrefixListExtraction() {
     String hostname = "nxos_ipv6_prefix_list";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -5438,19 +5438,19 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testLacpParsing() throws IOException {
+  void testLacpParsing() throws IOException {
     parseConfig("nxos_lacp");
     // Don't crash.
   }
 
   @Test
-  public void testLineParsing() throws IOException {
+  void testLineParsing() throws IOException {
     parseConfig("nxos_line");
     // Don't crash.
   }
 
   @Test
-  public void testLoggingConversion() throws IOException {
+  void testLoggingConversion() throws IOException {
     String hostname = "nxos_logging";
     Configuration c = parseConfig(hostname);
 
@@ -5461,7 +5461,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testLoggingReferences() throws IOException {
+  void testLoggingReferences() throws IOException {
     String hostname = "nxos_logging";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -5485,7 +5485,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testLoggingExtraction() {
+  void testLoggingExtraction() {
     String hostname = "nxos_logging";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -5529,19 +5529,19 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testMacParsing() {
+  void testMacParsing() {
     parseVendorConfig("nxos_mac");
     // Don't crash.
   }
 
   @Test
-  public void testMonitorParsing() {
+  void testMonitorParsing() {
     String hostname = "nxos_monitor";
     assertThat(parseVendorConfig(hostname), notNullValue()); // todo: move beyond parsing
   }
 
   @Test
-  public void testNexus3000DefaultsConversion() throws IOException {
+  void testNexus3000DefaultsConversion() throws IOException {
     String hostname = "nxos_nexus_3000_defaults";
     Configuration c = parseConfig(hostname);
 
@@ -5551,7 +5551,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testNexus3000DefaultsExtraction() {
+  void testNexus3000DefaultsExtraction() {
     String hostname = "nxos_nexus_3000_defaults";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -5561,7 +5561,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testNexus5000DefaultsConversion() throws IOException {
+  void testNexus5000DefaultsConversion() throws IOException {
     String hostname = "nxos_nexus_5000_defaults";
     Configuration c = parseConfig(hostname);
 
@@ -5571,7 +5571,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testNexus5000DefaultsExtraction() {
+  void testNexus5000DefaultsExtraction() {
     String hostname = "nxos_nexus_5000_defaults";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -5581,7 +5581,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testNexus6000DefaultsConversion() throws IOException {
+  void testNexus6000DefaultsConversion() throws IOException {
     String hostname = "nxos_nexus_6000_defaults";
     Configuration c = parseConfig(hostname);
 
@@ -5591,7 +5591,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testNexus6000DefaultsExtraction() {
+  void testNexus6000DefaultsExtraction() {
     String hostname = "nxos_nexus_6000_defaults";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -5601,7 +5601,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testNexusUnknownDefaultsConversion() throws IOException {
+  void testNexusUnknownDefaultsConversion() throws IOException {
     String hostname = "nxos_nexus_unknown_defaults";
     Configuration c = parseConfig(hostname);
 
@@ -5610,7 +5610,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testNexusUnknownDefaultsExtraction() {
+  void testNexusUnknownDefaultsExtraction() {
     String hostname = "nxos_nexus_unknown_defaults";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -5620,7 +5620,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testNtpConversion() throws IOException {
+  void testNtpConversion() throws IOException {
     Configuration c = parseConfig("nxos_ntp");
 
     assertThat(
@@ -5629,7 +5629,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testNtpExtraction() {
+  void testNtpExtraction() {
     CiscoNxosConfiguration vc = parseVendorConfig("nxos_ntp");
 
     assertTrue(vc.getNtpAuthenticate());
@@ -5681,7 +5681,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testNtpNoAuthenticateExtraction() {
+  void testNtpNoAuthenticateExtraction() {
     CiscoNxosConfiguration vc = parseVendorConfig("nxos_ntp_no_authenticate");
 
     assertFalse(vc.getNtpAuthenticate());
@@ -5700,7 +5700,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testNveExtraction() {
+  void testNveExtraction() {
     CiscoNxosConfiguration vc = parseVendorConfig("nxos_nve");
     Map<Integer, Nve> nves = vc.getNves();
     assertThat(nves, hasKeys(1, 2, 3, 4));
@@ -5777,7 +5777,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testNveVnisConversion() throws IOException {
+  void testNveVnisConversion() throws IOException {
     Configuration c = parseConfig("nxos_nve_vnis");
 
     assertThat(c, hasDefaultVrf(hasLayer2Vnis(hasKey(10001))));
@@ -5835,7 +5835,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testObjectGroupIpAddressExtraction() {
+  void testObjectGroupIpAddressExtraction() {
     String hostname = "nxos_object_group_ip_address";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -5868,7 +5868,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testObjectGroupIpAddressReferences() throws IOException {
+  void testObjectGroupIpAddressReferences() throws IOException {
     String hostname = "nxos_object_group_ip_address_references";
     String filename = String.format("configs/%s", hostname);
     Batfish bf = getBatfishForConfigurationNames(hostname);
@@ -5880,7 +5880,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testObjectGroupIpAddressConversion() throws IOException {
+  void testObjectGroupIpAddressConversion() throws IOException {
     String hostname = "nxos_object_group_ip_address";
     Configuration c = parseConfig(hostname);
 
@@ -5899,7 +5899,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testObjectGroupIpPortExtraction() {
+  void testObjectGroupIpPortExtraction() {
     String hostname = "nxos_object_group_ip_port";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -5935,13 +5935,13 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testObjectGroupIpPortConversion() throws IOException {
+  void testObjectGroupIpPortConversion() throws IOException {
     parseConfig("nxos_object_group_ip_port");
     // Conversion is actually tested in the IP Access List tests, just make sure no crashes.
   }
 
   @Test
-  public void testNxosOspfCostLoopback() throws IOException {
+  void testNxosOspfCostLoopback() throws IOException {
     Configuration c = parseConfig("nxos-ospf-cost-loopback");
 
     assertThat(c.getAllInterfaces().get("loopback61").getOspfSettings(), not(nullValue()));
@@ -5949,7 +5949,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testOspfConversion() throws IOException {
+  void testOspfConversion() throws IOException {
     String hostname = "nxos_ospf";
     Configuration c = parseConfig(hostname);
     org.batfish.datamodel.Vrf defaultVrf = c.getDefaultVrf();
@@ -6303,7 +6303,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testOspfExtraction() {
+  void testOspfExtraction() {
     String hostname = "nxos_ospf";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
     Warnings warnings = vc.getWarnings();
@@ -6739,19 +6739,19 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testOspfv3Extraction() {
+  void testOspfv3Extraction() {
     // TODO: make into extraction test
     assertThat(parseVendorConfig("nxos_ospfv3"), notNullValue());
   }
 
   @Test
-  public void testPolicyMapParsing() {
+  void testPolicyMapParsing() {
     // TODO: make into an extraction test
     assertThat(parseVendorConfig("nxos_policy_map"), notNullValue());
   }
 
   @Test
-  public void testPortChannelConversion() throws IOException {
+  void testPortChannelConversion() throws IOException {
     String hostname = "nxos_port_channel";
     Configuration c = parseConfig(hostname);
 
@@ -6914,7 +6914,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testPortChannelExtraction() {
+  void testPortChannelExtraction() {
     String hostname = "nxos_port_channel";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -7048,7 +7048,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testPortChannelExtractionInvalid() {
+  void testPortChannelExtractionInvalid() {
     String hostname = "nxos_port_channel_invalid";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -7101,7 +7101,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testPortChannelReferences() throws IOException {
+  void testPortChannelReferences() throws IOException {
     String hostname = "nxos_port_channel_references";
     String filename = String.format("configs/%s", hostname);
     Batfish bf = getBatfishForConfigurationNames(hostname);
@@ -7114,7 +7114,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testPortChannelSubinterfaceConversion() throws IOException {
+  void testPortChannelSubinterfaceConversion() throws IOException {
     String hostname = "port_channel_subinterface";
     Configuration c = parseConfig(hostname);
     org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("port-channel1.1");
@@ -7128,19 +7128,19 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testRipParsing() throws IOException {
+  void testRipParsing() throws IOException {
     parseConfig("nxos_rip");
     // don't crash.
   }
 
   @Test
-  public void testRoleParsing() {
+  void testRoleParsing() {
     // TODO: make into ref test
     assertThat(parseVendorConfig("nxos_role"), notNullValue());
   }
 
   @Test
-  public void testOspfMaxMetricTransient() {
+  void testOspfMaxMetricTransient() {
     String hostname = "ospf_max_metric_transient";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -7152,7 +7152,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testRouteMapConversion() throws IOException {
+  void testRouteMapConversion() throws IOException {
     String hostname = "nxos_route_map";
     Configuration c = parseConfig(hostname);
 
@@ -7734,7 +7734,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testRouteMapExtraction() {
+  void testRouteMapExtraction() {
     String hostname = "nxos_route_map";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -8321,7 +8321,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testRouteMapExhaustive() throws IOException {
+  void testRouteMapExhaustive() throws IOException {
     Configuration c = parseConfig("nxos_route_map_exhaustive");
     assertThat(c.getRoutingPolicies(), hasKey("RM"));
     RoutingPolicy rm = c.getRoutingPolicies().get("RM");
@@ -8412,7 +8412,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testRouteMapMultipleChainedContinueEntriesConversion() throws IOException {
+  void testRouteMapMultipleChainedContinueEntriesConversion() throws IOException {
     Configuration c = parseConfig("nxos_route_map_multiple_chained_continue_entries");
 
     // Route gets redistributed into BGP
@@ -8436,7 +8436,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testSnmpServerConversion() throws IOException {
+  void testSnmpServerConversion() throws IOException {
     String hostname = "nxos_snmp_server";
     Configuration c = parseConfig(hostname);
 
@@ -8456,7 +8456,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testSnmpServerExtraction() {
+  void testSnmpServerExtraction() {
     String hostname = "nxos_snmp_server";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -8475,13 +8475,13 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testSpanningTreeParsing() {
+  void testSpanningTreeParsing() {
     // TODO: make into an extraction test
     assertThat(parseVendorConfig("nxos_spanning_tree"), notNullValue());
   }
 
   @Test
-  public void testStaticRouteConversion() throws IOException {
+  void testStaticRouteConversion() throws IOException {
     String hostname = "nxos_static_route";
     Configuration c = parseConfig(hostname);
 
@@ -8642,7 +8642,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testStaticRouteExtraction() {
+  void testStaticRouteExtraction() {
     String hostname = "nxos_static_route";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -8878,7 +8878,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testNoStaticRouteExtraction() {
+  void testNoStaticRouteExtraction() {
     String hostname = "nxos_no_static_route";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -8920,7 +8920,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testStaticRouteReferences() throws IOException {
+  void testStaticRouteReferences() throws IOException {
     String hostname = "nxos_static_route_references";
     String filename = String.format("configs/%s", hostname);
     Batfish bf = getBatfishForConfigurationNames(hostname);
@@ -8931,20 +8931,20 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testVdcParsing() {
+  void testVdcParsing() {
     // don't throw
     parseVendorConfig("nxos_vdc");
   }
 
   @Test
-  public void testVersionExtraction() {
+  void testVersionExtraction() {
     String hostname = "nxos_version";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
     assertThat(vc.getVersion(), equalTo("9.2(3) Bios:version"));
   }
 
   @Test
-  public void testVlanConversion() throws IOException {
+  void testVlanConversion() throws IOException {
     String hostname = "nxos_vlan";
     Configuration c = parseConfig(hostname);
 
@@ -9011,7 +9011,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testVlanExtraction() {
+  void testVlanExtraction() {
     String hostname = "nxos_vlan";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -9088,7 +9088,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testVlanExtractionInvalid() {
+  void testVlanExtractionInvalid() {
     String hostname = "nxos_vlan_invalid";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -9097,7 +9097,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testVlanReferences() throws IOException {
+  void testVlanReferences() throws IOException {
     String hostname = "nxos_vlan_references";
     String filename = String.format("configs/%s", hostname);
     Batfish bf = getBatfishForConfigurationNames(hostname);
@@ -9109,7 +9109,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testVrfConversion() throws IOException {
+  void testVrfConversion() throws IOException {
     String hostname = "nxos_vrf";
     Configuration c = parseConfig(hostname);
 
@@ -9179,7 +9179,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testVrfExtraction() throws IOException {
+  void testVrfExtraction() throws IOException {
     String hostname = "nxos_vrf";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     CiscoNxosConfiguration vc =
@@ -9291,7 +9291,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testVrfExtractionInvalid() throws IOException {
+  void testVrfExtractionInvalid() throws IOException {
     String hostname = "nxos_vrf_invalid";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     CiscoNxosConfiguration vc =
@@ -9335,7 +9335,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testVrfReferences() throws IOException {
+  void testVrfReferences() throws IOException {
     String hostname = "nxos_vrf_references";
     String filename = String.format("configs/%s", hostname);
     Batfish bf = getBatfishForConfigurationNames(hostname);
@@ -9347,12 +9347,12 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testWordLexing() {
+  void testWordLexing() {
     assertThat(parseVendorConfig("nxos_word"), notNullValue());
   }
 
   @Test
-  public void testBgpAllowAsInExtraction() {
+  void testBgpAllowAsInExtraction() {
     String hostname = "nxos_bgp_allowas_in";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
     assertThat(
@@ -9385,7 +9385,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testInterfaceEigrpPropertiesExtraction() {
+  void testInterfaceEigrpPropertiesExtraction() {
     String hostname = "nxos_interface_eigrp";
     // TODO: test other properties (hold time, hello interval)
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
@@ -9413,7 +9413,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testInterfaceEigrpPropertiesConversion() throws IOException {
+  void testInterfaceEigrpPropertiesConversion() throws IOException {
     String hostname = "nxos_interface_eigrp";
     Configuration c = parseConfig(hostname);
     {
@@ -9492,7 +9492,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testEigrpNetworkStatements() throws IOException {
+  void testEigrpNetworkStatements() throws IOException {
     /*
     Tests undocumented-but-permitted IOS-like syntax for declaring networks in router eigrp stanza:
     router eigrp 1
@@ -9533,7 +9533,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testEigrpDistributeListWithPrefixListExtraction() {
+  void testEigrpDistributeListWithPrefixListExtraction() {
     String hostname = "eigrp_distribute_list_prefix_list";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
     {
@@ -9555,7 +9555,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testEigrpDistributeListWithPrefixListConversion() throws IOException {
+  void testEigrpDistributeListWithPrefixListConversion() throws IOException {
     String hostname = "eigrp_distribute_list_prefix_list";
     Configuration c = parseConfig(hostname);
     Map<String, RoutingPolicy> policies = c.getRoutingPolicies();
@@ -9630,7 +9630,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testResolutionPolicyFiltering() throws IOException {
+  void testResolutionPolicyFiltering() throws IOException {
     String hostname = "resolution_policy";
     Configuration c = parseConfig(hostname);
     assertThat(c.getDefaultVrf().getResolutionPolicy(), equalTo(RESOLUTION_POLICY_NAME));
@@ -9651,7 +9651,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testResolutionPolicyRibRoutes() throws IOException {
+  void testResolutionPolicyRibRoutes() throws IOException {
     String hostname = "resolution_policy";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     batfish.loadConfigurations(batfish.getSnapshot());
@@ -9670,7 +9670,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testOspfDefaultInterfaceCost() throws IOException {
+  void testOspfDefaultInterfaceCost() throws IOException {
     Configuration c = parseConfig("ospf_default_interface_cost");
     String ifaceEth1Name = "Ethernet1/1";
     String ifaceVlan1Name = "Vlan1";
@@ -9685,7 +9685,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testTrackReferences() throws IOException {
+  void testTrackReferences() throws IOException {
     String hostname = "nxos_track_refs";
     String filename = "configs/" + hostname;
     Batfish bf = getBatfishForConfigurationNames(hostname);
@@ -9720,7 +9720,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testAggregateAddressExtraction() {
+  void testAggregateAddressExtraction() {
     String hostname = "nxos-aggregate-address";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
     BgpVrfConfiguration bgpVrf = vc.getBgpGlobalConfiguration().getVrfs().get(DEFAULT_VRF_NAME);
@@ -9802,7 +9802,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testAggregateAddressConversion() throws IOException {
+  void testAggregateAddressConversion() throws IOException {
     String hostname = "nxos-aggregate-address";
     Configuration c = parseConfig(hostname);
 
@@ -9905,7 +9905,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testAggregateAddressWarnings() throws IOException {
+  void testAggregateAddressWarnings() throws IOException {
     String hostname = "nxos-aggregate-address";
     String filename = String.format("configs/%s", hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -9927,7 +9927,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testRouteReflectorSetNextHopSelf() throws IOException {
+  void testRouteReflectorSetNextHopSelf() throws IOException {
     Configuration c = parseConfig("nxos_bgp_next_hop_self");
     Ip updateSourceIp = Ip.parse("1.0.0.1");
     Ip ebgpLocalIp = Ip.parse("2.0.0.0");
@@ -10024,7 +10024,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testNetworkAndRedistributeConversion() throws IOException {
+  void testNetworkAndRedistributeConversion() throws IOException {
     String hostname = "nxos_bgp_network_and_redistribute";
     Configuration c = parseConfig(hostname);
     String networkPolicyName = generatedBgpIndependentNetworkPolicyName(DEFAULT_VRF_NAME);
@@ -10068,7 +10068,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testFabricForwardingExtraction() {
+  void testFabricForwardingExtraction() {
     String hostname = "nxos_fabric_forwarding";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -10086,7 +10086,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testFabricForwardingConversion() throws IOException {
+  void testFabricForwardingConversion() throws IOException {
     String hostname = "nxos_fabric_forwarding";
     Configuration c = parseConfig(hostname);
 
@@ -10098,7 +10098,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testFabricForwardingNoMacWarning() throws IOException {
+  void testFabricForwardingNoMacWarning() throws IOException {
     String hostname = "nxos_fabric_forwarding_no_mac";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
@@ -10116,7 +10116,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testStaticRouteTrackExtraction() {
+  void testStaticRouteTrackExtraction() {
     String hostname = "nxos_static_route_track";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -10173,7 +10173,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testStaticRouteTrackConversion() throws IOException {
+  void testStaticRouteTrackConversion() throws IOException {
     String hostname = "nxos_static_route_track";
     Configuration c = parseConfig(hostname);
 
@@ -10208,7 +10208,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testInterfaceDeactivationExtraction() {
+  void testInterfaceDeactivationExtraction() {
     String hostname = "nxos_interface_deactivation";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
@@ -10239,7 +10239,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testInterfaceDeactivationConversion() throws IOException {
+  void testInterfaceDeactivationConversion() throws IOException {
     String hostname = "nxos_interface_deactivation";
     Configuration c = parseConfig(hostname);
 
@@ -10273,7 +10273,7 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testIpAccessListNoCrashOnInvalidInput() throws IOException {
+  void testIpAccessListNoCrashOnInvalidInput() throws IOException {
     String hostname = "nxos_ip_access_list_invalid";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Settings settings = batfish.getSettings();
@@ -10285,12 +10285,12 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testVlanServicePolicyExtraction() {
+  void testVlanServicePolicyExtraction() {
     parseVendorConfig("nxos_vlan_service_policy");
   }
 
   @Test
-  public void testVlanServicePolicyExtractionPolicy() throws IOException {
+  void testVlanServicePolicyExtractionPolicy() throws IOException {
     String hostname = "nxos_vlan_service_policy";
     String filename = String.format("configs/%s", hostname);
     Batfish bf = getBatfishForConfigurationNames(hostname);

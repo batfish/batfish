@@ -1,7 +1,9 @@
 package org.batfish.specifier.parse;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -13,18 +15,16 @@ import org.batfish.datamodel.DeviceType;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.RoleDimensionMapping;
 import org.batfish.specifier.MockSpecifierContext;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class ParsedNodeSpecifierTest {
+class ParsedNodeSpecifierTest {
 
   private MockSpecifierContext.Builder _ctxtB;
   private MockSpecifierContext _ctxt;
 
-  @Before
-  public void init() {
+  @BeforeEach
+  void init() {
     Configuration node1 = new Configuration("node1", ConfigurationFormat.CISCO_IOS);
     Configuration node2 = new Configuration("node2", ConfigurationFormat.CISCO_IOS);
     node1.setDeviceType(DeviceType.HOST);
@@ -35,7 +35,7 @@ public class ParsedNodeSpecifierTest {
   }
 
   @Test
-  public void testResolveDifference() {
+  void testResolveDifference() {
     assertThat(
         new ParsedNodeSpecifier(
                 new DifferenceNodeAstNode(
@@ -45,7 +45,7 @@ public class ParsedNodeSpecifierTest {
   }
 
   @Test
-  public void testResolveRole() {
+  void testResolveRole() {
     String dimensionName = "dim";
     String roleName = "role";
     _ctxtB.setNodeRoleDimensions(
@@ -65,7 +65,7 @@ public class ParsedNodeSpecifierTest {
 
   /** Tests for the old order @role(role, dimension) */
   @Test
-  public void testResolveRoleDeprecated() {
+  void testResolveRoleDeprecated() {
     String dimensionName = "dim";
     String roleName = "role";
     _ctxtB.setNodeRoleDimensions(
@@ -84,7 +84,7 @@ public class ParsedNodeSpecifierTest {
   }
 
   @Test
-  public void testResolveIntersection() {
+  void testResolveIntersection() {
     assertThat(
         new ParsedNodeSpecifier(
                 new IntersectionNodeAstNode(
@@ -94,7 +94,7 @@ public class ParsedNodeSpecifierTest {
   }
 
   @Test
-  public void testResolveName() {
+  void testResolveName() {
     assertThat(
         new ParsedNodeSpecifier(new NameNodeAstNode("node1")).resolve(_ctxt),
         equalTo(ImmutableSet.of("node1")));
@@ -105,21 +105,21 @@ public class ParsedNodeSpecifierTest {
   }
 
   @Test
-  public void testResolveNameRegex() {
+  void testResolveNameRegex() {
     assertThat(
         new ParsedNodeSpecifier(new NameRegexNodeAstNode("node1.*")).resolve(_ctxt),
         equalTo(ImmutableSet.of("node1")));
   }
 
   @Test
-  public void testResolveType() {
+  void testResolveType() {
     assertThat(
         new ParsedNodeSpecifier(new TypeNodeAstNode("host")).resolve(_ctxt),
         equalTo(ImmutableSet.of("node1")));
   }
 
   @Test
-  public void testResolveUnion() {
+  void testResolveUnion() {
     assertThat(
         new ParsedNodeSpecifier(
                 new UnionNodeAstNode(new NameNodeAstNode("node1"), new NameNodeAstNode("node2")))
@@ -127,17 +127,15 @@ public class ParsedNodeSpecifierTest {
         equalTo(ImmutableSet.of("node1", "node2")));
   }
 
-  @Rule public ExpectedException _thrown = ExpectedException.none();
-
   @Test
-  public void testParseBadInput() {
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("Error parsing");
-    ParsedNodeSpecifier.parse("@connected");
+  void testParseBadInput() {
+    Throwable exception =
+        assertThrows(IllegalArgumentException.class, () -> ParsedNodeSpecifier.parse("@connected"));
+    assertThat(exception.getMessage(), containsString("Error parsing"));
   }
 
   @Test
-  public void testParseGoodInput() {
+  void testParseGoodInput() {
     assertThat(
         ParsedNodeSpecifier.parse("node0"),
         equalTo(new ParsedNodeSpecifier(new NameNodeAstNode("node0"))));

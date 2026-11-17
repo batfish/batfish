@@ -8,10 +8,10 @@ import static org.batfish.specifier.LocationInfoUtils.computeLocationInfo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.testing.EqualsTester;
@@ -27,11 +27,11 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class LocationInfoUtilsTest {
+class LocationInfoUtilsTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new LocationInfo(true, EmptyIpSpace.INSTANCE, EmptyIpSpace.INSTANCE),
@@ -43,7 +43,7 @@ public class LocationInfoUtilsTest {
   }
 
   @Test
-  public void testComputeLocationInfo_default() {
+  void testComputeLocationInfo_default() {
     NetworkFactory nf = new NetworkFactory();
 
     Configuration config =
@@ -91,7 +91,7 @@ public class LocationInfoUtilsTest {
   }
 
   @Test
-  public void testComputeLocationInfo_vendorSupplied() {
+  void testComputeLocationInfo_vendorSupplied() {
     NetworkFactory nf = new NetworkFactory();
 
     Configuration config =
@@ -141,7 +141,7 @@ public class LocationInfoUtilsTest {
   }
 
   @Test
-  public void testComputeLocationInfo_inactive() {
+  void testComputeLocationInfo_inactive() {
     NetworkFactory nf = new NetworkFactory();
 
     Configuration config =

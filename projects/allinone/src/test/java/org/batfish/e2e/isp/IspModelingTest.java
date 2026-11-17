@@ -4,9 +4,10 @@ import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasP
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import com.google.common.collect.ImmutableList;
+import java.io.File;
 import java.io.IOException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.topology.L3Adjacencies;
@@ -15,13 +16,12 @@ import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** E2E test of ISP modeling */
-public class IspModelingTest {
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+class IspModelingTest {
+  @TempDir public File _folder;
 
   private static final String SNAPSHOTS_DIR = "org/batfish/e2e/isp";
 
@@ -43,7 +43,7 @@ public class IspModelingTest {
   // TODO: higher fidelity testing in tests below versus just BGP edge counting
 
   @Test
-  public void testBasic() throws IOException {
+  void testBasic() throws IOException {
     IBatfish batfish = setup("basic", ImmutableList.of("border1.cfg"), false);
     BgpTopology bgpTopology = batfish.getTopologyProvider().getBgpTopology(batfish.getSnapshot());
 
@@ -52,7 +52,7 @@ public class IspModelingTest {
   }
 
   @Test
-  public void testBasicBgpPeerInfo() throws IOException {
+  void testBasicBgpPeerInfo() throws IOException {
     IBatfish batfish = setup("basic-bgppeerinfo", ImmutableList.of("border1.cfg"), false);
     BgpTopology bgpTopology = batfish.getTopologyProvider().getBgpTopology(batfish.getSnapshot());
 
@@ -61,7 +61,7 @@ public class IspModelingTest {
   }
 
   @Test
-  public void testBasicBgpPeerInfoInferredLocalIp() throws IOException {
+  void testBasicBgpPeerInfoInferredLocalIp() throws IOException {
     IBatfish batfish = setup("basic-bgppeerinfo-implicit", ImmutableList.of("border1.cfg"), false);
     BgpTopology bgpTopology = batfish.getTopologyProvider().getBgpTopology(batfish.getSnapshot());
 
@@ -70,7 +70,7 @@ public class IspModelingTest {
   }
 
   @Test
-  public void testSviPeering() throws IOException {
+  void testSviPeering() throws IOException {
     IBatfish batfish = setup("svi-peering", ImmutableList.of("border1.cfg", "border2.cfg"), true);
     BgpTopology bgpTopology = batfish.getTopologyProvider().getBgpTopology(batfish.getSnapshot());
 
@@ -86,7 +86,7 @@ public class IspModelingTest {
   }
 
   @Test
-  public void testIspPeering() throws IOException {
+  void testIspPeering() throws IOException {
     IBatfish batfish = setup("isp-peering", ImmutableList.of("border1.cfg", "border2.cfg"), true);
     BgpTopology bgpTopology = batfish.getTopologyProvider().getBgpTopology(batfish.getSnapshot());
 

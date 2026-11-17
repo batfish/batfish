@@ -4,13 +4,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link FilterGroup} */
-public class FilterGroupTest {
+class FilterGroupTest {
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     FilterGroup group = new FilterGroup(null, "group");
     assertThat(SerializationUtils.clone(group), equalTo(group));
   }

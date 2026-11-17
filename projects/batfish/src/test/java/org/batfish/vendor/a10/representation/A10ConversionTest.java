@@ -68,9 +68,9 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -110,14 +110,14 @@ import org.batfish.datamodel.tracking.TrackAction;
 import org.batfish.datamodel.transformation.ApplyAll;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.vendor.a10.representation.BgpNeighbor.SendCommunity;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link A10Conversion}. */
-public class A10ConversionTest {
+class A10ConversionTest {
   private final BddTestbed _tb = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
 
   @Test
-  public void testToIntegerSpace() {
+  void testToIntegerSpace() {
     // Real ports
     assertThat(
         toIntegerSpace(new ServerPort(80, ServerPort.Type.TCP, null)),
@@ -142,7 +142,7 @@ public class A10ConversionTest {
   }
 
   @Test
-  public void testToProtocol() {
+  void testToProtocol() {
     assertThat(
         toProtocol(new VirtualServerPort(1, VirtualServerPort.Type.HTTP, 0)),
         equalTo(Optional.of(IpProtocol.TCP)));
@@ -171,7 +171,7 @@ public class A10ConversionTest {
   }
 
   @Test
-  public void testArePortTypesCompatible() {
+  void testArePortTypesCompatible() {
     List<VirtualServerPort.Type> tcpCompatibleVirtualTypes =
         ImmutableList.of(
             VirtualServerPort.Type.HTTP,
@@ -199,7 +199,7 @@ public class A10ConversionTest {
   }
 
   @Test
-  public void testVirtualServerToMatchExpr() {
+  void testVirtualServerToMatchExpr() {
     Ip addr = Ip.parse("10.10.10.10");
     VirtualServerTarget vst = new VirtualServerTargetAddress(addr);
     VirtualServer vs = new VirtualServer("vs", vst);
@@ -210,7 +210,7 @@ public class A10ConversionTest {
   }
 
   @Test
-  public void testVirtualServerTargetToMatchExpr() {
+  void testVirtualServerTargetToMatchExpr() {
     Ip addr = Ip.parse("10.10.10.10");
     VirtualServerTarget vst = new VirtualServerTargetAddress(addr);
 
@@ -220,7 +220,7 @@ public class A10ConversionTest {
   }
 
   @Test
-  public void testVirtualServerPortToMatchExpr() {
+  void testVirtualServerPortToMatchExpr() {
     VirtualServerPort vsp = new VirtualServerPort(10, VirtualServerPort.Type.UDP, 1);
 
     AclLineMatchExpr matchExpr = toMatchExpr(vsp);
@@ -235,7 +235,7 @@ public class A10ConversionTest {
   }
 
   @Test
-  public void testConvertAccessList() {
+  void testConvertAccessList() {
     /* Test conversion and tracing of an ACL with:
      *   1. explicit permit line
      *   2. explicit deny line
@@ -326,7 +326,7 @@ public class A10ConversionTest {
   }
 
   @Test
-  public void testToDstTransformationSteps() {
+  void testToDstTransformationSteps() {
     Ip server1Ip = Ip.parse("10.0.0.1");
     Server server1 = new Server("server1", new ServerTargetAddress(server1Ip));
     server1.getOrCreatePort(80, ServerPort.Type.TCP, null);
@@ -363,7 +363,7 @@ public class A10ConversionTest {
   }
 
   @Test
-  public void testGetNatPoolIps() {
+  void testGetNatPoolIps() {
     Ip pool0Start = Ip.parse("10.0.0.1");
     Ip pool0End = Ip.parse("10.0.0.3");
     Ip pool1Start = Ip.parse("10.0.1.1");
@@ -382,7 +382,7 @@ public class A10ConversionTest {
   }
 
   @Test
-  public void testGetVirtualServerIps() {
+  void testGetVirtualServerIps() {
     Ip vs0Ip = Ip.parse("10.0.0.1");
     Ip vs1EnabledIp = Ip.parse("10.0.1.1");
     Ip vs1DisabledIp = Ip.parse("10.0.3.1");
@@ -413,7 +413,7 @@ public class A10ConversionTest {
   }
 
   @Test
-  public void testGetVirtualServerIpsForAllVrids() {
+  void testGetVirtualServerIpsForAllVrids() {
     Ip vs0Ip = Ip.parse("10.0.0.1");
     Ip vs1EnabledIp = Ip.parse("10.0.1.1");
     Ip vs1DisabledIp = Ip.parse("10.0.3.1");
@@ -441,7 +441,7 @@ public class A10ConversionTest {
   }
 
   @Test
-  public void testGetVirtualServerIpsByHaGroup() {
+  void testGetVirtualServerIpsByHaGroup() {
     Ip vs0Ip = Ip.parse("10.0.0.1");
     Ip vs1EnabledIp = Ip.parse("10.0.1.1");
     Ip vs1DisabledIp = Ip.parse("10.0.3.1");
@@ -472,7 +472,7 @@ public class A10ConversionTest {
   }
 
   @Test
-  public void testGetVirtualServerKernelRoutes() {
+  void testGetVirtualServerKernelRoutes() {
     Ip vs0Ip = Ip.parse("10.0.0.1");
     Ip vs1EnabledIp = Ip.parse("10.0.1.1");
     Ip vs1DisabledIp = Ip.parse("10.0.3.1");
@@ -503,7 +503,7 @@ public class A10ConversionTest {
   }
 
   @Test
-  public void testToVrrpGroup() {
+  void testToVrrpGroup() {
     Ip ip = Ip.parse("1.1.1.1");
     ConcreteInterfaceAddress sourceAddress = ConcreteInterfaceAddress.parse("10.0.0.1/30");
     // null vrid config (must be vrid 0)
@@ -544,7 +544,7 @@ public class A10ConversionTest {
   }
 
   @Test
-  public void testVrrpADisabledAppliesToInterface() {
+  void testVrrpADisabledAppliesToInterface() {
     org.batfish.datamodel.Interface.Builder ifaceBuilder =
         org.batfish.datamodel.TestInterface.builder().setName("placeholder");
     // No concrete address
@@ -574,7 +574,7 @@ public class A10ConversionTest {
   }
 
   @Test
-  public void testFindVrrpAEnabledSourceAddress() {
+  void testFindVrrpAEnabledSourceAddress() {
     org.batfish.datamodel.Interface.Builder ifaceBuilder =
         org.batfish.datamodel.TestInterface.builder().setName("placeholder");
     Set<Ip> peerIps = ImmutableSet.of(Ip.parse("10.10.10.11"));
@@ -613,7 +613,7 @@ public class A10ConversionTest {
   }
 
   @Test
-  public void testFindHaSourceAddress() {
+  void testFindHaSourceAddress() {
     org.batfish.datamodel.Interface.Builder ifaceBuilder =
         org.batfish.datamodel.TestInterface.builder().setName("placeholder");
     Ip connMirror = Ip.parse("10.10.10.11");
@@ -652,7 +652,7 @@ public class A10ConversionTest {
   }
 
   @Test
-  public void testToKernelRouteVirtualServer() {
+  void testToKernelRouteVirtualServer() {
     Ip target = Ip.parse("10.0.0.1");
     {
       // unflagged
@@ -682,7 +682,7 @@ public class A10ConversionTest {
   }
 
   @Test
-  public void testToNonForwardingKernelRouteNatPool() {
+  void testToNonForwardingKernelRouteNatPool() {
     Ip start = Ip.parse("10.0.0.1");
     NatPool pool = new NatPool("pool1", start, Ip.parse("10.0.0.5"), 24);
     assertThat(
@@ -696,7 +696,7 @@ public class A10ConversionTest {
   }
 
   @Test
-  public void testToForwardingKernelRoutesNatPool() {
+  void testToForwardingKernelRoutesNatPool() {
     Ip start = Ip.parse("10.0.0.1");
     NatPool pool = new NatPool("pool1", start, Ip.parse("10.0.0.5"), 24);
     assertThat(
@@ -710,7 +710,7 @@ public class A10ConversionTest {
   }
 
   @Test
-  public void testToKernelRouteFloatingIp() {
+  void testToKernelRouteFloatingIp() {
     Ip floatingIp = Ip.parse("10.0.0.1");
     assertThat(
         toKernelRoute(floatingIp),
@@ -723,7 +723,7 @@ public class A10ConversionTest {
   }
 
   @Test
-  public void testCreateBgpProcess() {
+  void testCreateBgpProcess() {
     Ip routerId = Ip.parse("10.1.1.1");
     long remoteAs = 6L;
     BgpProcess bgpProcess = new BgpProcess(remoteAs);
@@ -906,7 +906,7 @@ public class A10ConversionTest {
   }
 
   @Test
-  public void testCreateAndAttachBgpNeighbor() {
+  void testCreateAndAttachBgpNeighbor() {
     Ip routerId = Ip.parse("10.1.1.1");
     Ip localIp = Ip.parse("10.0.0.1");
     Ip remoteIp = Ip.parse("10.0.0.2");
@@ -954,7 +954,7 @@ public class A10ConversionTest {
   }
 
   @Test
-  public void testComputeUpdateSource() {
+  void testComputeUpdateSource() {
     String ifaceName = "eth0";
     Ip interfaceAddress = Ip.parse("10.0.0.1");
     Map<String, org.batfish.datamodel.Interface> interfaces =
@@ -991,7 +991,7 @@ public class A10ConversionTest {
   }
 
   @Test
-  public void testGetInterfaceEnabledEffective() {
+  void testGetInterfaceEnabledEffective() {
     Interface ethNullEnabled = new Interface(Interface.Type.ETHERNET, 1);
     Interface loopNullEnabled = new Interface(Interface.Type.LOOPBACK, 1);
 

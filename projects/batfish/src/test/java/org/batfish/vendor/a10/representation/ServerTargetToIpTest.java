@@ -4,12 +4,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import org.batfish.datamodel.Ip;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link ServerTargetToIp}. */
-public class ServerTargetToIpTest {
+class ServerTargetToIpTest {
   @Test
-  public void testVisitAddress() {
+  void testVisitAddress() {
     Ip ip = Ip.parse("10.10.10.10");
     ServerTargetAddress sta = new ServerTargetAddress(ip);
     assertThat(ServerTargetToIp.INSTANCE.visit(sta), equalTo(ip));

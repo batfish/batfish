@@ -11,14 +11,14 @@ import com.google.common.testing.EqualsTester;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link ReplaceAsesInAsSequence}. */
 @ParametersAreNonnullByDefault
-public final class ReplaceAsesInAsSequenceTest {
+final class ReplaceAsesInAsSequenceTest {
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     {
       ReplaceAsesInAsSequence obj =
           new ReplaceAsesInAsSequence(
@@ -33,7 +33,7 @@ public final class ReplaceAsesInAsSequenceTest {
   }
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     {
       ReplaceAsesInAsSequence obj =
           new ReplaceAsesInAsSequence(
@@ -48,7 +48,7 @@ public final class ReplaceAsesInAsSequenceTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     ReplaceAsesInAsSequence obj =
         new ReplaceAsesInAsSequence(anyAs(), localAsOrConfedIfNeighborNotInConfed());
     new EqualsTester()

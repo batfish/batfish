@@ -11,14 +11,11 @@ import java.time.Instant;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.InitializationMetadata.ProcessingStatus;
 import org.batfish.identifiers.SnapshotId;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-@RunWith(JUnit4.class)
-public final class SnapshotMetadataTest {
+final class SnapshotMetadataTest {
   @Test
-  public void serialization() {
+  void serialization() {
     SnapshotMetadata metadata =
         new SnapshotMetadata(Instant.ofEpochMilli(758949005001L), new SnapshotId("blah"));
     JsonNode jsonNode = BatfishObjectMapper.mapper().valueToTree(metadata);

@@ -13,18 +13,18 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link RemoteAs}. */
-public class RemoteAsTest {
+class RemoteAsTest {
 
   @Test
-  public void testToString() {
+  void testToString() {
     assertThat(RemoteAs.instance().toString(), equalTo("RemoteAs"));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             RemoteAs.instance(),
@@ -36,7 +36,7 @@ public class RemoteAsTest {
   }
 
   @Test
-  public void testRemoteAs() {
+  void testRemoteAs() {
     Configuration c =
         new NetworkFactory()
             .configurationBuilder()

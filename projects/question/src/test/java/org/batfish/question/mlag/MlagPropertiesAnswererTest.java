@@ -32,13 +32,13 @@ import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link MlagPropertiesAnswerer} */
-public final class MlagPropertiesAnswererTest {
+final class MlagPropertiesAnswererTest {
 
   @Test
-  public void testColumnOrder() {
+  void testColumnOrder() {
     TableMetadata tableMetadata = MlagPropertiesAnswerer.getMetadata();
 
     assertThat(
@@ -55,7 +55,7 @@ public final class MlagPropertiesAnswererTest {
   }
 
   @Test
-  public void testColumnSchemas() {
+  void testColumnSchemas() {
     TableMetadata tableMetadata = MlagPropertiesAnswerer.getMetadata();
 
     assertThat(
@@ -68,7 +68,7 @@ public final class MlagPropertiesAnswererTest {
   }
 
   @Test
-  public void testConfigToRow() {
+  void testConfigToRow() {
     Mlag m =
         Mlag.builder()
             .setId("ID")
@@ -90,7 +90,7 @@ public final class MlagPropertiesAnswererTest {
   }
 
   @Test
-  public void testFilterNodes() {
+  void testFilterNodes() {
     ImmutableSortedMap<String, Configuration> configs = getConfigs();
     TableAnswerElement answer =
         computeAnswer(ImmutableSet.of("n1"), getAllMlagIds(configs), configs);
@@ -101,7 +101,7 @@ public final class MlagPropertiesAnswererTest {
   }
 
   @Test
-  public void testFilterMlags() {
+  void testFilterMlags() {
     ImmutableSortedMap<String, Configuration> configs = getConfigs();
     TableAnswerElement answer =
         computeAnswer(ImmutableSet.of("n1", "n2"), ImmutableSet.of("ID2"), configs);

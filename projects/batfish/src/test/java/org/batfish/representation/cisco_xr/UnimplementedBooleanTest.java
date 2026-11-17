@@ -6,20 +6,20 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.testing.EqualsTester;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link UnimplementedBoolean}. */
 @ParametersAreNonnullByDefault
-public final class UnimplementedBooleanTest {
+final class UnimplementedBooleanTest {
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     assertThat(
         SerializationUtils.clone(UnimplementedBoolean.instance()),
         equalTo(UnimplementedBoolean.instance()));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(UnimplementedBoolean.instance(), UnimplementedBoolean.instance())
         .testEquals();

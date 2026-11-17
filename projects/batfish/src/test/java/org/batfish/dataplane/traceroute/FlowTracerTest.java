@@ -32,11 +32,11 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -45,6 +45,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Interners;
 import com.google.common.collect.Iterables;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -139,13 +140,12 @@ import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests for {@link FlowTracer}. */
-public final class FlowTracerTest {
-  @Rule public TemporaryFolder _temporaryFolder = new TemporaryFolder();
+final class FlowTracerTest {
+  @TempDir public File _temporaryFolder;
 
   /** Creates an initial {@link FlowTracer} for a new traceroute. */
   static @Nonnull FlowTracer testFlowTracer(
@@ -222,7 +222,7 @@ public final class FlowTracerTest {
   }
 
   @Test
-  public void testBuildAcceptTraceNewSessions() {
+  void testBuildAcceptTraceNewSessions() {
     String hostname = "hostname";
     String vrfName = "vrf";
     String ifaceName = "iface";
@@ -299,7 +299,7 @@ public final class FlowTracerTest {
   }
 
   @Test
-  public void testBuildAcceptTrace_intranodeTraffic() {
+  void testBuildAcceptTrace_intranodeTraffic() {
     /* Simulates an intranode flow that is accepted. No session should be set up. */
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
@@ -366,7 +366,7 @@ public final class FlowTracerTest {
   }
 
   @Test
-  public void testOriginatingFlowMatchesInboundSession() {
+  void testOriginatingFlowMatchesInboundSession() {
     /* Simulates a reverse flow originating in a VRF where a session has been set up. */
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
@@ -492,7 +492,7 @@ public final class FlowTracerTest {
   }
 
   @Test
-  public void testFlowMatchingSessionCanBeAccepted() {
+  void testFlowMatchingSessionCanBeAccepted() {
     // Accept traces should be the same whether ingress interface does routing before or after NAT
     testFlowMatchingSessionCanBeAccepted(Action.PRE_NAT_FIB_LOOKUP, true);
     testFlowMatchingSessionCanBeAccepted(Action.POST_NAT_FIB_LOOKUP, false);
@@ -653,7 +653,7 @@ public final class FlowTracerTest {
   }
 
   @Test
-  public void testFlowMatchingSessionRoutedCorrectly() {
+  void testFlowMatchingSessionRoutedCorrectly() {
     // Test that return flows are routed correctly using PRE_NAT_FIB_LOOKUP or POST_NAT_FIB_LOOKUP.
     testFlowMatchingSessionRoutedCorrectly(Action.PRE_NAT_FIB_LOOKUP, false);
     testFlowMatchingSessionRoutedCorrectly(Action.POST_NAT_FIB_LOOKUP, true);
@@ -811,7 +811,7 @@ public final class FlowTracerTest {
   }
 
   @Test
-  public void testSessionSetupForIngressInterfaces() {
+  void testSessionSetupForIngressInterfaces() {
     /*
      * Test that sessions are set up correctly according to egress interface's
      * FirewallSessionInterfaceInfo, which controls whether sessions can be set up by flows from a
@@ -943,7 +943,7 @@ public final class FlowTracerTest {
   }
 
   @Test
-  public void testFibLookupNullRoute() {
+  void testFibLookupNullRoute() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
@@ -1001,7 +1001,7 @@ public final class FlowTracerTest {
   }
 
   @Test
-  public void testFibLookupNextVrf() {
+  void testFibLookupNextVrf() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
@@ -1099,7 +1099,7 @@ public final class FlowTracerTest {
   }
 
   @Test
-  public void testFibLookupNextVrfAccepted() {
+  void testFibLookupNextVrfAccepted() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
@@ -1190,7 +1190,7 @@ public final class FlowTracerTest {
   }
 
   @Test
-  public void testFibLookupNextVrfLoop() {
+  void testFibLookupNextVrfLoop() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
@@ -1291,7 +1291,7 @@ public final class FlowTracerTest {
   }
 
   @Test
-  public void testFibLookupForwarded() {
+  void testFibLookupForwarded() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
@@ -1396,7 +1396,7 @@ public final class FlowTracerTest {
    * using the {@link IpSpace IpSpaces} defined on the current node.
    */
   @Test
-  public void testTransformationEvaluatorNode() {
+  void testTransformationEvaluatorNode() {
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("2.2.2.2");
     Ip ip3 = Ip.parse("3.3.3.3");
@@ -1465,7 +1465,7 @@ public final class FlowTracerTest {
   }
 
   @Test
-  public void testBuildFirewallSessionTraceInfo_protocolWithoutSessions() {
+  void testBuildFirewallSessionTraceInfo_protocolWithoutSessions() {
     Flow flow =
         Flow.builder()
             .setIngressNode("node")
@@ -1478,7 +1478,7 @@ public final class FlowTracerTest {
   }
 
   @Test
-  public void testBuildFirewallSessionTraceInfo_icmp() {
+  void testBuildFirewallSessionTraceInfo_icmp() {
     Flow flow =
         Flow.builder()
             .setIngressNode("node")
@@ -1493,7 +1493,7 @@ public final class FlowTracerTest {
   }
 
   @Test
-  public void testBuildFirewallSessionTraceInfo_protocolWithSessions() {
+  void testBuildFirewallSessionTraceInfo_protocolWithSessions() {
     Flow flow =
         Flow.builder()
             .setIngressNode("node")
@@ -1508,7 +1508,7 @@ public final class FlowTracerTest {
   }
 
   @Test
-  public void testGetSessionAction() {
+  void testGetSessionAction() {
     NodeInterfacePair lastHopNodeAndOutgoingInterface = NodeInterfacePair.of("node", "iface");
     String ingressIface = "ingressIface";
 
@@ -1538,7 +1538,7 @@ public final class FlowTracerTest {
   }
 
   @Test
-  public void testMatchSessionReturnFlow() {
+  void testMatchSessionReturnFlow() {
     BDDPacket pkt = new BDDPacket();
     IpAccessListToBdd toBdd =
         new IpAccessListToBddImpl(
@@ -1598,7 +1598,7 @@ public final class FlowTracerTest {
   }
 
   @Test
-  public void testBuildRoutingStepFibForward() {
+  void testBuildRoutingStepFibForward() {
     Prefix prefix = Prefix.parse("12.12.12.12/30");
     FibForward fibForward = FibForward.of(Ip.parse("1.1.1.1"), "iface1");
     Set<FibEntry> fibEntries =
@@ -1627,7 +1627,7 @@ public final class FlowTracerTest {
   }
 
   @Test
-  public void testBuildRoutingStepFibNextVrf() {
+  void testBuildRoutingStepFibNextVrf() {
     Prefix prefix = Prefix.parse("12.12.12.12/30");
     FibNextVrf fibNextVrf = FibNextVrf.of("iface1");
     Set<FibEntry> fibEntries =
@@ -1656,7 +1656,7 @@ public final class FlowTracerTest {
   }
 
   @Test
-  public void testBuildRoutingStepFibNullRouted() {
+  void testBuildRoutingStepFibNullRouted() {
     Prefix prefix = Prefix.parse("12.12.12.12/30");
     FibNullRoute fibNullRoute = FibNullRoute.INSTANCE;
     Set<FibEntry> fibEntries =
@@ -1685,7 +1685,7 @@ public final class FlowTracerTest {
   }
 
   @Test
-  public void testBuildDispositionStep() {
+  void testBuildDispositionStep() {
     String node = "node";
     String iface = "iface";
     Ip ip = Ip.parse("1.1.1.1");
@@ -1792,7 +1792,7 @@ public final class FlowTracerTest {
    * possible - instead, the flow should be DENIED_OUT.
    */
   @Test
-  public void testDeniedOutNotLoop() throws IOException {
+  void testDeniedOutNotLoop() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration n1 =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
@@ -1908,7 +1908,7 @@ public final class FlowTracerTest {
   }
 
   @Test
-  public void testForkTracerSameNode_transformation() {
+  void testForkTracerSameNode_transformation() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
@@ -1969,7 +1969,7 @@ public final class FlowTracerTest {
   }
 
   @Test
-  public void testForkTracerFollowEdge_transformation() {
+  void testForkTracerFollowEdge_transformation() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c1 =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
@@ -2011,7 +2011,7 @@ public final class FlowTracerTest {
   }
 
   @Test
-  public void testOutgoingOriginalFlowFilter() {
+  void testOutgoingOriginalFlowFilter() {
     // Tests that outgoing original flow filter really acts on the original flow and not current
     NetworkFactory nf = new NetworkFactory();
     Configuration c =

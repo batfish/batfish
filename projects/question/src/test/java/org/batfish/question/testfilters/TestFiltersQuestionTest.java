@@ -16,12 +16,9 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.SpecifierContext;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-public class TestFiltersQuestionTest {
-  @Rule public ExpectedException exception = ExpectedException.none();
+class TestFiltersQuestionTest {
 
   /**
    * Check that if a simple string is the specifier input, that maps to the expected
@@ -29,7 +26,7 @@ public class TestFiltersQuestionTest {
    * shouldn't but in the meanwhile this test helps.)
    */
   @Test
-  public void testDefaultSpecifierInput() {
+  void testDefaultSpecifierInput() {
     TestFiltersQuestion question = new TestFiltersQuestion(null, "filter1", null, null);
 
     IpAccessList filter1 =
@@ -61,7 +58,7 @@ public class TestFiltersQuestionTest {
   }
 
   @Test
-  public void testDeserializationDefaultValues() throws IOException {
+  void testDeserializationDefaultValues() throws IOException {
     String serialized =
         String.format("{\"class\":\"%s\"}", TestFiltersQuestion.class.getCanonicalName());
     TestFiltersQuestion q =

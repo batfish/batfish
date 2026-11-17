@@ -10,10 +10,10 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link org.batfish.common.util.isp.BlockReservedAddressesAtInternet}. */
-public class BlockReservedAddressesAtInternetTest {
+class BlockReservedAddressesAtInternetTest {
   private void testMultipleFlows(IpAccessList acl) {
     Flow.Builder base =
         Flow.builder().setIngressNode("node").setIngressVrf("vrf").setIpProtocol(IpProtocol.OSPF);
@@ -33,7 +33,7 @@ public class BlockReservedAddressesAtInternetTest {
   }
 
   @Test
-  public void testFilters() {
+  void testFilters() {
     BlockReservedAddressesAtInternet policy = BlockReservedAddressesAtInternet.create();
     // From and to network are not present.
     assertThat(policy.filterTrafficFromNetwork(), nullValue());

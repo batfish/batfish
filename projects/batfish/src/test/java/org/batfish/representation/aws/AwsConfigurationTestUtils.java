@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
@@ -24,12 +25,11 @@ import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.rules.TemporaryFolder;
 
 /** Collection of utilities for AWS e2e tests */
 public final class AwsConfigurationTestUtils {
 
-  static IBatfish testSetup(String testconfigsDir, List<String> fileNames, TemporaryFolder folder)
+  static IBatfish testSetup(String testconfigsDir, List<String> fileNames, File folder)
       throws IOException {
     IBatfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(

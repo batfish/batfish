@@ -1,6 +1,6 @@
 package org.batfish.minesweeper.communities;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -22,17 +22,17 @@ import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighLowExprs;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.minesweeper.CommunityVar;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link CommunitySetExprVarCollector}. */
-public class CommunitySetExprVarCollectorTest {
+class CommunitySetExprVarCollectorTest {
   private static final String HOSTNAME = "hostname";
   private Configuration _baseConfig;
   private CommunitySetExprVarCollector _varCollector;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder()
@@ -45,7 +45,7 @@ public class CommunitySetExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitCommunityExprsSet() {
+  void testVisitCommunityExprsSet() {
     CommunityExprsSet ces =
         CommunityExprsSet.of(
             new StandardCommunityHighLowExprs(new LiteralInt(20), new LiteralInt(30)),
@@ -60,7 +60,7 @@ public class CommunitySetExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitCommunitySetDifference() {
+  void testVisitCommunitySetDifference() {
     CommunitySetDifference csd =
         new CommunitySetDifference(
             new LiteralCommunitySet(CommunitySet.of(StandardCommunity.parse("20:30"))),
@@ -76,7 +76,7 @@ public class CommunitySetExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitCommunitySetExprReference() {
+  void testVisitCommunitySetExprReference() {
     String name = "name";
     _baseConfig.setCommunitySetExprs(
         ImmutableMap.of(
@@ -95,7 +95,7 @@ public class CommunitySetExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitCommunitySetReference() {
+  void testVisitCommunitySetReference() {
     String name = "name";
     _baseConfig.setCommunitySets(
         ImmutableMap.of(
@@ -112,7 +112,7 @@ public class CommunitySetExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitCommunitySetUnion() {
+  void testVisitCommunitySetUnion() {
     CommunitySetUnion csu =
         CommunitySetUnion.of(
             new LiteralCommunitySet(CommunitySet.of(StandardCommunity.parse("20:30"))),
@@ -127,7 +127,7 @@ public class CommunitySetExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitInputCommunities() {
+  void testVisitInputCommunities() {
 
     Set<CommunityVar> result =
         _varCollector.visitInputCommunities(new InputCommunities(), _baseConfig);

@@ -42,21 +42,21 @@ import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.Statements;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link GeneratedRouteHelper}. */
-public class GeneratedRouteHelperTest {
+class GeneratedRouteHelperTest {
 
   private GeneratedRoute.Builder _builder;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _builder = GeneratedRoute.builder();
   }
 
   @Test
-  public void activateWhenPolicyIsNull() {
+  void activateWhenPolicyIsNull() {
     GeneratedRoute gr = _builder.setNetwork(Prefix.ZERO).build();
 
     Builder newRoute =
@@ -66,7 +66,7 @@ public class GeneratedRouteHelperTest {
   }
 
   @Test
-  public void testDiscardIsHonored() {
+  void testDiscardIsHonored() {
     GeneratedRoute gr = _builder.setDiscard(true).setNetwork(Prefix.ZERO).build();
 
     GeneratedRouteHelper.activateGeneratedRoute(gr, null, ImmutableSet.of(), null);
@@ -75,7 +75,7 @@ public class GeneratedRouteHelperTest {
   }
 
   @Test
-  public void doNotActivateWithoutPolicyMatch() {
+  void doNotActivateWithoutPolicyMatch() {
     GeneratedRoute gr = _builder.setDiscard(true).setNetwork(Prefix.parse("1.1.1.0/24")).build();
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
@@ -97,7 +97,7 @@ public class GeneratedRouteHelperTest {
   }
 
   @Test
-  public void activateWithPolicyMatch() {
+  void activateWithPolicyMatch() {
     GeneratedRoute gr = _builder.setDiscard(true).setNetwork(Prefix.parse("1.1.1.0/24")).build();
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
@@ -134,7 +134,7 @@ public class GeneratedRouteHelperTest {
   }
 
   @Test
-  public void testActivateAndSetBgpProperties() {
+  void testActivateAndSetBgpProperties() {
     GeneratedRoute gr = _builder.setDiscard(true).setNetwork(Prefix.parse("1.1.1.0/24")).build();
     NetworkFactory nf = new NetworkFactory();
     Configuration c =

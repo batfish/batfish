@@ -1,16 +1,16 @@
 package org.batfish.representation.juniper;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import org.batfish.datamodel.acl.OrMatchExpr;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link JunosApplicationSet} */
-public class JunosApplicationSetTest {
+class JunosApplicationSetTest {
 
   @Test
-  public void testToAclLineMatchExpr() {
+  void testToAclLineMatchExpr() {
     JuniperConfiguration jc = new JuniperConfiguration();
     jc.setFilename("host");
     assertEquals(

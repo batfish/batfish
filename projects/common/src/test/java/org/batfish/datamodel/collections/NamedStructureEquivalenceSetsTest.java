@@ -7,12 +7,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.RouteFilterList;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class NamedStructureEquivalenceSetsTest {
+class NamedStructureEquivalenceSetsTest {
 
   @Test
-  public void testWriteObject() throws JsonProcessingException {
+  void testWriteObject() throws JsonProcessingException {
     NamedStructureEquivalenceSets.Builder<RouteFilterList> builder =
         NamedStructureEquivalenceSets.builder("rfl");
     RouteFilterList rfl = new RouteFilterList("name", ImmutableList.of());

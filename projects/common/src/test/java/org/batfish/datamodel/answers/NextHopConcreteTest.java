@@ -7,19 +7,19 @@ import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.route.nh.NextHopIp;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link NextHopConcrete}. */
-public final class NextHopConcreteTest {
+final class NextHopConcreteTest {
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     NextHopConcrete obj = new NextHopConcrete(NextHopIp.of(Ip.parse("1.1.1.1")));
     assertThat(BatfishObjectMapper.clone(obj, NextHopResult.class), equalTo(obj));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     NextHopConcrete obj1 = new NextHopConcrete(NextHopIp.of(Ip.parse("1.1.1.1")));
     NextHopConcrete obj2 = new NextHopConcrete(NextHopIp.of(Ip.parse("1.1.1.1")));
     NextHopConcrete obj3 = new NextHopConcrete(NextHopIp.of(Ip.parse("0.1.1.1")));

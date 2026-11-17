@@ -1,6 +1,6 @@
 package org.batfish.representation.juniper;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
@@ -10,13 +10,13 @@ import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link FwFromTcpFlags} */
-public class FwFromTcpFlagsTest {
+class FwFromTcpFlagsTest {
 
   @Test
-  public void testToAclLineMatchExpr_tcpEstablished() {
+  void testToAclLineMatchExpr_tcpEstablished() {
     assertEquals(
         FwFromTcpFlags.TCP_ESTABLISHED.toAclLineMatchExpr(null, null, null),
         new MatchHeaderSpace(
@@ -37,7 +37,7 @@ public class FwFromTcpFlagsTest {
   }
 
   @Test
-  public void testToAclLineMatchExpr_tcpInitial() {
+  void testToAclLineMatchExpr_tcpInitial() {
     assertEquals(
         FwFromTcpFlags.TCP_INITIAL.toAclLineMatchExpr(null, null, null),
         new MatchHeaderSpace(
@@ -55,7 +55,7 @@ public class FwFromTcpFlagsTest {
   }
 
   @Test
-  public void testToAclLineMatchExpr_tcpFlags() {
+  void testToAclLineMatchExpr_tcpFlags() {
     List<TcpFlagsMatchConditions> tcpFlags =
         ImmutableList.of(
             TcpFlagsMatchConditions.ACK_TCP_FLAG, TcpFlagsMatchConditions.RST_TCP_FLAG);

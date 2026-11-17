@@ -15,6 +15,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import java.io.File;
 import java.io.IOException;
 import java.util.SortedMap;
 import org.batfish.common.util.TracePruner;
@@ -36,13 +37,12 @@ import org.batfish.main.Batfish;
 import org.batfish.question.specifiers.PathConstraintsInput;
 import org.batfish.question.traceroute.TracerouteAnswerer;
 import org.batfish.specifier.DispositionSpecifier;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** End-to-end tests of {@link DifferentialReachabilityQuestion}. */
-public class DifferentialReachabilityTest {
+class DifferentialReachabilityTest {
   private static final String LOOPBACK = "Loopback0";
   private static final String NODE1 = "node1";
   private static final String NODE2 = "node2";
@@ -50,7 +50,7 @@ public class DifferentialReachabilityTest {
 
   private Configuration.Builder _cb;
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private org.batfish.datamodel.Interface.Builder _ib;
 
@@ -60,8 +60,8 @@ public class DifferentialReachabilityTest {
 
   public DifferentialReachabilityTest() {}
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _nf = new NetworkFactory();
     _cb = _nf.configurationBuilder().setConfigurationFormat(CISCO_IOS);
     _vb = _nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
@@ -116,7 +116,7 @@ public class DifferentialReachabilityTest {
   }
 
   @Test
-  public void testAccepted() throws IOException {
+  void testAccepted() throws IOException {
     Question question =
         new DifferentialReachabilityQuestion(
             new DispositionSpecifier(ImmutableSet.of(FlowDisposition.ACCEPTED)),
@@ -157,7 +157,7 @@ public class DifferentialReachabilityTest {
   }
 
   @Test
-  public void testHeaderSpaceConstraint1() throws IOException {
+  void testHeaderSpaceConstraint1() throws IOException {
     Question question =
         new DifferentialReachabilityQuestion(
             new DispositionSpecifier(ImmutableSet.of(FlowDisposition.ACCEPTED)),
@@ -199,7 +199,7 @@ public class DifferentialReachabilityTest {
   }
 
   @Test
-  public void testHeaderSpaceConstraint2() throws IOException {
+  void testHeaderSpaceConstraint2() throws IOException {
     Question question =
         new DifferentialReachabilityQuestion(
             new DispositionSpecifier(ImmutableSet.of(FlowDisposition.ACCEPTED)),

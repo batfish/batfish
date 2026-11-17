@@ -4,7 +4,8 @@ import static org.batfish.datamodel.ExprAclLine.REJECT_ALL;
 import static org.batfish.datamodel.ExprAclLine.acceptingHeaderSpace;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -22,14 +23,11 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.NetworkFactory;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link AddOutgoingOriginalFlowFiltersConstraint} */
-public class AddOutgoingOriginalFlowFiltersConstraintTest {
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class AddOutgoingOriginalFlowFiltersConstraintTest {
 
   private static final BDDPacket PKT = new BDDPacket();
   private static final BDD ONE = PKT.getFactory().one();
@@ -40,8 +38,8 @@ public class AddOutgoingOriginalFlowFiltersConstraintTest {
   private static BDDOutgoingOriginalFlowFilterManager MGR;
   private static Transition TRANSITION;
 
-  @BeforeClass
-  public static void setup() {
+  @BeforeAll
+  static void setup() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
@@ -57,7 +55,7 @@ public class AddOutgoingOriginalFlowFiltersConstraintTest {
 
     // Create manager and corresponding RemoveOutgoingInterfaceConstraints transition
     MGR = getMgrForConfig(c);
-    assertFalse("sanity check", MGR.isTrivial());
+    assertFalse(MGR.isTrivial(), "sanity check");
     TRANSITION = new AddOutgoingOriginalFlowFiltersConstraint(MGR);
   }
 
@@ -76,7 +74,7 @@ public class AddOutgoingOriginalFlowFiltersConstraintTest {
   }
 
   @Test
-  public void testAddOriginalFlowEgressFiltersConstraint_nontrivialManager() {
+  void testAddOriginalFlowEgressFiltersConstraint_nontrivialManager() {
     // Transiting forwards should add manager's outgoingOriginalFlowFiltersConstraint.
     assertThat(
         TRANSITION.transitForward(ONE), equalTo(MGR.outgoingOriginalFlowFiltersConstraint()));
@@ -94,22 +92,24 @@ public class AddOutgoingOriginalFlowFiltersConstraintTest {
   }
 
   @Test
-  public void testConstructorThrowsForTrivialManager() {
+  void testConstructorThrowsForTrivialManager() {
     Configuration c =
         new NetworkFactory()
             .configurationBuilder()
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .build();
     BDDOutgoingOriginalFlowFilterManager trivialManager = getMgrForConfig(c);
-    _thrown.expect(IllegalArgumentException.class);
-    new AddOutgoingOriginalFlowFiltersConstraint(trivialManager);
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> {
+          new AddOutgoingOriginalFlowFiltersConstraint(trivialManager);
+        });
   }
 
   @Test
-  public void testTransitForward_alreadyConstrained() {
+  void testTransitForward_alreadyConstrained() {
     // When transiting forwards, BDD isn't allowed to have egress interface constraints
     BDD permitOutIfaceWithFilter = MGR.permittedByOriginalFlowEgressFilter(IFACE);
-    _thrown.expect(AssertionError.class);
-    TRANSITION.transitForward(permitOutIfaceWithFilter);
+    assertThrows(AssertionError.class, () -> TRANSITION.transitForward(permitOutIfaceWithFilter));
   }
 }

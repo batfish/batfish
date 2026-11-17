@@ -5,11 +5,11 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class InterfaceLocationTest {
+class InterfaceLocationTest {
   @Test
-  public void testClone() {
+  void testClone() {
     InterfaceLocation orig = new InterfaceLocation("foo", "bar");
     assertThat(orig, equalTo(BatfishObjectMapper.clone(orig, new TypeReference<Location>() {})));
   }

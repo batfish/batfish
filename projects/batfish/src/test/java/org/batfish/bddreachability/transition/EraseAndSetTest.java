@@ -6,10 +6,10 @@ import static org.hamcrest.Matchers.equalTo;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.datamodel.Ip;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link EraseAndSet}. */
-public class EraseAndSetTest {
+class EraseAndSetTest {
   private final BDDPacket _pkt = new BDDPacket();
   private final BDD _one = _pkt.getFactory().one();
   private final BDD _zero = _pkt.getFactory().zero();
@@ -23,7 +23,7 @@ public class EraseAndSetTest {
   }
 
   @Test
-  public void testEraseAndSet() {
+  void testEraseAndSet() {
     BDD setBdd = dstIp("1.1.1.1");
     BDD vars = _pkt.getDstIp().getVars();
     Transition transition = new EraseAndSet(vars, setBdd);

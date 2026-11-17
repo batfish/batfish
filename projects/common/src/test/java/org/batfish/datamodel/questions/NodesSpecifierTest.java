@@ -18,9 +18,9 @@ import org.batfish.datamodel.questions.NodesSpecifier.Type;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 import org.batfish.role.RoleDimensionMapping;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class NodesSpecifierTest {
+class NodesSpecifierTest {
 
   private NodeRolesData initNodeRoleData() {
     NodeRoleDimension dim1 =
@@ -37,7 +37,7 @@ public class NodesSpecifierTest {
   }
 
   @Test
-  public void autoCompleteEmptyString() {
+  void autoCompleteEmptyString() {
     Set<String> nodes = new HashSet<>();
     nodes.add("node1");
     String query = "";
@@ -49,7 +49,7 @@ public class NodesSpecifierTest {
   }
 
   @Test
-  public void autoCompleteNothing() {
+  void autoCompleteNothing() {
     Set<String> nodes = new HashSet<>();
     nodes.add("node1");
     String query = "matchNothing";
@@ -61,7 +61,7 @@ public class NodesSpecifierTest {
   }
 
   @Test
-  public void autoCompleteTypeAndName() {
+  void autoCompleteTypeAndName() {
     Set<String> nodes = new HashSet<>();
     nodes.add("nade1"); // will match
     nodes.add("node1"); // won't match
@@ -85,7 +85,7 @@ public class NodesSpecifierTest {
   }
 
   @Test
-  public void autoCompleteRoleAllDimensions() {
+  void autoCompleteRoleAllDimensions() {
     NodeRolesData nodeRolesData = initNodeRoleData();
     String queryAllDimensions = "ROLE:";
     List<AutocompleteSuggestion> suggestions =
@@ -102,7 +102,7 @@ public class NodesSpecifierTest {
   }
 
   @Test
-  public void autoCompleteRolePartialDimension() {
+  void autoCompleteRolePartialDimension() {
     NodeRolesData nodeRolesData = initNodeRoleData();
     String queryDimensionPartial = "ROLE:dim1";
     List<AutocompleteSuggestion> suggestions =
@@ -114,7 +114,7 @@ public class NodesSpecifierTest {
   }
 
   @Test
-  public void autoCompleteRoleDimension() {
+  void autoCompleteRoleDimension() {
     NodeRolesData nodeRolesData = initNodeRoleData();
     String queryDimension = "ROLE:dim10:";
     List<AutocompleteSuggestion> suggestions =
@@ -133,7 +133,7 @@ public class NodesSpecifierTest {
   }
 
   @Test
-  public void constructorImplicitName() {
+  void constructorImplicitName() {
     NodesSpecifier specifier = new NodesSpecifier("lhr-.*");
     assertThat(specifier.getType(), equalTo(Type.NAME));
     assertThat(
@@ -142,7 +142,7 @@ public class NodesSpecifierTest {
   }
 
   @Test
-  public void constructorExplicitName() {
+  void constructorExplicitName() {
     NodesSpecifier specifier = new NodesSpecifier("name:lhr-.*");
     assertThat(specifier.getType(), equalTo(Type.NAME));
     assertThat(
@@ -151,7 +151,7 @@ public class NodesSpecifierTest {
   }
 
   @Test
-  public void constructorRole() {
+  void constructorRole() {
     NodesSpecifier specifier = new NodesSpecifier("role:dim:svr.*");
     assertThat(specifier.getType(), equalTo(Type.ROLE));
     assertThat(specifier.getRoleDimension(), equalTo("dim"));
@@ -161,7 +161,7 @@ public class NodesSpecifierTest {
   }
 
   @Test
-  public void getMatchingNodesByName() {
+  void getMatchingNodesByName() {
     NodesSpecifier specifier = new NodesSpecifier("name:lhr-.*");
 
     String matchingRouter = "lhr-border1";
@@ -176,7 +176,7 @@ public class NodesSpecifierTest {
   }
 
   @Test
-  public void getMatchingNodesByRole() {
+  void getMatchingNodesByRole() {
     NodesSpecifier specifier = new NodesSpecifier("role:dim:match.*");
 
     String matchingNode1 = "lhr-border-01";

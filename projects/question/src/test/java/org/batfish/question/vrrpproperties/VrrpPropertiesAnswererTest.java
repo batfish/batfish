@@ -1,6 +1,5 @@
 package org.batfish.question.vrrpproperties;
 
-import static junit.framework.TestCase.assertTrue;
 import static org.batfish.question.vrrpproperties.VrrpPropertiesAnswerer.COL_ACTIVE;
 import static org.batfish.question.vrrpproperties.VrrpPropertiesAnswerer.COL_GROUP_ID;
 import static org.batfish.question.vrrpproperties.VrrpPropertiesAnswerer.COL_INTERFACE;
@@ -12,6 +11,7 @@ import static org.batfish.question.vrrpproperties.VrrpPropertiesAnswerer.populat
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -34,10 +34,10 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.SpecifierContext;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link VrrpPropertiesAnswerer}. */
-public final class VrrpPropertiesAnswererTest {
+final class VrrpPropertiesAnswererTest {
 
   private static final Map<String, ColumnMetadata> _columnMap =
       VrrpPropertiesAnswerer.createTableMetadata(
@@ -64,7 +64,7 @@ public final class VrrpPropertiesAnswererTest {
   }
 
   @Test
-  public void testAnswer() {
+  void testAnswer() {
     Configuration conf1 = new Configuration("node1", ConfigurationFormat.CISCO_IOS);
 
     VrrpGroup.Builder group =
@@ -124,7 +124,7 @@ public final class VrrpPropertiesAnswererTest {
   }
 
   @Test
-  public void testAnswer_virtualAddressFiltering() {
+  void testAnswer_virtualAddressFiltering() {
     Configuration conf = new Configuration("node", ConfigurationFormat.CISCO_IOS);
 
     VrrpGroup group =
@@ -179,7 +179,7 @@ public final class VrrpPropertiesAnswererTest {
   }
 
   @Test
-  public void testPopulateRow() {
+  void testPopulateRow() {
     RowBuilder row = Row.builder(_columnMap);
     Ip address = Ip.parse("2.2.2.2");
     ConcreteInterfaceAddress sourceAddress =

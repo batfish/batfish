@@ -3,11 +3,11 @@ package org.batfish.representation.frr;
 import com.google.common.testing.EqualsTester;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class StaticRouteTest {
+class StaticRouteTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     StaticRoute sr = new StaticRoute(Prefix.ZERO, Ip.ZERO, "iface", null);
     new EqualsTester()
         .addEqualityGroup(sr, sr, new StaticRoute(Prefix.ZERO, Ip.ZERO, "iface", null))

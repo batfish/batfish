@@ -4,9 +4,8 @@ import static org.batfish.common.bdd.BDDMatchers.isOne;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-import static org.junit.internal.matchers.ThrowableMessageMatcher.hasMessage;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
@@ -16,11 +15,11 @@ import net.sf.javabdd.BDDPairing;
 import net.sf.javabdd.JFactory;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.MutableBDDInteger;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class BDDDomainTest {
+class BDDDomainTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     BDDFactory factory = BDDPacket.defaultFactory(JFactory::init);
     factory.setVarNum(5);
     BDDDomain<String> base = new BDDDomain<>(factory, ImmutableList.of("a", "b"), 0);
@@ -39,7 +38,7 @@ public class BDDDomainTest {
   }
 
   @Test
-  public void testIsValidConstraint() {
+  void testIsValidConstraint() {
     BDDFactory factory = BDDPacket.defaultFactory(JFactory::init);
     factory.setVarNum(5);
 
@@ -61,7 +60,7 @@ public class BDDDomainTest {
   }
 
   @Test
-  public void testValue() {
+  void testValue() {
     BDDFactory factory = BDDPacket.defaultFactory(JFactory::init);
     factory.setVarNum(5);
     BDDDomain<String> two = new BDDDomain<>(factory, ImmutableList.of("a", "b"), 0);
@@ -72,11 +71,11 @@ public class BDDDomainTest {
 
     IllegalArgumentException thrown =
         assertThrows(IllegalArgumentException.class, () -> two.value("c"));
-    assertThat(thrown, hasMessage(equalTo("c is not in the domain [a, b]")));
+    assertThat(thrown.getMessage(), equalTo("c is not in the domain [a, b]"));
   }
 
   @Test
-  public void testSetValue() {
+  void testSetValue() {
     BDDFactory factory = BDDPacket.defaultFactory(JFactory::init);
     factory.setVarNum(5);
     BDDDomain<String> two = new BDDDomain<>(factory, ImmutableList.of("a", "b"), 0);
@@ -92,7 +91,7 @@ public class BDDDomainTest {
   }
 
   @Test
-  public void testSupport() {
+  void testSupport() {
     BDDFactory factory = BDDPacket.defaultFactory(JFactory::init);
     factory.setVarNum(5);
 
@@ -106,7 +105,7 @@ public class BDDDomainTest {
   }
 
   @Test
-  public void testAugmentPairing() {
+  void testAugmentPairing() {
     BDDFactory factory = BDDPacket.defaultFactory(JFactory::init);
     factory.setVarNum(10);
 

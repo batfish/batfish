@@ -9,10 +9,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
 import java.util.List;
 import org.batfish.representation.cisco.CiscoIosNat.RuleAction;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link CiscoIosDynamicNat}. */
-public class CiscoIosDynamicNatTest {
+class CiscoIosDynamicNatTest {
 
   private static CiscoIosDynamicNat baseNat() {
     CiscoIosDynamicNat n1 = new CiscoIosDynamicNat();
@@ -23,7 +23,7 @@ public class CiscoIosDynamicNatTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     EqualsTester et =
         new EqualsTester().addEqualityGroup(Boolean.FALSE).addEqualityGroup(baseNat(), baseNat());
     {
@@ -67,7 +67,7 @@ public class CiscoIosDynamicNatTest {
   }
 
   @Test
-  public void testNatCompare() {
+  void testNatCompare() {
     // If both NATs have null ACLs and route-maps, compare should give 0
     assertThat(new CiscoIosDynamicNat().compareTo(new CiscoIosDynamicNat()), equalTo(0));
 

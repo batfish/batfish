@@ -18,12 +18,12 @@ import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.GeneratedRefBookUtils;
 import org.batfish.referencelibrary.GeneratedRefBookUtils.BookType;
 import org.batfish.referencelibrary.ReferenceBook;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link A10Configuration}. */
-public class A10ConfigurationTest {
+class A10ConfigurationTest {
   @Test
-  public void testGetInterfaceMtuEffective() {
+  void testGetInterfaceMtuEffective() {
     Interface eth = new Interface(Interface.Type.ETHERNET, 1);
 
     assertThat(getInterfaceMtuEffective(eth), equalTo(DEFAULT_MTU));
@@ -32,7 +32,7 @@ public class A10ConfigurationTest {
   }
 
   @Test
-  public void testGetInterfaceHumanName() {
+  void testGetInterfaceHumanName() {
     assertThat(
         getInterfaceHumanName(new Interface(Interface.Type.ETHERNET, 9)), equalTo("Ethernet 9"));
     assertThat(getInterfaceHumanName(new Interface(Interface.Type.TRUNK, 9)), equalTo("Trunk 9"));
@@ -44,7 +44,7 @@ public class A10ConfigurationTest {
 
   /** Test that reference book is generated as part of conversion */
   @Test
-  public void testToVendorConfiguration_generateReferenceBook() {
+  void testToVendorConfiguration_generateReferenceBook() {
     A10Configuration a10Configuration = new A10Configuration();
     a10Configuration.setHostname("c");
     VirtualServerTarget target1 = new VirtualServerTargetAddress(Ip.parse("1.1.1.1"));
@@ -71,7 +71,7 @@ public class A10ConfigurationTest {
 
   /** Test that NAT pool IpSpaces are generated as part of conversion */
   @Test
-  public void testToVendorConfiguration_generateNatPoolIpSpaces() {
+  void testToVendorConfiguration_generateNatPoolIpSpaces() {
     A10Configuration a10Configuration = new A10Configuration();
     a10Configuration.setHostname("c");
     String poolName = "pool";

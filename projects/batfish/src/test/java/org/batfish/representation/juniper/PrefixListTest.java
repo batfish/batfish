@@ -5,11 +5,11 @@ import static org.hamcrest.Matchers.equalTo;
 
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Prefix;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class PrefixListTest {
+final class PrefixListTest {
   @Test
-  public void testToIpSpace() {
+  void testToIpSpace() {
     PrefixList pl = new PrefixList("name");
     // v4 empty
     pl.setHasIpv6(false);

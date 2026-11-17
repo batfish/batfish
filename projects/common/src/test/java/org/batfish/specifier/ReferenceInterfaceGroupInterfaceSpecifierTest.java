@@ -15,12 +15,12 @@ import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.referencelibrary.InterfaceGroup;
 import org.batfish.referencelibrary.ReferenceBook;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ReferenceInterfaceGroupInterfaceSpecifierTest {
+class ReferenceInterfaceGroupInterfaceSpecifierTest {
 
   @Test
-  public void resolve() {
+  void resolve() {
 
     Configuration node1 = new Configuration("node1", ConfigurationFormat.CISCO_IOS);
     Configuration node2 = new Configuration("node2", ConfigurationFormat.CISCO_IOS);

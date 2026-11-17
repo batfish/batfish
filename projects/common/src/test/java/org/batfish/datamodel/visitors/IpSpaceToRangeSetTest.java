@@ -1,7 +1,7 @@
 package org.batfish.datamodel.visitors;
 
 import static org.batfish.datamodel.visitors.IpSpaceToRangeSet.toRangeSet;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.Range;
@@ -15,23 +15,23 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.UniverseIpSpace;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link IpSpaceToRangeSet}. */
-public final class IpSpaceToRangeSetTest {
+final class IpSpaceToRangeSetTest {
   @Test
-  public void testEmpty() {
+  void testEmpty() {
     assertEquals(ImmutableRangeSet.of(), toRangeSet(EmptyIpSpace.INSTANCE));
   }
 
   @Test
-  public void testIp() {
+  void testIp() {
     Ip ip = Ip.parse("1.2.3.4");
     assertEquals(ImmutableRangeSet.of(Range.closed(ip, ip)), toRangeSet(ip.toIpSpace()));
   }
 
   @Test
-  public void testIpWildcard() {
+  void testIpWildcard() {
     Prefix prefix = Prefix.parse("1.2.3.0/24");
     assertEquals(
         ImmutableRangeSet.of(Range.closed(prefix.getStartIp(), prefix.getEndIp())),
@@ -39,7 +39,7 @@ public final class IpSpaceToRangeSetTest {
   }
 
   @Test
-  public void testIpWildcardSet() {
+  void testIpWildcardSet() {
     Prefix p10 = Prefix.parse("10.0.0.0/8");
     Prefix p20 = Prefix.parse("20.0.0.0/8");
     Ip ip10 = Ip.parse("10.10.10.10");
@@ -59,7 +59,7 @@ public final class IpSpaceToRangeSetTest {
   }
 
   @Test
-  public void testPrefix() {
+  void testPrefix() {
     Prefix prefix = Prefix.parse("1.2.3.0/24");
     assertEquals(
         ImmutableRangeSet.of(Range.closed(prefix.getStartIp(), prefix.getEndIp())),
@@ -67,14 +67,14 @@ public final class IpSpaceToRangeSetTest {
   }
 
   @Test
-  public void testUniverse() {
+  void testUniverse() {
     assertEquals(
         ImmutableRangeSet.of(Range.closed(Prefix.ZERO.getStartIp(), Prefix.ZERO.getEndIp())),
         toRangeSet(UniverseIpSpace.INSTANCE));
   }
 
   @Test
-  public void testAclIpSpace() {
+  void testAclIpSpace() {
     // no lines -- default deny
     {
       assertEquals(ImmutableRangeSet.of(), toRangeSet(AclIpSpace.of()));

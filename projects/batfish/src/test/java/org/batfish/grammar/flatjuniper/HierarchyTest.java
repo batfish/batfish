@@ -1,18 +1,18 @@
 package org.batfish.grammar.flatjuniper;
 
 import static org.batfish.grammar.flatjuniper.Hierarchy.isListPath;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import javax.annotation.Nonnull;
 import org.batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link Hierarchy}. */
-public class HierarchyTest {
+class HierarchyTest {
 
   @Test
-  public void testIsListPath() {
+  void testIsListPath() {
     assertFalse(isListPath(makeLiteralPath("policy-options")));
     assertFalse(isListPath(makeLiteralPath("policy-options", "policy-statement", "foo")));
     assertTrue(isListPath(makeLiteralPath("policy-options", "policy-statement", "foo", "term")));

@@ -6,12 +6,12 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.datamodel.Ip;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link BgpNeighborUpdateSourceAddress}. */
-public class BgpNeighborUpdateSourceAddressTest {
+class BgpNeighborUpdateSourceAddressTest {
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     BgpNeighborUpdateSourceAddress obj =
         new BgpNeighborUpdateSourceAddress(Ip.parse("10.11.12.13"));
     BgpNeighborUpdateSourceAddress clone = SerializationUtils.clone(obj);
@@ -19,7 +19,7 @@ public class BgpNeighborUpdateSourceAddressTest {
   }
 
   @Test
-  public void testEquality() {
+  void testEquality() {
     BgpNeighborUpdateSourceAddress obj = new BgpNeighborUpdateSourceAddress(Ip.ZERO);
     new EqualsTester()
         .addEqualityGroup(obj, new BgpNeighborUpdateSourceAddress(Ip.ZERO))

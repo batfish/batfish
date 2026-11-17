@@ -7,13 +7,13 @@ import static org.batfish.datamodel.answers.ParseStatus.UNKNOWN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link ParseStatus}. */
-public class ParseStatusTest {
+class ParseStatusTest {
 
   @Test
-  public void resolve() {
+  void resolve() {
     assertThat(ParseStatus.resolve(FAILED, UNKNOWN), is(FAILED));
     assertThat(ParseStatus.resolve(UNKNOWN, FAILED), is(FAILED));
 

@@ -6,11 +6,11 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class IncomingSessionScopeTest {
+class IncomingSessionScopeTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new IncomingSessionScope(ImmutableSet.of("a")),
@@ -20,7 +20,7 @@ public class IncomingSessionScopeTest {
   }
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     IncomingSessionScope scope = new IncomingSessionScope(ImmutableSet.of("a"));
     assertThat(BatfishObjectMapper.clone(scope, SessionScope.class), equalTo(scope));
   }

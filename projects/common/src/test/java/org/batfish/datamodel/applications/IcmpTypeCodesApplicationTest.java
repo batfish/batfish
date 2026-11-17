@@ -3,7 +3,7 @@ package org.batfish.datamodel.applications;
 import static org.batfish.datamodel.applications.IcmpTypeCodesApplication.ALL_CODES;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
@@ -11,12 +11,12 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class IcmpTypeCodesApplicationTest {
+class IcmpTypeCodesApplicationTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new IcmpTypeCodesApplication(0, ImmutableList.of(ALL_CODES)))
         // different type
@@ -32,7 +32,7 @@ public class IcmpTypeCodesApplicationTest {
   }
 
   @Test
-  public void testToString() {
+  void testToString() {
     assertThat(
         new IcmpTypeCodesApplication(0, ImmutableList.of(ALL_CODES)).toString(), equalTo("icmp/0"));
     assertThat(
@@ -45,7 +45,7 @@ public class IcmpTypeCodesApplicationTest {
   }
 
   @Test
-  public void testToAclLineMatchExpr() {
+  void testToAclLineMatchExpr() {
     assertEquals(
         new IcmpTypeCodesApplication(0, ImmutableList.of(new SubRange(1, 10), new SubRange(20, 30)))
             .toAclLineMatchExpr(),

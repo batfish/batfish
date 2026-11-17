@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.datamodel.answers.Schema;
@@ -21,9 +22,8 @@ import org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityAnswerer;
 import org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityQuestion;
 import org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer;
 import org.batfish.question.bgpsessionstatus.BgpSessionStatusQuestion;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * End-to-end test for Junos {@code forwarding-context master}. Two routers each have a BGP session
@@ -31,8 +31,8 @@ import org.junit.rules.TemporaryFolder;
  * The local IPs (loopbacks) are in the default VRF. Without forwarding-context support, these
  * sessions would be reported as INVALID_LOCAL_IP.
  */
-public class BgpForwardingContextTest {
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+class BgpForwardingContextTest {
+  @TempDir public File _folder;
 
   private static final String PREFIX = "org/batfish/e2e/bgp/forwardingcontext";
 
@@ -43,7 +43,7 @@ public class BgpForwardingContextTest {
 
   /** Sessions should be compatible (UNIQUE_MATCH), not INVALID_LOCAL_IP. */
   @Test
-  public void testSessionCompatibility() throws IOException {
+  void testSessionCompatibility() throws IOException {
     Batfish batfish = getBatfish();
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.loadConfigurations(snapshot);
@@ -67,7 +67,7 @@ public class BgpForwardingContextTest {
 
   /** Sessions should establish (reachable through default VRF). */
   @Test
-  public void testSessionEstablishment() throws IOException {
+  void testSessionEstablishment() throws IOException {
     Batfish batfish = getBatfish();
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.loadConfigurations(snapshot);
@@ -87,7 +87,7 @@ public class BgpForwardingContextTest {
 
   /** Peers in the default VRF should not have sessionVrf set. */
   @Test
-  public void testDefaultVrfPeersNoSessionVrf() throws IOException {
+  void testDefaultVrfPeersNoSessionVrf() throws IOException {
     Batfish batfish = getBatfish();
     NetworkSnapshot snapshot = batfish.getSnapshot();
     var configs = batfish.loadConfigurations(snapshot);

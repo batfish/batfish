@@ -9,12 +9,12 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class RouteMapMatchAsPathTest {
+class RouteMapMatchAsPathTest {
 
   @Test
-  public void testToBooleanExpr() {
+  void testToBooleanExpr() {
     String name = "name";
     RouteMapMatchAsPath matchLine = new RouteMapMatchAsPath(name);
     Configuration c = new Configuration("hostname", ConfigurationFormat.CUMULUS_CONCATENATED);

@@ -1,6 +1,5 @@
 package org.batfish.vendor.sonic.representation;
 
-import static junit.framework.TestCase.assertFalse;
 import static org.batfish.common.matchers.WarningMatchers.hasText;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.ConfigurationFormat.SONIC;
@@ -44,10 +43,11 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -84,12 +84,12 @@ import org.batfish.vendor.sonic.representation.AclTable.Stage;
 import org.batfish.vendor.sonic.representation.AclTable.Type;
 import org.batfish.vendor.sonic.representation.SonicConversions.AclRuleWithName;
 import org.batfish.vendor.sonic.representation.VlanMember.TaggingMode;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class SonicConversionsTest {
+class SonicConversionsTest {
 
   @Test
-  public void testConvertPorts() {
+  void testConvertPorts() {
     Port port =
         Port.builder()
             .setAdminStatusUp(false)
@@ -139,7 +139,7 @@ public class SonicConversionsTest {
    * data in VLAN and VLAN_INTERFACE.
    */
   @Test
-  public void testConvertVlans_vlanInterface() {
+  void testConvertVlans_vlanInterface() {
     {
       Configuration c =
           Configuration.builder().setHostname("host").setConfigurationFormat(SONIC).build();
@@ -227,7 +227,7 @@ public class SonicConversionsTest {
   }
 
   @Test
-  public void testConvertVlans_configuredMemberInterfaces() {
+  void testConvertVlans_configuredMemberInterfaces() {
     Configuration c =
         Configuration.builder().setHostname("host").setConfigurationFormat(SONIC).build();
     Vrf vrf = Vrf.builder().setOwner(c).setName(DEFAULT_VRF_NAME).build();
@@ -290,7 +290,7 @@ public class SonicConversionsTest {
   }
 
   @Test
-  public void testCheckVlanId() {
+  void testCheckVlanId() {
     assertFalse(checkVlanId("Vlan1", null, new Warnings()));
     assertFalse(checkVlanId("Vlan1", 0, new Warnings()));
     assertFalse(checkVlanId("Vlan1", 4095, new Warnings()));
@@ -300,7 +300,7 @@ public class SonicConversionsTest {
   }
 
   @Test
-  public void testConvertDhcpServers() {
+  void testConvertDhcpServers() {
     {
       Warnings w = new Warnings(true, true, true);
       assertEquals(
@@ -332,7 +332,7 @@ public class SonicConversionsTest {
   }
 
   @Test
-  public void testConvertAcls() {
+  void testConvertAcls() {
     String ifaceName = "Ethernet0";
     Configuration c =
         Configuration.builder().setHostname("host").setConfigurationFormat(SONIC).build();
@@ -400,7 +400,7 @@ public class SonicConversionsTest {
   }
 
   @Test
-  public void testGetAclRulesByTableName() {
+  void testGetAclRulesByTableName() {
     String aclName = "testAcl";
     Map<String, AclTable> aclTables =
         ImmutableMap.of(
@@ -452,7 +452,7 @@ public class SonicConversionsTest {
   }
 
   @Test
-  public void testAclWithRuleNameCompareTo() {
+  void testAclWithRuleNameCompareTo() {
     AclRule.Builder builder = AclRule.builder().setPacketAction(PacketAction.ACCEPT);
 
     assertTrue(
@@ -470,7 +470,7 @@ public class SonicConversionsTest {
   }
 
   @Test
-  public void testAttachAcl() {
+  void testAttachAcl() {
     String ifaceName = "Ethernet0";
     Configuration c =
         Configuration.builder().setHostname("host").setConfigurationFormat(SONIC).build();
@@ -526,7 +526,7 @@ public class SonicConversionsTest {
   }
 
   @Test
-  public void testConvertLoopbacks() {
+  void testConvertLoopbacks() {
     {
       // interface only in LOOPBACK_INTERFACE
       Configuration c =
@@ -587,7 +587,7 @@ public class SonicConversionsTest {
   }
 
   @Test
-  public void testSnmpServer() {
+  void testSnmpServer() {
     Configuration c =
         Configuration.builder().setHostname("host").setConfigurationFormat(SONIC).build();
     Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(c).build();
@@ -621,7 +621,7 @@ public class SonicConversionsTest {
   }
 
   @Test
-  public void testConvertSnmpServer_multipleSnmpTables() {
+  void testConvertSnmpServer_multipleSnmpTables() {
     Configuration c =
         Configuration.builder().setHostname("host").setConfigurationFormat(SONIC).build();
     Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(c).build();
@@ -647,7 +647,7 @@ public class SonicConversionsTest {
   }
 
   @Test
-  public void testConvertSnmpServer_noSnmpTable() {
+  void testConvertSnmpServer_noSnmpTable() {
     Configuration c =
         Configuration.builder().setHostname("host").setConfigurationFormat(SONIC).build();
     Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(c).build();
@@ -670,7 +670,7 @@ public class SonicConversionsTest {
   }
 
   @Test
-  public void testConvertSnmpServer_noAclRules() {
+  void testConvertSnmpServer_noAclRules() {
     Configuration c =
         Configuration.builder().setHostname("host").setConfigurationFormat(SONIC).build();
     Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(c).build();
@@ -694,7 +694,7 @@ public class SonicConversionsTest {
   }
 
   @Test
-  public void testComputeClientIpSpace() {
+  void testComputeClientIpSpace() {
     Prefix clientPrefix = Prefix.parse("1.1.1.0/24");
     AclRule allowsSnmp =
         AclRule.builder()
@@ -730,7 +730,7 @@ public class SonicConversionsTest {
   }
 
   @Test
-  public void testIsSnmpTable() {
+  void testIsSnmpTable() {
     assertFalse(isSnmpTable(AclTable.builder().build()));
     assertFalse(isSnmpTable(AclTable.builder().setStage(Stage.EGRESS).build()));
     assertFalse(isSnmpTable(AclTable.builder().setType(Type.L3).build()));
@@ -748,7 +748,7 @@ public class SonicConversionsTest {
   }
 
   @Test
-  public void testAllowsSnmp() {
+  void testAllowsSnmp() {
     assertTrue(allowsSnmp(AclRule.builder().build()));
     assertTrue(allowsSnmp(AclRule.builder().setL4DstPort(161).build()));
     assertTrue(allowsSnmp(AclRule.builder().setIpProtocol(17).build()));
@@ -759,7 +759,7 @@ public class SonicConversionsTest {
   }
 
   @Test
-  public void testSetInterfaceAddresses() {
+  void testSetInterfaceAddresses() {
     Interface.Builder ib = TestInterface.builder().setName("iface");
     ConcreteInterfaceAddress addr1 = ConcreteInterfaceAddress.parse("1.1.1.1/31");
     ConcreteInterfaceAddress addr2 = ConcreteInterfaceAddress.parse("2.1.1.1/31");

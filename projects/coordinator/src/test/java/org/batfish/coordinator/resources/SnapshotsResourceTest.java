@@ -6,6 +6,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -18,15 +19,14 @@ import org.batfish.coordinator.Main;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
 import org.batfish.datamodel.SnapshotMetadataEntry;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 @ParametersAreNonnullByDefault
-public final class SnapshotsResourceTest extends WorkMgrServiceV2TestBase {
+final class SnapshotsResourceTest extends WorkMgrServiceV2TestBase {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private Builder getTarget(String network, boolean verbose) {
     return target(CoordConsts.SVC_CFG_WORK_MGR2)
@@ -38,13 +38,13 @@ public final class SnapshotsResourceTest extends WorkMgrServiceV2TestBase {
         .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY);
   }
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     WorkMgrTestUtils.initWorkManager(_folder);
   }
 
   @Test
-  public void testListSnapshotsMissingNetwork() {
+  void testListSnapshotsMissingNetwork() {
     String network = "network1";
     try (Response response = getTarget(network, false).get()) {
       assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
@@ -52,7 +52,7 @@ public final class SnapshotsResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testListSnapshotsSuccess() throws IOException {
+  void testListSnapshotsSuccess() throws IOException {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
@@ -66,7 +66,7 @@ public final class SnapshotsResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testListSnapshotsVerboseMissingNetwork() {
+  void testListSnapshotsVerboseMissingNetwork() {
     String network = "network1";
     try (Response response = getTarget(network, true).get()) {
       assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
@@ -74,7 +74,7 @@ public final class SnapshotsResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testListSnapshotsVerboseSuccess() throws IOException {
+  void testListSnapshotsVerboseSuccess() throws IOException {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);

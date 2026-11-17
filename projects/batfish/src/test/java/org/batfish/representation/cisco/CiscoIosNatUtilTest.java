@@ -10,8 +10,8 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -23,9 +23,9 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.representation.cisco.CiscoIosNatUtil.RouteMapMatchLineToExprVisitor;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class CiscoIosNatUtilTest {
+class CiscoIosNatUtilTest {
   private static final String ACL = "acl";
   private static final String IFACE = "iface";
   private static final RouteMapMatchLine MATCH_ACL =
@@ -34,7 +34,7 @@ public class CiscoIosNatUtilTest {
       new RouteMapMatchInterfaceLine(ImmutableSet.of(IFACE));
 
   @Test
-  public void testToMatchExpr_emptyRouteMap() {
+  void testToMatchExpr_emptyRouteMap() {
     // Empty route-map should not convert
     Warnings w = new Warnings(true, true, true);
     assertFalse(toMatchExpr(new RouteMap("rm"), ImmutableSet.of(), IFACE, w).isPresent());
@@ -44,7 +44,7 @@ public class CiscoIosNatUtilTest {
   }
 
   @Test
-  public void testToMatchExpr_inconvertibleClause() {
+  void testToMatchExpr_inconvertibleClause() {
     RouteMapMatchLine acl2MatchLine = new RouteMapMatchIpAccessListLine(ImmutableSet.of("acl2"));
     RouteMapClause clause1 = rmc(10, MATCH_ACL);
     RouteMapClause clause2 = rmc(20, acl2MatchLine);
@@ -72,7 +72,7 @@ public class CiscoIosNatUtilTest {
   }
 
   @Test
-  public void testToMatchExpr_unmatchableClause() {
+  void testToMatchExpr_unmatchableClause() {
     // Unmatchable clause should be ignored and other clauses should be converted normally
     RouteMapClause clause1 = rmc(10, MATCH_ACL);
     RouteMapClause clause2 = rmc(20, MATCH_IFACE);
@@ -87,7 +87,7 @@ public class CiscoIosNatUtilTest {
   }
 
   @Test
-  public void testToMatchExpr_singleClause() {
+  void testToMatchExpr_singleClause() {
     Warnings w = new Warnings(true, true, true);
     assertThat(
         toMatchExpr(rmWithClauses(rmc(MATCH_ACL)), ImmutableSet.of(ACL), IFACE, w),
@@ -96,7 +96,7 @@ public class CiscoIosNatUtilTest {
   }
 
   @Test
-  public void testClauseToMatchExpr_emptyClause() {
+  void testClauseToMatchExpr_emptyClause() {
     Warnings w = new Warnings(true, true, true);
     assertFalse(clauseToMatchExpr(rmc(), "rm", ImmutableSet.of(), IFACE, w).isPresent());
     assertThat(
@@ -105,7 +105,7 @@ public class CiscoIosNatUtilTest {
   }
 
   @Test
-  public void testClauseToMatchExpr_denyClause() {
+  void testClauseToMatchExpr_denyClause() {
     RouteMapClause rmc = new RouteMapClause(LineAction.DENY, "rmc", 10);
     rmc.addMatchLine(MATCH_ACL); // inconvertible bc it denies, not bc no match lines
     Warnings w = new Warnings(true, true, true);
@@ -115,7 +115,7 @@ public class CiscoIosNatUtilTest {
   }
 
   @Test
-  public void testClauseToMatchExpr_setClause() {
+  void testClauseToMatchExpr_setClause() {
     RouteMapClause rmc = rmc(MATCH_ACL);
     rmc.addSetLine(new RouteMapSetCommunityLine(ImmutableList.of(1L)));
     Warnings w = new Warnings(true, true, true);
@@ -125,7 +125,7 @@ public class CiscoIosNatUtilTest {
   }
 
   @Test
-  public void testClauseToMatchExpr_inconvertibleLineAfterFalseLine() {
+  void testClauseToMatchExpr_inconvertibleLineAfterFalseLine() {
     RouteMapMatchLine inconvertibleLine =
         new RouteMapMatchIpAccessListLine(ImmutableSet.of("otherAcl"));
     RouteMapClause rmc = rmc(MATCH_IFACE, inconvertibleLine);
@@ -139,7 +139,7 @@ public class CiscoIosNatUtilTest {
   }
 
   @Test
-  public void testClauseToMatchExpr_inconvertibleLine() {
+  void testClauseToMatchExpr_inconvertibleLine() {
     RouteMapMatchLine inconvertibleLine =
         new RouteMapMatchIpAccessListLine(ImmutableSet.of("otherAcl"));
     RouteMapClause rmc = rmc(MATCH_ACL, inconvertibleLine, MATCH_ACL);
@@ -153,7 +153,7 @@ public class CiscoIosNatUtilTest {
   }
 
   @Test
-  public void testClauseToMatchExpr_unmatchableLine() {
+  void testClauseToMatchExpr_unmatchableLine() {
     // Clause matches a different interface. Should successfully convert to false expr (no warnings)
     RouteMapClause rmc = rmc(MATCH_ACL, MATCH_IFACE, MATCH_ACL);
     Warnings w = new Warnings(true, true, true);
@@ -164,7 +164,7 @@ public class CiscoIosNatUtilTest {
   }
 
   @Test
-  public void testClauseToMatchExpr_singleLine() {
+  void testClauseToMatchExpr_singleLine() {
     RouteMapClause rmc = rmc(MATCH_ACL);
     Warnings w = new Warnings(true, true, true);
     assertThat(
@@ -174,7 +174,7 @@ public class CiscoIosNatUtilTest {
   }
 
   @Test
-  public void testLineToMatchExpr_undefinedAcl() {
+  void testLineToMatchExpr_undefinedAcl() {
     RouteMapMatchLine line = new RouteMapMatchIpAccessListLine(ImmutableSet.of(ACL, "otherAcl"));
     Warnings w = new Warnings(true, true, true);
     RouteMapMatchLineToExprVisitor visitor =
@@ -188,7 +188,7 @@ public class CiscoIosNatUtilTest {
   }
 
   @Test
-  public void testLineToMatchExpr_unsupportedLineType() {
+  void testLineToMatchExpr_unsupportedLineType() {
     RouteMapMatchLine unsupportedLine = new RouteMapMatchIpPrefixListLine(ImmutableSet.of("pl"));
     Warnings w = new Warnings(true, true, true);
     RouteMapMatchLineToExprVisitor visitor =
@@ -202,7 +202,7 @@ public class CiscoIosNatUtilTest {
   }
 
   @Test
-  public void testLineToMatchExpr_definedAcls() {
+  void testLineToMatchExpr_definedAcls() {
     String acl2 = "acl2";
     Set<String> definedAcls = ImmutableSet.of(ACL, acl2);
     RouteMapMatchLine line = new RouteMapMatchIpAccessListLine(definedAcls);
@@ -215,7 +215,7 @@ public class CiscoIosNatUtilTest {
   }
 
   @Test
-  public void testLineToMatchExpr_matchedIface() {
+  void testLineToMatchExpr_matchedIface() {
     RouteMapMatchLineToExprVisitor visitor =
         new RouteMapMatchLineToExprVisitor(
             "rm", 10, ImmutableSet.of(ACL), IFACE, new Warnings(true, true, true));
@@ -223,7 +223,7 @@ public class CiscoIosNatUtilTest {
   }
 
   @Test
-  public void testLineToMatchExpr_unmatchedIface() {
+  void testLineToMatchExpr_unmatchedIface() {
     Warnings w = new Warnings(true, true, true);
     RouteMapMatchLineToExprVisitor visitor =
         new RouteMapMatchLineToExprVisitor("rm", 10, ImmutableSet.of(ACL), "otherIface", w);

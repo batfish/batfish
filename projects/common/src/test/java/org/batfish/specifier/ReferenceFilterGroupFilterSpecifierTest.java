@@ -14,12 +14,9 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.referencelibrary.FilterGroup;
 import org.batfish.referencelibrary.ReferenceBook;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-public class ReferenceFilterGroupFilterSpecifierTest {
-  @Rule public final ExpectedException exception = ExpectedException.none();
+class ReferenceFilterGroupFilterSpecifierTest {
 
   private static final String _refBookName = "book1";
   private static final String _filterGroupName = "filterGroup1";
@@ -77,7 +74,7 @@ public class ReferenceFilterGroupFilterSpecifierTest {
   }
 
   @Test
-  public void resolve() {
+  void resolve() {
     assertThat(
         new ReferenceFilterGroupFilterSpecifier(_filterGroupName, _refBookName)
             .resolve(_nodeName, _ctxt),

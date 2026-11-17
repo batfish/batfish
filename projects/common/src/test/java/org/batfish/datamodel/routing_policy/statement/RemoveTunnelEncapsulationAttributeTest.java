@@ -2,7 +2,7 @@ package org.batfish.datamodel.routing_policy.statement;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
@@ -16,12 +16,12 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.bgp.TunnelEncapsulationAttribute;
 import org.batfish.datamodel.routing_policy.Environment;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link RemoveTunnelEncapsulationAttribute} */
-public class RemoveTunnelEncapsulationAttributeTest {
+class RemoveTunnelEncapsulationAttributeTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     RemoveTunnelEncapsulationAttribute rta = RemoveTunnelEncapsulationAttribute.instance();
     new EqualsTester()
         .addEqualityGroup(rta, rta, RemoveTunnelEncapsulationAttribute.instance())
@@ -30,20 +30,20 @@ public class RemoveTunnelEncapsulationAttributeTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     RemoveTunnelEncapsulationAttribute rta = RemoveTunnelEncapsulationAttribute.instance();
     assertThat(SerializationUtils.clone(rta), equalTo(rta));
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     RemoveTunnelEncapsulationAttribute rta = RemoveTunnelEncapsulationAttribute.instance();
     assertThat(
         BatfishObjectMapper.clone(rta, RemoveTunnelEncapsulationAttribute.class), equalTo(rta));
   }
 
   @Test
-  public void testExecute() {
+  void testExecute() {
     RemoveTunnelEncapsulationAttribute rta = RemoveTunnelEncapsulationAttribute.instance();
     NetworkFactory nf = new NetworkFactory();
     Configuration c =

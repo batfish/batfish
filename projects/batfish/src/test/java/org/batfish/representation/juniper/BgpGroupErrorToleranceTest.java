@@ -4,12 +4,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class BgpGroupErrorToleranceTest {
+final class BgpGroupErrorToleranceTest {
 
   @Test
-  public void testCascadeInheritance() {
+  void testCascadeInheritance() {
     BgpGroup parent = new BgpGroup();
     parent.setErrorTolerance(true);
     parent.setMalformedRouteLimit(20L);

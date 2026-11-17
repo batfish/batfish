@@ -6,9 +6,9 @@ import static org.batfish.grammar.fortios.FortiosConfigurationBuilder.serviceGro
 import static org.batfish.grammar.fortios.FortiosConfigurationBuilder.serviceValid;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import org.batfish.datamodel.IntegerSpace;
@@ -17,49 +17,49 @@ import org.batfish.representation.fortios.BatfishUUID;
 import org.batfish.representation.fortios.Policy;
 import org.batfish.representation.fortios.Service;
 import org.batfish.representation.fortios.ServiceGroup;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class FortiosConfigurationBuilderTest {
+class FortiosConfigurationBuilderTest {
   @Test
-  public void testPolicyValid() {
+  void testPolicyValid() {
     assertNull(policyValid(buildCompletePolicy(), true));
   }
 
   @Test
-  public void testPolicyValid_markedInvalid() {
+  void testPolicyValid_markedInvalid() {
     assertThat(policyValid(buildCompletePolicy(), false), equalTo("name is invalid"));
   }
 
   @Test
-  public void testPolicyValid_missingSrcIntf() {
+  void testPolicyValid_missingSrcIntf() {
     Policy p = buildCompletePolicy();
     p.getSrcIntf().clear();
     assertThat(policyValid(p, true), equalTo("srcintf must be set"));
   }
 
   @Test
-  public void testPolicyValid_missingDstIntf() {
+  void testPolicyValid_missingDstIntf() {
     Policy p = buildCompletePolicy();
     p.getDstIntf().clear();
     assertThat(policyValid(p, true), equalTo("dstintf must be set"));
   }
 
   @Test
-  public void testPolicyValid_missingSrcAddr() {
+  void testPolicyValid_missingSrcAddr() {
     Policy p = buildCompletePolicy();
     p.getSrcAddrUUIDs().clear();
     assertThat(policyValid(p, true), equalTo("srcaddr must be set"));
   }
 
   @Test
-  public void testPolicyValid_missingDstAddr() {
+  void testPolicyValid_missingDstAddr() {
     Policy p = buildCompletePolicy();
     p.getDstAddrUUIDs().clear();
     assertThat(policyValid(p, true), equalTo("dstaddr must be set"));
   }
 
   @Test
-  public void testPolicyValid_missingService() {
+  void testPolicyValid_missingService() {
     Policy p = buildCompletePolicy();
     p.getServiceUUIDs().clear();
     assertThat(policyValid(p, true), equalTo("service must be set"));
@@ -76,7 +76,7 @@ public class FortiosConfigurationBuilderTest {
   }
 
   @Test
-  public void testServiceValid() {
+  void testServiceValid() {
     Service s = buildCompleteService();
     assertNull(serviceValid(s, true));
 
@@ -94,19 +94,19 @@ public class FortiosConfigurationBuilderTest {
   }
 
   @Test
-  public void testServiceValid_markedInvalid() {
+  void testServiceValid_markedInvalid() {
     assertThat(serviceValid(buildCompleteService(), false), equalTo("name is invalid"));
   }
 
   @Test
-  public void testServiceValid_noDstPorts() {
+  void testServiceValid_noDstPorts() {
     Service s = buildCompleteService(); // builds service with TCP dst ports set
     s.setTcpPortRangeDst(null);
     assertThat(serviceValid(s, true), equalTo("TCP/UDP/SCTP portrange cannot all be empty"));
   }
 
   @Test
-  public void testServiceGroupContainsDirectly() {
+  void testServiceGroupContainsDirectly() {
     ServiceGroup parent = new ServiceGroup("parent", new BatfishUUID(0));
 
     BatfishUUID childId1 = new BatfishUUID(1);
@@ -120,7 +120,7 @@ public class FortiosConfigurationBuilderTest {
   }
 
   @Test
-  public void testServiceGroupContainsIndirectly() {
+  void testServiceGroupContainsIndirectly() {
     ServiceGroup parent = new ServiceGroup("parent", new BatfishUUID(0));
 
     BatfishUUID childId1 = new BatfishUUID(1);
@@ -148,7 +148,7 @@ public class FortiosConfigurationBuilderTest {
   }
 
   @Test
-  public void testServiceGroupContainsNoMatch() {
+  void testServiceGroupContainsNoMatch() {
     ServiceGroup parent = new ServiceGroup("name", new BatfishUUID(0));
 
     BatfishUUID childId1 = new BatfishUUID(1);
@@ -167,7 +167,7 @@ public class FortiosConfigurationBuilderTest {
   }
 
   @Test
-  public void testAddrgrpContainsDirectly() {
+  void testAddrgrpContainsDirectly() {
     BatfishUUID parentId = new BatfishUUID(0);
     Addrgrp parent = new Addrgrp("parent", parentId);
 
@@ -183,7 +183,7 @@ public class FortiosConfigurationBuilderTest {
   }
 
   @Test
-  public void testAddrgrpContainsIndirectly() {
+  void testAddrgrpContainsIndirectly() {
     Addrgrp parent = new Addrgrp("parent", new BatfishUUID(0));
 
     BatfishUUID childId1 = new BatfishUUID(1);
@@ -211,7 +211,7 @@ public class FortiosConfigurationBuilderTest {
   }
 
   @Test
-  public void testAddrgrpContainsNoMatch() {
+  void testAddrgrpContainsNoMatch() {
     Addrgrp parent = new Addrgrp("name", new BatfishUUID(0));
 
     BatfishUUID childId1 = new BatfishUUID(1);

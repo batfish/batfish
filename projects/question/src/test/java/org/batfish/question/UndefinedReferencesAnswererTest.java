@@ -31,9 +31,9 @@ import org.batfish.question.UndefinedReferencesQuestionPlugin.UndefinedReference
 import org.batfish.question.UndefinedReferencesQuestionPlugin.UndefinedReferencesQuestion;
 import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.SpecifierContext;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class UndefinedReferencesAnswererTest {
+class UndefinedReferencesAnswererTest {
 
   private static final SortedMap<
           String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
@@ -58,7 +58,7 @@ public class UndefinedReferencesAnswererTest {
           new FileLines("f", ImmutableSortedSet.of(1)));
 
   @Test
-  public void testProcessOneEntry() {
+  void testProcessOneEntry() {
     List<Row> expected = ImmutableList.of(BASIC_ROW);
 
     List<Row> rows =
@@ -68,7 +68,7 @@ public class UndefinedReferencesAnswererTest {
   }
 
   @Test
-  public void testProcessMultipleEntries() {
+  void testProcessMultipleEntries() {
     Map<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
         refsMap =
             ImmutableMap.of(
@@ -102,7 +102,7 @@ public class UndefinedReferencesAnswererTest {
   }
 
   @Test
-  public void testAnswererFlow() {
+  void testAnswererFlow() {
     TestBatfish batfish = new TestBatfish();
     UndefinedReferencesAnswerer answerer =
         new UndefinedReferencesAnswerer(new UndefinedReferencesQuestion(), batfish);

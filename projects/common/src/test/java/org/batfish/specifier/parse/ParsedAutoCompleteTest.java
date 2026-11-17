@@ -11,7 +11,8 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -26,14 +27,10 @@ import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.Grammar;
 import org.batfish.specifier.parse.Anchor.Type;
 import org.hamcrest.Matchers;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link ParsedAutoComplete} */
-public class ParsedAutoCompleteTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class ParsedAutoCompleteTest {
 
   // These helpers build a ParsedAutoComplete over the node specifier grammar. They are used only
   // by the helper-method tests below; the end-to-end run behavior is covered by the per-grammar
@@ -56,7 +53,7 @@ public class ParsedAutoCompleteTest {
   }
 
   @Test
-  public void testAutoCompletePotentialMatchStringLiteral() {
+  void testAutoCompletePotentialMatchStringLiteral() {
     PathElement anchor = new PathElement(Type.STRING_LITERAL, "\"pfxcomp\"", 0, 0);
     PotentialMatch pm = new PotentialMatch(anchor, "pfx", ImmutableList.of(anchor));
     assertThat(
@@ -66,7 +63,7 @@ public class ParsedAutoCompleteTest {
 
   /** The suggestion should have the case in the grammar token independent of user input */
   @Test
-  public void testAutoCompletePotentialMatchStringLiteralCasePreserve() {
+  void testAutoCompletePotentialMatchStringLiteralCasePreserve() {
     PathElement anchor = new PathElement(Type.STRING_LITERAL, "\"pfxcomp\"", 0, 0);
     PotentialMatch pm = new PotentialMatch(anchor, "PfX", ImmutableList.of(anchor));
     assertThat(
@@ -75,7 +72,7 @@ public class ParsedAutoCompleteTest {
   }
 
   @Test
-  public void testAutoCompletePotentialMatchSkipLabel() {
+  void testAutoCompletePotentialMatchSkipLabel() {
     PotentialMatch pm =
         new PotentialMatch(
             new PathElement(Type.IP_ADDRESS_MASK, "label", 0, 0), "pfx", ImmutableList.of());
@@ -83,7 +80,7 @@ public class ParsedAutoCompleteTest {
   }
 
   @Test
-  public void testFindFirstMatchingPathElement() {
+  void testFindFirstMatchingPathElement() {
     PathElement anchor = new PathElement(Type.INTERFACE_NAME, null, 1, 42);
     PathElement tailStart = new PathElement(Type.NODE_AND_INTERFACE_TAIL, null, 0, 42);
     PathElement nodeStart = new PathElement(Type.NODE_AND_INTERFACE, null, 0, 42);
@@ -111,19 +108,21 @@ public class ParsedAutoCompleteTest {
 
   /** Throw an exception if anchor is not present in the path */
   @Test
-  public void testFindPrecedingInputMissingAnchor() {
-    _thrown.expect(IllegalArgumentException.class);
-    ParsedAutoComplete.findPrecedingInput(
-        new PotentialMatch(
-            new PathElement(Type.INTERFACE_NAME, null, 0, 0), "", ImmutableList.of()),
-        "@specifier(g1,",
-        NODE_AND_INTERFACE,
-        NODE_AND_INTERFACE_TAIL);
+  void testFindPrecedingInputMissingAnchor() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            ParsedAutoComplete.findPrecedingInput(
+                new PotentialMatch(
+                    new PathElement(Type.INTERFACE_NAME, null, 0, 0), "", ImmutableList.of()),
+                "@specifier(g1,",
+                NODE_AND_INTERFACE,
+                NODE_AND_INTERFACE_TAIL));
   }
 
   /** Return empty optional if head anchor type is not present */
   @Test
-  public void testFindPrecedingInpuMissingHead() {
+  void testFindPrecedingInpuMissingHead() {
     PathElement anchor = new PathElement(Type.INTERFACE_NAME, null, 1, 42);
     PotentialMatch pm = new PotentialMatch(anchor, "", ImmutableList.of(anchor));
     assertFalse(
@@ -134,18 +133,21 @@ public class ParsedAutoCompleteTest {
 
   /** Throw an exception if tail anchor type is missing */
   @Test
-  public void testFindPrecedingInputMissingTail() {
+  void testFindPrecedingInputMissingTail() {
     PathElement anchor = new PathElement(Type.INTERFACE_NAME, null, 1, 42);
     PathElement nodeStart = new PathElement(Type.NODE_AND_INTERFACE, null, 0, 0);
     PotentialMatch pm = new PotentialMatch(anchor, "", ImmutableList.of(nodeStart, anchor));
 
-    _thrown.expect(IllegalArgumentException.class);
-    ParsedAutoComplete.findPrecedingInput(pm, "dummy", NODE_AND_INTERFACE, NODE_AND_INTERFACE_TAIL);
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            ParsedAutoComplete.findPrecedingInput(
+                pm, "dummy", NODE_AND_INTERFACE, NODE_AND_INTERFACE_TAIL));
   }
 
   /** Get the proper input if both head and tail are present */
   @Test
-  public void testFindPrecedingInput() {
+  void testFindPrecedingInput() {
     String query = "n1a[";
     PathElement anchor = new PathElement(Type.INTERFACE_NAME, null, 1, query.length());
     PathElement tailStart = new PathElement(Type.NODE_AND_INTERFACE_TAIL, null, 0, 3);
@@ -160,7 +162,7 @@ public class ParsedAutoCompleteTest {
   }
 
   @Test
-  public void testCompleteNodeNameWithHumanNameHint() {
+  void testCompleteNodeNameWithHumanNameHint() {
     String query = "node";
     // these should be the same as empty input ones
     String node1 = "node1";
@@ -185,7 +187,7 @@ public class ParsedAutoCompleteTest {
   }
 
   @Test
-  public void testCompleteHumanName() {
+  void testCompleteHumanName() {
     String query = "human";
     // these should be the same as empty input ones
     String node1 = "node1";
@@ -211,7 +213,7 @@ public class ParsedAutoCompleteTest {
    * {@link ParsedAutoCompleteSuggestion}.
    */
   @Test
-  public void testUpdateSuggestions() {
+  void testUpdateSuggestions() {
     AutocompleteSuggestion autocompleteSuggestion =
         new AutocompleteSuggestion("text", SuggestionType.UNKNOWN, true, "desc", 42, 3, "hint");
     assertThat(

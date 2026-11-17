@@ -1,18 +1,18 @@
 package org.batfish.common.topology;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link ValueEdge}. */
-public final class ValueEdgeTest {
+final class ValueEdgeTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     ValueEdge<Ip, String> edge1 = new ValueEdge<>(Ip.ZERO, Ip.ZERO, "a");
     ValueEdge<Ip, String> edge2 = new ValueEdge<>(Ip.ZERO, Ip.ZERO, "b");
     ValueEdge<Ip, String> edge3 = new ValueEdge<>(Ip.ZERO, Ip.FIRST_CLASS_A_PRIVATE_IP, "b");
@@ -29,7 +29,7 @@ public final class ValueEdgeTest {
   }
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     ValueEdge<Ip, String> edge = new ValueEdge<>(Ip.ZERO, Ip.ZERO, "a");
 
     assertEquals(

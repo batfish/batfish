@@ -4,7 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -14,10 +14,10 @@ import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.JFactory;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link BDDRouteFactory}. */
-public class BDDRouteFactoryTest {
+class BDDRouteFactoryTest {
   private static final ConfigAtomicPredicates CONFIG_APS =
       new ConfigAtomicPredicates(
           ImmutableList.of(),
@@ -25,12 +25,12 @@ public class BDDRouteFactoryTest {
           ImmutableSet.of());
 
   @Test
-  public void testZeroRoutesRejected() {
+  void testZeroRoutesRejected() {
     assertThrows(IllegalArgumentException.class, () -> new BDDRouteFactory(CONFIG_APS, 0));
   }
 
   @Test
-  public void testSingleRouteIsCanonical() {
+  void testSingleRouteIsCanonical() {
     // With a single route requested, identityRoute(0) must be the same as building a BDDRoute
     // directly against a fresh factory for the same aps.
     BDDRouteFactory routeFactory = new BDDRouteFactory(CONFIG_APS, 1);
@@ -39,7 +39,7 @@ public class BDDRouteFactoryTest {
   }
 
   @Test
-  public void testRoutesAreMutuallyInterleaved() {
+  void testRoutesAreMutuallyInterleaved() {
     // The routes must be pairwise interleaved, not contiguous: each of the first route's
     // non-prefix variables' level must be immediately followed, in the factory's variable order,
     // by its counterpart in the second and then in the third.
@@ -85,7 +85,7 @@ public class BDDRouteFactoryTest {
   }
 
   @Test
-  public void testExplicitFactoryWithNoSharedBits() {
+  void testExplicitFactoryWithNoSharedBits() {
     // The (BDDFactory, ConfigAtomicPredicates, int) overload -- a caller-supplied factory, no
     // shared bits -- must build the same shape as passing numSharedBits=0 explicitly.
     BDDFactory factory = JFactory.init(100000, 10000);
@@ -96,7 +96,7 @@ public class BDDRouteFactoryTest {
   }
 
   @Test
-  public void testTransferBDDCanReuseIdentityRoute() {
+  void testTransferBDDCanReuseIdentityRoute() {
     // A caller that needs both a TransferBDD and other routes interleaved with its canonical route
     // must build the canonical route once, via BDDRouteFactory, and hand it to the
     // TransferBDD(factory, originalRoute, aps) overload -- which stores it as-is -- rather than to
@@ -112,7 +112,7 @@ public class BDDRouteFactoryTest {
   }
 
   @Test
-  public void testMutableRouteIsIndependentCopy() {
+  void testMutableRouteIsIndependentCopy() {
     // mutableRoute(i) must be a genuinely independent deep copy: mutating it must not affect
     // identityRoute(i) or any other mutableRoute(i) call's result.
     BDDRouteFactory routeFactory = new BDDRouteFactory(CONFIG_APS, 1);
@@ -128,7 +128,7 @@ public class BDDRouteFactoryTest {
   }
 
   @Test
-  public void testSharedBitsAreReservedAndDisjointFromEveryRoute() {
+  void testSharedBitsAreReservedAndDisjointFromEveryRoute() {
     // numSharedBits() only reserves indices [0, numSharedBits()) -- it's the caller's job to build
     // something over them, e.g. a MutableBDDInteger. Those reserved variables sit at the very front
     // of the var order; the shared prefix/prefix-length variables (which support() includes, and
@@ -143,7 +143,7 @@ public class BDDRouteFactoryTest {
   }
 
   @Test
-  public void testSharedBitsDoNotPerturbInterleaving() {
+  void testSharedBitsDoNotPerturbInterleaving() {
     // Requesting shared bits must not change the interleaving/width math for the routes: each of
     // the first route's non-prefix variables' level must still be immediately followed by its
     // counterpart in the second, exactly as without shared bits.
@@ -163,7 +163,7 @@ public class BDDRouteFactoryTest {
   }
 
   @Test
-  public void testNoSharedBitsRequestedIsZero() {
+  void testNoSharedBitsRequestedIsZero() {
     // With no shared bits requested, numSharedBits() is 0, and the first route is allocated
     // exactly as if BDDRouteFactory had no shared-bits support at all.
     BDDRouteFactory routeFactory = new BDDRouteFactory(CONFIG_APS, 1);

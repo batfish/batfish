@@ -3,12 +3,12 @@ package org.batfish.datamodel.answers;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class MetricsTest {
+final class MetricsTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     Metrics.Builder builder = Metrics.builder();
     new EqualsTester()
         .addEqualityGroup(builder.build(), builder.build())

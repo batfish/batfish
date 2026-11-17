@@ -2,20 +2,20 @@ package org.batfish.common.runtime;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.TreeMap;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link RuntimeData} */
-public class RuntimeDataTest {
+class RuntimeDataTest {
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     RuntimeData.Builder builder =
         RuntimeData.builder()
             .setInterfaces(ImmutableMap.of("iface", InterfaceRuntimeData.builder().build()));
@@ -24,7 +24,7 @@ public class RuntimeDataTest {
   }
 
   @Test
-  public void testProcessedCorrectlyOnInitialization() {
+  void testProcessedCorrectlyOnInitialization() {
     Map<String, InterfaceRuntimeData> ifaceInitData = new TreeMap<>();
     ifaceInitData.put("iface", InterfaceRuntimeData.builder().build());
 
@@ -32,11 +32,11 @@ public class RuntimeDataTest {
 
     // Processed data should be unchanged but immutable
     assertThat(runtimeData.getInterfaces(), equalTo(ifaceInitData));
-    assertTrue(runtimeData.getInterfaces() instanceof ImmutableMap);
+    assertThat(runtimeData.getInterfaces(), instanceOf(ImmutableMap.class));
   }
 
   @Test
-  public void testGetInterface() {
+  void testGetInterface() {
     String iface = "iface";
     InterfaceRuntimeData ifaceData = InterfaceRuntimeData.EMPTY_INTERFACE_RUNTIME_DATA;
     RuntimeData data =
@@ -50,7 +50,7 @@ public class RuntimeDataTest {
   }
 
   @Test
-  public void testBuilderSetInterfaceLineUp() {
+  void testBuilderSetInterfaceLineUp() {
     String i1 = "i1";
     String i2 = "i2";
     InterfaceRuntimeData lineUp = InterfaceRuntimeData.builder().setLineUp(true).build();

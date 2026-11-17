@@ -5,12 +5,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class RegexCommunityMemberTest {
+class RegexCommunityMemberTest {
 
   @Test
-  public void testIsRiskyCommunityRegex() {
+  void testIsRiskyCommunityRegex() {
     assertThat(getUnintendedCommunityMatches("^1:2$"), empty());
     assertThat(getUnintendedCommunityMatches("12345:23456"), empty());
     assertThat(getUnintendedCommunityMatches(".....:....."), empty());
@@ -44,7 +44,7 @@ public class RegexCommunityMemberTest {
    * Batfish must handle it.
    */
   @Test
-  public void testDkBricsReservedCharsDoNotCrash() {
+  void testDkBricsReservedCharsDoNotCrash() {
     // 12345<?:1 is literal "12345", optional "<", then ":1" — analysis suggests "12345:10" which
     // is reasonable: the regex matches both "12345:1" and "12345<:1" and can extend at the end.
     assertThat(getUnintendedCommunityMatches("12345<?:1"), contains("12345:10"));

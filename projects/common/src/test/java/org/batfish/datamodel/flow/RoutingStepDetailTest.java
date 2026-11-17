@@ -11,13 +11,13 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.flow.RoutingStep.RoutingStepDetail;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link RoutingStepDetail} */
-public class RoutingStepDetailTest {
+class RoutingStepDetailTest {
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     RoutingStepDetail obj =
         RoutingStepDetail.builder()
             .setForwardingDetail(Discarded.instance())
@@ -33,7 +33,7 @@ public class RoutingStepDetailTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     RoutingStepDetail.Builder builder =
         RoutingStepDetail.builder()
             .setForwardingDetail(Discarded.instance())

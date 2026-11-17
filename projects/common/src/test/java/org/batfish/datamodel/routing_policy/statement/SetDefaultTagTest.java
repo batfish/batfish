@@ -2,7 +2,7 @@ package org.batfish.datamodel.routing_policy.statement;
 
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasTag;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
@@ -14,10 +14,10 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link SetDefaultTag} */
-public class SetDefaultTagTest {
+class SetDefaultTagTest {
   private static final Configuration C =
       new NetworkFactory()
           .configurationBuilder()
@@ -25,7 +25,7 @@ public class SetDefaultTagTest {
           .build();
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     SetDefaultTag expr = new SetDefaultTag(new LiteralLong(1L));
     new EqualsTester()
         .addEqualityGroup(expr, expr, new SetDefaultTag(new LiteralLong(1L)))
@@ -35,14 +35,14 @@ public class SetDefaultTagTest {
   }
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     SetDefaultTag expr = new SetDefaultTag(new LiteralLong(1L));
     assertEquals(SerializationUtils.clone(expr), expr);
     assertEquals(BatfishObjectMapper.clone(expr, SetDefaultTag.class), expr);
   }
 
   @Test
-  public void testExecute() {
+  void testExecute() {
     SetDefaultTag expr = new SetDefaultTag(new LiteralLong(1L));
     {
       // No tag explicitly set; default tag should take effect

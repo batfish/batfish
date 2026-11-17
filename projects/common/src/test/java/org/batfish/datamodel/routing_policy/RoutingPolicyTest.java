@@ -1,7 +1,7 @@
 package org.batfish.datamodel.routing_policy;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import org.batfish.datamodel.Configuration;
@@ -21,10 +21,10 @@ import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.MatchTag;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statements;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link RoutingPolicy}. */
-public final class RoutingPolicyTest {
+final class RoutingPolicyTest {
 
   /** A Junos-format device, whose policies read attributes from the output route. */
   private static Configuration junos() {
@@ -44,7 +44,7 @@ public final class RoutingPolicyTest {
   }
 
   @Test
-  public void testProcessReadOnlyMatchesInputTagOnJunos() {
+  void testProcessReadOnlyMatchesInputTagOnJunos() {
     Configuration c = junos();
     RoutingPolicy policy =
         RoutingPolicy.builder()
@@ -62,7 +62,7 @@ public final class RoutingPolicyTest {
   }
 
   @Test
-  public void testProcessReadOnlyMatchesInputCommunitiesOnJunos() {
+  void testProcessReadOnlyMatchesInputCommunitiesOnJunos() {
     Configuration c = junos();
     RoutingPolicy policy =
         RoutingPolicy.builder()

@@ -3,7 +3,7 @@ package org.batfish.bddreachability.transition;
 import static org.batfish.common.bdd.BDDUtils.bddFactory;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
@@ -12,10 +12,10 @@ import net.sf.javabdd.BDDFactory;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDPairingFactory;
 import org.batfish.common.bdd.PrimedBDDInteger;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class TransformTest {
+class TransformTest {
   private BDDFactory _factory;
   private PrimedBDDInteger _xPrimedInt;
   private PrimedBDDInteger _yPrimedInt;
@@ -36,8 +36,8 @@ public class TransformTest {
   private Transform _transformX1;
   private Transform _transformY;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _factory = bddFactory(8);
     _zero = _factory.zero();
     _one = _factory.one();
@@ -77,7 +77,7 @@ public class TransformTest {
   }
 
   @Test
-  public void testTransitions() {
+  void testTransitions() {
     // forward
     assertEquals(_x1.or(_x2), _transformX0.transitForward(_x0));
     assertEquals(_zero, _transformX0.transitForward(_x1));
@@ -89,7 +89,7 @@ public class TransformTest {
   }
 
   @Test
-  public void testOr() {
+  void testOr() {
     BDD x01 = _x0.or(_x1);
     BDD x12 = _x1.or(_x2);
     BDD x012 = _x0.or(x12);
@@ -127,7 +127,7 @@ public class TransformTest {
   }
 
   @Test
-  public void testCompose() {
+  void testCompose() {
     BDD x12 = _x1.or(_x2);
     assertEquals(x12, _transformX0.transitForward(_x0));
     assertEquals(x12, _transformX0.transitForward(_one));
@@ -178,7 +178,7 @@ public class TransformTest {
    * applied after the first transformation.
    */
   @Test
-  public void testComposeSequence() {
+  void testComposeSequence() {
     BDD x12 = _x1.or(_x2);
 
     // x=2 is in the codomain of the first transform (on x)
@@ -209,7 +209,7 @@ public class TransformTest {
   }
 
   @Test
-  public void testReduceWithOr() {
+  void testReduceWithOr() {
     BDDPairingFactory xPairingFactory = _xPrimedInt.getPairingFactory();
     BDDPairingFactory yPairingFactory = _yPrimedInt.getPairingFactory();
     BDD yIdRel = yPairingFactory.identityRelation();
@@ -227,7 +227,7 @@ public class TransformTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     // transiting initializes _reverseRelation and _swapPairing, but does not affect equality
     Transform transited = new Transform(_x0, _xPrimedInt.getPairingFactory());
     transited.transitForward(_one);

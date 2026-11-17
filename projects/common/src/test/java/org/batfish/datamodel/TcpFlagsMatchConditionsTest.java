@@ -4,16 +4,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.testing.EqualsTester;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link org.batfish.datamodel.TcpFlagsMatchConditions} */
-@RunWith(JUnit4.class)
-public class TcpFlagsMatchConditionsTest {
+class TcpFlagsMatchConditionsTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     TcpFlags flags1 = TcpFlags.builder().setUrg(true).setRst(true).build();
     TcpFlags flags2 = TcpFlags.builder().setUrg(false).setRst(true).build();
     new EqualsTester()
@@ -28,7 +25,7 @@ public class TcpFlagsMatchConditionsTest {
   }
 
   @Test
-  public void testMatchFlow() {
+  void testMatchFlow() {
     TcpFlags flags = TcpFlags.builder().setUrg(true).setRst(true).build();
     TcpFlagsMatchConditions conditions =
         TcpFlagsMatchConditions.builder().setTcpFlags(flags).setUseUrg(true).build();
@@ -45,7 +42,7 @@ public class TcpFlagsMatchConditionsTest {
   }
 
   @Test
-  public void testMatchFlowIgnoreFields() {
+  void testMatchFlowIgnoreFields() {
     TcpFlags flags = TcpFlags.builder().setUrg(true).setRst(true).build();
     Flow testFlow =
         Flow.builder()
@@ -71,7 +68,7 @@ public class TcpFlagsMatchConditionsTest {
   }
 
   @Test
-  public void testBuilderDefaults() {
+  void testBuilderDefaults() {
     TcpFlagsMatchConditions conditions = TcpFlagsMatchConditions.builder().build();
     assertThat(conditions.getTcpFlags(), equalTo(TcpFlags.builder().build()));
     assertThat(conditions.getUseAck(), equalTo(false));

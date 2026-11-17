@@ -36,8 +36,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -55,11 +55,11 @@ import org.batfish.common.topology.IpOwners;
 import org.batfish.common.topology.IpOwnersBaseImpl;
 import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link ForwardingAnalysisImpl}. */
-public class ForwardingAnalysisImplTest {
+class ForwardingAnalysisImplTest {
 
   private static final String INTERFACE1 = "interface1";
 
@@ -83,8 +83,8 @@ public class ForwardingAnalysisImplTest {
 
   private Vrf.Builder _vb;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     NetworkFactory nf = new NetworkFactory();
     _cb = nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     _vb = nf.vrfBuilder();
@@ -92,7 +92,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeArpReplies() {
+  void testComputeArpReplies() {
     Configuration c1 = _cb.build();
     Configuration c2 = _cb.build();
     Map<String, Configuration> configs =
@@ -192,7 +192,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeArpRepliesByInterface() {
+  void testComputeArpRepliesByInterface() {
     Configuration config = _cb.build();
     _ib.setOwner(config);
     _vb.setOwner(config);
@@ -294,7 +294,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeArpReplies_VRRP() {
+  void testComputeArpReplies_VRRP() {
     Configuration c = _cb.build();
     Map<String, Configuration> configs = ImmutableMap.of(c.getHostname(), c);
     _ib.setOwner(c);
@@ -349,7 +349,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeArpTrueEdge() {
+  void testComputeArpTrueEdge() {
     IpSpace nextHopIpSpace = new MockIpSpace(1);
     IpSpace dstIpSpace = new MockIpSpace(2);
     Edge e1 = Edge.of("c1", "i1", "c2", "i2");
@@ -370,7 +370,7 @@ public class ForwardingAnalysisImplTest {
 
   /** Java serialization must round-trip everything, for every node. */
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     Configuration n1 = _cb.setHostname("n1").build();
     Vrf v1 = _vb.setOwner(n1).build();
     Interface i1 =
@@ -418,7 +418,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeArpTrueEdgeDestIp() {
+  void testComputeArpTrueEdgeDestIp() {
     Configuration c1 = _cb.build();
     Configuration c2 = _cb.build();
     Vrf vrf1 = _vb.setOwner(c1).build();
@@ -462,7 +462,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeArpTrueEdgeNextHopIp() {
+  void testComputeArpTrueEdgeNextHopIp() {
     Configuration c1 = _cb.build();
     Configuration c2 = _cb.build();
     Vrf vrf1 = _vb.setOwner(c1).build();
@@ -539,7 +539,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeOwnedIpsByVrf() {
+  void testComputeOwnedIpsByVrf() {
     Configuration config = _cb.build();
     _ib.setOwner(config);
     Interface iNoAddresses = _ib.build();
@@ -559,7 +559,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeInterfaceArpReplies() {
+  void testComputeInterfaceArpReplies() {
     Configuration config = _cb.build();
     _ib.setOwner(config);
     ConcreteInterfaceAddress primary =
@@ -614,7 +614,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeIpsAssignedToThisInterfaceForArpReplies() {
+  void testComputeIpsAssignedToThisInterfaceForArpReplies() {
     Configuration config = _cb.build();
     Map<String, Configuration> configs = ImmutableMap.of(config.getHostname(), config);
     _ib.setOwner(config);
@@ -638,7 +638,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeIpsRoutedOutInterfaces() {
+  void testComputeIpsRoutedOutInterfaces() {
     String c1 = "c1";
     String v1 = "v1";
     String i1 = "i1";
@@ -694,7 +694,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeNeighborUnreachableOrExitsNetwork() {
+  void testComputeNeighborUnreachableOrExitsNetwork() {
     String c1 = "c1";
     String v1 = "v1";
     String i1 = "i1";
@@ -724,7 +724,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeArpFalseDestIp() {
+  void testComputeArpFalseDestIp() {
     String c1 = "c1";
     String v1 = "v1";
     String i1 = "i1";
@@ -750,7 +750,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeArpFalseDestIpNoNeighbors() {
+  void testComputeArpFalseDestIpNoNeighbors() {
     String c1 = "c1";
     String v1 = "v1";
     String i1 = "i1";
@@ -779,7 +779,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeNeighborUnreachableArpNextHopIp() {
+  void testComputeNeighborUnreachableArpNextHopIp() {
     String c1 = "c1";
     String v1 = "v1";
     AbstractRoute r1 =
@@ -805,7 +805,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeNextVrfIpsByNodeVrf() {
+  void testComputeNextVrfIpsByNodeVrf() {
     String c1 = "c1";
     String v1 = "v1";
     String v2 = "v2";
@@ -856,7 +856,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeNullRoutedIps() {
+  void testComputeNullRoutedIps() {
     String c1 = "c1";
     String v1 = "v1";
     String i1 = "i1";
@@ -906,7 +906,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testRoutableIpSpace() {
+  void testRoutableIpSpace() {
     Fib hasDefault =
         MockFib.builder()
             .setFibEntries(
@@ -962,7 +962,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeRoutableIps() {
+  void testComputeRoutableIps() {
     String c1 = "c1";
     String v1 = "v1";
     Prefix prefix = Prefix.parse("1.0.0.0/8");
@@ -979,7 +979,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeRouteMatchConditions() {
+  void testComputeRouteMatchConditions() {
     Set<AbstractRoute> routes =
         ImmutableSet.of(new ConnectedRoute(P1, INTERFACE1), new ConnectedRoute(P2, INTERFACE2));
     Fib fib = MockFib.builder().setMatchingIps(ImmutableMap.of(P1, IPSPACE1, P2, IPSPACE2)).build();
@@ -994,7 +994,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testVrfForwardingIndexRoutesArpingForDestIp() {
+  void testVrfForwardingIndexRoutesArpingForDestIp() {
     String i1 = "i1";
     AbstractRoute r1 =
         StaticRoute.testBuilder()
@@ -1026,7 +1026,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeArpFalseNhipRoutes() {
+  void testComputeArpFalseNhipRoutes() {
     String i1 = "i1";
     AbstractRoute r1 =
         StaticRoute.testBuilder()
@@ -1050,7 +1050,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeArpFalseNhipRoutesForInterface() {
+  void testComputeArpFalseNhipRoutesForInterface() {
     String outInterface = "i1";
     AbstractRoute nextHopIpRoute1 =
         StaticRoute.testBuilder()
@@ -1102,7 +1102,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testVrfForwardingIndexRoutesArpingForNextHopIp() {
+  void testVrfForwardingIndexRoutesArpingForNextHopIp() {
     String i1 = "i1";
     AbstractRoute r1 =
         StaticRoute.testBuilder()
@@ -1153,7 +1153,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeSomeoneReplies() {
+  void testComputeSomeoneReplies() {
     String c1 = "c1";
     String i1 = "i1";
     String c2 = "c2";
@@ -1172,7 +1172,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeDeliveredToSubnetNoArpFalse() {
+  void testComputeDeliveredToSubnetNoArpFalse() {
     Ip ip = Ip.parse("10.0.0.1");
 
     IpSpace arpFalseDestIp = EmptyIpSpace.INSTANCE;
@@ -1184,7 +1184,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeDeliveredToSubnetNoInterfaceHostIps() {
+  void testComputeDeliveredToSubnetNoInterfaceHostIps() {
     Ip ip = Ip.parse("10.0.0.1");
 
     IpSpace arpFalseDestIp = ip.toIpSpace();
@@ -1196,7 +1196,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeDeliveredToSubnetEqual() {
+  void testComputeDeliveredToSubnetEqual() {
     Ip ip = Ip.parse("10.0.0.1");
 
     IpSpace arpFalseDestIp = ip.toIpSpace();
@@ -1315,7 +1315,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testDispositionComputation() {
+  void testDispositionComputation() {
     /*
      * Avoid the case where arp dst ip, interface is full, and dst ip is in subnet (would be accepted).
      * Avoid cases where dst ip is internal but not in subet.
@@ -1391,7 +1391,7 @@ public class ForwardingAnalysisImplTest {
    * don't get an ARP response, we get insufficient info.
    */
   @Test
-  public void testUnknownedNextHopIpOwnedArpIp() {
+  void testUnknownedNextHopIpOwnedArpIp() {
     Configuration n1 = _cb.setHostname("n1").build();
     Vrf v1 = _vb.setOwner(n1).build();
     Interface i1 =
@@ -1443,7 +1443,7 @@ public class ForwardingAnalysisImplTest {
   // If two nodes are in the same subnet but not connected per the given topology,
   // sending packets from one to the other should result in Neighbor Unreachable.
   @Test
-  public void testDispositionWithTopology() {
+  void testDispositionWithTopology() {
     Prefix prefix = Prefix.parse("1.0.0.0/24");
     IpSpace ipSpace = prefix.toIpSpace();
     Ip ip2 = Ip.parse("1.0.0.2");

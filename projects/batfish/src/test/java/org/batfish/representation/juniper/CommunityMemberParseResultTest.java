@@ -7,13 +7,13 @@ import static org.hamcrest.Matchers.equalTo;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link CommunityMemberParseResult} */
-public class CommunityMemberParseResultTest {
+class CommunityMemberParseResultTest {
 
   @Test
-  public void testParseCommunityMember() {
+  void testParseCommunityMember() {
     // Literal cases
     assertThat(
         parseCommunityMember("123:456"),

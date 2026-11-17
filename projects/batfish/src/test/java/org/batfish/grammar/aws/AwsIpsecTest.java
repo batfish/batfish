@@ -26,6 +26,7 @@ import static org.hamcrest.Matchers.hasKey;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.SortedMap;
@@ -47,16 +48,15 @@ import org.batfish.datamodel.matchers.IpsecPhase2ProposalMatchers;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests of an AWS network with IPsec peering to a Cisco router on-prem. */
-public class AwsIpsecTest {
+class AwsIpsecTest {
 
   private static final String TESTRIG_PREFIX = "org/batfish/grammar/aws/testrigs/";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private SortedMap<String, Configuration> awsIpsecHelper() throws IOException {
     String testrigResourcePrefix = TESTRIG_PREFIX + "ipsec-vpn-host-aws-cisco";
@@ -87,7 +87,7 @@ public class AwsIpsecTest {
   }
 
   @Test
-  public void testIkePhase1Confs() throws IOException {
+  void testIkePhase1Confs() throws IOException {
     SortedMap<String, Configuration> configurations = awsIpsecHelper();
 
     assertThat(configurations, hasKey("vgw-81fd279f"));
@@ -317,7 +317,7 @@ public class AwsIpsecTest {
   }
 
   @Test
-  public void testIpsecPhase2Confs() throws IOException {
+  void testIpsecPhase2Confs() throws IOException {
     SortedMap<String, Configuration> configurations = awsIpsecHelper();
 
     assertThat(configurations, hasKey("vgw-81fd279f"));

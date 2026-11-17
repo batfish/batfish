@@ -13,19 +13,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-@RunWith(JUnit4.class)
-public class BatfishObjectMapperTest {
+class BatfishObjectMapperTest {
   private static class Foo {
     @JsonProperty("map")
     public Map<String, String[]> _map = new HashMap<>();
   }
 
   @Test
-  public void testMapFieldWithEmptyValue() throws JsonProcessingException {
+  void testMapFieldWithEmptyValue() throws JsonProcessingException {
     Foo foo = new Foo();
     foo._map.put("key", new String[0]);
 
@@ -42,7 +39,7 @@ public class BatfishObjectMapperTest {
   }
 
   @Test
-  public void testMapperAcceptsCaseInsensitiveEnums() throws IOException {
+  void testMapperAcceptsCaseInsensitiveEnums() throws IOException {
     ObjectMapper mapper = BatfishObjectMapper.mapper();
     assertThat(mapper.writeValueAsString(SomeEnum.ACCEPT), equalTo("\"ACCEPT\""));
     assertThat(mapper.writeValueAsString(SomeEnum.DROP), equalTo("\"DROP\""));

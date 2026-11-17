@@ -9,12 +9,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link Warnings}. */
-public class WarningsTest {
+class WarningsTest {
   @Test
-  public void testRedFlagWarnings() {
+  void testRedFlagWarnings() {
     Warnings ws = new Warnings(true, true, true);
     String message1 = "message1";
     String message2 = "message2";
@@ -34,7 +34,7 @@ public class WarningsTest {
   }
 
   @Test
-  public void testPedanticWarnings() {
+  void testPedanticWarnings() {
     Warnings ws = new Warnings(true, true, true);
     String message1 = "message1";
     String message2 = "message2";
@@ -54,7 +54,7 @@ public class WarningsTest {
   }
 
   @Test
-  public void testUnimplementedWarnings() {
+  void testUnimplementedWarnings() {
     Warnings ws = new Warnings(true, true, true);
     String message1 = "message1";
     String message2 = "message2";

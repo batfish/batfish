@@ -2,7 +2,7 @@ package org.batfish.datamodel.visitors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Optional;
 import org.batfish.datamodel.AclIpSpace;
@@ -14,22 +14,22 @@ import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class IpSpaceRepresentativeTest {
+class IpSpaceRepresentativeTest {
   private static final IpWildcard EVEN_IPS =
       IpWildcard.ipWithWildcardMask(Ip.parse("0.0.0.0"), Ip.parse("255.255.255.254"));
 
   private IpSpaceRepresentative _ipSpaceRepresentative;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _ipSpaceRepresentative = new IpSpaceRepresentative();
   }
 
   @Test
-  public void testAclIpSpace() {
+  void testAclIpSpace() {
     IpSpace ipSpace =
         AclIpSpace.builder()
             .thenRejecting(EVEN_IPS.toIpSpace())
@@ -41,7 +41,7 @@ public class IpSpaceRepresentativeTest {
   }
 
   @Test
-  public void testAclIpSpace_empty() {
+  void testAclIpSpace_empty() {
     IpSpace ipSpace =
         AclIpSpace.builder()
             .thenRejecting(Prefix.parse("0.0.0.0/32").toIpSpace())
@@ -53,7 +53,7 @@ public class IpSpaceRepresentativeTest {
 
   /** Test that the representative is the numerically smallest IP. */
   @Test
-  public void testAclIpSpace_fourIps() {
+  void testAclIpSpace_fourIps() {
     Ip ip1 = Ip.parse("1.0.0.0");
     Ip ip2 = Ip.parse("0.1.0.0");
     Ip ip3 = Ip.parse("0.0.1.0");
@@ -66,24 +66,24 @@ public class IpSpaceRepresentativeTest {
             .thenPermitting(ip4.toIpSpace())
             .build();
     Optional<Ip> representative = _ipSpaceRepresentative.getRepresentative(ipSpace);
-    assertTrue("no representative", representative.isPresent());
+    assertTrue(representative.isPresent(), "no representative");
     assertThat(representative.get(), Matchers.oneOf(ip1, ip2, ip3, ip4));
   }
 
   @Test
-  public void testEmptyIpSpace() {
+  void testEmptyIpSpace() {
     assertThat(
         _ipSpaceRepresentative.getRepresentative(EmptyIpSpace.INSTANCE), equalTo(Optional.empty()));
   }
 
   @Test
-  public void testIpIpSpace() {
+  void testIpIpSpace() {
     Ip ip = Ip.parse("1.2.3.4");
     assertThat(_ipSpaceRepresentative.getRepresentative(ip.toIpSpace()), equalTo(Optional.of(ip)));
   }
 
   @Test
-  public void testIpWildcardIpSpace() {
+  void testIpWildcardIpSpace() {
     Ip ip = Ip.parse("1.0.2.0");
     Ip mask = Ip.parse("0.255.0.255");
     IpWildcard wc = IpWildcard.ipWithWildcardMask(ip, mask);
@@ -91,7 +91,7 @@ public class IpSpaceRepresentativeTest {
   }
 
   @Test
-  public void testIpWildcardSetIpSpace() {
+  void testIpWildcardSetIpSpace() {
     IpSpace ipSpace =
         IpWildcardSetIpSpace.builder()
             .including(IpWildcard.parse("1.2.3.0/24"))
@@ -103,7 +103,7 @@ public class IpSpaceRepresentativeTest {
   }
 
   @Test
-  public void testPrefixIpSpace() {
+  void testPrefixIpSpace() {
     Prefix prefix = Prefix.parse("1.2.0.0/16");
     assertThat(
         _ipSpaceRepresentative.getRepresentative(prefix.toIpSpace()),
@@ -111,7 +111,7 @@ public class IpSpaceRepresentativeTest {
   }
 
   @Test
-  public void testUniverseIpSpace() {
+  void testUniverseIpSpace() {
     assertThat(
         _ipSpaceRepresentative.getRepresentative(UniverseIpSpace.INSTANCE),
         equalTo(Optional.of(Ip.parse("0.0.0.0"))));

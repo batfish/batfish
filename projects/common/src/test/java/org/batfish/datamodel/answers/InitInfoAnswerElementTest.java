@@ -2,7 +2,7 @@ package org.batfish.datamodel.answers;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,26 +10,26 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishException.BatfishStackTrace;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link InitInfoAnswerElement} */
-public class InitInfoAnswerElementTest {
+class InitInfoAnswerElementTest {
   InitInfoAnswerElement _element;
 
   @Test
-  public void checkEmptyErrors() {
+  void checkEmptyErrors() {
     assertThat(_element.getErrors().size(), is(0));
   }
 
   @Test
-  public void checkNonEmptyErrors() {
+  void checkNonEmptyErrors() {
     _element.getErrors().put("error", new ArrayList<>());
     assertThat(_element.getErrors().size(), is(1));
   }
 
   @Test
-  public void checkNonEmptyErrorsSet() {
+  void checkNonEmptyErrorsSet() {
     BatfishException exception = new BatfishException("sample exception");
     BatfishStackTrace stackTrace = new BatfishStackTrace(exception);
     _element.getErrors().put("error", new ArrayList<>());
@@ -38,13 +38,13 @@ public class InitInfoAnswerElementTest {
     assertTrue(_element.getErrors().get("error").contains(stackTrace));
   }
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
     _element = new InitInfoAnswerElement();
   }
 
   @Test
-  public void testGetErrors() {
+  void testGetErrors() {
     BatfishException exception = new BatfishException("sample exception");
     BatfishStackTrace stackTrace = new BatfishStackTrace(exception);
     List<BatfishStackTrace> errors = new ArrayList<>();
@@ -54,7 +54,7 @@ public class InitInfoAnswerElementTest {
   }
 
   @Test
-  public void testSetErrors() {
+  void testSetErrors() {
     BatfishException exception = new BatfishException("sample exception");
     BatfishStackTrace stackTrace = new BatfishStackTrace(exception);
     List<BatfishStackTrace> errors = new ArrayList<>();

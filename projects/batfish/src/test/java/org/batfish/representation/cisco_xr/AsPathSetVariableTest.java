@@ -6,20 +6,20 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.testing.EqualsTester;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link AsPathSetVariable}. */
 @ParametersAreNonnullByDefault
-public final class AsPathSetVariableTest {
+final class AsPathSetVariableTest {
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     AsPathSetVariable obj = new AsPathSetVariable("a");
     assertThat(SerializationUtils.clone(obj), equalTo(obj));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     AsPathSetVariable obj = new AsPathSetVariable("a");
     new EqualsTester()
         .addEqualityGroup(obj, new AsPathSetVariable("a"))

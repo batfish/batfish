@@ -5,11 +5,11 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.instanceOf;
 
 import java.util.ServiceLoader;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class BatfishVersionTest {
+class BatfishVersionTest {
   @Test
-  public void testBatfishVersionIsLoaded() {
+  void testBatfishVersionIsLoaded() {
     // Make sure that BatfishVersion is found by the service loader
     assertThat(
         ServiceLoader.load(Versioned.class, ClassLoader.getSystemClassLoader()),

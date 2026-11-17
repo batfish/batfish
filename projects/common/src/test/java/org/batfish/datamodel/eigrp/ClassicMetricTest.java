@@ -7,9 +7,9 @@ import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.eigrp.ClassicMetric.Builder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ClassicMetricTest {
+class ClassicMetricTest {
 
   private final EigrpMetricValues _values =
       EigrpMetricValues.builder()
@@ -21,7 +21,7 @@ public class ClassicMetricTest {
           .build();
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     Builder builder = ClassicMetric.builder().setValues(_values);
     ClassicMetric cm = builder.build();
     new EqualsTester()
@@ -33,19 +33,19 @@ public class ClassicMetricTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     ClassicMetric cm = ClassicMetric.builder().setValues(_values).setK1(2).setK1(2).build();
     assertThat(SerializationUtils.clone(cm), equalTo(cm));
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     ClassicMetric cm = ClassicMetric.builder().setValues(_values).setK1(2).setK1(2).build();
     assertThat(BatfishObjectMapper.clone(cm, ClassicMetric.class), equalTo(cm));
   }
 
   @Test
-  public void testComputeCost() {
+  void testComputeCost() {
     // Example taken from
     // https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/iproute_eigrp/configuration/xe-3s/ire-xe-3s-book/ire-wid-met.html#GUID-736131DE-0B64-46F4-A19A-B0526D24F95B
     ClassicMetric cm =
@@ -59,7 +59,7 @@ public class ClassicMetricTest {
   }
 
   @Test
-  public void testComputeCostDifferentVersions() {
+  void testComputeCostDifferentVersions() {
     // Example taken from lab validation on IOS-XE vs NX-OS.
     // set metric 900 100 255 1 1500
     // + 1 * 10us for the receiving interface.

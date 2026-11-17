@@ -19,12 +19,12 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.isis.IsisLevel;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.routing_policy.Environment;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link MatchProtocol} */
-public class MatchProtocolTest {
+class MatchProtocolTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new MatchProtocol(RoutingProtocol.STATIC), new MatchProtocol(RoutingProtocol.STATIC))
@@ -34,19 +34,19 @@ public class MatchProtocolTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     MatchProtocol mp = new MatchProtocol(RoutingProtocol.STATIC);
     assertThat(SerializationUtils.clone(mp), equalTo(mp));
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     MatchProtocol mp = new MatchProtocol(RoutingProtocol.STATIC);
     assertThat(BatfishObjectMapper.clone(mp, BooleanExpr.class), equalTo(mp));
   }
 
   @Test
-  public void testMatches() {
+  void testMatches() {
     // Setup
     NetworkFactory nf = new NetworkFactory();
     Configuration c =

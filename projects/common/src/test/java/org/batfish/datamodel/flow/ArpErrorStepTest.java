@@ -8,12 +8,12 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.ArpErrorStep.ArpErrorStepDetail;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ArpErrorStepTest {
+class ArpErrorStepTest {
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     ArpErrorStep step =
         ArpErrorStep.builder()
             .setAction(StepAction.NEIGHBOR_UNREACHABLE)
@@ -33,7 +33,7 @@ public class ArpErrorStepTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new Object())
         .addEqualityGroup(

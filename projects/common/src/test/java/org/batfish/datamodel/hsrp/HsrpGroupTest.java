@@ -9,12 +9,12 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.tracking.DecrementPriority;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link HsrpGroup} */
-public class HsrpGroupTest {
+class HsrpGroupTest {
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     HsrpGroup objEmpty = HsrpGroup.builder().build();
     assertThat(objEmpty, equalTo(BatfishObjectMapper.clone(objEmpty, HsrpGroup.class)));
 

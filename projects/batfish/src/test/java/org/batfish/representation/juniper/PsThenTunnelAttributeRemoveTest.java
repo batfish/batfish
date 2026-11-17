@@ -11,11 +11,11 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.routing_policy.statement.RemoveTunnelEncapsulationAttribute;
 import org.batfish.datamodel.routing_policy.statement.Statement;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class PsThenTunnelAttributeRemoveTest {
+class PsThenTunnelAttributeRemoveTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     PsThenTunnelAttributeRemove then = PsThenTunnelAttributeRemove.INSTANCE;
     new EqualsTester()
         .addEqualityGroup(5L)
@@ -37,7 +37,7 @@ public class PsThenTunnelAttributeRemoveTest {
   }
 
   @Test
-  public void testConversion() {
+  void testConversion() {
     assertThat(
         getStatements(PsThenTunnelAttributeRemove.INSTANCE),
         contains(RemoveTunnelEncapsulationAttribute.instance()));

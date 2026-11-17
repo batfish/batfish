@@ -3,11 +3,11 @@ package org.batfish.common.util.isp;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.nullValue;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class NoTrafficFilteringPolicyTest {
+class NoTrafficFilteringPolicyTest {
   @Test
-  public void testSetsNoFilters() {
+  void testSetsNoFilters() {
     NoTrafficFilteringPolicy policy = NoTrafficFilteringPolicy.create();
     assertThat(policy.filterTrafficFromInternet(), nullValue());
     assertThat(policy.filterTrafficToInternet(), nullValue());

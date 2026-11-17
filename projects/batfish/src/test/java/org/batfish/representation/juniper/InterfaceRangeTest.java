@@ -4,13 +4,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableSet;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class InterfaceRangeTest {
+class InterfaceRangeTest {
 
   /** Test that members are included */
   @Test
-  public void testGetAllMembersIncludeMembers() {
+  void testGetAllMembersIncludeMembers() {
     InterfaceRange irange = new InterfaceRange("test");
     irange.getMembers().add(new InterfaceRangeMember("ge-0/0/[0,1]"));
     assertThat(irange.getAllMembers(), equalTo(ImmutableSet.of("ge-0/0/0", "ge-0/0/1")));
@@ -18,7 +18,7 @@ public class InterfaceRangeTest {
 
   /** Test that member ranges are included */
   @Test
-  public void testGetAllMembersIncludeMemberRanges() {
+  void testGetAllMembersIncludeMemberRanges() {
     InterfaceRange irange = new InterfaceRange("test");
     irange.getMemberRanges().add(new InterfaceRangeMemberRange("ge-0/0/0", "ge-0/0/1"));
     assertThat(irange.getAllMembers(), equalTo(ImmutableSet.of("ge-0/0/0", "ge-0/0/1")));
@@ -26,7 +26,7 @@ public class InterfaceRangeTest {
 
   /** Test that member AND member ranges are included, and duplicates are resolved */
   @Test
-  public void testGetAllMembersIncludeBoth() {
+  void testGetAllMembersIncludeBoth() {
     InterfaceRange irange = new InterfaceRange("test");
     irange.getMemberRanges().add(new InterfaceRangeMemberRange("ge-0/0/0", "ge-0/0/2"));
     irange.getMembers().add(new InterfaceRangeMember("ge-0/0/[1,3]"));

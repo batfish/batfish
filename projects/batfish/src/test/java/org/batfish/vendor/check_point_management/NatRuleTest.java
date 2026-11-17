@@ -2,17 +2,17 @@ package org.batfish.vendor.check_point_management;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link NatRule}. */
-public final class NatRuleTest {
+final class NatRuleTest {
 
   public static final NatRule TEST_INSTANCE =
       new NatRule(
@@ -31,7 +31,7 @@ public final class NatRuleTest {
           Uid.of("0"));
 
   @Test
-  public void testJacksonDeserialization() throws JsonProcessingException {
+  void testJacksonDeserialization() throws JsonProcessingException {
     {
       String input =
           "{"
@@ -58,12 +58,12 @@ public final class NatRuleTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     assertEquals(TEST_INSTANCE, SerializationUtils.clone(TEST_INSTANCE));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     NatRule obj =
         new NatRule(
             true,

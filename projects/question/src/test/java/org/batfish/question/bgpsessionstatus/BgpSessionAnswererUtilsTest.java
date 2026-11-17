@@ -24,21 +24,21 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.SessionVrfScope.SpecificVrf;
 import org.batfish.datamodel.questions.ConfiguredSessionStatus;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests of static methods of {@link BgpSessionAnswererUtils} */
-public final class BgpSessionAnswererUtilsTest {
+final class BgpSessionAnswererUtilsTest {
 
   private NetworkFactory _nf;
 
-  @Before
-  public void createNetworkFactory() {
+  @BeforeEach
+  void createNetworkFactory() {
     _nf = new NetworkFactory();
   }
 
   @Test
-  public void testLocalIpUnknownStatically() {
+  void testLocalIpUnknownStatically() {
     BgpActivePeerConfig peer = _nf.bgpNeighborBuilder().setPeerAddress(Ip.parse("1.1.1.1")).build();
     assertThat(
         getLocallyBrokenStatus(peer, BgpSessionProperties.SessionType.EBGP_SINGLEHOP),
@@ -52,20 +52,20 @@ public final class BgpSessionAnswererUtilsTest {
   }
 
   @Test
-  public void testNoLocalAs() {
+  void testNoLocalAs() {
     BgpActivePeerConfig peer = _nf.bgpNeighborBuilder().setLocalIp(Ip.parse("1.1.1.1")).build();
     assertStatusMatchesForAllSessionTypes(peer, ConfiguredSessionStatus.NO_LOCAL_AS);
   }
 
   @Test
-  public void testNoRemoteIp() {
+  void testNoRemoteIp() {
     BgpActivePeerConfig peer =
         _nf.bgpNeighborBuilder().setLocalIp(Ip.parse("1.1.1.1")).setLocalAs(1L).build();
     assertStatusMatchesForAllSessionTypes(peer, ConfiguredSessionStatus.NO_REMOTE_IP);
   }
 
   @Test
-  public void testNoRemoteAs() {
+  void testNoRemoteAs() {
     BgpActivePeerConfig peer =
         _nf.bgpNeighborBuilder()
             .setPeerAddress(Ip.parse("1.1.1.1"))
@@ -76,7 +76,7 @@ public final class BgpSessionAnswererUtilsTest {
   }
 
   @Test
-  public void testNotLocallyBroken() {
+  void testNotLocallyBroken() {
     BgpActivePeerConfig peer =
         _nf.bgpNeighborBuilder()
             .setPeerAddress(Ip.parse("1.1.1.1"))
@@ -100,7 +100,7 @@ public final class BgpSessionAnswererUtilsTest {
   }
 
   @Test
-  public void testUnnumberedStatuses() {
+  void testUnnumberedStatuses() {
     BgpPeerConfigId id = new BgpPeerConfigId("c", "vrf", "iface");
     BgpUnnumberedPeerConfig.Builder peerBuilder =
         BgpUnnumberedPeerConfig.builder()
@@ -147,19 +147,19 @@ public final class BgpSessionAnswererUtilsTest {
   }
 
   @Test
-  public void testPassiveNoLocalAs() {
+  void testPassiveNoLocalAs() {
     BgpPassivePeerConfig peer = _nf.bgpDynamicNeighborBuilder().build();
     assertThat(getLocallyBrokenStatus(peer), equalTo(ConfiguredSessionStatus.NO_LOCAL_AS));
   }
 
   @Test
-  public void testPassiveNoRemotePrefix() {
+  void testPassiveNoRemotePrefix() {
     BgpPassivePeerConfig peer = _nf.bgpDynamicNeighborBuilder().setLocalAs(1L).build();
     assertThat(getLocallyBrokenStatus(peer), equalTo(ConfiguredSessionStatus.NO_REMOTE_PREFIX));
   }
 
   @Test
-  public void testPassiveNoRemoteAs() {
+  void testPassiveNoRemoteAs() {
     BgpPassivePeerConfig peer =
         _nf.bgpDynamicNeighborBuilder()
             .setLocalAs(1L)
@@ -171,7 +171,7 @@ public final class BgpSessionAnswererUtilsTest {
 
   /** Local IP is in the default VRF, peer is in a non-default VRF with sessionVrf set. */
   @Test
-  public void testSessionVrfPreventsInvalidLocalIp() {
+  void testSessionVrfPreventsInvalidLocalIp() {
     Ip localIp = Ip.parse("1.1.1.1");
     Ip remoteIp = Ip.parse("2.2.2.2");
 
@@ -209,7 +209,7 @@ public final class BgpSessionAnswererUtilsTest {
 
   /** Without sessionVrf, a local IP in a different VRF should produce INVALID_LOCAL_IP. */
   @Test
-  public void testInvalidLocalIpWithoutSessionVrf() {
+  void testInvalidLocalIpWithoutSessionVrf() {
     Ip localIp = Ip.parse("1.1.1.1");
     Ip remoteIp = Ip.parse("2.2.2.2");
 
@@ -242,7 +242,7 @@ public final class BgpSessionAnswererUtilsTest {
   }
 
   @Test
-  public void testPassiveNotLocallyBroken() {
+  void testPassiveNotLocallyBroken() {
     BgpPassivePeerConfig peer =
         _nf.bgpDynamicNeighborBuilder()
             .setLocalAs(1L)

@@ -6,10 +6,10 @@ import static org.hamcrest.Matchers.equalTo;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.datamodel.Ip;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link Constraint}. */
-public class ConstraintTest {
+class ConstraintTest {
   private final BDDPacket _pkt = new BDDPacket();
   private final BDD _one = _pkt.getFactory().one();
   private final BDD _zero = _pkt.getFactory().zero();
@@ -23,7 +23,7 @@ public class ConstraintTest {
   }
 
   @Test
-  public void testConstraint() {
+  void testConstraint() {
     BDD constraint = dstIp("1.2.3.4");
     Transition transition = new Constraint(constraint);
 

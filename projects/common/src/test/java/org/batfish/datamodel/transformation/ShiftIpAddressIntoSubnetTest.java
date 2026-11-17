@@ -7,13 +7,13 @@ import static org.batfish.datamodel.transformation.IpField.SOURCE;
 
 import com.google.common.testing.EqualsTester;
 import org.batfish.datamodel.Prefix;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link ShiftIpAddressIntoSubnet}. */
-public class ShiftIpAddressIntoSubnetTest {
+class ShiftIpAddressIntoSubnetTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     Prefix subnet1 = Prefix.parse("1.1.1.1/30");
     Prefix subnet2 = Prefix.parse("2.2.2.2/30");
     new EqualsTester()
@@ -27,7 +27,7 @@ public class ShiftIpAddressIntoSubnetTest {
   }
 
   @Test
-  public void testPrefixLength() {
+  void testPrefixLength() {
     // all prefix lengths are allowed
     new ShiftIpAddressIntoSubnet(DEST_NAT, DESTINATION, Prefix.parse("1.1.1.1/0"));
     new ShiftIpAddressIntoSubnet(DEST_NAT, DESTINATION, Prefix.parse("1.1.1.1/10"));

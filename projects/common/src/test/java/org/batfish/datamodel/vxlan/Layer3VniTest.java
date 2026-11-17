@@ -6,12 +6,12 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.vxlan.Layer3Vni.Builder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link Layer3Vni} */
-public class Layer3VniTest {
+class Layer3VniTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     Builder builder =
         Layer3Vni.builder()
             .setSourceAddress(Ip.parse("1.1.1.1"))

@@ -26,10 +26,10 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
 import static org.hamcrest.io.FileMatchers.anExistingFile;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -116,29 +116,25 @@ import org.batfish.role.NodeRolesData;
 import org.batfish.role.RoleDimensionMapping;
 import org.batfish.storage.StorageProvider;
 import org.batfish.storage.StoredObjectMetadata;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests for {@link WorkMgr}. */
-public final class WorkMgrTest {
+final class WorkMgrTest {
 
   private static TableMetadata MOCK_TABLE_METADATA =
       new TableMetadata(ImmutableList.of(new ColumnMetadata("col", Schema.STRING, "desc")));
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+  @TempDir public File _folder;
 
   private WorkMgr _manager;
   private StorageProvider _storage;
   private IdManager _idManager;
   private SnapshotMetadataMgr _snapshotMetadataManager;
 
-  @Before
-  public void initManager() {
+  @BeforeEach
+  void initManager() {
     WorkMgrTestUtils.initWorkManager(_folder);
     _manager = Main.getWorkMgr();
     _idManager = _manager.getIdManager();
@@ -160,10 +156,9 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testAddToSerializedList() throws IOException {
-    TemporaryFolder tmp = new TemporaryFolder();
-    tmp.create();
-    File serializedList = tmp.newFile();
+  void testAddToSerializedList() throws IOException {
+    File tmp = Files.createTempDirectory("junit").toFile();
+    File serializedList = File.createTempFile("junit", null, tmp);
     Path serializedListPath = serializedList.toPath();
 
     NodeInterfacePair baseInterface = NodeInterfacePair.of("n1", "iface1");
@@ -189,10 +184,9 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testAddToSerializedListNoAddition() throws IOException {
-    TemporaryFolder tmp = new TemporaryFolder();
-    tmp.create();
-    File serializedList = tmp.newFile();
+  void testAddToSerializedListNoAddition() throws IOException {
+    File tmp = Files.createTempDirectory("junit").toFile();
+    File serializedList = File.createTempFile("junit", null, tmp);
     Path serializedListPath = serializedList.toPath();
 
     NodeInterfacePair baseInterface = NodeInterfacePair.of("n1", "iface1");
@@ -215,10 +209,9 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testAddToSerializedListNullAddition() throws IOException {
-    TemporaryFolder tmp = new TemporaryFolder();
-    tmp.create();
-    File serializedList = tmp.newFile();
+  void testAddToSerializedListNullAddition() throws IOException {
+    File tmp = Files.createTempDirectory("junit").toFile();
+    File serializedList = File.createTempFile("junit", null, tmp);
     Path serializedListPath = serializedList.toPath();
 
     NodeInterfacePair baseInterface = NodeInterfacePair.of("n1", "iface1");
@@ -240,10 +233,9 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testAddToSerializedListNoList() throws IOException {
-    TemporaryFolder tmp = new TemporaryFolder();
-    tmp.create();
-    File serializedList = tmp.newFile();
+  void testAddToSerializedListNoList() throws IOException {
+    File tmp = Files.createTempDirectory("junit").toFile();
+    File serializedList = File.createTempFile("junit", null, tmp);
     Path serializedListPath = serializedList.toPath();
     serializedList.delete();
 
@@ -265,10 +257,9 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testAddToSerializedListNoListNoAddition() throws IOException {
-    TemporaryFolder tmp = new TemporaryFolder();
-    tmp.create();
-    File serializedList = tmp.newFile();
+  void testAddToSerializedListNoListNoAddition() throws IOException {
+    File tmp = Files.createTempDirectory("junit").toFile();
+    File serializedList = File.createTempFile("junit", null, tmp);
     Path serializedListPath = serializedList.toPath();
     serializedList.delete();
 
@@ -280,10 +271,9 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testRemoveFromSerializedList() throws IOException {
-    TemporaryFolder tmp = new TemporaryFolder();
-    tmp.create();
-    File serializedList = tmp.newFile();
+  void testRemoveFromSerializedList() throws IOException {
+    File tmp = Files.createTempDirectory("junit").toFile();
+    File serializedList = File.createTempFile("junit", null, tmp);
     Path serializedListPath = serializedList.toPath();
 
     NodeInterfacePair baseInterface1 = NodeInterfacePair.of("n1", "iface1");
@@ -310,10 +300,9 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testRemoveFromSerializedListBadSubtraction() throws IOException {
-    TemporaryFolder tmp = new TemporaryFolder();
-    tmp.create();
-    File serializedList = tmp.newFile();
+  void testRemoveFromSerializedListBadSubtraction() throws IOException {
+    File tmp = Files.createTempDirectory("junit").toFile();
+    File serializedList = File.createTempFile("junit", null, tmp);
     Path serializedListPath = serializedList.toPath();
 
     NodeInterfacePair baseInterface1 = NodeInterfacePair.of("n1", "iface1");
@@ -328,41 +317,49 @@ public final class WorkMgrTest {
     writeFile(serializedListPath, BatfishObjectMapper.writePrettyString(interfaces));
 
     // Removing non-existent element should throw
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage(
-        String.format(
-            "Existing blacklist does not contain element(s) specified for removal: '%s'",
-            ImmutableList.of(subtraction2)));
-    removeFromSerializedList(
-        serializedListPath,
-        ImmutableList.of(subtraction1, subtraction2),
-        new TypeReference<List<NodeInterfacePair>>() {});
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () ->
+                removeFromSerializedList(
+                    serializedListPath,
+                    ImmutableList.of(subtraction1, subtraction2),
+                    new TypeReference<List<NodeInterfacePair>>() {}));
+    assertThat(
+        exception.getMessage(),
+        containsString(
+            String.format(
+                "Existing blacklist does not contain element(s) specified for removal: '%s'",
+                ImmutableList.of(subtraction2))));
   }
 
   @Test
-  public void testRemoveFromSerializedListBadSubtractionMissingBaseList() throws IOException {
-    TemporaryFolder tmp = new TemporaryFolder();
-    tmp.create();
-    File serializedList = tmp.newFile();
+  void testRemoveFromSerializedListBadSubtractionMissingBaseList() throws IOException {
+    File tmp = Files.createTempDirectory("junit").toFile();
+    File serializedList = File.createTempFile("junit", null, tmp);
     Path serializedListPath = serializedList.toPath();
     Files.delete(serializedListPath);
 
     NodeInterfacePair subtraction = NodeInterfacePair.of("n2", "iface2");
 
     // Removing non-existent element should throw
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("Cannot remove element(s) from non-existent blacklist.");
-    removeFromSerializedList(
-        serializedListPath,
-        ImmutableList.of(subtraction),
-        new TypeReference<List<NodeInterfacePair>>() {});
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () ->
+                removeFromSerializedList(
+                    serializedListPath,
+                    ImmutableList.of(subtraction),
+                    new TypeReference<List<NodeInterfacePair>>() {}));
+    assertThat(
+        exception.getMessage(),
+        containsString("Cannot remove element(s) from non-existent blacklist."));
   }
 
   @Test
-  public void testRemoveFromSerializedListEmptyBaseList() throws IOException {
-    TemporaryFolder tmp = new TemporaryFolder();
-    tmp.create();
-    File serializedList = tmp.newFile();
+  void testRemoveFromSerializedListEmptyBaseList() throws IOException {
+    File tmp = Files.createTempDirectory("junit").toFile();
+    File serializedList = File.createTempFile("junit", null, tmp);
     Path serializedListPath = serializedList.toPath();
 
     // Write empty base serialized list
@@ -382,10 +379,9 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testRemoveFromSerializedListMissingBaseList() throws IOException {
-    TemporaryFolder tmp = new TemporaryFolder();
-    tmp.create();
-    File serializedList = tmp.newFile();
+  void testRemoveFromSerializedListMissingBaseList() throws IOException {
+    File tmp = Files.createTempDirectory("junit").toFile();
+    File serializedList = File.createTempFile("junit", null, tmp);
     Path serializedListPath = serializedList.toPath();
     Files.delete(serializedListPath);
 
@@ -398,10 +394,9 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testRemoveFromSerializedListNoSubtraction() throws IOException {
-    TemporaryFolder tmp = new TemporaryFolder();
-    tmp.create();
-    File serializedList = tmp.newFile();
+  void testRemoveFromSerializedListNoSubtraction() throws IOException {
+    File tmp = Files.createTempDirectory("junit").toFile();
+    File serializedList = File.createTempFile("junit", null, tmp);
     Path serializedListPath = serializedList.toPath();
 
     NodeInterfacePair baseInterface1 = NodeInterfacePair.of("n1", "iface1");
@@ -435,33 +430,30 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testDeserializeAndDeleteInterfaceBlacklist_noBlacklist() throws IOException {
+  void testDeserializeAndDeleteInterfaceBlacklist_noBlacklist() throws IOException {
     // No blacklist file: Should return an empty list
-    TemporaryFolder tmp = new TemporaryFolder();
-    tmp.create();
-    Path blacklistPath = tmp.newFile().toPath();
+    File tmp = Files.createTempDirectory("junit").toFile();
+    Path blacklistPath = File.createTempFile("junit", null, tmp).toPath();
     CommonUtil.delete(blacklistPath);
     assertThat(deserializeAndDeleteInterfaceBlacklist(blacklistPath), empty());
   }
 
   @Test
-  public void testDeserializeAndDeleteInterfaceBlacklist_emptyBlacklist() throws IOException {
+  void testDeserializeAndDeleteInterfaceBlacklist_emptyBlacklist() throws IOException {
     // Empty blacklist: Should return an empty list and delete file
-    TemporaryFolder tmp = new TemporaryFolder();
-    tmp.create();
-    File blacklistFile = tmp.newFile();
+    File tmp = Files.createTempDirectory("junit").toFile();
+    File blacklistFile = File.createTempFile("junit", null, tmp);
     assertTrue(blacklistFile.exists());
     assertThat(deserializeAndDeleteInterfaceBlacklist(blacklistFile.toPath()), empty());
     assertFalse(blacklistFile.exists());
   }
 
   @Test
-  public void testDeserializeAndDeleteInterfaceBlacklist_nonEmptyBlacklist() throws IOException {
+  void testDeserializeAndDeleteInterfaceBlacklist_nonEmptyBlacklist() throws IOException {
     // Non-empty blacklist: Should return blacklist contents and delete file
-    TemporaryFolder tmp = new TemporaryFolder();
-    tmp.create();
+    File tmp = Files.createTempDirectory("junit").toFile();
     NodeInterfacePair nip = NodeInterfacePair.of("n1", "i1");
-    File blacklistFile = tmp.newFile();
+    File blacklistFile = File.createTempFile("junit", null, tmp);
     Path blacklistPath = blacklistFile.toPath();
     writeFile(blacklistPath, BatfishObjectMapper.writePrettyString(ImmutableList.of(nip)));
     assertThat(deserializeAndDeleteInterfaceBlacklist(blacklistPath), contains(nip));
@@ -469,11 +461,10 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testDeserializeAndDeleteInterfaceBlacklist_invalidBlacklist() throws IOException {
+  void testDeserializeAndDeleteInterfaceBlacklist_invalidBlacklist() throws IOException {
     // Invalid blacklist: Should return an empty list and delete file
-    TemporaryFolder tmp = new TemporaryFolder();
-    tmp.create();
-    File blacklistFile = tmp.newFile();
+    File tmp = Files.createTempDirectory("junit").toFile();
+    File blacklistFile = File.createTempFile("junit", null, tmp);
     Path blacklistPath = blacklistFile.toPath();
     writeFile(blacklistPath, "invalid json");
     assertThat(deserializeAndDeleteInterfaceBlacklist(blacklistPath), empty());
@@ -481,16 +472,15 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testUpdateRuntimeData() throws IOException {
+  void testUpdateRuntimeData() throws IOException {
     NodeInterfacePair nip1 = NodeInterfacePair.of("n1", "i1");
     NodeInterfacePair nip2 = NodeInterfacePair.of("n2", "i2");
     NodeInterfacePair nip3 = NodeInterfacePair.of("n3", "i3");
-    TemporaryFolder tmp = new TemporaryFolder();
+    File tmp = Files.createTempDirectory("junit").toFile();
 
     // No runtime data and no changes: Shouldn't create runtime data
     {
-      tmp.create();
-      Path runtimeDataPath = tmp.newFile().toPath();
+      Path runtimeDataPath = File.createTempFile("junit", null, tmp).toPath();
       CommonUtil.delete(runtimeDataPath);
       updateRuntimeData(runtimeDataPath, ImmutableSet.of(), ImmutableSet.of());
       assertFalse(runtimeDataPath.toFile().exists());
@@ -498,8 +488,7 @@ public final class WorkMgrTest {
 
     // No runtime data: Should create it with the given line up data
     {
-      tmp.create();
-      Path runtimeDataPath = tmp.newFile().toPath();
+      Path runtimeDataPath = File.createTempFile("junit", null, tmp).toPath();
       updateRuntimeData(runtimeDataPath, ImmutableSet.of(nip1), ImmutableSet.of());
       assertThat(
           BatfishObjectMapper.mapper()
@@ -509,8 +498,7 @@ public final class WorkMgrTest {
 
     // Invalid snapshot runtime data: should get replaced
     {
-      tmp.create();
-      Path runtimeDataPath = tmp.newFile().toPath();
+      Path runtimeDataPath = File.createTempFile("junit", null, tmp).toPath();
       CommonUtil.writeFile(runtimeDataPath, "invalid json");
       updateRuntimeData(runtimeDataPath, ImmutableSet.of(nip1), ImmutableSet.of());
       assertThat(
@@ -521,8 +509,7 @@ public final class WorkMgrTest {
 
     // Existing empty runtime data: Should add data
     {
-      tmp.create();
-      Path runtimeDataPath = tmp.newFile().toPath();
+      Path runtimeDataPath = File.createTempFile("junit", null, tmp).toPath();
       CommonUtil.writeFile(
           runtimeDataPath,
           BatfishObjectMapper.writePrettyString(SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNTIME_DATA));
@@ -541,8 +528,7 @@ public final class WorkMgrTest {
 
     // Existing non-empty runtime data: Should apply updates without changing other data
     {
-      tmp.create();
-      Path runtimeDataPath = tmp.newFile().toPath();
+      Path runtimeDataPath = File.createTempFile("junit", null, tmp).toPath();
 
       // Initially: nip1 up, nip2 down, nip3 down. Reverse states of first 2; nip3 should not change
       SnapshotRuntimeData existingData =
@@ -564,8 +550,7 @@ public final class WorkMgrTest {
 
     // Same interface in deactivate and restore lists; should be up
     {
-      tmp.create();
-      Path runtimeDataPath = tmp.newFile().toPath();
+      Path runtimeDataPath = File.createTempFile("junit", null, tmp).toPath();
       CommonUtil.writeFile(
           runtimeDataPath,
           BatfishObjectMapper.writePrettyString(SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNTIME_DATA));
@@ -578,41 +563,41 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void initNetworkWithContainerName() {
+  void initNetworkWithContainerName() {
     String initResult = _manager.initNetwork("container", null);
     assertThat(initResult, equalTo("container"));
   }
 
   @Test
-  public void initNetworkWithContainerPrefix() {
+  void initNetworkWithContainerPrefix() {
     String initResult = _manager.initNetwork(null, "containerPrefix");
     assertThat(initResult, startsWith("containerPrefix"));
   }
 
   @Test
-  public void initNetworkWithNullInput() {
+  void initNetworkWithNullInput() {
     String initResult = _manager.initNetwork(null, null);
     assertThat(initResult, startsWith("null_"));
   }
 
   @Test
-  public void initExistingContainer() {
+  void initExistingContainer() {
     _manager.initNetwork("container", null);
     String expectedMessage = "Network 'container' already exists!";
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(equalTo(expectedMessage));
-    _manager.initNetwork("container", null);
+    Throwable exception =
+        assertThrows(BatfishException.class, () -> _manager.initNetwork("container", null));
+    assertThat(exception.getMessage(), equalTo(expectedMessage));
   }
 
   @Test
-  public void listEmptyQuestion() {
+  void listEmptyQuestion() {
     _manager.initNetwork("container", null);
     SortedSet<String> questions = _manager.listQuestions("container", false);
     assertThat(questions.isEmpty(), is(true));
   }
 
   @Test
-  public void listQuestionNames() {
+  void listQuestionNames() {
     String questionName = "publicquestion";
     // Leading __ means this question is an internal question
     // And should be hidden from listQuestions when verbose is false
@@ -635,12 +620,12 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void listQuestionWithNonExistContainer() {
+  void listQuestionWithNonExistContainer() {
     assertThat(_manager.listQuestions("container", false), nullValue());
   }
 
   @Test
-  public void listSortedQuestionNames() {
+  void listSortedQuestionNames() {
     String network = "container";
     _manager.initNetwork(network, null);
     NetworkId networkId = _idManager.getNetworkId(network).get();
@@ -653,14 +638,14 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void getEmptyContainer() {
+  void getEmptyContainer() {
     _manager.initNetwork("container", null);
     Container container = _manager.getContainer("container");
     assertThat(container, equalTo(Container.of("container", new TreeSet<>())));
   }
 
   @Test
-  public void getLatestTestrig() throws IOException {
+  void getLatestTestrig() throws IOException {
     _manager.initNetwork("container", null);
 
     // empty should be returned if no testrigs exist
@@ -676,7 +661,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void getNodes() throws IOException {
+  void getNodes() throws IOException {
     String network = "network1";
     String snapshot = "snapshot1";
     _manager.initNetwork(network, null);
@@ -694,7 +679,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void getNonEmptyContainer() {
+  void getNonEmptyContainer() {
     String network = "container";
     String snapshot = "testrig";
     _manager.initNetwork(network, null);
@@ -707,14 +692,13 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void getNonExistContainer() {
-    _thrown.expect(Exception.class);
-    _thrown.expectMessage(equalTo("Network 'container' does not exist"));
-    _manager.getContainer("container");
+  void getNonExistContainer() {
+    Throwable exception = assertThrows(Exception.class, () -> _manager.getContainer("container"));
+    assertThat(exception.getMessage(), equalTo("Network 'container' does not exist"));
   }
 
   @Test
-  public void testForkSnapshot() throws Exception {
+  void testForkSnapshot() throws Exception {
     String networkName = "network";
     String snapshotBaseName = "snapshotBase";
     String snapshotNewName = "snapshotNew";
@@ -731,7 +715,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testForkSnapshotBlacklists() throws Exception {
+  void testForkSnapshotBlacklists() throws Exception {
     String networkName = "network";
     String snapshotBaseName = "snapshotBase";
     String snapshotNewName1 = "snapshotNew1";
@@ -780,7 +764,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testForkSnapshot_runtimeDataInBase() throws IOException {
+  void testForkSnapshot_runtimeDataInBase() throws IOException {
     /*
     Setup:
     4 devices (n1, n2, n3, n4)
@@ -879,7 +863,7 @@ public final class WorkMgrTest {
    * under batfish/.
    */
   @Test
-  public void testForkSnapshot_runtimeDataInBase_oldLocation() throws IOException {
+  void testForkSnapshot_runtimeDataInBase_oldLocation() throws IOException {
     /*
     Setup:
     4 devices (n1, n2, n3, n4)
@@ -972,7 +956,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testForkSnapshot_interfaceBlacklistInBase() throws IOException {
+  void testForkSnapshot_interfaceBlacklistInBase() throws IOException {
     /*
     Setup:
     4 devices (n1, n2, n3, n4)
@@ -1052,7 +1036,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testForkSnapshotDuplicateName() throws Exception {
+  void testForkSnapshotDuplicateName() throws Exception {
     String networkName = "network";
     String snapshotBaseName = "snapshotBase";
     String snapshotNewName = "snapshotNew";
@@ -1062,16 +1046,29 @@ public final class WorkMgrTest {
     uploadTestSnapshot(networkName, snapshotNewName);
 
     // Fork should fail due to duplicate/conflicting new snapshot name
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage(equalTo("Snapshot with name: '" + snapshotNewName + "' already exists"));
-    _manager.forkSnapshot(
-        networkName,
-        new ForkSnapshotBean(
-            snapshotBaseName, snapshotNewName, null, null, null, null, null, null, null));
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () ->
+                _manager.forkSnapshot(
+                    networkName,
+                    new ForkSnapshotBean(
+                        snapshotBaseName,
+                        snapshotNewName,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null)));
+    assertThat(
+        exception.getMessage(),
+        equalTo("Snapshot with name: '" + snapshotNewName + "' already exists"));
   }
 
   @Test
-  public void testForkSnapshotFileUpload() throws Exception {
+  void testForkSnapshotFileUpload() throws Exception {
     String networkName = "network";
     String snapshotBaseName = "snapshotBase";
     String snapshotNewName = "snapshotNew";
@@ -1098,7 +1095,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testForkSnapshotFileUploadOverwrite() throws Exception {
+  void testForkSnapshotFileUploadOverwrite() throws Exception {
     String networkName = "network";
     String snapshotBaseName = "snapshotBase";
     String snapshotNewName = "snapshotNew";
@@ -1136,7 +1133,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testUploadSnapshotDeletesTempFiles() throws Exception {
+  void testUploadSnapshotDeletesTempFiles() throws Exception {
     String networkName = "network";
     _manager.initNetwork(networkName, null);
     Set<String> before = tempDirContents();
@@ -1145,7 +1142,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testUploadSnapshotBadZipDeletesTempFiles() throws Exception {
+  void testUploadSnapshotBadZipDeletesTempFiles() throws Exception {
     String networkName = "network";
     _manager.initNetwork(networkName, null);
     Set<String> before = tempDirContents();
@@ -1158,7 +1155,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testUploadSnapshotCorruptEntryDeletesTempFiles() throws Exception {
+  void testUploadSnapshotCorruptEntryDeletesTempFiles() throws Exception {
     String networkName = "network";
     _manager.initNetwork(networkName, null);
     byte[] zip = corruptedSnapshotZip("snapshot", "file.type");
@@ -1172,7 +1169,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testForkSnapshotDeletesTempFiles() throws Exception {
+  void testForkSnapshotDeletesTempFiles() throws Exception {
     String networkName = "network";
     String snapshotBaseName = "base";
     _manager.initNetwork(networkName, null);
@@ -1191,7 +1188,7 @@ public final class WorkMgrTest {
    * as the snapshot itself.
    */
   @Test
-  public void testForkSnapshotBadZipDeletesTempFiles() throws Exception {
+  void testForkSnapshotBadZipDeletesTempFiles() throws Exception {
     String networkName = "network";
     String snapshotBaseName = "base";
     _manager.initNetwork(networkName, null);
@@ -1250,7 +1247,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testForkSnapshotMissingBaseSnapshot() throws Exception {
+  void testForkSnapshotMissingBaseSnapshot() {
     String networkName = "network";
     String snapshotBaseName = "snapshotBase";
     String snapshotNewName = "snapshotNew";
@@ -1258,32 +1255,55 @@ public final class WorkMgrTest {
     _manager.initNetwork(networkName, null);
 
     // Fork should fail because base snapshot does not exist
-    _thrown.expect(FileNotFoundException.class);
-    _thrown.expectMessage(
+    Throwable exception =
+        assertThrows(
+            FileNotFoundException.class,
+            () ->
+                _manager.forkSnapshot(
+                    networkName,
+                    new ForkSnapshotBean(
+                        snapshotBaseName,
+                        snapshotNewName,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null)));
+    assertThat(
+        exception.getMessage(),
         equalTo("Base snapshot with name: '" + snapshotBaseName + "' does not exist"));
-    _manager.forkSnapshot(
-        networkName,
-        new ForkSnapshotBean(
-            snapshotBaseName, snapshotNewName, null, null, null, null, null, null, null));
   }
 
   @Test
-  public void testForkSnapshotMissingNetwork() throws Exception {
+  void testForkSnapshotMissingNetwork() {
     String networkName = "network";
     String snapshotBaseName = "snapshotBase";
     String snapshotNewName = "snapshotNew";
 
     // Fork should fail because network does not exist
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage(equalTo("Network '" + networkName + "' does not exist"));
-    _manager.forkSnapshot(
-        networkName,
-        new ForkSnapshotBean(
-            snapshotBaseName, snapshotNewName, null, null, null, null, null, null, null));
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () ->
+                _manager.forkSnapshot(
+                    networkName,
+                    new ForkSnapshotBean(
+                        snapshotBaseName,
+                        snapshotNewName,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null)));
+    assertThat(exception.getMessage(), equalTo("Network '" + networkName + "' does not exist"));
   }
 
   @Test
-  public void testGetAnswer() throws IOException {
+  void testGetAnswer() throws IOException {
     String network = "network";
     String snapshot = "snapshot";
     String questionName = "question";
@@ -1302,7 +1322,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testGetAnswerNotFound() throws IOException {
+  void testGetAnswerNotFound() throws IOException {
     String network = "network";
     String snapshot = "snapshot";
     String questionName = "question";
@@ -1316,7 +1336,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testGetAnswerReferenceSnapshot() throws IOException {
+  void testGetAnswerReferenceSnapshot() throws IOException {
     String network = "network";
     String snapshot = "snapshot";
     String referenceSnapshot = "referenceSnapshot";
@@ -1337,7 +1357,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testGetAnswerReferenceSnapshotBadRef() throws IOException {
+  void testGetAnswerReferenceSnapshotBadRef() throws IOException {
     String network = "network";
     String snapshot = "snapshot";
     String referenceSnapshot = "referenceSnapshot";
@@ -1352,16 +1372,19 @@ public final class WorkMgrTest {
     setupQuestionAndAnswer(network, snapshot, questionName, expectedAnswer, referenceSnapshot);
 
     // Confirm we get an illegal arg exception calling getAnswer with a bad reference snapshot
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage(
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> _manager.getAnswer(network, snapshot, questionName, bogusReferenceSnapshot));
+    assertThat(
+        exception.getMessage(),
         containsString(
             String.format(
                 "Missing snapshot '%s' for network '%s'", bogusReferenceSnapshot, network)));
-    _manager.getAnswer(network, snapshot, questionName, bogusReferenceSnapshot);
   }
 
   @Test
-  public void testGetAnswerReferenceSnapshotNotFound() throws IOException {
+  void testGetAnswerReferenceSnapshotNotFound() throws IOException {
     String network = "network";
     String snapshot = "snapshot";
     String referenceSnapshot = "referenceSnapshot";
@@ -1377,7 +1400,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testGetAnswerMetadataAdHocSuccess() throws IOException {
+  void testGetAnswerMetadataAdHocSuccess() throws IOException {
     String networkName = "network1";
     String snapshotName = "snapshot1";
     Question question = new TestQuestion();
@@ -1406,7 +1429,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testGetAnswerMetadataAdHocMissingAnswerMetadata() throws IOException {
+  void testGetAnswerMetadataAdHocMissingAnswerMetadata() throws IOException {
     String networkName = "network1";
     String snapshotName = "snapshot1";
     Question question = new TestQuestion();
@@ -1437,7 +1460,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testGetAnswerMetadataAdHocMissingQuestion() throws IOException {
+  void testGetAnswerMetadataAdHocMissingQuestion() throws IOException {
     String networkName = "network1";
     String snapshotName = "snapshot1";
     Question question = new TestQuestion();
@@ -1462,13 +1485,15 @@ public final class WorkMgrTest {
     // remove question
     _idManager.deleteQuestion(questionName, networkId);
 
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage(containsString(questionName));
-    _manager.getAnswerMetadata(networkName, snapshotName, questionName, null);
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> _manager.getAnswerMetadata(networkName, snapshotName, questionName, null));
+    assertThat(exception.getMessage(), containsString(questionName));
   }
 
   @Test
-  public void testGenerateDateString() {
+  void testGenerateDateString() {
     assertThat(
         generateFileDateString("foo", Instant.parse("2018-04-19T12:34:56Z")),
         equalTo("foo_2018-04-19T12-34-56.000"));
@@ -1483,7 +1508,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testInitSnapshot() {
+  void testInitSnapshot() {
     String networkName = "network";
     String snapshotName = "snapshotName";
     String fileName = "file.type";
@@ -1505,7 +1530,7 @@ public final class WorkMgrTest {
    * under batfish/.
    */
   @Test
-  public void testInitSnapshot_interfaceBlacklistAndRuntimeData_oldLocation()
+  void testInitSnapshot_interfaceBlacklistAndRuntimeData_oldLocation()
       throws JsonProcessingException {
     /*
     Interface runtime data setup for two devices n1 and n2:
@@ -1570,7 +1595,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testInitSnapshot_interfaceBlacklistAndRuntimeData() throws JsonProcessingException {
+  void testInitSnapshot_interfaceBlacklistAndRuntimeData() throws JsonProcessingException {
     /*
     Interface runtime data setup for two devices n1 and n2:
     - i1 is down on both
@@ -1640,7 +1665,7 @@ public final class WorkMgrTest {
    * former.
    */
   @Test
-  public void testInitSnapshot_runtimeData_bothLocations() throws JsonProcessingException {
+  void testInitSnapshot_runtimeData_bothLocations() throws JsonProcessingException {
     String n1 = "n1";
     String i1 = "i1";
     String i2 = "i2";
@@ -1679,7 +1704,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testInitSnapshotBadPackaging() {
+  void testInitSnapshotBadPackaging() {
     String networkName = "network";
     String snapshotName = "snapshotName";
     String fileName = "file.type";
@@ -1691,16 +1716,20 @@ public final class WorkMgrTest {
     Path srcDir = createSnapshot(snapshotName, fileName, fileContents, _folder);
 
     // Init should fail with improperly formatted source dir
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(containsString("Unexpected packaging of snapshot"));
+    Throwable exception =
+        assertThrows(
+            BatfishException.class,
+            () ->
 
-    // Pass in path to subdir so init sees improperly formatted dir
-    // i.e. sees dir containing 'configs/' instead of 'snapshotName/configs/'
-    _manager.initSnapshot(networkName, snapshotName, srcDir.resolve(snapshotName), Instant.now());
+                // Pass in path to subdir so init sees improperly formatted dir
+                // i.e. sees dir containing 'configs/' instead of 'snapshotName/configs/'
+                _manager.initSnapshot(
+                    networkName, snapshotName, srcDir.resolve(snapshotName), Instant.now()));
+    assertThat(exception.getMessage(), containsString("Unexpected packaging of snapshot"));
   }
 
   @Test
-  public void testProcessAnswerRows() throws IOException {
+  void testProcessAnswerRows() throws IOException {
     String columnName = "issue";
     int maxRows = 1;
     int rowOffset = 0;
@@ -1731,7 +1760,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testProcessAnswerRows2() throws IOException {
+  void testProcessAnswerRows2() throws IOException {
     String columnName = "issue";
     int maxRows = 1;
     int rowOffset = 0;
@@ -1761,7 +1790,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testProcessAnswerRowsFailure() throws IOException {
+  void testProcessAnswerRowsFailure() throws IOException {
     String columnName = "issue";
     int maxRows = 1;
     int rowOffset = 0;
@@ -1782,7 +1811,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testProcessAnswerRowsNotFound() {
+  void testProcessAnswerRowsNotFound() {
     String columnName = "issue";
     int maxRows = 1;
     int rowOffset = 0;
@@ -1800,7 +1829,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testProcessAnswerRowsStale() throws IOException {
+  void testProcessAnswerRowsStale() throws IOException {
     String columnName = "issue";
     int maxRows = 1;
     int rowOffset = 0;
@@ -1821,7 +1850,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testProcessAnswerTableSorting() {
+  void testProcessAnswerTableSorting() {
     String columnName = "val";
     TableAnswerElement table =
         new TableAnswerElement(
@@ -1857,7 +1886,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testProcessAnswerTableOffset() {
+  void testProcessAnswerTableOffset() {
     String columnName = "val";
     TableAnswerElement table =
         new TableAnswerElement(
@@ -1893,7 +1922,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testProcessAnswerTableFiltered() {
+  void testProcessAnswerTableFiltered() {
     String columnName = "val";
     TableAnswerElement table =
         new TableAnswerElement(
@@ -1928,7 +1957,7 @@ public final class WorkMgrTest {
 
   /** Test that you can filter by a value column. */
   @Test
-  public void testProcessAnswerTable2FilteredValue() {
+  void testProcessAnswerTable2FilteredValue() {
     TableAnswerElement table =
         new TableAnswerElement(
             new TableMetadata(
@@ -1962,7 +1991,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testProcessAnswerTable2Filtered() {
+  void testProcessAnswerTable2Filtered() {
     String columnName = "val";
     TableAnswerElement table =
         new TableAnswerElement(
@@ -1996,7 +2025,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testProcessAnswerTableMaxRows() {
+  void testProcessAnswerTableMaxRows() {
     String columnName = "val";
     TableAnswerElement table =
         new TableAnswerElement(
@@ -2022,7 +2051,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testProcessAnswerTableProject() {
+  void testProcessAnswerTableProject() {
     String columnName = "val";
     String otherColumnName = "val2";
     TableMetadata originalMetadata =
@@ -2060,7 +2089,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testProcessAnswerTable2Project() {
+  void testProcessAnswerTable2Project() {
     String columnName = "val";
     String otherColumnName = "val2";
     TableMetadata originalMetadata =
@@ -2101,7 +2130,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testProcessAnswerTable2ProjectWrongColumn() {
+  void testProcessAnswerTable2ProjectWrongColumn() {
     TableMetadata metadata =
         new TableMetadata(
             ImmutableList.of(
@@ -2118,13 +2147,17 @@ public final class WorkMgrTest {
             ImmutableList.of(),
             false);
 
-    _thrown.expectMessage("Column missing is not in the answer: [col, zcol]");
-    _thrown.expect(IllegalArgumentException.class);
-    _manager.processAnswerTable2(table, optionsProject);
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> _manager.processAnswerTable2(table, optionsProject));
+
+    assertThat(
+        exception.getMessage(), containsString("Column missing is not in the answer: [col, zcol]"));
   }
 
   @Test
-  public void testProcessAnswerTableUniqueRows() {
+  void testProcessAnswerTableUniqueRows() {
     String columnName = "val";
     TableAnswerElement table =
         new TableAnswerElement(
@@ -2150,7 +2183,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testBuildComparator() {
+  void testBuildComparator() {
     String col1 = "col1";
     String col2 = "col2";
     Map<String, ColumnMetadata> rawColumnMap =
@@ -2225,7 +2258,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testColumnComparator() {
+  void testColumnComparator() {
     String colInteger = "colInteger";
     String colIssue = "colIssue";
     String colString = "colString";
@@ -2263,7 +2296,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testColumnComparatorBoolean() {
+  void testColumnComparatorBoolean() {
     String col = "col1";
     ColumnMetadata columnMetadata = new ColumnMetadata(col, Schema.BOOLEAN, "colDesc");
     Comparator<Row> comparator = _manager.columnComparator(columnMetadata);
@@ -2274,7 +2307,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testColumnComparatorFlow() {
+  void testColumnComparatorFlow() {
     String col = "col1";
     ColumnMetadata columnMetadata = new ColumnMetadata(col, Schema.FLOW, "colDesc");
     Comparator<Row> comparator = _manager.columnComparator(columnMetadata);
@@ -2285,7 +2318,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testColumnComparatorInteger() {
+  void testColumnComparatorInteger() {
     String col = "col1";
     ColumnMetadata columnMetadata = new ColumnMetadata(col, Schema.INTEGER, "colDesc");
     Comparator<Row> comparator = _manager.columnComparator(columnMetadata);
@@ -2296,7 +2329,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testColumnComparatorInterface() {
+  void testColumnComparatorInterface() {
     String col = "col1";
     ColumnMetadata columnMetadata = new ColumnMetadata(col, Schema.INTERFACE, "colDesc");
     Comparator<Row> comparator = _manager.columnComparator(columnMetadata);
@@ -2310,7 +2343,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testColumnComparatorIp() {
+  void testColumnComparatorIp() {
     String col = "col1";
     ColumnMetadata columnMetadata = new ColumnMetadata(col, Schema.IP, "colDesc");
     Comparator<Row> comparator = _manager.columnComparator(columnMetadata);
@@ -2321,7 +2354,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testColumnComparatorIssue() {
+  void testColumnComparatorIssue() {
     String col = "col1";
     ColumnMetadata columnMetadata = new ColumnMetadata(col, Schema.ISSUE, "colDesc");
     Comparator<Row> comparator = _manager.columnComparator(columnMetadata);
@@ -2335,7 +2368,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testColumnComparatorList() {
+  void testColumnComparatorList() {
     String col = "col1";
     ColumnMetadata columnMetadata = new ColumnMetadata(col, Schema.list(Schema.STRING), "colDesc");
     Comparator<Row> comparator = _manager.columnComparator(columnMetadata);
@@ -2358,7 +2391,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testColumnComparatorLong() {
+  void testColumnComparatorLong() {
     String col = "col1";
     ColumnMetadata columnMetadata = new ColumnMetadata(col, Schema.LONG, "colDesc");
     Comparator<Row> comparator = _manager.columnComparator(columnMetadata);
@@ -2372,7 +2405,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testColumnComparatorNode() {
+  void testColumnComparatorNode() {
     String col = "col1";
     ColumnMetadata columnMetadata = new ColumnMetadata(col, Schema.NODE, "colDesc");
     Comparator<Row> comparator = _manager.columnComparator(columnMetadata);
@@ -2383,7 +2416,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testColumnComparatorPrefix() {
+  void testColumnComparatorPrefix() {
     String col = "col1";
     ColumnMetadata columnMetadata = new ColumnMetadata(col, Schema.PREFIX, "colDesc");
     Comparator<Row> comparator = _manager.columnComparator(columnMetadata);
@@ -2394,7 +2427,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testColumnComparatorSet() {
+  void testColumnComparatorSet() {
     String col = "col1";
     ColumnMetadata columnMetadata = new ColumnMetadata(col, Schema.set(Schema.STRING), "colDesc");
     Comparator<Row> comparator = _manager.columnComparator(columnMetadata);
@@ -2421,7 +2454,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testColumnComparatorString() {
+  void testColumnComparatorString() {
     String col = "col1";
     ColumnMetadata columnMetadata = new ColumnMetadata(col, Schema.STRING, "colDesc");
     Comparator<Row> comparator = _manager.columnComparator(columnMetadata);
@@ -2432,7 +2465,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testColumnComparatorSelfDescribingObject() {
+  void testColumnComparatorSelfDescribingObject() {
     String col = "col1";
     ColumnMetadata columnMetadata = new ColumnMetadata(col, Schema.SELF_DESCRIBING, "colDesc");
     Comparator<Row> comparator = _manager.columnComparator(columnMetadata);
@@ -2443,7 +2476,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testColumnComparatorTrace() {
+  void testColumnComparatorTrace() {
     String col = "col1";
     ColumnMetadata columnMetadata = new ColumnMetadata(col, Schema.TRACE, "colDesc");
     Comparator<Row> comparator = _manager.columnComparator(columnMetadata);
@@ -2462,7 +2495,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testDeleteSnapshotAbsent() {
+  void testDeleteSnapshotAbsent() {
     String network = "network1";
     String snapshot = "snapshot1";
     _manager.initNetwork(network, null);
@@ -2472,7 +2505,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testDeleteSnapshotPresent() throws IOException {
+  void testDeleteSnapshotPresent() throws IOException {
     String network = "network1";
     String snapshot = "snapshot1";
     _manager.initNetwork(network, null);
@@ -2489,7 +2522,7 @@ public final class WorkMgrTest {
 
   /** Deleting a snapshot deletes its data too. */
   @Test
-  public void testDeleteSnapshotDeletesData() throws IOException {
+  void testDeleteSnapshotDeletesData() throws IOException {
     String network = "network1";
     String snapshot = "snapshot1";
     _manager.initNetwork(network, null);
@@ -2499,13 +2532,13 @@ public final class WorkMgrTest {
 
     _manager.delSnapshot(network, snapshot);
 
-    _thrown.expect(FileNotFoundException.class);
-    _storage.loadSnapshotMetadata(networkId, snapshotId);
+    assertThrows(
+        FileNotFoundException.class, () -> _storage.loadSnapshotMetadata(networkId, snapshotId));
   }
 
   /** A snapshot with work in flight keeps its data until that work finishes. */
   @Test
-  public void testDeleteSnapshotDefersDataUntilWorkFinishes() throws Exception {
+  void testDeleteSnapshotDefersDataUntilWorkFinishes() throws Exception {
     String network = "network1";
     String snapshot = "snapshot1";
     _manager.initNetwork(network, null);
@@ -2533,13 +2566,13 @@ public final class WorkMgrTest {
     _manager.getWorkQueueMgr().markAssignmentError(work);
     _manager.reapDeletedData();
 
-    _thrown.expect(FileNotFoundException.class);
-    _storage.loadSnapshotMetadata(networkId, snapshotId);
+    assertThrows(
+        FileNotFoundException.class, () -> _storage.loadSnapshotMetadata(networkId, snapshotId));
   }
 
   /** A snapshot that is the reference of differential work in flight keeps its data too. */
   @Test
-  public void testDeleteReferenceSnapshotDefersDataUntilWorkFinishes() throws Exception {
+  void testDeleteReferenceSnapshotDefersDataUntilWorkFinishes() throws Exception {
     String network = "network1";
     String snapshot = "snapshot1";
     String reference = "reference1";
@@ -2569,13 +2602,13 @@ public final class WorkMgrTest {
     _manager.getWorkQueueMgr().markAssignmentError(work);
     _manager.reapDeletedData();
 
-    _thrown.expect(FileNotFoundException.class);
-    _storage.loadSnapshotMetadata(networkId, referenceId);
+    assertThrows(
+        FileNotFoundException.class, () -> _storage.loadSnapshotMetadata(networkId, referenceId));
   }
 
   /** Deleting a network deletes its data too. */
   @Test
-  public void testDeleteNetworkDeletesData() throws IOException {
+  void testDeleteNetworkDeletesData() throws IOException {
     String network = "network1";
     _manager.initNetwork(network, null);
     uploadTestSnapshot(network, "snapshot1");
@@ -2587,7 +2620,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testDeleteNetworkAbsent() {
+  void testDeleteNetworkAbsent() {
     String network = "network1";
 
     // deletion should do no work
@@ -2595,7 +2628,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testDeleteNetworkPresent() {
+  void testDeleteNetworkPresent() {
     String network = "network1";
     _manager.initNetwork(network, null);
 
@@ -2610,7 +2643,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testGetNetworkNames() {
+  void testGetNetworkNames() {
     String network = "network1";
 
     // should start out empty
@@ -2623,7 +2656,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testGetNetworkNodeRolesEmpty() throws IOException {
+  void testGetNetworkNodeRolesEmpty() throws IOException {
     String network = "network1";
     _manager.initNetwork(network, null);
 
@@ -2632,7 +2665,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testGetNetworkNodeRolesPresent() throws IOException {
+  void testGetNetworkNodeRolesPresent() throws IOException {
     String network = "network1";
     String node = "node1";
     _manager.initNetwork(network, null);
@@ -2659,7 +2692,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testUploadSnapshot() throws IOException {
+  void testUploadSnapshot() throws IOException {
     String network = "network1";
     String snapshot = "snapshot1";
     _manager.initNetwork(network, null);
@@ -2694,7 +2727,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testComputeWorkDetailsAdHocQuestion() throws IOException {
+  void testComputeWorkDetailsAdHocQuestion() throws IOException {
     String network = "network1";
     String snapshot = "snapshot1";
     String question = "question1";
@@ -2716,7 +2749,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testGetAnswerStringNotFoundAfterNodeRolesUpdate() throws IOException {
+  void testGetAnswerStringNotFoundAfterNodeRolesUpdate() throws IOException {
     String networkName = "network1";
     String snapshotName = "snapshot1";
     Question question = new TestQuestion();
@@ -2770,14 +2803,14 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testListSnapshotsWithMetadataMissingNetwork() throws IOException {
+  void testListSnapshotsWithMetadataMissingNetwork() throws IOException {
     String network = "network1";
 
     assertThat(Main.getWorkMgr().listSnapshotsWithMetadata(network), nullValue());
   }
 
   @Test
-  public void testListSnapshotsWithMetadataSuccess() throws IOException {
+  void testListSnapshotsWithMetadataSuccess() throws IOException {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
@@ -2792,8 +2825,8 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testGetSnapshotSubdirInvalid() {
-    Path root = _folder.getRoot().toPath();
+  void testGetSnapshotSubdirInvalid() {
+    Path root = _folder.toPath();
     Path s1Path = root.resolve("s1");
     s1Path.toFile().mkdirs();
     Path s2Path = root.resolve("s2");
@@ -2802,13 +2835,12 @@ public final class WorkMgrTest {
     CommonUtil.writeFile(s2Path.resolve("file2"), "content");
 
     // invalid because there are two top-level dirs
-    _thrown.expect(BatfishException.class);
-    WorkMgr.getSnapshotSubdir(root);
+    assertThrows(BatfishException.class, () -> WorkMgr.getSnapshotSubdir(root));
   }
 
   @Test
-  public void testGetSnapshotSubdirValid() {
-    Path root = _folder.getRoot().toPath();
+  void testGetSnapshotSubdirValid() {
+    Path root = _folder.toPath();
     Path s1Path = root.resolve("s1");
     s1Path.toFile().mkdirs();
     Path s2Path = root.resolve("__MACOSX"); // ignored dir
@@ -2821,12 +2853,12 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testGetSnapshotInputKeysInvalidNetwork() throws IOException {
+  void testGetSnapshotInputKeysInvalidNetwork() throws IOException {
     assertThat(_manager.getSnapshotInputObjectsMetadata("network", "snapshot"), nullValue());
   }
 
   @Test
-  public void testGetSnapshotInputKeysInvalidSnapshot() throws IOException {
+  void testGetSnapshotInputKeysInvalidSnapshot() throws IOException {
     String network = "network";
     NetworkId networkId = _idManager.generateNetworkId();
     _idManager.assignNetwork(network, networkId);
@@ -2834,7 +2866,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testGetSnapshotInputKeysIOException() throws IOException {
+  void testGetSnapshotInputKeysIOException() {
     String network = "network";
     String snapshot = "snapshot";
 
@@ -2844,12 +2876,12 @@ public final class WorkMgrTest {
     _idManager.assignNetwork(network, networkId);
     _idManager.assignSnapshot(snapshot, networkId, snapshotId);
 
-    _thrown.expect(IOException.class);
-    _manager.getSnapshotInputObjectsMetadata(network, snapshot);
+    assertThrows(
+        IOException.class, () -> _manager.getSnapshotInputObjectsMetadata(network, snapshot));
   }
 
   @Test
-  public void testGetSnapshotInputKeys() throws IOException {
+  void testGetSnapshotInputKeys() throws IOException {
     String network = "network";
     String snapshot = "snapshot";
     String fileName = "fileName";
@@ -2866,12 +2898,12 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testGetSnapshotExtendedObjectsMetadataInvalidNetwork() throws IOException {
+  void testGetSnapshotExtendedObjectsMetadataInvalidNetwork() throws IOException {
     assertThat(_manager.getSnapshotExtendedObjectsMetadata("network", "snapshot"), nullValue());
   }
 
   @Test
-  public void testGetSnapshotExtendedObjectsMetadataInvalidSnapshot() throws IOException {
+  void testGetSnapshotExtendedObjectsMetadataInvalidSnapshot() throws IOException {
     String network = "network";
     NetworkId networkId = _idManager.generateNetworkId();
     _idManager.assignNetwork(network, networkId);
@@ -2879,7 +2911,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testGetSnapshotExtendedObjectsMetadataIOException() throws IOException {
+  void testGetSnapshotExtendedObjectsMetadataIOException() {
     String network = "network";
     String snapshot = "snapshot";
 
@@ -2889,12 +2921,12 @@ public final class WorkMgrTest {
     _idManager.assignNetwork(network, networkId);
     _idManager.assignSnapshot(snapshot, networkId, snapshotId);
 
-    _thrown.expect(IOException.class);
-    _manager.getSnapshotExtendedObjectsMetadata(network, snapshot);
+    assertThrows(
+        IOException.class, () -> _manager.getSnapshotExtendedObjectsMetadata(network, snapshot));
   }
 
   @Test
-  public void testGetSnapshotExtendedObjectsMetadata() throws IOException {
+  void testGetSnapshotExtendedObjectsMetadata() throws IOException {
     String network = "network";
     String snapshot = "snapshot";
     String fileName = "fileName";
@@ -2912,7 +2944,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testCheckQuestionExists() {
+  void testCheckQuestionExists() {
     String network = "network";
     String question = "question";
 
@@ -2930,20 +2962,22 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testUploadQuestionWithInvalidJson() throws IOException {
+  void testUploadQuestionWithInvalidJson() {
     String network = "network";
     String question = "question";
     String invalidQuestionJson = "{\"invalid\": \"json\", \"missing\": \"required fields\"}";
 
     _manager.initNetwork(network, null);
 
-    _thrown.expect(BadRequestException.class);
-    _thrown.expectMessage(containsString("Invalid question"));
-    _manager.uploadQuestion(network, question, invalidQuestionJson);
+    Throwable exception =
+        assertThrows(
+            BadRequestException.class,
+            () -> _manager.uploadQuestion(network, question, invalidQuestionJson));
+    assertThat(exception.getMessage(), containsString("Invalid question"));
   }
 
   @Test
-  public void testFilterAnswer() {
+  void testFilterAnswer() {
     String columnName = "issue";
     int maxRows = 1;
     int rowOffset = 0;

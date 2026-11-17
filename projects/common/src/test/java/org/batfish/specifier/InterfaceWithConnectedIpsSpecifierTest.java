@@ -1,8 +1,10 @@
 package org.batfish.specifier;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -17,44 +19,42 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.specifier.InterfaceWithConnectedIpsSpecifier.Factory;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link InterfaceWithConnectedIpsSpecifier}. */
-public class InterfaceWithConnectedIpsSpecifierTest {
-
-  @Rule public final ExpectedException _exception = ExpectedException.none();
+class InterfaceWithConnectedIpsSpecifierTest {
 
   @Test
-  public void testLoadNull() {
+  void testLoadNull() {
     Factory f = new Factory();
 
-    _exception.expect(IllegalArgumentException.class);
-    _exception.expectMessage("wildcard provided as a string input, not null");
-    f.buildInterfaceSpecifier(null);
+    Throwable exception =
+        assertThrows(IllegalArgumentException.class, () -> f.buildInterfaceSpecifier(null));
+    assertThat(
+        exception.getMessage(), containsString("wildcard provided as a string input, not null"));
   }
 
   @Test
-  public void testLoadNotString() {
+  void testLoadNotString() {
     Factory f = new Factory();
 
-    _exception.expect(IllegalArgumentException.class);
-    _exception.expectMessage("wildcard provided as a string input, not 3");
-    f.buildInterfaceSpecifier(3);
+    Throwable exception =
+        assertThrows(IllegalArgumentException.class, () -> f.buildInterfaceSpecifier(3));
+    assertThat(
+        exception.getMessage(), containsString("wildcard provided as a string input, not 3"));
   }
 
   @Test
-  public void testLoadNotIpSpace() {
+  void testLoadNotIpSpace() {
     Factory f = new Factory();
 
-    _exception.expect(IllegalArgumentException.class);
-    _exception.expectMessage("Invalid IPv4 address: 45.6");
-    f.buildInterfaceSpecifier("45.6");
+    Throwable exception =
+        assertThrows(IllegalArgumentException.class, () -> f.buildInterfaceSpecifier("45.6"));
+    assertThat(exception.getMessage(), containsString("Invalid IPv4 address: 45.6"));
   }
 
   @Test
-  public void testResolve() {
+  void testResolve() {
     Configuration node1 = new Configuration("node1", ConfigurationFormat.CISCO_IOS);
     Interface iface11 =
         TestInterface.builder()
@@ -106,7 +106,7 @@ public class InterfaceWithConnectedIpsSpecifierTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new InterfaceWithConnectedIpsSpecifier(Ip.parse("1.2.3.4").toIpSpace()),

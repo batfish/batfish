@@ -25,9 +25,7 @@ import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.Grammar;
 import org.batfish.specifier.parse.Anchor.Type;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for interface name auto completion in {@link ParsedAutoComplete}. The testing strategy is
@@ -43,9 +41,7 @@ import org.junit.rules.ExpectedException;
  *       potential partial things (thus helping validate the assumptions made in testFind*)
  * </ol>
  */
-public class ParsedAutoCompleteInterfaceNameTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class ParsedAutoCompleteInterfaceNameTest {
 
   private static CompletionMetadata testCompletionMetadata =
       CompletionMetadata.builder()
@@ -79,7 +75,7 @@ public class ParsedAutoCompleteInterfaceNameTest {
 
   /** Context-sensitive completion of interface name after node name or regex */
   @Test
-  public void testAutoCompleteInterfaceNameNodeNameOrRegex() {
+  void testAutoCompleteInterfaceNameNodeNameOrRegex() {
     Set<ParsedAutoCompleteSuggestion> n1interfaces =
         ImmutableSet.of(
             new ParsedAutoCompleteSuggestion("eth11", 42, INTERFACE_NAME),
@@ -100,7 +96,7 @@ public class ParsedAutoCompleteInterfaceNameTest {
 
   /** Fall back to all interfaces for complex node expressions */
   @Test
-  public void testAutoCompleteInterfaceNameComplexNodeExpression() {
+  void testAutoCompleteInterfaceNameComplexNodeExpression() {
     PathElement anchor = new PathElement(Type.INTERFACE_NAME, null, 1, 42);
     PotentialMatch pm = new PotentialMatch(anchor, "", ImmutableList.of());
 
@@ -114,7 +110,7 @@ public class ParsedAutoCompleteInterfaceNameTest {
 
   /** Context-sensitive completion of interface name when interface name prefix is present */
   @Test
-  public void testAutoCompleteInterfaceNameInterfaceNamePrefix() {
+  void testAutoCompleteInterfaceNameInterfaceNamePrefix() {
     PathElement anchor = new PathElement(Type.INTERFACE_NAME, null, 1, 42);
 
     assertThat(
@@ -136,7 +132,7 @@ public class ParsedAutoCompleteInterfaceNameTest {
    * interface names
    */
   @Test
-  public void testE2eNoTailNoMatchingInterface() {
+  void testE2eNoTailNoMatchingInterface() {
     String query = "noeth";
     assertThat(
         getPAC(query, Grammar.INTERFACE_SPECIFIER).run(),
@@ -157,7 +153,7 @@ public class ParsedAutoCompleteInterfaceNameTest {
   }
 
   @Test
-  public void testE2eNoTailMatchingInterface() {
+  void testE2eNoTailMatchingInterface() {
     String query = "eth1"; // matching interface
     assertThat(
         getPAC(query, Grammar.INTERFACE_SPECIFIER).run(),
@@ -182,7 +178,7 @@ public class ParsedAutoCompleteInterfaceNameTest {
 
   /** The interface portion has started but no prefix yet */
   @Test
-  public void testE2eNoInterfacePrefix() {
+  void testE2eNoInterfacePrefix() {
     String query = "n1a[";
 
     Set<ParsedAutoCompleteSuggestion> expected =
@@ -207,7 +203,7 @@ public class ParsedAutoCompleteInterfaceNameTest {
 
   /** The interface portion has started and we also have a prefix */
   @Test
-  public void testE2eInterfacePrefix() {
+  void testE2eInterfacePrefix() {
     String query = "n1a[eth1";
 
     Set<ParsedAutoCompleteSuggestion> expected =
@@ -227,7 +223,7 @@ public class ParsedAutoCompleteInterfaceNameTest {
 
   /** Test that we do generic stuff when node expression is complex */
   @Test
-  public void testE2eComplexNode() {
+  void testE2eComplexNode() {
     String query = "@role(a, b)[eth";
 
     Set<ParsedAutoCompleteSuggestion> expected =
@@ -248,7 +244,7 @@ public class ParsedAutoCompleteInterfaceNameTest {
 
   /** The interface portion has started but no prefix yet */
   @Test
-  public void testE2eLocationNoPrefix() {
+  void testE2eLocationNoPrefix() {
     String query = "@enter(n1a[";
 
     Set<ParsedAutoCompleteSuggestion> expected =
@@ -270,7 +266,7 @@ public class ParsedAutoCompleteInterfaceNameTest {
 
   /** The interface portion has started and we also have a prefix */
   @Test
-  public void testE2eLocationPrefix() {
+  void testE2eLocationPrefix() {
     String query = "@enter(n1a[eth1";
 
     Set<ParsedAutoCompleteSuggestion> expected =
@@ -288,7 +284,7 @@ public class ParsedAutoCompleteInterfaceNameTest {
 
   /** The interface portion has started but no prefix yet */
   @Test
-  public void testE2eSpacesNoInterfacePrefix() {
+  void testE2eSpacesNoInterfacePrefix() {
     String query = " n1a [ ";
 
     assertThat(
@@ -309,7 +305,7 @@ public class ParsedAutoCompleteInterfaceNameTest {
 
   /** The spaces in the query shouldn't matter */
   @Test
-  public void testE2eSpacesInterfacePrefix() {
+  void testE2eSpacesInterfacePrefix() {
     String query = " n1a [ eth1";
 
     Set<ParsedAutoCompleteSuggestion> expected =

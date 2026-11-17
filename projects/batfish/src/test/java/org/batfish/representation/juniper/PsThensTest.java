@@ -4,23 +4,23 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.ospf.OspfMetricType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link PsThens} last-wins and cumulative semantics per the Junos commit-time model. */
-public class PsThensTest {
+class PsThensTest {
 
   // ==========================================================================
   // §1: Scalar last-wins
   // ==========================================================================
 
   @Test
-  public void testOriginDedup() {
+  void testOriginDedup() {
     PsThens ps = new PsThens();
     PsThenOrigin igp = new PsThenOrigin(OriginType.IGP);
     assertThat(ps.addPsThen(igp), empty());
@@ -29,7 +29,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testOriginLastWins() {
+  void testOriginLastWins() {
     PsThens ps = new PsThens();
     PsThenOrigin igp = new PsThenOrigin(OriginType.IGP);
     PsThenOrigin egp = new PsThenOrigin(OriginType.EGP);
@@ -39,7 +39,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testPreferenceDedup() {
+  void testPreferenceDedup() {
     PsThens ps = new PsThens();
     PsThenPreference pref = new PsThenPreference(100, PsThenPreference.Operator.SET);
     assertThat(ps.addPsThen(pref), empty());
@@ -48,7 +48,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testPreferenceLastWins() {
+  void testPreferenceLastWins() {
     PsThens ps = new PsThens();
     PsThenPreference p100 = new PsThenPreference(100, PsThenPreference.Operator.SET);
     PsThenPreference p200 = new PsThenPreference(200, PsThenPreference.Operator.SET);
@@ -58,7 +58,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testTagDedup() {
+  void testTagDedup() {
     PsThens ps = new PsThens();
     PsThenTag tag = new PsThenTag(100);
     assertThat(ps.addPsThen(tag), empty());
@@ -67,7 +67,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testTagLastWins() {
+  void testTagLastWins() {
     PsThens ps = new PsThens();
     PsThenTag t100 = new PsThenTag(100);
     PsThenTag t200 = new PsThenTag(200);
@@ -77,7 +77,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testNextHopIpDedup() {
+  void testNextHopIpDedup() {
     PsThens ps = new PsThens();
     PsThenNextHopIp nh = new PsThenNextHopIp(Ip.parse("192.0.2.1"));
     assertThat(ps.addPsThen(nh), empty());
@@ -87,7 +87,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testNextHopIpLastWins() {
+  void testNextHopIpLastWins() {
     PsThens ps = new PsThens();
     PsThenNextHopIp nh1 = new PsThenNextHopIp(Ip.parse("192.0.2.1"));
     PsThenNextHopIp nh2 = new PsThenNextHopIp(Ip.parse("192.0.2.2"));
@@ -97,7 +97,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testNextHopSelfVsIp() {
+  void testNextHopSelfVsIp() {
     PsThens ps = new PsThens();
     assertThat(ps.addPsThen(PsThenNextHopSelf.INSTANCE), empty());
     PsThenNextHopIp nhIp = new PsThenNextHopIp(Ip.parse("192.0.2.1"));
@@ -106,7 +106,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testNextHopSelfVsPeer() {
+  void testNextHopSelfVsPeer() {
     PsThens ps = new PsThens();
     assertThat(ps.addPsThen(PsThenNextHopSelf.INSTANCE), empty());
     assertThat(ps.addPsThen(PsThenNextHopPeerAddress.INSTANCE), contains("next-hop"));
@@ -114,7 +114,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testNextHopRejectVsDiscard() {
+  void testNextHopRejectVsDiscard() {
     PsThens ps = new PsThens();
     assertThat(ps.addPsThen(PsThenNextHopReject.INSTANCE), empty());
     assertThat(ps.addPsThen(PsThenNextHopDiscard.INSTANCE), contains("next-hop"));
@@ -122,7 +122,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testExternalDedup() {
+  void testExternalDedup() {
     PsThens ps = new PsThens();
     PsThenExternal e1 = new PsThenExternal(OspfMetricType.E1);
     assertThat(ps.addPsThen(e1), empty());
@@ -131,7 +131,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testExternalLastWins() {
+  void testExternalLastWins() {
     PsThens ps = new PsThens();
     PsThenExternal e1 = new PsThenExternal(OspfMetricType.E1);
     PsThenExternal e2 = new PsThenExternal(OspfMetricType.E2);
@@ -141,7 +141,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testLoadBalanceLastWins() {
+  void testLoadBalanceLastWins() {
     PsThens ps = new PsThens();
     PsThenLoadBalance perPacket =
         new PsThenLoadBalance(PsThenLoadBalance.LoadBalanceMethod.PER_PACKET);
@@ -157,7 +157,7 @@ public class PsThensTest {
   // ==========================================================================
 
   @Test
-  public void testLocalPreferenceSetDiff() {
+  void testLocalPreferenceSetDiff() {
     PsThens ps = new PsThens();
     PsThenLocalPreference lp200 =
         new PsThenLocalPreference(200, PsThenLocalPreference.Operator.SET);
@@ -168,7 +168,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testLocalPreferenceSetSame() {
+  void testLocalPreferenceSetSame() {
     PsThens ps = new PsThens();
     PsThenLocalPreference lp = new PsThenLocalPreference(200, PsThenLocalPreference.Operator.SET);
     assertThat(ps.addPsThen(lp), empty());
@@ -177,7 +177,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testLocalPreferenceSetThenAdd() {
+  void testLocalPreferenceSetThenAdd() {
     PsThens ps = new PsThens();
     PsThenLocalPreference lpSet =
         new PsThenLocalPreference(200, PsThenLocalPreference.Operator.SET);
@@ -188,7 +188,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testLocalPreferenceAddThenSet() {
+  void testLocalPreferenceAddThenSet() {
     PsThens ps = new PsThens();
     PsThenLocalPreference lpAdd = new PsThenLocalPreference(50, PsThenLocalPreference.Operator.ADD);
     PsThenLocalPreference lpSet =
@@ -199,7 +199,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testLocalPreferenceSetThenSubtract() {
+  void testLocalPreferenceSetThenSubtract() {
     PsThens ps = new PsThens();
     PsThenLocalPreference lpSet =
         new PsThenLocalPreference(200, PsThenLocalPreference.Operator.SET);
@@ -211,7 +211,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testLocalPreferenceAddDiff() {
+  void testLocalPreferenceAddDiff() {
     PsThens ps = new PsThens();
     PsThenLocalPreference lpAdd200 =
         new PsThenLocalPreference(200, PsThenLocalPreference.Operator.ADD);
@@ -223,7 +223,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testLocalPreferenceAddThenSubtract() {
+  void testLocalPreferenceAddThenSubtract() {
     PsThens ps = new PsThens();
     PsThenLocalPreference lpAdd =
         new PsThenLocalPreference(200, PsThenLocalPreference.Operator.ADD);
@@ -235,7 +235,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testMetricSetDiff() {
+  void testMetricSetDiff() {
     PsThens ps = new PsThens();
     PsThenMetric m200 = new PsThenMetric(200, PsThenMetric.Operator.SET);
     PsThenMetric m50 = new PsThenMetric(50, PsThenMetric.Operator.SET);
@@ -245,7 +245,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testMetricSetSame() {
+  void testMetricSetSame() {
     PsThens ps = new PsThens();
     PsThenMetric m = new PsThenMetric(200, PsThenMetric.Operator.SET);
     assertThat(ps.addPsThen(m), empty());
@@ -254,7 +254,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testMetricSetThenAdd() {
+  void testMetricSetThenAdd() {
     PsThens ps = new PsThens();
     PsThenMetric mSet = new PsThenMetric(200, PsThenMetric.Operator.SET);
     PsThenMetric mAdd = new PsThenMetric(50, PsThenMetric.Operator.ADD);
@@ -264,7 +264,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testMetricAddThenSet() {
+  void testMetricAddThenSet() {
     PsThens ps = new PsThens();
     PsThenMetric mAdd = new PsThenMetric(50, PsThenMetric.Operator.ADD);
     PsThenMetric mSet = new PsThenMetric(200, PsThenMetric.Operator.SET);
@@ -274,7 +274,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testMetricAddDiff() {
+  void testMetricAddDiff() {
     PsThens ps = new PsThens();
     PsThenMetric mAdd200 = new PsThenMetric(200, PsThenMetric.Operator.ADD);
     PsThenMetric mAdd50 = new PsThenMetric(50, PsThenMetric.Operator.ADD);
@@ -284,7 +284,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testMetricAddThenSubtract() {
+  void testMetricAddThenSubtract() {
     PsThens ps = new PsThens();
     PsThenMetric mAdd = new PsThenMetric(200, PsThenMetric.Operator.ADD);
     PsThenMetric mSub = new PsThenMetric(50, PsThenMetric.Operator.SUBTRACT);
@@ -298,7 +298,7 @@ public class PsThensTest {
   // ==========================================================================
 
   @Test
-  public void testPrependLastWins() {
+  void testPrependLastWins() {
     PsThens ps = new PsThens();
     PsThenAsPathPrepend p1 = new PsThenAsPathPrepend(ImmutableList.of(65010L));
     PsThenAsPathPrepend p2 = new PsThenAsPathPrepend(ImmutableList.of(65020L));
@@ -308,7 +308,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testPrependDedup() {
+  void testPrependDedup() {
     PsThens ps = new PsThens();
     PsThenAsPathPrepend p = new PsThenAsPathPrepend(ImmutableList.of(65010L));
     assertThat(ps.addPsThen(p), empty());
@@ -318,7 +318,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testPrependMultiVsSingle() {
+  void testPrependMultiVsSingle() {
     PsThens ps = new PsThens();
     PsThenAsPathPrepend multi = new PsThenAsPathPrepend(ImmutableList.of(65010L, 65020L));
     PsThenAsPathPrepend single = new PsThenAsPathPrepend(ImmutableList.of(65030L));
@@ -328,7 +328,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testPrependAndExpandBothRetained() {
+  void testPrependAndExpandBothRetained() {
     PsThens ps = new PsThens();
     PsThenAsPathPrepend prepend = new PsThenAsPathPrepend(ImmutableList.of(65010L));
     PsThenAsPathExpandAsList expand = new PsThenAsPathExpandAsList(ImmutableList.of(65020L));
@@ -338,7 +338,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testExpandAndPrependBothRetained() {
+  void testExpandAndPrependBothRetained() {
     PsThens ps = new PsThens();
     PsThenAsPathExpandAsList expand = new PsThenAsPathExpandAsList(ImmutableList.of(65020L));
     PsThenAsPathPrepend prepend = new PsThenAsPathPrepend(ImmutableList.of(65010L));
@@ -349,7 +349,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testExpandLastWins() {
+  void testExpandLastWins() {
     PsThens ps = new PsThens();
     PsThenAsPathExpandAsList e1 = new PsThenAsPathExpandAsList(ImmutableList.of(65010L));
     PsThenAsPathExpandAsList e2 = new PsThenAsPathExpandAsList(ImmutableList.of(65020L));
@@ -359,7 +359,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testExpandLastAsLastWins() {
+  void testExpandLastAsLastWins() {
     PsThens ps = new PsThens();
     PsThenAsPathExpandLastAs e2 = new PsThenAsPathExpandLastAs(2);
     PsThenAsPathExpandLastAs e3 = new PsThenAsPathExpandLastAs(3);
@@ -369,7 +369,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testExpandLastAsPlusPrependBothRetained() {
+  void testExpandLastAsPlusPrependBothRetained() {
     PsThens ps = new PsThens();
     PsThenAsPathExpandLastAs expand = new PsThenAsPathExpandLastAs(2);
     PsThenAsPathPrepend prepend = new PsThenAsPathPrepend(ImmutableList.of(65010L));
@@ -384,7 +384,7 @@ public class PsThensTest {
   // ==========================================================================
 
   @Test
-  public void testCommunityAddDifferent() {
+  void testCommunityAddDifferent() {
     // add RED; add BLUE — both retained, no conflict
     PsThens ps = new PsThens();
     PsThenCommunityAdd red = new PsThenCommunityAdd("RED");
@@ -395,7 +395,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testCommunityAddDedup() {
+  void testCommunityAddDedup() {
     // add RED; add RED — second is exact duplicate of the immediately preceding action
     PsThens ps = new PsThens();
     PsThenCommunityAdd red = new PsThenCommunityAdd("RED");
@@ -405,7 +405,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testCommunityAddDeleteAddNoDedup() {
+  void testCommunityAddDeleteAddNoDedup() {
     // add RED; delete RED; add RED — the second add is NOT a dedup: the intervening delete
     // changes the runtime effect, so all three must be retained (final route has RED).
     PsThens ps = new PsThens();
@@ -419,7 +419,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testCommunityDeleteDifferent() {
+  void testCommunityDeleteDifferent() {
     // delete RED; delete BLUE — both retained
     PsThens ps = new PsThens();
     PsThenCommunityDelete delRed = new PsThenCommunityDelete("RED");
@@ -430,7 +430,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testCommunityDeleteDedup() {
+  void testCommunityDeleteDedup() {
     PsThens ps = new PsThens();
     PsThenCommunityDelete delRed = new PsThenCommunityDelete("RED");
     assertThat(ps.addPsThen(delRed), empty());
@@ -440,7 +440,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testCommunitySetThenAdd() {
+  void testCommunitySetThenAdd() {
     // set RED; add BLUE — both retained (set replaces, then add unions)
     PsThens ps = new PsThens();
     PsThenCommunitySet setRed = new PsThenCommunitySet("RED");
@@ -451,7 +451,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testCommunityAddThenSetWipesAdd() {
+  void testCommunityAddThenSetWipesAdd() {
     // add RED; set BLUE — set wipes prior add (now a no-op); only set retained, warning
     PsThens ps = new PsThens();
     PsThenCommunityAdd addRed = new PsThenCommunityAdd("RED");
@@ -462,7 +462,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testCommunitySetThenSetWipesPriorSet() {
+  void testCommunitySetThenSetWipesPriorSet() {
     // set RED; set BLUE — second set wipes first (last-wins); warning
     PsThens ps = new PsThens();
     PsThenCommunitySet setRed = new PsThenCommunitySet("RED");
@@ -473,7 +473,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testCommunitySetThenSetDedup() {
+  void testCommunitySetThenSetDedup() {
     // set RED; set RED — exact duplicate
     PsThens ps = new PsThens();
     PsThenCommunitySet setRed = new PsThenCommunitySet("RED");
@@ -483,7 +483,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testCommunityAddThenDeleteSameNameConflicts() {
+  void testCommunityAddThenDeleteSameNameConflicts() {
     // add RED; delete RED — both retained (order matters for runtime), warn about conflict
     PsThens ps = new PsThens();
     PsThenCommunityAdd addRed = new PsThenCommunityAdd("RED");
@@ -494,7 +494,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testCommunityDeleteThenAddSameNameConflicts() {
+  void testCommunityDeleteThenAddSameNameConflicts() {
     // delete RED; add RED — both retained (order matters), warn about conflict
     PsThens ps = new PsThens();
     PsThenCommunityDelete delRed = new PsThenCommunityDelete("RED");
@@ -505,7 +505,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testCommunityAddThenDeleteDifferentNamesNoConflict() {
+  void testCommunityAddThenDeleteDifferentNamesNoConflict() {
     // add RED; delete BLUE — different names, both retained
     PsThens ps = new PsThens();
     PsThenCommunityAdd addRed = new PsThenCommunityAdd("RED");
@@ -516,7 +516,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testCommunitySetThenDeleteBothRetained() {
+  void testCommunitySetThenDeleteBothRetained() {
     // set RED; delete RED — set replaces, then delete removes RED → both retained
     PsThens ps = new PsThens();
     PsThenCommunitySet setRed = new PsThenCommunitySet("RED");
@@ -527,7 +527,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testCommunityDeclaredOrderPreserved() {
+  void testCommunityDeclaredOrderPreserved() {
     // delete RED; add BLUE; delete GREEN — all retained, in declared order
     PsThens ps = new PsThens();
     PsThenCommunityDelete delRed = new PsThenCommunityDelete("RED");
@@ -540,7 +540,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testCommunitySetWipesAllPrior() {
+  void testCommunitySetWipesAllPrior() {
     // add RED; delete BLUE; set GREEN — set wipes both prior actions; warnings for each
     PsThens ps = new PsThens();
     PsThenCommunityAdd addRed = new PsThenCommunityAdd("RED");
@@ -557,7 +557,7 @@ public class PsThensTest {
   // ==========================================================================
 
   @Test
-  public void testLoadBalanceDedup() {
+  void testLoadBalanceDedup() {
     PsThens ps = new PsThens();
     PsThenLoadBalance lb = new PsThenLoadBalance(PsThenLoadBalance.LoadBalanceMethod.PER_PACKET);
     assertThat(ps.addPsThen(lb), empty());
@@ -570,7 +570,7 @@ public class PsThensTest {
   // ==========================================================================
 
   @Test
-  public void testCrossAttributeAllRetained() {
+  void testCrossAttributeAllRetained() {
     PsThens ps = new PsThens();
     PsThenLocalPreference lp = new PsThenLocalPreference(200, PsThenLocalPreference.Operator.SET);
     PsThenMetric met = new PsThenMetric(100, PsThenMetric.Operator.SET);
@@ -586,7 +586,7 @@ public class PsThensTest {
   // ==========================================================================
 
   @Test
-  public void testTunnelAttributeSetDedup() {
+  void testTunnelAttributeSetDedup() {
     PsThens ps = new PsThens();
     PsThenTunnelAttributeSet ta1 = new PsThenTunnelAttributeSet("ta1");
     assertThat(ps.addPsThen(ta1), empty());
@@ -597,7 +597,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testTunnelAttributeSetLastWins() {
+  void testTunnelAttributeSetLastWins() {
     PsThens ps = new PsThens();
     PsThenTunnelAttributeSet ta1 = new PsThenTunnelAttributeSet("ta1");
     PsThenTunnelAttributeSet ta2 = new PsThenTunnelAttributeSet("ta2");
@@ -611,7 +611,7 @@ public class PsThensTest {
   // ==========================================================================
 
   @Test
-  public void testAcceptThenRejectLastWins() {
+  void testAcceptThenRejectLastWins() {
     PsThens ps = new PsThens();
     assertThat(ps.addPsThen(PsThenAccept.INSTANCE), empty());
     assertThat(ps.addPsThen(PsThenReject.INSTANCE), contains("accept-or-reject"));
@@ -619,7 +619,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testRejectThenAcceptLastWins() {
+  void testRejectThenAcceptLastWins() {
     PsThens ps = new PsThens();
     assertThat(ps.addPsThen(PsThenReject.INSTANCE), empty());
     assertThat(ps.addPsThen(PsThenAccept.INSTANCE), contains("accept-or-reject"));
@@ -627,7 +627,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testAcceptDedup() {
+  void testAcceptDedup() {
     PsThens ps = new PsThens();
     assertThat(ps.addPsThen(PsThenAccept.INSTANCE), empty());
     assertThat(ps.addPsThen(PsThenAccept.INSTANCE), contains("accept-or-reject (dedup)"));
@@ -635,7 +635,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testDefaultActionAndBareTerminatorBothRetained() {
+  void testDefaultActionAndBareTerminatorBothRetained() {
     // default-action accept and bare reject are different families. Both retained at commit.
     // Bare terminator overrides default-action: dead-with-bare-terminator warning fires.
     PsThens ps = new PsThens();
@@ -648,7 +648,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testAcceptThenNextTermSuppresses() {
+  void testAcceptThenNextTermSuppresses() {
     // accept; next term — both retained at commit; next-term wins at runtime
     PsThens ps = new PsThens();
     assertThat(ps.addPsThen(PsThenAccept.INSTANCE), empty());
@@ -660,7 +660,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testAcceptThenNextPolicySuppresses() {
+  void testAcceptThenNextPolicySuppresses() {
     // accept; next policy — same as next-term: accept does not fire at runtime
     PsThens ps = new PsThens();
     assertThat(ps.addPsThen(PsThenAccept.INSTANCE), empty());
@@ -672,7 +672,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testNextTermThenAcceptIsDead() {
+  void testNextTermThenAcceptIsDead() {
     // next term; accept — bare accept is dead config when next-term already present
     PsThens ps = new PsThens();
     assertThat(ps.addPsThen(PsThenNextTerm.INSTANCE), empty());
@@ -684,7 +684,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testNextPolicyThenRejectIsDead() {
+  void testNextPolicyThenRejectIsDead() {
     // next policy; reject — bare reject is dead config when next-policy already present
     PsThens ps = new PsThens();
     assertThat(ps.addPsThen(PsThenNextPolicy.INSTANCE), empty());
@@ -696,7 +696,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testNextTermDedup() {
+  void testNextTermDedup() {
     // §5 row 4011: next term; next term — dedup (same family)
     PsThens ps = new PsThens();
     assertThat(ps.addPsThen(PsThenNextTerm.INSTANCE), empty());
@@ -705,7 +705,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testNextPolicyDedup() {
+  void testNextPolicyDedup() {
     // §5 row 4012: next policy; next policy — dedup (same family)
     PsThens ps = new PsThens();
     assertThat(ps.addPsThen(PsThenNextPolicy.INSTANCE), empty());
@@ -714,7 +714,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testNextTermThenNextPolicyLastWins() {
+  void testNextTermThenNextPolicyLastWins() {
     // §5 row 4013: next term; next policy — same family, last-wins → next-policy retained
     PsThens ps = new PsThens();
     assertThat(ps.addPsThen(PsThenNextTerm.INSTANCE), empty());
@@ -723,7 +723,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testNextPolicyThenNextTermLastWins() {
+  void testNextPolicyThenNextTermLastWins() {
     // §5 row 4014: next policy; next term — last-wins → next-term retained
     PsThens ps = new PsThens();
     assertThat(ps.addPsThen(PsThenNextPolicy.INSTANCE), empty());
@@ -736,7 +736,7 @@ public class PsThensTest {
   // ==========================================================================
 
   @Test
-  public void testDefaultActionAcceptDedup() {
+  void testDefaultActionAcceptDedup() {
     PsThens ps = new PsThens();
     PsThenDefaultActionAccept da1 = new PsThenDefaultActionAccept();
     PsThenDefaultActionAccept da2 = new PsThenDefaultActionAccept();
@@ -746,7 +746,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testDefaultActionAcceptThenRejectLastWins() {
+  void testDefaultActionAcceptThenRejectLastWins() {
     PsThens ps = new PsThens();
     PsThenDefaultActionAccept daAccept = new PsThenDefaultActionAccept();
     PsThenDefaultActionReject daReject = new PsThenDefaultActionReject();
@@ -756,7 +756,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testBareAcceptThenDefaultActionIsDead() {
+  void testBareAcceptThenDefaultActionIsDead() {
     // accept; default-action reject — default-action is dead config when added after a bare
     // terminator. Both lines retained at commit.
     PsThens ps = new PsThens();
@@ -767,7 +767,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testDefaultActionRejectThenBareAcceptIsDeadConfig() {
+  void testDefaultActionRejectThenBareAcceptIsDeadConfig() {
     // default-action reject; accept — adding the bare terminator makes the default-action dead
     // config (the default-action was authored first but never fires).
     PsThens ps = new PsThens();
@@ -784,7 +784,7 @@ public class PsThensTest {
   // ==========================================================================
 
   @Test
-  public void testAddPathSendCountDedup() {
+  void testAddPathSendCountDedup() {
     PsThens ps = new PsThens();
     PsThenAddPathSendCount c16 = new PsThenAddPathSendCount(16);
     assertThat(ps.addPsThen(c16), empty());
@@ -794,7 +794,7 @@ public class PsThensTest {
   }
 
   @Test
-  public void testAddPathSendCountLastWins() {
+  void testAddPathSendCountLastWins() {
     PsThens ps = new PsThens();
     PsThenAddPathSendCount c16 = new PsThenAddPathSendCount(16);
     PsThenAddPathSendCount c32 = new PsThenAddPathSendCount(32);

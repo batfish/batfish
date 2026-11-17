@@ -8,12 +8,12 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.ospf.OspfNeighborConfig.Builder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link OspfNeighborConfig} */
-public class OspfNeighborConfigTest {
+class OspfNeighborConfigTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     Builder builder =
         OspfNeighborConfig.builder()
             .setArea(1L)
@@ -34,7 +34,7 @@ public class OspfNeighborConfigTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     OspfNeighborConfig c =
         OspfNeighborConfig.builder()
             .setArea(1L)
@@ -47,7 +47,7 @@ public class OspfNeighborConfigTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     OspfNeighborConfig c =
         OspfNeighborConfig.builder()
             .setArea(1L)

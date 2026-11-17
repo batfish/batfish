@@ -16,6 +16,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.oneOf;
 
 import com.google.common.collect.ImmutableList;
+import java.io.File;
 import java.io.IOException;
 import org.batfish.bddreachability.TestNetwork;
 import org.batfish.datamodel.FlowDisposition;
@@ -27,31 +28,27 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** End-to-end tests of {@link MultipathConsistencyQuestion}. */
-@RunWith(JUnit4.class)
-public class MultipathConsistencyTest {
-  @Rule public TemporaryFolder temp = new TemporaryFolder();
+class MultipathConsistencyTest {
+  @TempDir public File temp;
 
   private TestNetwork _testNetwork;
 
   private Batfish _batfish;
 
-  @Before
-  public void setup() throws IOException {
+  @BeforeEach
+  void setup() throws IOException {
     _testNetwork = new TestNetwork();
     _batfish = BatfishTestUtils.getBatfish(_testNetwork._configs, temp);
     _batfish.computeDataPlane(_batfish.getSnapshot());
   }
 
   @Test
-  public void testMultipath() {
+  void testMultipath() {
     MultipathConsistencyQuestion question = new MultipathConsistencyQuestion();
     MultipathConsistencyAnswerer answerer = new MultipathConsistencyAnswerer(question, _batfish);
     TableAnswerElement ae = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());

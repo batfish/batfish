@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Edge;
@@ -11,9 +12,8 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * A test of an issue reported by {@code Sharon Saadon} on Slack. Link:
@@ -24,8 +24,8 @@ import org.junit.rules.TemporaryFolder;
  * self-loop on fw-1 is used to bridge vlan10 and vlan20 and connect the inner and outer routers
  * through the firewall.
  */
-public class Layer2NtcTest {
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+class Layer2NtcTest {
+  @TempDir public File _folder;
 
   private Topology getLayer3Edges(String nameOfBatfishFolderContainingL1) throws IOException {
     String prefix = "org/batfish/e2e/layer2ntc";
@@ -42,7 +42,7 @@ public class Layer2NtcTest {
 
   /** When the entire l1 topology is present, the L3 edge comes up. */
   @Test
-  public void testLayer3Connectivity() throws IOException {
+  void testLayer3Connectivity() throws IOException {
     Edge forward =
         new Edge(
             NodeInterfacePair.of("rtr-1", "xe-0/0/0.10"),
@@ -56,7 +56,7 @@ public class Layer2NtcTest {
    * device instead), the L3 edge does not come up.
    */
   @Test
-  public void testLayer3ConnectivityMissingLoop() throws IOException {
+  void testLayer3ConnectivityMissingLoop() throws IOException {
     assertThat(getLayer3Edges("batfish-missing-loop").getEdges(), empty());
   }
 }

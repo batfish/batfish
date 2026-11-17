@@ -9,14 +9,15 @@ import static org.batfish.datamodel.matchers.TraceMatchers.hasHops;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.graph.ValueGraph;
+import java.io.File;
 import java.io.IOException;
 import java.util.SortedMap;
 import org.batfish.common.plugin.TracerouteEngine;
@@ -45,9 +46,8 @@ import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * End-to-end tests for eBGP session establishment with varying hop counts and ACL configurations.
@@ -66,8 +66,8 @@ import org.junit.rules.TemporaryFolder;
  *
  * Static routes provide full connectivity between node1 and node3 through node2.
  */
-public class EbgpSessionEstablishmentTest {
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+class EbgpSessionEstablishmentTest {
+  @TempDir public File _folder;
 
   private static final Ip NODE1_IP = Ip.parse("1.0.0.0");
   private static final Ip NODE2_LEFT_IP = Ip.parse("1.0.0.1");
@@ -241,7 +241,7 @@ public class EbgpSessionEstablishmentTest {
 
   /** eBGP single-hop session between directly connected peers succeeds. */
   @Test
-  public void testEbgpSinglehopSuccess() throws IOException {
+  void testEbgpSinglehopSuccess() throws IOException {
     // node1 (AS 1) peers with node2 (AS 2) -- directly connected, single-hop
     SortedMap<String, Configuration> configs =
         buildNetwork(false, false, false, NODE1_IP, NODE2_LEFT_IP, 1L, 2L);
@@ -275,7 +275,7 @@ public class EbgpSessionEstablishmentTest {
 
   /** eBGP single-hop session fails when the peer is two hops away. */
   @Test
-  public void testEbgpSinglehopFailure() throws IOException {
+  void testEbgpSinglehopFailure() throws IOException {
     // node1 (AS 1) peers with node3 (AS 2) -- two hops apart, single-hop only
     SortedMap<String, Configuration> configs =
         buildNetwork(false, false, false, NODE1_IP, NODE3_IP, 1L, 2L);
@@ -312,7 +312,7 @@ public class EbgpSessionEstablishmentTest {
 
   /** eBGP multihop session succeeds when the peer is two hops away. */
   @Test
-  public void testEbgpMultihopSuccess() throws IOException {
+  void testEbgpMultihopSuccess() throws IOException {
     // node1 (AS 1) peers with node3 (AS 2) -- two hops apart, multihop enabled
     SortedMap<String, Configuration> configs =
         buildNetwork(false, false, true, NODE1_IP, NODE3_IP, 1L, 2L);
@@ -347,7 +347,7 @@ public class EbgpSessionEstablishmentTest {
 
   /** eBGP multihop session fails when an ACL blocks traffic at the listener. */
   @Test
-  public void testEbgpMultihopFailureWithAcl() throws IOException {
+  void testEbgpMultihopFailureWithAcl() throws IOException {
     // node1 (AS 1) peers with node3 (AS 2) -- multihop but node3 has a deny-all inbound ACL
     SortedMap<String, Configuration> configs =
         buildNetwork(true, false, true, NODE1_IP, NODE3_IP, 1L, 2L);
@@ -386,7 +386,7 @@ public class EbgpSessionEstablishmentTest {
    * eBGP multihop session succeeds when an ACL on the initiator permits established connections.
    */
   @Test
-  public void testEbgpMultihopWithAclPermitEstablished() throws IOException {
+  void testEbgpMultihopWithAclPermitEstablished() throws IOException {
     // node1 (AS 1) peers with node3 (AS 2) -- multihop, ACL on node1 permits only established TCP
     SortedMap<String, Configuration> configs =
         buildNetwork(false, true, true, NODE1_IP, NODE3_IP, 1L, 2L);

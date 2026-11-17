@@ -16,7 +16,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -56,11 +56,11 @@ import org.batfish.symbolic.state.PreInInterface;
 import org.batfish.symbolic.state.PreOutEdgePostNat;
 import org.batfish.symbolic.state.StateExpr;
 import org.batfish.symbolic.state.VrfAccept;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link BDDReachabilityAnalysisSessionFactory}. */
-public class BDDReachabilityAnalysisSessionFactoryTest {
+class BDDReachabilityAnalysisSessionFactoryTest {
   private static final String FW = "fw";
   private static final String R1 = "r1";
   private static final String R2 = "r2";
@@ -140,8 +140,8 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
     return _pkt.getSrcPort().value(port);
   }
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -293,7 +293,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
   }
 
   @Test
-  public void testSinglePath() {
+  void testSinglePath() {
     // One path: R1:I1 -> FW:I1 -- FW:I3 -> BORDER_IFACE:BORDER
 
     // R1:I1 -> FW:I1
@@ -329,7 +329,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
   }
 
   @Test
-  public void testGetSessionFlows() {
+  void testGetSessionFlows() {
     Prefix sourcePrefix = Prefix.parse("2.0.0.0/8");
     Prefix destPrefix = Prefix.parse("1.0.0.0/8");
     BDD tcp = _pkt.getIpProtocol().value(IpProtocol.TCP);
@@ -366,7 +366,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
   }
 
   @Test
-  public void testDifferentLastHops() {
+  void testDifferentLastHops() {
     /* Two paths, different last-hops, same source interface:
      * R1:I1 -> FW:I1 -- FW:I3 -> BORDER:BORDER_IFACE
      * R2:I1 -> FW:I1 -- FW:I3 -> BORDER:BORDER_IFACE
@@ -462,7 +462,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
   }
 
   @Test
-  public void testDifferentSourceInterfaces() {
+  void testDifferentSourceInterfaces() {
     /* two paths, difference source interfaces
      * R1:I1 -> FW:I1 -- FW:I3 -> BORDER:BORDER_IFACE
      * R3:I1 -> FW:I2 -- FW:I3 -> BORDER:BORDER_IFACE
@@ -528,7 +528,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
   }
 
   @Test
-  public void testOriginatingFromDevice() {
+  void testOriginatingFromDevice() {
     // FW -- FW:I3 -> BORDER_IFACE:BORDER
     BDD inBdd = _fwSrcMgr.getOriginatingFromDeviceBDD();
 
@@ -559,7 +559,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
   }
 
   @Test
-  public void testNoLastHopOutgoingInterface() {
+  void testNoLastHopOutgoingInterface() {
     // FW:I1 -- FW:I3 -> BORDER_IFACE:BORDER
     BDD inBdd =
         _fwSrcMgr
@@ -593,7 +593,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
   }
 
   @Test
-  public void testSinglePath_inbound() {
+  void testSinglePath_inbound() {
     // Path:  R1:I1 -> FW:I1 -> FW
 
     // R1:I1 -> FW:I1
@@ -625,7 +625,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
   }
 
   @Test
-  public void testDifferentLastHops_inbound() {
+  void testDifferentLastHops_inbound() {
     /* Two paths, different last-hops, same source interface:
      * R1:I1 -> FW:I1 -- FW
      * R2:I1 -> FW:I1 -- FW
@@ -700,7 +700,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
   }
 
   @Test
-  public void testDifferentSourceInterfaces_inbound() {
+  void testDifferentSourceInterfaces_inbound() {
     /* two paths, different source interfaces
      * R1:I1 -> FW:I1 -- FW
      * R3:I1 -> FW:I2 -- FW
@@ -763,7 +763,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
   }
 
   @Test
-  public void testNoLastHopOutgoingInterface_inbound() {
+  void testNoLastHopOutgoingInterface_inbound() {
     // FW:I1 -- FW
     BDD inBdd =
         _fwSrcMgr

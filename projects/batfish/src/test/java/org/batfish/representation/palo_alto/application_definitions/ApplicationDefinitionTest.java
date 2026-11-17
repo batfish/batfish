@@ -3,16 +3,16 @@ package org.batfish.representation.palo_alto.application_definitions;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link ApplicationDefinition}. */
-public class ApplicationDefinitionTest {
+class ApplicationDefinitionTest {
   @Test
-  public void testJacksonDeserialization() throws JsonProcessingException {
+  void testJacksonDeserialization() throws JsonProcessingException {
     // Application definitions loosely based on dropbox-personal-uploading
 
     // App definition with lists of values

@@ -2,12 +2,12 @@ package org.batfish.representation.juniper;
 
 import com.google.common.testing.EqualsTester;
 import org.batfish.datamodel.Ip;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class InterfaceOspfNeighborTest {
+class InterfaceOspfNeighborTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     InterfaceOspfNeighbor neighbor1 = new InterfaceOspfNeighbor(Ip.parse("1.1.1.1"));
     neighbor1.setDesignated(true);
     InterfaceOspfNeighbor neighbor2 = new InterfaceOspfNeighbor(Ip.parse("1.1.1.1"));

@@ -2,33 +2,30 @@ package org.batfish.datamodel;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link PrefixRange}. */
-@RunWith(JUnit4.class)
-public class PrefixRangeTest {
+class PrefixRangeTest {
   @Test
-  public void testToString() {
+  void testToString() {
     PrefixRange pr = PrefixRange.fromString("1.2.3.4/8:17-19");
     assertThat(pr.toString(), equalTo("1.0.0.0/8:17-19"));
   }
 
   @Test
-  public void testSerialization() throws JsonProcessingException {
+  void testSerialization() throws JsonProcessingException {
     PrefixRange pr = PrefixRange.fromString("1.2.3.4/8:17-19");
     assertThat(BatfishObjectMapper.writeString(pr), equalTo("\"1.0.0.0/8:17-19\""));
   }
 
   @Test
-  public void testDeSerialization() throws IOException {
+  void testDeSerialization() throws IOException {
     PrefixRange pr = PrefixRange.fromString("1.2.3.4/8:17-19");
     assertThat(
         BatfishObjectMapper.mapper().readValue("\"1.0.0.0/8:17-19\"", PrefixRange.class),
@@ -40,14 +37,14 @@ public class PrefixRangeTest {
    * does not contain the initial /32.
    */
   @Test
-  public void testEmptyRange() {
+  void testEmptyRange() {
     Prefix slash32 = Prefix.parse("1.2.3.4/32");
     PrefixRange empty = PrefixRange.moreSpecificThan(slash32);
     assertFalse(empty.includesPrefixRange(PrefixRange.fromPrefix(slash32)));
   }
 
   @Test
-  public void testMoreSpecificThan() {
+  void testMoreSpecificThan() {
     Prefix slash16 = Prefix.parse("1.2.3.4/16");
     Prefix slash17 = Prefix.parse("1.2.3.4/17");
     Prefix slash15 = Prefix.parse("1.2.3.4/15");

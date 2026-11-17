@@ -1,17 +1,17 @@
 package org.batfish.representation.juniper;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link FwFromSourceAddressBookEntry } */
-public class FwFromSourceAddressBookEntryTest {
+class FwFromSourceAddressBookEntryTest {
   @Test
-  public void testToHeaderspace() {
+  void testToHeaderspace() {
     String addressBookEntryName = "addressBookEntry";
 
     AddressBook globalAddressBook = new AddressBook("addressBook", null);
@@ -30,7 +30,7 @@ public class FwFromSourceAddressBookEntryTest {
   }
 
   @Test
-  public void testToHeaderspace_noEntry() {
+  void testToHeaderspace_noEntry() {
     String addressBookEntryName = "addressBookEntry";
     AddressBook globalAddressBook = new AddressBook("addressBook", null);
     Warnings w = new Warnings();

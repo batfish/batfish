@@ -1,6 +1,7 @@
 package org.batfish.minesweeper.bdd;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -31,13 +32,11 @@ import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.batfish.minesweeper.ConfigAtomicPredicatesTestUtils;
 import org.batfish.minesweeper.bdd.TransferBDD.Context;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link org.batfish.minesweeper.bdd.CommunitySetExprToBDD}. */
-public class CommunitySetExprToBDDTest {
+class CommunitySetExprToBDDTest {
   private static final String HOSTNAME = "hostname";
   private static final String POLICY_NAME = "policy";
   private IBatfish _batfish;
@@ -46,10 +45,8 @@ public class CommunitySetExprToBDDTest {
   private CommunitySetMatchExprToBDD.Arg _arg;
   private CommunitySetExprToBDD _communitySetExprToBDD;
 
-  @Rule public ExpectedException _expectedException = ExpectedException.none();
-
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder()
@@ -81,7 +78,7 @@ public class CommunitySetExprToBDDTest {
   }
 
   @Test
-  public void testVisitCommunityExprsSet() {
+  void testVisitCommunityExprsSet() {
     CommunityExprsSet ces =
         CommunityExprsSet.of(
             new StandardCommunityHighLowExprs(new LiteralInt(20), new LiteralInt(30)),
@@ -96,7 +93,7 @@ public class CommunitySetExprToBDDTest {
   }
 
   @Test
-  public void testVisitCommunitySetDifference() {
+  void testVisitCommunitySetDifference() {
     CommunitySetDifference csd =
         new CommunitySetDifference(
             new LiteralCommunitySet(
@@ -113,7 +110,7 @@ public class CommunitySetExprToBDDTest {
   }
 
   @Test
-  public void testVisitCommunitySetExprReference() {
+  void testVisitCommunitySetExprReference() {
     String name = "name";
     _baseConfig.setCommunitySetExprs(
         ImmutableMap.of(
@@ -132,7 +129,7 @@ public class CommunitySetExprToBDDTest {
   }
 
   @Test
-  public void testVisitCommunitySetReference() {
+  void testVisitCommunitySetReference() {
     String name = "name";
     _baseConfig.setCommunitySets(
         ImmutableMap.of(
@@ -149,7 +146,7 @@ public class CommunitySetExprToBDDTest {
   }
 
   @Test
-  public void testVisitCommunitySetUnion() {
+  void testVisitCommunitySetUnion() {
     CommunitySetUnion csu =
         CommunitySetUnion.of(
             new LiteralCommunitySet(CommunitySet.of(StandardCommunity.parse("20:30"))),
@@ -164,9 +161,10 @@ public class CommunitySetExprToBDDTest {
   }
 
   @Test
-  public void testVisitInputCommunities() {
-    _expectedException.expect(UnsupportedOperationException.class);
-    _communitySetExprToBDD.visitInputCommunities(InputCommunities.instance(), _arg);
+  void testVisitInputCommunities() {
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> _communitySetExprToBDD.visitInputCommunities(InputCommunities.instance(), _arg));
   }
 
   private BDD cvarToBDD(CommunityVar cvar) {

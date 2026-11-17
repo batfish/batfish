@@ -3,12 +3,12 @@ package org.batfish.common.topology;
 import static org.batfish.common.topology.Layer1Topology.EMPTY;
 
 import com.google.common.testing.EqualsTester;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link Layer1Topologies} */
-public final class Layer1TopologiesTest {
+final class Layer1TopologiesTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     Layer1Topology notEmpty = new Layer1Topology(new Layer1Edge("n1", "i1", "n2", "i2"));
     new EqualsTester()
         .addEqualityGroup(

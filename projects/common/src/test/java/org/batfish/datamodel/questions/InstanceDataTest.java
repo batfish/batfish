@@ -12,17 +12,17 @@ import java.util.Arrays;
 import java.util.TreeSet;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.questions.Variable.Type;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link InstanceData} */
-public class InstanceDataTest {
+class InstanceDataTest {
 
   /**
    * Test that getOrderedVariableNames returns an empty list when orderedVariableNames are not
    * provided
    */
   @Test
-  public void testGetOrderedVariableNamesMissing() throws IOException {
+  void testGetOrderedVariableNamesMissing() throws IOException {
     InstanceData instanceData = BatfishObjectMapper.mapper().readValue("{}", InstanceData.class);
     assertThat(instanceData.getOrderedVariableNames(), empty());
   }
@@ -32,7 +32,7 @@ public class InstanceDataTest {
    * list
    */
   @Test
-  public void testGetOrderedVariableNamesEmptyList() throws IOException {
+  void testGetOrderedVariableNamesEmptyList() throws IOException {
     InstanceData instanceData =
         BatfishObjectMapper.mapper().readValue("{\"orderedVariableNames\":[]}", InstanceData.class);
     assertThat(instanceData.getOrderedVariableNames(), empty());
@@ -40,7 +40,7 @@ public class InstanceDataTest {
 
   /** Test that getOrderedVariableNames returns orderedVariableNames in the correct order */
   @Test
-  public void testGetOrderedVariableNamesNonEmptyList() throws IOException {
+  void testGetOrderedVariableNamesNonEmptyList() throws IOException {
     InstanceData instanceData =
         BatfishObjectMapper.mapper()
             .readValue("{\"orderedVariableNames\":[\"r\", \"a\", \"d\"]}", InstanceData.class);
@@ -52,7 +52,7 @@ public class InstanceDataTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     InstanceData instanceData = new InstanceData();
     InstanceData initialInstance = clone(instanceData);
     EqualsTester equalsTester = new EqualsTester();
@@ -79,7 +79,7 @@ public class InstanceDataTest {
    * InstanceData object produces an object equal to the original instance
    */
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     InstanceData instanceData = new InstanceData();
     instanceData.setInstanceName("instanceName");
     instanceData.setDescription("The description");

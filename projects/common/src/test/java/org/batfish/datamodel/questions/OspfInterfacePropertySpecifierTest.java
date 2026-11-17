@@ -5,12 +5,12 @@ import static org.batfish.datamodel.questions.OspfInterfacePropertySpecifier.PRO
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link OspfInterfacePropertySpecifier} */
-public class OspfInterfacePropertySpecifierTest {
+class OspfInterfacePropertySpecifierTest {
   @Test
-  public void testOrderedProperties() {
+  void testOrderedProperties() {
     // Useful for confirming we have not forgotten to update the ordered list of properties when a
     // new property is added
 

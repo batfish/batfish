@@ -4,7 +4,7 @@ import static org.batfish.bddreachability.BDDReverseTransformationRangesImpl.Tra
 import static org.batfish.bddreachability.BDDReverseTransformationRangesImpl.TransformationType.OUTGOING;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -33,11 +33,11 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.symbolic.state.PreInInterface;
 import org.batfish.symbolic.state.PreOutEdge;
 import org.batfish.symbolic.state.StateExpr;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link BDDReverseTransformationRangesImpl}. */
-public class BDDReverseTransformationRangesImplTest {
+class BDDReverseTransformationRangesImplTest {
   private static final String HOSTNAME = "hostname";
 
   private BDDPacket _bddPacket;
@@ -46,8 +46,8 @@ public class BDDReverseTransformationRangesImplTest {
   private HeaderSpaceToBDD _headerSpaceToBDD;
   private LastHopOutgoingInterfaceManager _lastHopManager;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _bddPacket = new BDDPacket();
     NetworkFactory nf = new NetworkFactory();
     Configuration config =
@@ -63,7 +63,7 @@ public class BDDReverseTransformationRangesImplTest {
   }
 
   @Test
-  public void testUnreachable() {
+  void testUnreachable() {
     /* Should get 0 BDD when the transformation was not reached by the forward analysis (i.e. there
      * is no entry for the corresponding state(s) in the reachability map.
      */
@@ -84,7 +84,7 @@ public class BDDReverseTransformationRangesImplTest {
   }
 
   @Test
-  public void testIncomingTransformationRange() {
+  void testIncomingTransformationRange() {
     Interface iface = _ib.setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24")).build();
     String iName = iface.getName();
 
@@ -134,7 +134,7 @@ public class BDDReverseTransformationRangesImplTest {
   }
 
   @Test
-  public void testOutgoingTransformationRange() {
+  void testOutgoingTransformationRange() {
     Interface iface = _ib.build();
     String iName = iface.getName();
 
@@ -195,7 +195,7 @@ public class BDDReverseTransformationRangesImplTest {
 
   /** Test that source and last hop constraints are erased. */
   @Test
-  public void testEraseNonPacketVars() {
+  void testEraseNonPacketVars() {
     Interface iface = _ib.setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24")).build();
     String iName = iface.getName();
 
@@ -233,7 +233,7 @@ public class BDDReverseTransformationRangesImplTest {
   }
 
   @Test
-  public void testSourceAndLastHopConstraint() {
+  void testSourceAndLastHopConstraint() {
     Interface iface = _ib.build();
     String iName = iface.getName();
 
@@ -290,7 +290,7 @@ public class BDDReverseTransformationRangesImplTest {
   }
 
   @Test
-  public void testKeyEquals() {
+  void testKeyEquals() {
     String node = "node";
     String iface = "iface";
     String inIface = "inIface";

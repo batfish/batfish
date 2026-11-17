@@ -12,12 +12,12 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.routing_policy.statement.Statement;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class PsThenValidationStateTest {
+final class PsThenValidationStateTest {
 
   @Test
-  public void testConversion() {
+  void testConversion() {
     List<Statement> statements = new ArrayList<>();
     new PsThenValidationState(PsThenValidationState.State.INVALID)
         .applyTo(
@@ -32,7 +32,7 @@ public final class PsThenValidationStateTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new PsThenValidationState(PsThenValidationState.State.INVALID),
@@ -43,14 +43,14 @@ public final class PsThenValidationStateTest {
   }
 
   @Test
-  public void testGetState() {
+  void testGetState() {
     assertThat(
         new PsThenValidationState(PsThenValidationState.State.UNKNOWN).getState(),
         equalTo(PsThenValidationState.State.UNKNOWN));
   }
 
   @Test
-  public void testLastWins() {
+  void testLastWins() {
     PsThens thens = new PsThens();
     thens.addPsThen(new PsThenValidationState(PsThenValidationState.State.INVALID));
     assertThat(

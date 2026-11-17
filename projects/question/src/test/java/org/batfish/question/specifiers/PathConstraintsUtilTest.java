@@ -1,17 +1,17 @@
 package org.batfish.question.specifiers;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.batfish.datamodel.PathConstraints;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.NoNodesNodeSpecifier;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link PathConstraintsUtil}. */
-public final class PathConstraintsUtilTest {
+final class PathConstraintsUtilTest {
   @Test
-  public void testUnconstrained() {
+  void testUnconstrained() {
     PathConstraints pathConstraints =
         PathConstraintsUtil.createPathConstraints(PathConstraintsInput.unconstrained());
 

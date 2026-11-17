@@ -7,12 +7,12 @@ import org.batfish.datamodel.eigrp.ClassicMetric;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.eigrp.EigrpMetricVersion;
 import org.batfish.datamodel.route.nh.NextHopIp;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class EigrpExternalRouteTest {
+class EigrpExternalRouteTest {
 
   @Test
-  public void testToBuilder() {
+  void testToBuilder() {
     EigrpExternalRoute r =
         EigrpExternalRoute.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))

@@ -1,5 +1,5 @@
 """
-This file creates a java_test target for JUnit4 run tests.
+This file creates a java_test target that runs tests on the JUnit Platform.
 """
 
 # Copyright (C) 2016 The Android Open Source Project
@@ -16,22 +16,14 @@ This file creates a java_test target for JUnit4 run tests.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Starlark rule to generate a Junit4 TestSuite
-# Assumes srcs are all .java Test files
-# Assumes junit4 is already added to deps by the user.
+# Starlark rule to generate the list of test classes for the runner.
+# Assumes srcs are all .java Test files.
+# Assumes the JUnit Jupiter API is already added to deps by the user.
 
 # See https://github.com/bazelbuild/bazel/issues/1017 for background.
 
 load("@batfish//skylark:pmd_test.bzl", "pmd_test")
 load("@rules_java//java:defs.bzl", "java_library", "java_test")
-
-_OUTPUT = """import org.junit.runners.Suite;
-import org.junit.runner.RunWith;
-
-@RunWith(Suite.class)
-@Suite.SuiteClasses({%s})
-public class %s {}
-"""
 
 _PREFIXES = ("org", "com", "edu", "net")
 
@@ -56,23 +48,19 @@ def _AsClassName(fname):
                 _PREFIXES,
             ),
         )
-    return ".".join(toks[findex:]) + ".class"
+    return ".".join(toks[findex:])
 
 def _impl(ctx):
-    classes = ",".join(
-        [_AsClassName(x) for x in ctx.attr.srcs],
+    ctx.actions.write(
+        output = ctx.outputs.out,
+        content = "".join([_AsClassName(x) + "\n" for x in ctx.attr.srcs]),
     )
-    ctx.actions.write(output = ctx.outputs.out, content = _OUTPUT % (
-        classes,
-        ctx.attr.outname,
-    ))
 
-_gen_suite = rule(
+_gen_test_classes = rule(
     attrs = {
         "srcs": attr.label_list(allow_files = True),
-        "outname": attr.string(),
     },
-    outputs = {"out": "%{name}.java"},
+    outputs = {"out": "%{name}.txt"},
     implementation = _impl,
 )
 
@@ -110,8 +98,21 @@ LIBRARY_ONLY_ATTRS = [
     "proguard_specs",
 ]
 
+_RUNNER_MAIN_CLASS = "org.batfish.tools.junit.JUnitPlatformRunner"
+
+_RUNNER_RUNTIME_DEPS = [
+    "@batfish//tools/junit/org/batfish/tools/junit:runner",
+    "@maven//:org_junit_jupiter_junit_jupiter_engine",
+]
+
+def _merge(a, b):
+    return list(a) + [x for x in b if x not in a]
+
 def junit_tests(name, srcs, skip_pmd = False, **kwargs):
-    """Create a reference java_test using the given commands file.
+    """Create a java_test that runs the given test sources on the JUnit Platform.
+
+    The tests run under //tools/junit/org/batfish/tools/junit:runner, which does not
+    support test sharding, so shard_count is rejected.
 
     Args:
       name: the name of the generated test.
@@ -120,6 +121,8 @@ def junit_tests(name, srcs, skip_pmd = False, **kwargs):
       **kwargs: other arguments that may be used in the generated java_test. The most common
         value is deps.
     """
+    if "shard_count" in kwargs:
+        fail("junit_tests does not support shard_count: the JUnit Platform runner does not implement test sharding")
     if len(srcs) == 0:
         return
 
@@ -135,25 +138,30 @@ def junit_tests(name, srcs, skip_pmd = False, **kwargs):
         **lib_kwargs
     )
 
-    # generate a JUnit Suite java file for all the test sources
-    s_name = name.replace("-", "_") + "TestSuite"
-    test_files = [s for s in srcs if s.endswith("Test.java")]
-    _gen_suite(
-        name = s_name,
-        srcs = test_files,
-        outname = s_name,
+    # List the test classes for the runner.
+    classes_name = name + "_test_classes"
+    _gen_test_classes(
+        name = classes_name,
+        srcs = [s for s in srcs if s.endswith("Test.java")],
     )
 
-    # Run a Java test with suite source file, and existing deps + new testlib
+    # Run the tests with existing deps + new testlib. The java_test has no
+    # sources of its own, so everything it needs is a runtime dep.
     test_kwargs = dict(**kwargs)
     for attr_name in LIBRARY_ONLY_ATTRS:
         test_kwargs.pop(attr_name, None)
-    test_deps = list(test_kwargs.pop("deps", []))
+    runtime_deps = _merge(
+        test_kwargs.pop("deps", []) + test_kwargs.pop("runtime_deps", []),
+        [":" + testlib_name] + _RUNNER_RUNTIME_DEPS,
+    )
     java_test(
         name = name,
-        test_class = s_name,
-        srcs = [":" + s_name],
-        deps = test_deps + [":" + testlib_name],
+        main_class = _RUNNER_MAIN_CLASS,
+        use_testrunner = False,
+        args = ["$(rootpath :%s)" % classes_name] + test_kwargs.pop("args", []),
+        data = [":" + classes_name] + test_kwargs.pop("data", []),
+        jvm_flags = ["-ea"] + test_kwargs.pop("jvm_flags", []),
+        runtime_deps = runtime_deps,
         **test_kwargs
     )
 

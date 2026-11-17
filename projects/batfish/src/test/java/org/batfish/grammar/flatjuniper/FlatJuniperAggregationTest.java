@@ -7,6 +7,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.SortedMap;
@@ -19,19 +20,18 @@ import org.batfish.datamodel.Topology;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests of Juniper aggregate-ethernet devices. */
-public class FlatJuniperAggregationTest {
+class FlatJuniperAggregationTest {
 
   private static final String SNAPSHOT_PATH = "org/batfish/grammar/juniper/testrigs/aggregation";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testAe0LinkComesUp() throws IOException {
+  void testAe0LinkComesUp() throws IOException {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()

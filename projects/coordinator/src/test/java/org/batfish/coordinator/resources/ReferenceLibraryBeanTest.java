@@ -8,13 +8,13 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ReferenceLibraryBeanTest {
+class ReferenceLibraryBeanTest {
 
   /** Test if empty library is bean'd properly */
   @Test
-  public void constructorEmpty() {
+  void constructorEmpty() {
     ReferenceLibrary library = new ReferenceLibrary(ImmutableList.of());
 
     assertThat(new ReferenceLibraryBean(library).books, equalTo(ImmutableSortedSet.of()));
@@ -22,7 +22,7 @@ public class ReferenceLibraryBeanTest {
 
   /** Test if a non-empty library is bean'd properly */
   @Test
-  public void constructorNonEmpty() {
+  void constructorNonEmpty() {
     ReferenceLibrary library =
         new ReferenceLibrary(
             ImmutableList.of(

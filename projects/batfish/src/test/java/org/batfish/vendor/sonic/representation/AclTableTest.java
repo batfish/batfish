@@ -1,6 +1,6 @@
 package org.batfish.vendor.sonic.representation;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
@@ -9,12 +9,12 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.vendor.sonic.representation.AclTable.Stage;
 import org.batfish.vendor.sonic.representation.AclTable.Type;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class AclTableTest {
+class AclTableTest {
 
   @Test
-  public void testJacksonDeserialization() throws JsonProcessingException {
+  void testJacksonDeserialization() throws JsonProcessingException {
     String input =
         " {"
             + "    \"services\": ["
@@ -38,7 +38,7 @@ public class AclTableTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     AclTable obj =
         AclTable.builder()
             .setPorts(ImmutableList.of())
@@ -50,7 +50,7 @@ public class AclTableTest {
 
   @SuppressWarnings("UnstableApiUsage")
   @Test
-  public void testEquals() {
+  void testEquals() {
     AclTable.Builder builder = AclTable.builder();
     new EqualsTester()
         .addEqualityGroup(

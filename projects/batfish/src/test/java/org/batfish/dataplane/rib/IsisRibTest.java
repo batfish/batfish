@@ -10,12 +10,12 @@ import org.batfish.datamodel.IsisRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.isis.IsisLevel;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class IsisRibTest {
+class IsisRibTest {
 
   @Test
-  public void testRoutePreferenceComparator() {
+  void testRoutePreferenceComparator() {
     IsisRoute baseRoute =
         new IsisRoute.Builder()
             .setAdmin(115)

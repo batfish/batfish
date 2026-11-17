@@ -8,15 +8,15 @@ import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link CommunityExprEvaluator}. */
-public final class CommunityExprEvaluatorTest {
+final class CommunityExprEvaluatorTest {
 
   private static final CommunityContext CTX = CommunityContext.builder().build();
 
   @Test
-  public void testVisitRouteTargetExtendedCommunityExpr() {
+  void testVisitRouteTargetExtendedCommunityExpr() {
     {
       // global administrator fitting within 16 bits
       RouteTargetExtendedCommunityExpr expr =
@@ -32,7 +32,7 @@ public final class CommunityExprEvaluatorTest {
   }
 
   @Test
-  public void testVisitStandardCommunityHighLowExprs() {
+  void testVisitStandardCommunityHighLowExprs() {
     StandardCommunityHighLowExprs expr =
         new StandardCommunityHighLowExprs(new LiteralInt(1), new LiteralInt(2));
     assertThat(expr.accept(instance(), CTX), equalTo(StandardCommunity.of(1, 2)));

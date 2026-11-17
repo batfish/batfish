@@ -31,11 +31,11 @@ import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.NameInterfaceSpecifier;
 import org.batfish.specifier.NameNodeSpecifier;
 import org.batfish.specifier.NameRegexInterfaceSpecifier;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link InterfacePropertiesAnswerer} */
-public class InterfacePropertiesAnswererTest {
+class InterfacePropertiesAnswererTest {
 
   private static final String HOSTNAME = "node1";
   private static final String INTERFACE_NAME = "Ethernet0";
@@ -52,7 +52,7 @@ public class InterfacePropertiesAnswererTest {
   }
 
   @Test
-  public void getProperties() {
+  void getProperties() {
     Configuration conf1 = new Configuration("node1", ConfigurationFormat.CISCO_IOS);
 
     TestInterface.builder()
@@ -117,7 +117,7 @@ public class InterfacePropertiesAnswererTest {
   }
 
   @Test
-  public void getPropertiesExcludeShutInterfaces() {
+  void getPropertiesExcludeShutInterfaces() {
     Configuration conf = new Configuration("node", ConfigurationFormat.CISCO_IOS);
     Interface active =
         TestInterface.builder().setName("active").setOwner(conf).setAdminUp(true).build();
@@ -170,8 +170,8 @@ public class InterfacePropertiesAnswererTest {
             .toColumnMap());
   }
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _nf = new NetworkFactory();
     _cb =
         _nf.configurationBuilder()
@@ -184,7 +184,7 @@ public class InterfacePropertiesAnswererTest {
   }
 
   @Test
-  public void testHsrpGroups() {
+  void testHsrpGroups() {
     _ib.setHsrpGroups(ImmutableMap.of(1, HsrpGroup.builder().build())).build();
     String property = InterfacePropertySpecifier.HSRP_GROUPS;
 
@@ -192,7 +192,7 @@ public class InterfacePropertiesAnswererTest {
   }
 
   @Test
-  public void testHsrpGroupsEmpty() {
+  void testHsrpGroupsEmpty() {
     _ib.build();
     String property = InterfacePropertySpecifier.HSRP_GROUPS;
 
@@ -200,7 +200,7 @@ public class InterfacePropertiesAnswererTest {
   }
 
   @Test
-  public void testHsrpVersion() {
+  void testHsrpVersion() {
     _ib.setHsrpVersion("2").build();
     String property = InterfacePropertySpecifier.HSRP_VERSION;
 
@@ -208,7 +208,7 @@ public class InterfacePropertiesAnswererTest {
   }
 
   @Test
-  public void testHsrpVersionUnset() {
+  void testHsrpVersionUnset() {
     _ib.build();
     String property = InterfacePropertySpecifier.HSRP_VERSION;
 

@@ -5,8 +5,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -27,13 +27,12 @@ import org.batfish.minesweeper.bdd.BDDRoute.Attribute;
 import org.batfish.minesweeper.bdd.BDDRoute.Field;
 import org.batfish.minesweeper.bdd.BDDRoute.NextHopType;
 import org.batfish.minesweeper.bdd.BDDTunnelEncapsulationAttribute.Value;
-import org.junit.Test;
-import org.junit.internal.matchers.ThrowableMessageMatcher;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link BDDRoute}. */
-public class BDDRouteTest {
+class BDDRouteTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     BDDFactory factory = JFactory.init(100, 100);
     BDDRoute orig = new BDDRoute(factory, 3, 4, 5, 6, 7, 2, ImmutableList.of());
     BDDRoute admin = new BDDRoute(orig);
@@ -120,7 +119,7 @@ public class BDDRouteTest {
   }
 
   @Test
-  public void testWellFormedOriginType() {
+  void testWellFormedOriginType() {
     BDDFactory factory = JFactory.init(100, 100);
     BDDRoute route = new BDDRoute(factory, 0, 0, 0, 0, 0, 0, ImmutableList.of());
 
@@ -133,13 +132,12 @@ public class BDDRouteTest {
         assertThrows(
             IllegalArgumentException.class,
             () -> route.getOriginType().satAssignmentToValue(anyOriginType.not()));
-    assertThat(
-        thrown, ThrowableMessageMatcher.hasMessage(containsString("is not valid in this domain")));
+    assertThat(thrown.getMessage(), containsString("is not valid in this domain"));
     assertThat(route.wellFormednessConstraints(true).and(anyOriginType.not()), isZero());
   }
 
   @Test
-  public void testAugmentPairing() {
+  void testAugmentPairing() {
     BDDFactory factory = JFactory.init(100, 100);
     // a fresh, unconstrained BDDRoute
     BDDRoute orig =
@@ -386,7 +384,7 @@ public class BDDRouteTest {
   }
 
   @Test
-  public void testVeccomposeIdentity() {
+  void testVeccomposeIdentity() {
     // Composing any route through an identity pairing (each input variable mapped to itself) leaves
     // the route unchanged.
     BDDFactory factory = JFactory.init(10000, 1000);
@@ -406,7 +404,7 @@ public class BDDRouteTest {
   }
 
   @Test
-  public void testVeccomposeSubstitutesInput() {
+  void testVeccomposeSubstitutesInput() {
     // veccompose feeds one route's attribute formulas in as another's input variables: composing a
     // route whose local-pref is its input variable through a pairing that pins local-pref to a
     // constant yields that constant.
@@ -428,7 +426,7 @@ public class BDDRouteTest {
   }
 
   @Test
-  public void testFreeReturnsToBaselineOutstandingBDDs() {
+  void testFreeReturnsToBaselineOutstandingBDDs() {
     BDDFactory factory = JFactory.init(10000, 1000);
     long baseline = factory.numOutstandingBDDs();
 
@@ -440,7 +438,7 @@ public class BDDRouteTest {
   }
 
   @Test
-  public void testCopyConstructorFieldsAreIndependentlyOwned() {
+  void testCopyConstructorFieldsAreIndependentlyOwned() {
     // If any field of the copy aliased the original's BDD object, free()-ing both routes would
     // free that field's BDD twice -- an error JFactory throws on.
     BDDFactory factory = JFactory.init(10000, 1000);
@@ -452,7 +450,7 @@ public class BDDRouteTest {
   }
 
   @Test
-  public void testNegativePrefixStartIdxRejected() {
+  void testNegativePrefixStartIdxRejected() {
     BDDFactory factory = JFactory.init(10000, 1000);
     assertThrows(
         IllegalArgumentException.class,
@@ -472,7 +470,7 @@ public class BDDRouteTest {
   }
 
   @Test
-  public void testStartIdxBeforeEndOfPrefixBlockRejected() {
+  void testStartIdxBeforeEndOfPrefixBlockRejected() {
     BDDFactory factory = JFactory.init(10000, 1000);
     assertThrows(
         IllegalArgumentException.class,
@@ -492,7 +490,7 @@ public class BDDRouteTest {
   }
 
   @Test
-  public void testStartIdxAtEndOfPrefixBlockAccepted() {
+  void testStartIdxAtEndOfPrefixBlockAccepted() {
     // 38 == PREFIX_LENGTH_BITS + PREFIX_BITS (6 + 32) -- the boundary case immediately at the end
     // of the prefix/prefix-length block, one past the rejected 37 above -- must not throw.
     BDDFactory factory = JFactory.init(10000, 1000);
@@ -511,7 +509,7 @@ public class BDDRouteTest {
   }
 
   @Test
-  public void testEqualsRelationDoesNotLeak() {
+  void testEqualsRelationDoesNotLeak() {
     BDDFactory factory = JFactory.init(10000, 1000);
     BDDRoute route = new BDDRoute(factory, 3, 4, 5, 6, 7, 2, ImmutableList.of());
     BDDRoute other = new BDDRoute(route);
@@ -529,7 +527,7 @@ public class BDDRouteTest {
   }
 
   @Test
-  public void testEqualsRelationOnDoesNotLeak() {
+  void testEqualsRelationOnDoesNotLeak() {
     BDDFactory factory = JFactory.init(10000, 1000);
     BDDRoute route = new BDDRoute(factory, 3, 4, 5, 6, 7, 2, ImmutableList.of());
     BDDRoute other = new BDDRoute(route);
@@ -549,7 +547,7 @@ public class BDDRouteTest {
    * BDDRoute#augmentPairingOn}/{@link Field#eq} all agree it -- and only it -- was touched.
    */
   @Test
-  public void testTouchedFieldsAndFieldOperationsPerAttribute() {
+  void testTouchedFieldsAndFieldOperationsPerAttribute() {
     BDDFactory factory = JFactory.init(1000, 1000);
     BDDRoute identity =
         new BDDRoute(
@@ -616,7 +614,7 @@ public class BDDRouteTest {
   }
 
   @Test
-  public void testTouchedFieldsAndFieldOperationsPerCommunityAndTrack() {
+  void testTouchedFieldsAndFieldOperationsPerCommunityAndTrack() {
     BDDFactory factory = JFactory.init(1000, 1000);
     BDDRoute identity = new BDDRoute(factory, 3, 2, 2, 2, 2, 3, ImmutableList.of());
 
@@ -645,7 +643,7 @@ public class BDDRouteTest {
   }
 
   @Test
-  public void testLocalAttributesAreSizedToTheirLiterals() {
+  void testLocalAttributesAreSizedToTheirLiterals() {
     BDDFactory factory = JFactory.init(1000, 1000);
     BDDRoute route =
         new BDDRoute(
@@ -671,7 +669,7 @@ public class BDDRouteTest {
   }
 
   @Test
-  public void testWellFormedLocalAttributes() {
+  void testWellFormedLocalAttributes() {
     BDDFactory factory = JFactory.init(1000, 1000);
     BDDRoute route =
         new BDDRoute(
@@ -698,7 +696,7 @@ public class BDDRouteTest {
   }
 
   @Test
-  public void testTouchedFieldsIsEmptyForIdentity() {
+  void testTouchedFieldsIsEmptyForIdentity() {
     BDDFactory factory = JFactory.init(1000, 1000);
     BDDRoute identity = new BDDRoute(factory, 3, 4, 5, 6, 7, 2, ImmutableList.of());
     assertEquals(ImmutableSet.of(), identity.touchedFields(identity));

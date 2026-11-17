@@ -30,9 +30,9 @@ import org.batfish.datamodel.collections.FileLines;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.SpecifierContext;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class DefinedStructuresAnswererTest {
+class DefinedStructuresAnswererTest {
   // Entry is: filename -> struct type -> struct name -> defined structure info
   private static final SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
       BASIC_DEFINED_STRUCTS_MAP =
@@ -64,7 +64,7 @@ public class DefinedStructuresAnswererTest {
 
   /** Tests that when a file filter is specified, correct results are returned. */
   @Test
-  public void testFilterFiles() {
+  void testFilterFiles() {
     DefinedStructuresQuestion fileFilter = new DefinedStructuresQuestion("file1", null, ".*", ".*");
     TestBatfish tb = new TestBatfish();
     TableAnswerElement answer =
@@ -91,7 +91,7 @@ public class DefinedStructuresAnswererTest {
 
   /** Tests that when a file filter is specified along with nodes, correct results are returned. */
   @Test
-  public void testFilterFilesAndNodes() {
+  void testFilterFilesAndNodes() {
     DefinedStructuresQuestion fileAndNode = new DefinedStructuresQuestion("file1", "a", ".*", ".*");
     TestBatfish tb = new TestBatfish();
     assertThat(

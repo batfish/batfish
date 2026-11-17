@@ -2,9 +2,9 @@ package org.batfish.common.bdd;
 
 import static org.batfish.common.bdd.BDDUtils.bddFactory;
 import static org.batfish.common.bdd.BDDUtils.bitvector;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
@@ -13,20 +13,20 @@ import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
 import net.sf.javabdd.BDDVarPair;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link BDDPairingFactory}. */
-public final class BDDPairingFactoryTest {
+final class BDDPairingFactoryTest {
   private BDDFactory _factory;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _factory = bddFactory(8);
   }
 
   @Test
-  public void testBasic() {
+  void testBasic() {
     PrimedBDDInteger primedInteger1 =
         new PrimedBDDInteger(
             _factory, bitvector(_factory, 2, 0, false), bitvector(_factory, 2, 2, false));
@@ -65,7 +65,7 @@ public final class BDDPairingFactoryTest {
   }
 
   @Test
-  public void testDomainIncludes() {
+  void testDomainIncludes() {
     BDD bdd0 = _factory.ithVar(0);
     BDD bdd1 = _factory.ithVar(1);
     BDDPairingFactory pairingFactory =
@@ -75,7 +75,7 @@ public final class BDDPairingFactoryTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     Set<BDDVarPair> pairs1 =
         ImmutableSet.of(new BDDVarPair(_factory.ithVar(0), _factory.ithVar(1)));
     Set<BDDVarPair> pairs2 =

@@ -10,13 +10,10 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.specifier.InterfaceSpecifierFilterSpecifier.Type;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link InterfaceSpecifierFilterSpecifier}. */
-public class InterfaceSpecifierFilterSpecifierTest {
-  @Rule public final ExpectedException exception = ExpectedException.none();
+class InterfaceSpecifierFilterSpecifierTest {
 
   private static final String _nodeName = "node0";
   private static final MockSpecifierContext _ctxt;
@@ -48,7 +45,7 @@ public class InterfaceSpecifierFilterSpecifierTest {
   }
 
   @Test
-  public void resolveInFilter() {
+  void resolveInFilter() {
     assertThat(
         new InterfaceSpecifierFilterSpecifier(Type.IN_FILTER, new NameInterfaceSpecifier("eth0"))
             .resolve(_nodeName, _ctxt),
@@ -56,7 +53,7 @@ public class InterfaceSpecifierFilterSpecifierTest {
   }
 
   @Test
-  public void resolveOutFilter() {
+  void resolveOutFilter() {
     assertThat(
         new InterfaceSpecifierFilterSpecifier(Type.OUT_FILTER, new NameInterfaceSpecifier("eth0"))
             .resolve(_nodeName, _ctxt),
@@ -64,7 +61,7 @@ public class InterfaceSpecifierFilterSpecifierTest {
   }
 
   @Test
-  public void resolveMissingFilter() {
+  void resolveMissingFilter() {
     assertThat(
         new InterfaceSpecifierFilterSpecifier(Type.OUT_FILTER, new NameInterfaceSpecifier("eth1"))
             .resolve(_nodeName, _ctxt),

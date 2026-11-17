@@ -31,11 +31,11 @@ import org.batfish.datamodel.packet_policy.PacketMatchExpr;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.packet_policy.Return;
 import org.batfish.datamodel.packet_policy.Statement;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class SourcesReferencedOnDeviceTest {
+class SourcesReferencedOnDeviceTest {
   @Test
-  public void testActiveReferences() {
+  void testActiveReferences() {
     Configuration c =
         Configuration.builder().setHostname("test").setConfigurationFormat(CISCO_IOS).build();
     IpAccessList.builder()
@@ -89,7 +89,7 @@ public class SourcesReferencedOnDeviceTest {
   }
 
   @Test
-  public void testCollectPacketPolicyReferences() {
+  void testCollectPacketPolicyReferences() {
     Statement nestedIf =
         new If(new PacketMatchExpr(matchSrcInterface("nested-if")), ImmutableList.of());
     Statement ifSt =

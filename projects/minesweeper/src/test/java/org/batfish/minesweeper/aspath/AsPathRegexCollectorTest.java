@@ -1,6 +1,6 @@
 package org.batfish.minesweeper.aspath;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -29,11 +29,11 @@ import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.batfish.minesweeper.utils.Tuple;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link AsPathRegexCollector}. */
-public class AsPathRegexCollectorTest {
+class AsPathRegexCollectorTest {
 
   private static final String HOSTNAME = "hostname";
   private Configuration _baseConfig;
@@ -42,8 +42,8 @@ public class AsPathRegexCollectorTest {
   private static final String ASPATH1 = " 40$";
   private static final String ASPATH2 = "^$";
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder()
@@ -56,7 +56,7 @@ public class AsPathRegexCollectorTest {
   }
 
   @Test
-  public void testVisitConjunction() {
+  void testVisitConjunction() {
 
     Conjunction c =
         new Conjunction(
@@ -74,7 +74,7 @@ public class AsPathRegexCollectorTest {
   }
 
   @Test
-  public void testVisitConjunctionChain() {
+  void testVisitConjunctionChain() {
 
     ConjunctionChain cc =
         new ConjunctionChain(
@@ -92,7 +92,7 @@ public class AsPathRegexCollectorTest {
   }
 
   @Test
-  public void testVisitDisjunctionOfAsPathMatches() {
+  void testVisitDisjunctionOfAsPathMatches() {
 
     Disjunction d =
         new Disjunction(
@@ -110,7 +110,7 @@ public class AsPathRegexCollectorTest {
   }
 
   @Test
-  public void testVisitDisjunctionOfNotAllAsPathMatches() {
+  void testVisitDisjunctionOfNotAllAsPathMatches() {
 
     Disjunction d =
         new Disjunction(
@@ -130,7 +130,7 @@ public class AsPathRegexCollectorTest {
   }
 
   @Test
-  public void testVisitFirstMatchChain() {
+  void testVisitFirstMatchChain() {
 
     FirstMatchChain fmc =
         new FirstMatchChain(
@@ -148,7 +148,7 @@ public class AsPathRegexCollectorTest {
   }
 
   @Test
-  public void testVisitMatchAsPath() {
+  void testVisitMatchAsPath() {
 
     MatchAsPath matchAsPath = MatchAsPath.of(InputAsPath.instance(), AsPathMatchRegex.of(ASPATH1));
 
@@ -161,7 +161,7 @@ public class AsPathRegexCollectorTest {
   }
 
   @Test
-  public void testVisitMatchLegacyAsPathNamed() {
+  void testVisitMatchLegacyAsPathNamed() {
 
     String asPathName = "name";
 
@@ -186,7 +186,7 @@ public class AsPathRegexCollectorTest {
   }
 
   @Test
-  public void testVisitNot() {
+  void testVisitNot() {
 
     Not n =
         new Not(
@@ -205,7 +205,7 @@ public class AsPathRegexCollectorTest {
   }
 
   @Test
-  public void testVisitWithEnvironmentExpr() {
+  void testVisitWithEnvironmentExpr() {
 
     String asPath3 = "50";
     String asPath4 = "^40 50$";

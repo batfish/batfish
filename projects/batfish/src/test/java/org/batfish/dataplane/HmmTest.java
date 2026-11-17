@@ -9,6 +9,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasItem;
 
 import com.google.common.collect.ImmutableSet;
+import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 import org.batfish.datamodel.AbstractRoute;
@@ -21,16 +22,15 @@ import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** End-to-end-ish test of EVPN Type 5 routes and VTEP forwarding on NX-OS devices */
-public class HmmTest {
+class HmmTest {
   private static final String SNAPSHOT_FOLDER = "org/batfish/dataplane/testrigs/hmm";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private Batfish _batfish;
 
@@ -45,8 +45,8 @@ public class HmmTest {
    * - r1 is not running VRRP
    * - r1 main RIB should have HMM routes for 192.0.2.2/32 and 192.0.2.3/32, with next-hop Vlan2
    */
-  @Before
-  public void setup() throws IOException {
+  @BeforeEach
+  void setup() throws IOException {
     String r1Filename = "r1";
     String r2Filename = "r2";
     _batfish =
@@ -60,7 +60,7 @@ public class HmmTest {
   }
 
   @Test
-  public void testRoutes() {
+  void testRoutes() {
     DataPlane dp = _batfish.loadDataPlane(_batfish.getSnapshot());
 
     // test main RIB routes
@@ -82,7 +82,7 @@ public class HmmTest {
   }
 
   @Test
-  public void testTopology() {
+  void testTopology() {
     Topology topology = _batfish.getTopologyProvider().getLayer3Topology(_batfish.getSnapshot());
 
     assertThat(topology.getEdges(), hasItem(Edge.of("r1", "Vlan2", "r2", "GigabitEthernet0/0")));

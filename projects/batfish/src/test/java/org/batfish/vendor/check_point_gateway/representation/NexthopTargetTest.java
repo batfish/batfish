@@ -6,12 +6,12 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.datamodel.Ip;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link NexthopTarget} */
-public class NexthopTargetTest {
+class NexthopTargetTest {
   @Test
-  public void testEquality() {
+  void testEquality() {
     new EqualsTester()
         .addEqualityGroup(NexthopReject.INSTANCE, NexthopReject.INSTANCE)
         .addEqualityGroup(NexthopBlackhole.INSTANCE, NexthopBlackhole.INSTANCE)
@@ -25,7 +25,7 @@ public class NexthopTargetTest {
   }
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     NexthopTarget obj = new NexthopLogical("iface");
     NexthopTarget clone = SerializationUtils.clone(obj);
     assertThat(obj, equalTo(clone));

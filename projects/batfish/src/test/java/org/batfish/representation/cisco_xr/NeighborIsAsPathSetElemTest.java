@@ -7,20 +7,20 @@ import com.google.common.collect.Range;
 import com.google.common.testing.EqualsTester;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link NeighborIsAsPathSetElem}. */
 @ParametersAreNonnullByDefault
-public final class NeighborIsAsPathSetElemTest {
+final class NeighborIsAsPathSetElemTest {
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     NeighborIsAsPathSetElem obj = new NeighborIsAsPathSetElem(false, Range.singleton(1L));
     assertThat(SerializationUtils.clone(obj), equalTo(obj));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     NeighborIsAsPathSetElem obj = new NeighborIsAsPathSetElem(false, Range.singleton(1L));
     new EqualsTester()
         .addEqualityGroup(obj, new NeighborIsAsPathSetElem(false, Range.singleton(1L)))

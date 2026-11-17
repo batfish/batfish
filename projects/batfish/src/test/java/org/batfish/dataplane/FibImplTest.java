@@ -18,6 +18,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 import org.batfish.datamodel.AbstractRoute;
@@ -40,17 +41,13 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.dataplane.rib.Rib;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests of {@link FibImpl} */
-@RunWith(JUnit4.class)
-public final class FibImplTest {
-  @Rule public TemporaryFolder folder = new TemporaryFolder();
+final class FibImplTest {
+  @TempDir public File folder;
 
   private static final Ip DST_IP = Ip.parse("3.3.3.3");
   private static final String NODE1 = "node1";
@@ -63,8 +60,8 @@ public final class FibImplTest {
   private Configuration _config;
   private Vrf _vrf;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -82,7 +79,7 @@ public final class FibImplTest {
   }
 
   @Test
-  public void testGetNextHopInterfacesByRoute() throws IOException {
+  void testGetNextHopInterfacesByRoute() throws IOException {
     String iface1 = "iface1";
     String iface2 = "iface2";
     String iface3 = "iface3";
@@ -119,7 +116,7 @@ public final class FibImplTest {
   }
 
   @Test
-  public void testNextHopInterfaceTakesPrecedence() throws IOException {
+  void testNextHopInterfaceTakesPrecedence() throws IOException {
     _ib.setName(FAST_ETHERNET_0).setAddresses(NODE1_PHYSICAL_NETWORK).build();
     /*
      * Both next hop IP and interface on the static route. Interface should take precedence
@@ -151,7 +148,7 @@ public final class FibImplTest {
   }
 
   @Test
-  public void testNextHopIpIsResolved() throws IOException {
+  void testNextHopIpIsResolved() throws IOException {
     _ib.setName(FAST_ETHERNET_0).setAddresses(NODE1_PHYSICAL_NETWORK).build();
     /*
      * Only next hop ip on the static route.
@@ -181,7 +178,7 @@ public final class FibImplTest {
   }
 
   @Test
-  public void testNonForwardingRoutesNotInFib() {
+  void testNonForwardingRoutesNotInFib() {
     Rib rib = new Rib();
 
     StaticRoute nonForwardingInterfaceRoute =
@@ -220,7 +217,7 @@ public final class FibImplTest {
   }
 
   @Test
-  public void testNextVrfRouteInFib() {
+  void testNextVrfRouteInFib() {
     Rib rib = new Rib();
     String nextVrf = "nextVrf";
 
@@ -246,7 +243,7 @@ public final class FibImplTest {
    * is not.
    */
   @Test
-  public void testResolutionSharedAcrossRoutesWithSameNextHopExceptLoops() {
+  void testResolutionSharedAcrossRoutesWithSameNextHopExceptLoops() {
     Rib rib = new Rib();
     ConnectedRoute connected = new ConnectedRoute(Prefix.parse("10.0.0.0/24"), "Eth1");
     // Two ECMP routes for 2.2.2.0/24: one resolves via the connected route, the other via 2.2.2.2,
@@ -301,7 +298,7 @@ public final class FibImplTest {
   }
 
   @Test
-  public void testResolutionWhenNextHopMatchesNonForwardingRoute() {
+  void testResolutionWhenNextHopMatchesNonForwardingRoute() {
     Rib rib = new Rib();
 
     StaticRoute nonForwardingRoute =
@@ -344,7 +341,7 @@ public final class FibImplTest {
   }
 
   @Test
-  public void testResolutionWhenNextHopMatchesRestrictionViolatingRoute() {
+  void testResolutionWhenNextHopMatchesRestrictionViolatingRoute() {
     Rib rib = new Rib();
 
     StaticRoute restrictionViolatingRoute =
@@ -385,8 +382,7 @@ public final class FibImplTest {
   }
 
   @Test
-  public void
-      testResolutionWhenRecursiveStaticRouteNextHopMatchesRestrictionViolatingConnectedRoute() {
+  void testResolutionWhenRecursiveStaticRouteNextHopMatchesRestrictionViolatingConnectedRoute() {
     Rib rib = new Rib();
 
     ConnectedRoute restrictionViolatingRoute =
@@ -421,7 +417,7 @@ public final class FibImplTest {
   }
 
   @Test
-  public void testResolutionWhenNextHopMatchesNonForwardingRouteWithECMP() {
+  void testResolutionWhenNextHopMatchesNonForwardingRouteWithECMP() {
     Rib rib = new Rib();
 
     StaticRoute nonForwardingRoute =
@@ -487,7 +483,7 @@ public final class FibImplTest {
   }
 
   @Test
-  public void testResolutionWhenNextHopRouteDoesNotMatchRestrictionWithECMP() {
+  void testResolutionWhenNextHopRouteDoesNotMatchRestrictionWithECMP() {
     Rib rib = new Rib();
 
     StaticRoute restrictionViolatingRoute =
@@ -549,7 +545,7 @@ public final class FibImplTest {
   }
 
   @Test
-  public void testFibExportFilter() {
+  void testFibExportFilter() {
     Rib rib = new Rib();
 
     StaticRoute allowedRoute =

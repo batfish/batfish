@@ -1,15 +1,15 @@
 package org.batfish.minesweeper;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link LocalAttributeLiterals}. */
-public class LocalAttributeLiteralsTest {
+class LocalAttributeLiteralsTest {
 
   @Test
-  public void testCreateSortsAndRemovesDuplicates() {
+  void testCreateSortsAndRemovesDuplicates() {
     LocalAttributeLiterals literals =
         LocalAttributeLiterals.create(
             ImmutableList.of(7L, 5L, 7L), ImmutableList.of(3L), ImmutableList.of(2L, 1L));
@@ -20,7 +20,7 @@ public class LocalAttributeLiteralsTest {
   }
 
   @Test
-  public void testCreateRemovesZero() {
+  void testCreateRemovesZero() {
     LocalAttributeLiterals literals =
         LocalAttributeLiterals.create(
             ImmutableList.of(0L, 5L), ImmutableList.of(0L), ImmutableList.of());
@@ -30,7 +30,7 @@ public class LocalAttributeLiteralsTest {
   }
 
   @Test
-  public void testEmpty() {
+  void testEmpty() {
     LocalAttributeLiterals empty = LocalAttributeLiterals.empty();
 
     assertEquals(ImmutableList.of(), empty.tag2s());

@@ -1,7 +1,7 @@
 package org.batfish.common.util;
 
 import static org.batfish.common.util.FlatMapIterator.flatMapIterator;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import java.util.Iterator;
@@ -9,17 +9,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link FlatMapIterator}. */
-public final class FlatMapIteratorTest {
+final class FlatMapIteratorTest {
   private static <T> Stream<T> toStream(Iterator<T> iter) {
     Iterable<T> iterable = () -> iter;
     return StreamSupport.stream(iterable.spliterator(), false);
   }
 
   @Test
-  public void testSimple() {
+  void testSimple() {
     // double each integer from 0 to 5 (exclusive)
     List<Integer> actual =
         toStream(

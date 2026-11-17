@@ -1,14 +1,14 @@
 package org.batfish.datamodel.flow;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class LoopStepTest {
+class LoopStepTest {
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     {
       LoopStep clone = BatfishObjectMapper.clone(LoopStep.INSTANCE, LoopStep.class);
       assertEquals(clone, LoopStep.INSTANCE);
@@ -21,7 +21,7 @@ public class LoopStepTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new Object())
         .addEqualityGroup(

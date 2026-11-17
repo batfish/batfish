@@ -25,7 +25,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -89,11 +89,11 @@ import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.trace.Tracer;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link TestRoutePoliciesAnswerer}. */
-public class TestRoutePoliciesAnswererTest {
+class TestRoutePoliciesAnswererTest {
   private static final String HOSTNAME = "hostname";
   private static final String POLICY_NAME = "policy";
 
@@ -103,8 +103,8 @@ public class TestRoutePoliciesAnswererTest {
   private RoutingPolicy.Builder _deltaPolicyBuilder;
   private IBatfish _batfish;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     setup(ConfigurationFormat.CISCO_IOS);
   }
 
@@ -128,7 +128,7 @@ public class TestRoutePoliciesAnswererTest {
 
   /** Test that we handle potential nulls in question parameters */
   @Test
-  public void testConstructorWithNullsInQuestion() {
+  void testConstructorWithNullsInQuestion() {
     TestRoutePoliciesAnswerer answerer =
         new TestRoutePoliciesAnswerer(
             new TestRoutePoliciesQuestion(Direction.IN, ImmutableList.of(), null, null, null),
@@ -138,7 +138,7 @@ public class TestRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testPermit() {
+  void testPermit() {
     RoutingPolicy policy =
         _policyBuilder.addStatement(new StaticStatement(Statements.ExitAccept)).build();
 
@@ -176,7 +176,7 @@ public class TestRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testRouteOrder() {
+  void testRouteOrder() {
     RoutingPolicy policy =
         _policyBuilder.addStatement(new StaticStatement(Statements.ExitAccept)).build();
 
@@ -224,7 +224,7 @@ public class TestRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testPermitOut() {
+  void testPermitOut() {
     RoutingPolicy policy =
         _policyBuilder.addStatement(new StaticStatement(Statements.ExitAccept)).build();
 
@@ -268,7 +268,7 @@ public class TestRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testDeny() {
+  void testDeny() {
     RoutingPolicy policy =
         _policyBuilder.addStatement(new StaticStatement(Statements.ExitReject)).build();
 
@@ -302,7 +302,7 @@ public class TestRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testChange() {
+  void testChange() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(new SetMetric(new LiteralLong(500L)))
@@ -350,7 +350,7 @@ public class TestRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testNoChange() {
+  void testNoChange() {
     RoutingPolicy policy =
         _policyBuilder.addStatement(new StaticStatement(Statements.ExitAccept)).build();
 
@@ -417,7 +417,7 @@ public class TestRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testLocalAttributesCarriedThrough() {
+  void testLocalAttributesCarriedThrough() {
     RoutingPolicy policy =
         _policyBuilder.addStatement(new StaticStatement(Statements.ExitAccept)).build();
     BgpRoute inputRoute = inputRouteWithLocalAttributes(2, 3, 4);
@@ -434,7 +434,7 @@ public class TestRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testSetLocalAttributes() {
+  void testSetLocalAttributes() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(new SetTag2(new LiteralLong(5)))
@@ -461,7 +461,7 @@ public class TestRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testMatchInputTag2() {
+  void testMatchInputTag2() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -480,7 +480,7 @@ public class TestRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testSetThenMatchMetric() {
+  void testSetThenMatchMetric() {
 
     List<Statement> stmts =
         ImmutableList.of(
@@ -556,7 +556,7 @@ public class TestRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testSetAdministrativeDistance() {
+  void testSetAdministrativeDistance() {
 
     List<Statement> stmts =
         ImmutableList.of(
@@ -610,7 +610,7 @@ public class TestRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testSetNextHopRemoteAddress() {
+  void testSetNextHopRemoteAddress() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(new SetNextHop(BgpPeerAddressNextHop.getInstance()))
@@ -670,7 +670,7 @@ public class TestRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testDiffBothDeny() {
+  void testDiffBothDeny() {
     _policyBuilder.addStatement(new StaticStatement(Statements.ExitReject)).build();
 
     _deltaPolicyBuilder.addStatement(new StaticStatement(Statements.ExitReject)).build();
@@ -698,7 +698,7 @@ public class TestRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testDiffSameChange() {
+  void testDiffSameChange() {
     _policyBuilder
         .addStatement(new SetMetric(new LiteralLong(500L)))
         .addStatement(new StaticStatement(Statements.ExitAccept))
@@ -732,7 +732,7 @@ public class TestRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testDiffAction() {
+  void testDiffAction() {
     _policyBuilder
         .addStatement(new SetMetric(new LiteralLong(500L)))
         .addStatement(new StaticStatement(Statements.ExitAccept))
@@ -778,7 +778,7 @@ public class TestRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testDiffChange() {
+  void testDiffChange() {
     _policyBuilder
         .addStatement(new SetMetric(new LiteralLong(500L)))
         .addStatement(new StaticStatement(Statements.ExitAccept))
@@ -831,7 +831,7 @@ public class TestRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testTrace() {
+  void testTrace() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -865,7 +865,7 @@ public class TestRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testToDiffRow_DiffResultButSame() {
+  void testToDiffRow_DiffResultButSame() {
     RoutingPolicyId rpid = new RoutingPolicyId("n", "p");
     Bgpv4Route inputRoute =
         Bgpv4Route.builder()
@@ -889,7 +889,7 @@ public class TestRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testStaticRouteAccept() {
+  void testStaticRouteAccept() {
     List<Statement> stmts =
         ImmutableList.of(
             new If(
@@ -937,7 +937,7 @@ public class TestRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testStaticRouteDeny() {
+  void testStaticRouteDeny() {
     List<Statement> stmts =
         ImmutableList.of(
             new If(

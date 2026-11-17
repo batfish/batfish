@@ -3,6 +3,7 @@ package org.batfish.datamodel.answers;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -15,24 +16,20 @@ import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class AnswerMetadataUtilTest {
+class AnswerMetadataUtilTest {
 
   private BatfishLogger _logger;
 
-  @Rule public ExpectedException _thrown = ExpectedException.none();
-
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _logger = new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false);
   }
 
   @Test
-  public void testComputeAnswerMetadata() {
+  void testComputeAnswerMetadata() {
     String columnName = "col";
     String issueColumnName = "colIssue";
     int value = 5;
@@ -74,7 +71,7 @@ public class AnswerMetadataUtilTest {
   }
 
   @Test
-  public void testComputeAnswerMetadataInapplicable() {
+  void testComputeAnswerMetadataInapplicable() {
     String columnName = "col";
     List<Integer> value = ImmutableList.of(5);
 
@@ -98,7 +95,7 @@ public class AnswerMetadataUtilTest {
   }
 
   @Test
-  public void testComputeAnswerMetadataUnsuccessfulAnswer() {
+  void testComputeAnswerMetadataUnsuccessfulAnswer() {
     Answer testAnswer = new Answer();
     testAnswer.setStatus(AnswerStatus.FAILURE);
 
@@ -108,7 +105,7 @@ public class AnswerMetadataUtilTest {
   }
 
   @Test
-  public void testComputeColumnAggregationMax() {
+  void testComputeColumnAggregationMax() {
     String columnName = "col";
     int value = 5;
 
@@ -127,7 +124,7 @@ public class AnswerMetadataUtilTest {
   }
 
   @Test
-  public void testComputeColumnAggregations() {
+  void testComputeColumnAggregations() {
     String columnName = "col";
     int value = 5;
 
@@ -146,7 +143,7 @@ public class AnswerMetadataUtilTest {
   }
 
   @Test
-  public void testComputeColumnMaxInvalidColumn() {
+  void testComputeColumnMaxInvalidColumn() {
     String columnName = "col";
     String invalidColumnName = "invalid";
     int value = 5;
@@ -158,12 +155,13 @@ public class AnswerMetadataUtilTest {
                     new DisplayHints().getTextDesc()))
             .addRow(Row.of(columnName, value));
 
-    _thrown.expect(IllegalArgumentException.class);
-    AnswerMetadataUtil.computeColumnMax(table, invalidColumnName, _logger);
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> AnswerMetadataUtil.computeColumnMax(table, invalidColumnName, _logger));
   }
 
   @Test
-  public void testComputeColumnMaxInvalidSchema() {
+  void testComputeColumnMaxInvalidSchema() {
     String columnName = "col";
     String value = "hello";
 
@@ -178,7 +176,7 @@ public class AnswerMetadataUtilTest {
   }
 
   @Test
-  public void testComputeColumnMaxNoRows() {
+  void testComputeColumnMaxNoRows() {
     String columnName = "col";
 
     TableAnswerElement table =
@@ -191,7 +189,7 @@ public class AnswerMetadataUtilTest {
   }
 
   @Test
-  public void testComputeColumnMaxNullInteger() {
+  void testComputeColumnMaxNullInteger() {
     String columnName = "col";
 
     TableAnswerElement table =
@@ -205,7 +203,7 @@ public class AnswerMetadataUtilTest {
   }
 
   @Test
-  public void testComputeColumnMaxNullAndNonNullInteger() {
+  void testComputeColumnMaxNullAndNonNullInteger() {
     String columnName = "col";
 
     TableAnswerElement table =
@@ -223,7 +221,7 @@ public class AnswerMetadataUtilTest {
   }
 
   @Test
-  public void testComputeColumnMaxOneRowInteger() {
+  void testComputeColumnMaxOneRowInteger() {
     String columnName = "col";
     int value = 5;
 
@@ -238,7 +236,7 @@ public class AnswerMetadataUtilTest {
   }
 
   @Test
-  public void testComputeColumnMaxOneRowIssue() {
+  void testComputeColumnMaxOneRowIssue() {
     String columnName = "col";
     int severity = 5;
     Issue value = new Issue("blah", severity, new Issue.Type("1", "2"));
@@ -254,7 +252,7 @@ public class AnswerMetadataUtilTest {
   }
 
   @Test
-  public void testComputeColumnMaxTwoRows() {
+  void testComputeColumnMaxTwoRows() {
     String columnName = "col";
     int value1 = 5;
     int value2 = 10;
@@ -271,7 +269,7 @@ public class AnswerMetadataUtilTest {
   }
 
   @Test
-  public void testComputeEmptyColumns() {
+  void testComputeEmptyColumns() {
     String fullColumn = "full";
     String partialColumn = "partial";
     String emptyColumn = "empty";

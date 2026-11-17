@@ -25,8 +25,8 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
@@ -53,10 +53,10 @@ import org.batfish.representation.aws.TransitGatewayAttachment.ResourceType;
 import org.batfish.representation.aws.TransitGatewayPropagations.Propagation;
 import org.batfish.representation.aws.TransitGatewayRoute.Type;
 import org.batfish.representation.aws.VpnConnection.GatewayType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link TransitGateway} */
-public class TransitGatewayTest {
+class TransitGatewayTest {
 
   private static IpsecTunnel _ipsecTunnel =
       new IpsecTunnel(
@@ -82,7 +82,7 @@ public class TransitGatewayTest {
           Ip.parse("52.27.166.152"));
 
   @Test
-  public void testDeserialization() throws IOException {
+  void testDeserialization() throws IOException {
     String text = readResource("org/batfish/representation/aws/TransitGatewayTest.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
@@ -111,7 +111,7 @@ public class TransitGatewayTest {
   }
 
   @Test
-  public void testConnectVpcAttachment() {
+  void testConnectVpcAttachment() {
     String routeTableId = "tgw-rtb";
     TransitGateway tgw =
         new TransitGateway(
@@ -191,7 +191,7 @@ public class TransitGatewayTest {
 
   /** Test that the VPC-TGW are correctly linked for the associated route table. */
   @Test
-  public void testConnectVpc_associatedTable() {
+  void testConnectVpc_associatedTable() {
     String tgwId = "tgw";
     String routeTableId = "tgw-rtb";
 
@@ -253,7 +253,7 @@ public class TransitGatewayTest {
    * in this test.
    */
   @Test
-  public void testConnectVpc_progagatedTables() {
+  void testConnectVpc_progagatedTables() {
     String tgwId = "tgw";
     String routeTableId1 = "tgw-rtb1";
     String routeTableId2 = "tgw-rtb2";
@@ -318,7 +318,7 @@ public class TransitGatewayTest {
   }
 
   @Test
-  public void testConnectStaticVpnAttachment() {
+  void testConnectStaticVpnAttachment() {
 
     String routeTableId = "tgw-rtb";
     TransitGateway tgw =
@@ -386,7 +386,7 @@ public class TransitGatewayTest {
   }
 
   @Test
-  public void testConnectBgpVpnAttachment() {
+  void testConnectBgpVpnAttachment() {
 
     String routeTableId = "tgw-rtb";
     TransitGateway tgw =
@@ -470,7 +470,7 @@ public class TransitGatewayTest {
    * allowed prefixes (batfish/batfish#10447).
    */
   @Test
-  public void testConnectDirectConnectAttachment() {
+  void testConnectDirectConnectAttachment() {
     String routeTableId = "tgw-rtb";
     TransitGateway tgw =
         new TransitGateway(
@@ -559,7 +559,7 @@ public class TransitGatewayTest {
   }
 
   @Test
-  public void testConnectPeeringAttachment() {
+  void testConnectPeeringAttachment() {
 
     String routeTable1Id = "rtb-1";
     String routeTable2Id = "rtb-2";
@@ -644,7 +644,7 @@ public class TransitGatewayTest {
   }
 
   @Test
-  public void testCreateBgpProcess() {
+  void testCreateBgpProcess() {
     Configuration tgwCfg = Utils.newAwsConfiguration("tgw", "local");
     Vrf vrf = Vrf.builder().setOwner(tgwCfg).setName("vrf").build();
     ConvertedConfiguration awsConfiguration = new ConvertedConfiguration();
@@ -661,7 +661,7 @@ public class TransitGatewayTest {
   }
 
   @Test
-  public void testPropagateRoutesVpc() {
+  void testPropagateRoutesVpc() {
     String routeTableId = "tgw-rtb"; // propagation table
     TransitGateway tgw =
         new TransitGateway(
@@ -740,7 +740,7 @@ public class TransitGatewayTest {
   }
 
   @Test
-  public void testStaticRoutesVpc() {
+  void testStaticRoutesVpc() {
     String routeTableId = "tgw-rtb";
     TransitGateway tgw =
         new TransitGateway(
@@ -822,7 +822,7 @@ public class TransitGatewayTest {
   }
 
   @Test
-  public void testStaticRoutesVpn() {
+  void testStaticRoutesVpn() {
 
     String routeTableId = "tgw-rtb";
     TransitGateway tgw =
@@ -895,7 +895,7 @@ public class TransitGatewayTest {
   }
 
   @Test
-  public void testSupportedVpnConfiguration() {
+  void testSupportedVpnConfiguration() {
     String routeTableId = "tgw-rt";
     TransitGatewayAttachment attachment =
         new TransitGatewayAttachment(
@@ -993,7 +993,7 @@ public class TransitGatewayTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     TransitGatewayOptions opt1 =
         new TransitGatewayOptions(
             64512L, true, "tgw-rtb-0fa40c8df355dce6e", true, "tgw-rtb-0fa40c8df355dce6e", true);

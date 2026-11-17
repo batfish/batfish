@@ -2,34 +2,34 @@ package org.batfish.specifier.parse;
 
 import static org.batfish.specifier.parse.ParsedIpProtocolSpecifier.IP_PROTOCOLS_SET;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import org.batfish.datamodel.IpProtocol;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link ParsedIpProtocolSpecifier} */
-public class ParsedIpProtocolSpecifierTest {
+class ParsedIpProtocolSpecifierTest {
 
   @Test
-  public void testResolveIpProtocol() {
+  void testResolveIpProtocol() {
     assertThat(
         new ParsedIpProtocolSpecifier(new IpProtocolIpProtocolAstNode("tcp")).resolve(),
         equalTo(ImmutableSet.of(IpProtocol.TCP)));
   }
 
   @Test
-  public void testResolveNotIpProtocol() {
+  void testResolveNotIpProtocol() {
     assertThat(
         new ParsedIpProtocolSpecifier(new NotIpProtocolAstNode("tcp")).resolve(),
         equalTo(Sets.difference(IP_PROTOCOLS_SET, ImmutableSet.of(IpProtocol.TCP))));
   }
 
   @Test
-  public void testResolveUnionTwoExcludings() {
+  void testResolveUnionTwoExcludings() {
     assertThat(
         new ParsedIpProtocolSpecifier(
                 new UnionIpProtocolAstNode(
@@ -40,7 +40,7 @@ public class ParsedIpProtocolSpecifierTest {
   }
 
   @Test
-  public void testResolveUnionTwoIncludings() {
+  void testResolveUnionTwoIncludings() {
     assertThat(
         new ParsedIpProtocolSpecifier(
                 new UnionIpProtocolAstNode(
@@ -50,7 +50,7 @@ public class ParsedIpProtocolSpecifierTest {
   }
 
   @Test
-  public void testResolveUnionIncludingExcluding() {
+  void testResolveUnionIncludingExcluding() {
     assertThat(
         new ParsedIpProtocolSpecifier(
                 new UnionIpProtocolAstNode(
@@ -59,17 +59,15 @@ public class ParsedIpProtocolSpecifierTest {
         equalTo(ImmutableSet.of(IpProtocol.TCP)));
   }
 
-  @Rule public ExpectedException _thrown = ExpectedException.none();
-
   @Test
-  public void testParseBadInput() {
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("Error parsing");
-    ParsedIpProtocolSpecifier.parse("@..");
+  void testParseBadInput() {
+    Throwable exception =
+        assertThrows(IllegalArgumentException.class, () -> ParsedIpProtocolSpecifier.parse("@.."));
+    assertThat(exception.getMessage(), containsString("Error parsing"));
   }
 
   @Test
-  public void testParseGoodInput() {
+  void testParseGoodInput() {
     assertThat(
         ParsedIpProtocolSpecifier.parse("tcp"),
         equalTo(new ParsedIpProtocolSpecifier(new IpProtocolIpProtocolAstNode("tcp"))));

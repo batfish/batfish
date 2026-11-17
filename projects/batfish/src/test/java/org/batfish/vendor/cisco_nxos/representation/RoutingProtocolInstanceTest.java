@@ -5,12 +5,12 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.testing.EqualsTester;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link RoutingProtocolInstance}. */
-public class RoutingProtocolInstanceTest {
+class RoutingProtocolInstanceTest {
   @Test
-  public void testConstruction() {
+  void testConstruction() {
     String tag = "tag";
 
     RoutingProtocolInstance direct = RoutingProtocolInstance.direct();
@@ -51,7 +51,7 @@ public class RoutingProtocolInstanceTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(5)
         .addEqualityGroup(RoutingProtocolInstance.direct())

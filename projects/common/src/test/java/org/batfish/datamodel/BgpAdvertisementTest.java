@@ -15,12 +15,12 @@ import com.google.common.collect.Lists;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class BgpAdvertisementTest {
+class BgpAdvertisementTest {
 
   @Test
-  public void testConstructorCanonicalization() {
+  void testConstructorCanonicalization() {
     BgpAdvertisement advert =
         new BgpAdvertisement(
             BgpAdvertisementType.EBGP_SENT,
@@ -50,7 +50,7 @@ public class BgpAdvertisementTest {
   }
 
   @Test
-  public void testNullSafeCompareTo() {
+  void testNullSafeCompareTo() {
     assertThat(nullSafeCompareTo(null, null), equalTo(0));
     assertThat(nullSafeCompareTo(null, "a"), equalTo(-1));
     assertThat(nullSafeCompareTo("a", null), equalTo(1));
@@ -59,7 +59,7 @@ public class BgpAdvertisementTest {
 
   /** Test that optional fields are handled properly in the json creator */
   @Test
-  public void testCreateMissingValues() throws JsonProcessingException {
+  void testCreateMissingValues() throws JsonProcessingException {
     String input =
         readResource("org/batfish/datamodel/bgp-advertisement-missing-fields.json", UTF_8);
     BgpAdvertisement advertisement =
@@ -90,7 +90,7 @@ public class BgpAdvertisementTest {
   }
 
   @Test
-  public void testCompareTo() {
+  void testCompareTo() {
     BgpAdvertisement left =
         new BgpAdvertisement(
             BgpAdvertisementType.EBGP_SENT,

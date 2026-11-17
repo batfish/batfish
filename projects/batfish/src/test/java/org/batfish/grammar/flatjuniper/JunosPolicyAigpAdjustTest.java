@@ -10,6 +10,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasKey;
 
+import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import org.batfish.common.Warnings;
@@ -18,18 +19,17 @@ import org.batfish.main.Batfish;
 import org.batfish.representation.juniper.JuniperConfiguration;
 import org.batfish.representation.juniper.PolicyStatement;
 import org.batfish.representation.juniper.PsThenAigpAdjust;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosPolicyAigpAdjustTest {
+final class JunosPolicyAigpAdjustTest {
 
   private static final String HOSTNAME = "policy-aigp-adjust";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testExtractionAndConversion() throws IOException {
+  void testExtractionAndConversion() throws IOException {
     Batfish batfish = getBatfish(_folder, HOSTNAME);
     JuniperConfiguration juniperConfiguration = getVendorConfiguration(batfish, HOSTNAME);
     PolicyStatement policy =

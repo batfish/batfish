@@ -2,6 +2,7 @@ package org.batfish.datamodel.flow;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
@@ -11,11 +12,11 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class SessionMatchExprTest {
+class SessionMatchExprTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     SessionMatchExpr expr =
         new SessionMatchExpr(IpProtocol.ICMP, Ip.parse("1.1.1.2"), Ip.parse("1.1.2.2"), null, null);
     new EqualsTester()
@@ -47,18 +48,28 @@ public class SessionMatchExprTest {
         .testEquals();
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void testConstructorWithNullSrcPort() {
-    new SessionMatchExpr(IpProtocol.ICMP, Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"), null, 5000);
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void testConstructorWithNullDstPort() {
-    new SessionMatchExpr(IpProtocol.ICMP, Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"), 5000, null);
+  @Test
+  void testConstructorWithNullSrcPort() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> {
+          new SessionMatchExpr(
+              IpProtocol.ICMP, Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"), null, 5000);
+        });
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testConstructorWithNullDstPort() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> {
+          new SessionMatchExpr(
+              IpProtocol.ICMP, Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"), 5000, null);
+        });
+  }
+
+  @Test
+  void testJsonSerialization() {
     SessionMatchExpr matcher =
         new SessionMatchExpr(IpProtocol.ICMP, Ip.parse("1.1.1.2"), Ip.parse("1.1.2.2"), null, null);
     SessionMatchExpr clone = BatfishObjectMapper.clone(matcher, SessionMatchExpr.class);
@@ -71,7 +82,7 @@ public class SessionMatchExprTest {
   }
 
   @Test
-  public void testToAclLineMatchExpr() {
+  void testToAclLineMatchExpr() {
     SessionMatchExpr matcher =
         new SessionMatchExpr(IpProtocol.ICMP, Ip.parse("1.1.1.2"), Ip.parse("1.1.2.2"), null, null);
     MatchHeaderSpace aclExpr = (MatchHeaderSpace) matcher.toAclLineMatchExpr();

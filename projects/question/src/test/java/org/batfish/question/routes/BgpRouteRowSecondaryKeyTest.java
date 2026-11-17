@@ -4,12 +4,12 @@ import com.google.common.testing.EqualsTester;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopIp;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test {@link BgpRouteRowSecondaryKey} */
-public class BgpRouteRowSecondaryKeyTest {
+class BgpRouteRowSecondaryKeyTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("2.2.2.2");
     NextHop nh1 = NextHopIp.of(ip1);

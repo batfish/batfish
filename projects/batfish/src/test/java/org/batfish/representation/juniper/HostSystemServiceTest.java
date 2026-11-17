@@ -2,7 +2,7 @@ package org.batfish.representation.juniper;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -18,13 +18,13 @@ import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.OrMatchExpr;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link HostSystemService} */
-public class HostSystemServiceTest {
+class HostSystemServiceTest {
 
   @Test
-  public void testGetMatchExpr_bgp() {
+  void testGetMatchExpr_bgp() {
     HostSystemService from = HostSystemService.DNS;
     Optional<AclLineMatchExpr> matchExpr = from.getMatchExpr();
     assertTrue(matchExpr.isPresent());
@@ -41,7 +41,7 @@ public class HostSystemServiceTest {
   }
 
   @Test
-  public void testGetMatchExpr_bootServices() {
+  void testGetMatchExpr_bootServices() {
     assertThat(
         HostSystemService.BOOTP.getMatchExpr().orElseThrow(),
         equalTo(
@@ -70,7 +70,7 @@ public class HostSystemServiceTest {
   }
 
   @Test
-  public void testGetMatchExpr_all_traceElement() {
+  void testGetMatchExpr_all_traceElement() {
     HostSystemService from = HostSystemService.ALL;
     Optional<AclLineMatchExpr> matchExpr = from.getMatchExpr();
     assertTrue(matchExpr.isPresent());

@@ -13,17 +13,17 @@ import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfProcess;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class NetworkFactoryTest {
+class NetworkFactoryTest {
 
   private static final ConfigurationFormat CONFIG_FORMAT = ConfigurationFormat.CISCO_IOS;
 
   @Test
-  public void testNetworkFactory() {}
+  void testNetworkFactory() {}
 
   @Test
-  public void testConfigurationBuilder() {
+  void testConfigurationBuilder() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb = nf.configurationBuilder().setConfigurationFormat(CONFIG_FORMAT);
     Configuration c1 = cb.build();
@@ -35,7 +35,7 @@ public class NetworkFactoryTest {
   }
 
   @Test
-  public void testVrfBuilder() {
+  void testVrfBuilder() {
     NetworkFactory nf = new NetworkFactory();
     Vrf.Builder vb = nf.vrfBuilder();
     Vrf v1 = vb.build();
@@ -53,7 +53,7 @@ public class NetworkFactoryTest {
   }
 
   @Test
-  public void testInterfaceBuilder() {
+  void testInterfaceBuilder() {
     NetworkFactory nf = new NetworkFactory();
     Interface.Builder ib = nf.interfaceBuilder();
     Interface i1 = ib.build();
@@ -77,7 +77,7 @@ public class NetworkFactoryTest {
   }
 
   @Test
-  public void testOspfProcessBuilder() {
+  void testOspfProcessBuilder() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c = nf.configurationBuilder().setConfigurationFormat(CONFIG_FORMAT).build();
     Vrf vrf = nf.vrfBuilder().setOwner(c).build();
@@ -89,7 +89,7 @@ public class NetworkFactoryTest {
   }
 
   @Test
-  public void testOspfAreaBuilder() {
+  void testOspfAreaBuilder() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c = nf.configurationBuilder().setConfigurationFormat(CONFIG_FORMAT).build();
     Vrf vrf = nf.vrfBuilder().setOwner(c).build();

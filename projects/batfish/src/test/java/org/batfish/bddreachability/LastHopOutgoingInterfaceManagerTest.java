@@ -5,8 +5,8 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -26,11 +26,11 @@ import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Vrf;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link LastHopOutgoingInterfaceManager}. */
-public final class LastHopOutgoingInterfaceManagerTest {
+final class LastHopOutgoingInterfaceManagerTest {
 
   private static final String NODE1 = "NODE1";
   private static final String NODE2 = "NODE2";
@@ -49,8 +49,8 @@ public final class LastHopOutgoingInterfaceManagerTest {
         .collect(ImmutableMap.toImmutableMap(Configuration::getHostname, Function.identity()));
   }
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _pkt = new BDDPacket();
     _trueBdd = _pkt.getFactory().one();
 
@@ -75,7 +75,7 @@ public final class LastHopOutgoingInterfaceManagerTest {
   }
 
   @Test
-  public void testTrivial() {
+  void testTrivial() {
     LastHopOutgoingInterfaceManager mgr =
         new LastHopOutgoingInterfaceManager(_pkt, ImmutableMap.of(), ImmutableSet.of());
     assertThat(mgr.getFiniteDomains().values(), empty());
@@ -83,7 +83,7 @@ public final class LastHopOutgoingInterfaceManagerTest {
   }
 
   @Test
-  public void testNoEdges() {
+  void testNoEdges() {
     Configuration c = configurationWithSession();
     LastHopOutgoingInterfaceManager mgr =
         new LastHopOutgoingInterfaceManager(_pkt, configs(c), ImmutableSet.of());
@@ -98,7 +98,7 @@ public final class LastHopOutgoingInterfaceManagerTest {
   }
 
   @Test
-  public void testOneEdge() {
+  void testOneEdge() {
     Configuration c = configurationWithSession();
     String node = c.getHostname();
     String iface = Iterables.getFirst(c.getAllInterfaces().keySet(), null);
@@ -118,7 +118,7 @@ public final class LastHopOutgoingInterfaceManagerTest {
   }
 
   @Test
-  public void testTwoEdges() {
+  void testTwoEdges() {
     Configuration c = configurationWithSession();
     String node = c.getHostname();
     String iface = Iterables.getFirst(c.getAllInterfaces().keySet(), null);

@@ -10,12 +10,12 @@ import org.batfish.common.autocomplete.LocationCompletionMetadata;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.specifier.InterfaceLocation;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class CompletionMetadataTest {
+class CompletionMetadataTest {
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder()
             .setFilterNames(ImmutableSet.of("filter"))
@@ -37,7 +37,7 @@ public class CompletionMetadataTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     CompletionMetadata.Builder builder = CompletionMetadata.builder();
     CompletionMetadata initial = builder.build();
 

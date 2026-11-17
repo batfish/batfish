@@ -5,20 +5,20 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableSet;
 import org.batfish.role.NodeRole;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class NodeRoleBeanTest {
+class NodeRoleBeanTest {
 
   /** Checks if we properly populate the nodes field */
   @Test
-  public void constructor() {
+  void constructor() {
     NodeRoleBean role = new NodeRoleBean(new NodeRole("name", "a.*"), ImmutableSet.of("a", "b"));
 
     assertThat(role.nodes, equalTo(ImmutableSet.of("a")));
   }
 
   @Test
-  public void toNodeRole() {
+  void toNodeRole() {
     NodeRoleBean roleBean =
         new NodeRoleBean(new NodeRole("name", "a.*"), ImmutableSet.of("a", "b"));
     NodeRole role = roleBean.toNodeRole();

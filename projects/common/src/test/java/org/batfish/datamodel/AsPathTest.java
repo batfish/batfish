@@ -4,12 +4,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link AsPath} */
-public class AsPathTest {
+class AsPathTest {
   @Test
-  public void testRemoveConfederations() {
+  void testRemoveConfederations() {
     AsPath path = AsPath.of(AsSet.of(1L));
     AsPath updated = path.removeConfederations();
     assertThat(path, equalTo(updated));
@@ -28,7 +28,7 @@ public class AsPathTest {
   }
 
   @Test
-  public void testRemoveLeadingPrivateAs() {
+  void testRemoveLeadingPrivateAs() {
     assertThat(
         AsPath.ofSingletonAsSets(65001L, 65002L, 1L, 65003L).removeLeadingPrivateAs(null),
         equalTo(AsPath.ofSingletonAsSets(1L, 65003L)));
@@ -41,13 +41,13 @@ public class AsPathTest {
   }
 
   @Test
-  public void testRemoveLeadingPrivateAsStopsAtMixedAsSet() {
+  void testRemoveLeadingPrivateAsStopsAtMixedAsSet() {
     AsPath path = AsPath.of(ImmutableList.of(AsSet.of(65001L, 2L), AsSet.of(3L)));
     assertThat(path.removeLeadingPrivateAs(null), equalTo(path));
   }
 
   @Test
-  public void testRemoveLeadingPrivateAsStopsAtStopAs() {
+  void testRemoveLeadingPrivateAsStopsAtStopAs() {
     assertThat(
         AsPath.ofSingletonAsSets(65001L, 65002L, 65003L).removeLeadingPrivateAs(65002L),
         equalTo(AsPath.ofSingletonAsSets(65002L, 65003L)));
@@ -58,7 +58,7 @@ public class AsPathTest {
   }
 
   @Test
-  public void testAsPathLength() {
+  void testAsPathLength() {
     AsPath path = AsPath.of(AsSet.confed(1L));
     assertThat(path.length(), equalTo(0));
 
@@ -72,19 +72,19 @@ public class AsPathTest {
   }
 
   @Test
-  public void testAggregateContributorsEmpty() {
+  void testAggregateContributorsEmpty() {
     assertThat(AsPath.aggregateContributors(ImmutableList.of()), equalTo(AsPath.empty()));
   }
 
   @Test
-  public void testAggregateContributorsSingle() {
+  void testAggregateContributorsSingle() {
     // A single contributor yields its own leading AS_SEQUENCE.
     AsPath path = AsPath.ofSingletonAsSets(65000L, 65001L);
     assertThat(AsPath.aggregateContributors(ImmutableList.of(path)), equalTo(path));
   }
 
   @Test
-  public void testAggregateContributorsIdentical() {
+  void testAggregateContributorsIdentical() {
     AsPath path = AsPath.ofSingletonAsSets(65000L, 65001L);
     assertThat(
         AsPath.aggregateContributors(ImmutableList.of(path, path)),
@@ -92,7 +92,7 @@ public class AsPathTest {
   }
 
   @Test
-  public void testAggregateContributorsCommonPrefixThenDiverge() {
+  void testAggregateContributorsCommonPrefixThenDiverge() {
     // The lab case: "65000 65001" and "65000 65003" share the leading 65000, then diverge; the
     // divergent tail is dropped.
     AsPath a = AsPath.ofSingletonAsSets(65000L, 65001L);
@@ -103,14 +103,14 @@ public class AsPathTest {
   }
 
   @Test
-  public void testAggregateContributorsNoCommonPrefix() {
+  void testAggregateContributorsNoCommonPrefix() {
     AsPath a = AsPath.ofSingletonAsSets(65001L);
     AsPath b = AsPath.ofSingletonAsSets(65002L);
     assertThat(AsPath.aggregateContributors(ImmutableList.of(a, b)), equalTo(AsPath.empty()));
   }
 
   @Test
-  public void testAggregateContributorsEmptyContributorPath() {
+  void testAggregateContributorsEmptyContributorPath() {
     // A contributor with an empty path (e.g. a locally redistributed route) shares no prefix.
     AsPath a = AsPath.ofSingletonAsSets(65000L);
     assertThat(
@@ -118,7 +118,7 @@ public class AsPathTest {
   }
 
   @Test
-  public void testAggregateContributorsStopsAtAsSet() {
+  void testAggregateContributorsStopsAtAsSet() {
     // A non-singleton (AS_SET) segment cannot extend the common AS_SEQUENCE.
     AsPath a = AsPath.of(ImmutableList.of(AsSet.of(65000L), AsSet.of(65001L, 65002L)));
     AsPath b = AsPath.of(ImmutableList.of(AsSet.of(65000L), AsSet.of(65001L, 65002L)));

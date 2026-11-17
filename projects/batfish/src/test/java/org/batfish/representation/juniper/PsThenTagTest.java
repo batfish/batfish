@@ -1,12 +1,12 @@
 package org.batfish.representation.juniper;
 
 import com.google.common.testing.EqualsTester;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class PsThenTagTest {
+class PsThenTagTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(5)
         .addEqualityGroup(new PsThenTag(5), new PsThenTag(5))

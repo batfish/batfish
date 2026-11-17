@@ -22,15 +22,18 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -59,14 +62,12 @@ import org.batfish.question.differentialreachability.DifferentialReachabilityRes
 import org.batfish.question.loop.LoopNetwork;
 import org.batfish.specifier.InferFromLocationIpSpaceAssignmentSpecifier;
 import org.batfish.specifier.LocationSpecifier;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Test of {@link org.batfish.common.plugin.IBatfish#bddDifferentialReachability} */
-public class BatfishBDDDifferentialReachabilityTest {
+class BatfishBDDDifferentialReachabilityTest {
   private static final Ip DST_IP = Ip.parse("3.3.3.3");
   private static final String NODE1 = "node1";
   private static final String NODE2 = "node2";
@@ -82,8 +83,7 @@ public class BatfishBDDDifferentialReachabilityTest {
 
   private Configuration.Builder _cb;
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
-  @Rule public ExpectedException _exception = ExpectedException.none();
+  @TempDir public File _folder;
 
   private org.batfish.datamodel.Interface.Builder _ib;
 
@@ -95,8 +95,8 @@ public class BatfishBDDDifferentialReachabilityTest {
     SortedMap<String, Configuration> generateConfigs(boolean delta);
   }
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _nf = new NetworkFactory();
     _cb = _nf.configurationBuilder().setConfigurationFormat(CISCO_IOS);
     _vb = _nf.vrfBuilder().setName(DEFAULT_VRF_NAME);
@@ -126,8 +126,9 @@ public class BatfishBDDDifferentialReachabilityTest {
             .stream()
             .flatMap(Collection::stream);
     assertTrue(
-        String.format("all traces should have disposition %s in the base environment", disposition),
-        traces.allMatch(trace -> trace.getDisposition() == disposition));
+        traces.allMatch(trace -> trace.getDisposition() == disposition),
+        String.format(
+            "all traces should have disposition %s in the base environment", disposition));
 
     traces =
         batfish
@@ -137,8 +138,9 @@ public class BatfishBDDDifferentialReachabilityTest {
             .stream()
             .flatMap(Collection::stream);
     assertTrue(
-        String.format("no traces should have disposition %s in the delta environment", disposition),
-        traces.noneMatch(trace -> trace.getDisposition() == disposition));
+        traces.noneMatch(trace -> trace.getDisposition() == disposition),
+        String.format(
+            "no traces should have disposition %s in the delta environment", disposition));
   }
 
   private static DifferentialReachabilityParameters parameters(
@@ -199,19 +201,26 @@ public class BatfishBDDDifferentialReachabilityTest {
   }
 
   @Test
-  public void testHeaderSpace() throws IOException {
+  void testHeaderSpace() throws IOException {
     Batfish batfish = initBatfish(new ExitsNetworkNetworkGenerator());
 
-    _exception.expect(IllegalArgumentException.class);
-    _exception.expectMessage("No sources are compatible with the headerspace constraint");
-    getResult(
-        batfish,
-        parameters(
-            batfish, ImmutableSet.of(FlowDisposition.NEIGHBOR_UNREACHABLE), matchSrcIp("7.7.7.7")));
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () ->
+                getResult(
+                    batfish,
+                    parameters(
+                        batfish,
+                        ImmutableSet.of(FlowDisposition.NEIGHBOR_UNREACHABLE),
+                        matchSrcIp("7.7.7.7"))));
+    assertThat(
+        exception.getMessage(),
+        containsString("No sources are compatible with the headerspace constraint"));
   }
 
   @Test
-  public void testExitsNetwork() throws IOException {
+  void testExitsNetwork() throws IOException {
     Batfish batfish = initBatfish(new ExitsNetworkNetworkGenerator());
     DifferentialReachabilityResult differentialReachabilityResult =
         getResult(batfish, parameters(batfish, ImmutableSet.of(FlowDisposition.EXITS_NETWORK)));
@@ -236,7 +245,7 @@ public class BatfishBDDDifferentialReachabilityTest {
   }
 
   @Test
-  public void testDeliveredToSubnet() throws IOException {
+  void testDeliveredToSubnet() throws IOException {
     Batfish batfish = initBatfish(new ExitsNetworkNetworkGenerator());
     DifferentialReachabilityResult differentialReachabilityResult =
         getResult(
@@ -247,7 +256,7 @@ public class BatfishBDDDifferentialReachabilityTest {
   }
 
   @Test
-  public void testNeighborUnreachable() throws IOException {
+  void testNeighborUnreachable() throws IOException {
     Batfish batfish = initBatfish(new ExitsNetworkNetworkGenerator());
     DifferentialReachabilityResult differentialReachabilityResult =
         getResult(
@@ -258,7 +267,7 @@ public class BatfishBDDDifferentialReachabilityTest {
   }
 
   @Test
-  public void testInsufficientInfo() throws IOException {
+  void testInsufficientInfo() throws IOException {
     Batfish batfish = initBatfish(new ExitsNetworkNetworkGenerator());
     DifferentialReachabilityResult differentialReachabilityResult =
         getResult(batfish, parameters(batfish, ImmutableSet.of(FlowDisposition.INSUFFICIENT_INFO)));
@@ -296,7 +305,7 @@ public class BatfishBDDDifferentialReachabilityTest {
   }
 
   @Test
-  public void testAccepted() throws IOException {
+  void testAccepted() throws IOException {
     Batfish batfish = initBatfish(new AcceptedNetworkGenerator());
     DifferentialReachabilityResult differentialReachabilityResult =
         getResult(batfish, parameters(batfish, ImmutableSet.of(FlowDisposition.ACCEPTED)));
@@ -352,7 +361,7 @@ public class BatfishBDDDifferentialReachabilityTest {
   }
 
   @Test
-  public void testDeniedIn() throws IOException {
+  void testDeniedIn() throws IOException {
     Batfish batfish = initBatfish(new DeniedInNetworkGenerator());
     DifferentialReachabilityResult differentialReachabilityResult =
         getResult(batfish, parameters(batfish, ImmutableSet.of(DENIED_IN)));
@@ -417,7 +426,7 @@ public class BatfishBDDDifferentialReachabilityTest {
   }
 
   @Test
-  public void testDeniedOutNeighborUnreachable() throws IOException {
+  void testDeniedOutNeighborUnreachable() throws IOException {
     Batfish batfish = initBatfish(new DeniedOutNeighborUnreachableNetworkGenerator());
     DifferentialReachabilityResult differentialReachabilityResult =
         getResult(batfish, parameters(batfish, ImmutableSet.of(DENIED_OUT)));
@@ -487,7 +496,7 @@ public class BatfishBDDDifferentialReachabilityTest {
   }
 
   @Test
-  public void testDeniedOutForward() throws IOException {
+  void testDeniedOutForward() throws IOException {
     Batfish batfish = initBatfish(new DeniedOutForwardNetworkGenerator());
     DifferentialReachabilityResult differentialReachabilityResult =
         getResult(batfish, parameters(batfish, ImmutableSet.of(DENIED_OUT)));
@@ -542,7 +551,7 @@ public class BatfishBDDDifferentialReachabilityTest {
   }
 
   @Test
-  public void testNoRoute() throws IOException {
+  void testNoRoute() throws IOException {
     Batfish batfish = initBatfish(new NoRouteNetworkGenerator());
     DifferentialReachabilityResult differentialReachabilityResult =
         getResult(batfish, parameters(batfish, ImmutableSet.of(NO_ROUTE)));
@@ -597,7 +606,7 @@ public class BatfishBDDDifferentialReachabilityTest {
   }
 
   @Test
-  public void testNullRouted() throws IOException {
+  void testNullRouted() throws IOException {
     Batfish batfish = initBatfish(new NullRoutedNetworkGenerator());
     DifferentialReachabilityResult differentialReachabilityResult =
         getResult(batfish, parameters(batfish, ImmutableSet.of(NULL_ROUTED)));
@@ -650,7 +659,7 @@ public class BatfishBDDDifferentialReachabilityTest {
   }
 
   @Test
-  public void testIgnoreFilters() throws IOException {
+  void testIgnoreFilters() throws IOException {
     Batfish batfish = initBatfish(new IgnoreFiltersNetworkGenerator());
     DifferentialReachabilityResult differentialReachabilityResult =
         getResult(
@@ -669,7 +678,7 @@ public class BatfishBDDDifferentialReachabilityTest {
   }
 
   @Test
-  public void testInvertSearch() throws IOException {
+  void testInvertSearch() throws IOException {
     /* Without a headerspace constraint, we get two flows, one with srcIp = NODE1_PHYSICAL_IP, one
      * with srcIp = NODE1_PHYSICAL_LINK_IP. With the inverted headerspace constraint, we exclude
      * NODE1_PHYSICAL_IP.
@@ -699,7 +708,7 @@ public class BatfishBDDDifferentialReachabilityTest {
   }
 
   @Test
-  public void testLoop() throws IOException {
+  void testLoop() throws IOException {
     SortedMap<String, Configuration> baseConfigs = LoopNetwork.testLoopNetwork(false);
     SortedMap<String, Configuration> deltaConfigs = LoopNetwork.testLoopNetwork(true);
     Batfish batfish = getBatfish(baseConfigs, deltaConfigs, _folder);

@@ -7,12 +7,12 @@ import com.google.common.testing.EqualsTester;
 import org.batfish.common.topology.Layer1Node;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.Ip;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class SnapshotConnectionTest {
+class SnapshotConnectionTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     IspBgpActivePeer ispBgpActivePeer =
         IspBgpActivePeer.create(
             BgpActivePeerConfig.builder()

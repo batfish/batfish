@@ -1,6 +1,6 @@
 package org.batfish.minesweeper.env;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -18,11 +18,11 @@ import org.batfish.datamodel.routing_policy.expr.TrackSucceeded;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.minesweeper.utils.Tuple;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link TrackCollector}. */
-public class TrackCollectorTest {
+class TrackCollectorTest {
 
   private static final String HOSTNAME = "hostname";
   private Configuration _baseConfig;
@@ -31,8 +31,8 @@ public class TrackCollectorTest {
   private static final TrackSucceeded TRACK1 = new TrackSucceeded("first");
   private static final TrackSucceeded TRACK2 = new TrackSucceeded("second");
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder()
@@ -45,7 +45,7 @@ public class TrackCollectorTest {
   }
 
   @Test
-  public void testVisitConjunction() {
+  void testVisitConjunction() {
 
     Conjunction c = new Conjunction(ImmutableList.of(TRACK1, TRACK2));
 
@@ -58,7 +58,7 @@ public class TrackCollectorTest {
   }
 
   @Test
-  public void testVisitConjunctionChain() {
+  void testVisitConjunctionChain() {
 
     ConjunctionChain cc = new ConjunctionChain(ImmutableList.of(TRACK1, TRACK2));
 
@@ -71,7 +71,7 @@ public class TrackCollectorTest {
   }
 
   @Test
-  public void testVisitDisjunction() {
+  void testVisitDisjunction() {
 
     Disjunction d = new Disjunction(ImmutableList.of(TRACK1, TRACK2));
 
@@ -84,7 +84,7 @@ public class TrackCollectorTest {
   }
 
   @Test
-  public void testVisitFirstMatchChain() {
+  void testVisitFirstMatchChain() {
 
     FirstMatchChain fmc = new FirstMatchChain(ImmutableList.of(TRACK1, TRACK2));
 
@@ -97,14 +97,14 @@ public class TrackCollectorTest {
   }
 
   @Test
-  public void testVisitTrackSucceeded() {
+  void testVisitTrackSucceeded() {
     assertEquals(
         _trackCollector.visitTrackSucceeded(TRACK1, new Tuple<>(new HashSet<>(), _baseConfig)),
         ImmutableSet.of(TRACK1.getTrackName()));
   }
 
   @Test
-  public void testVisitNot() {
+  void testVisitNot() {
 
     Not n = new Not(TRACK1);
 
@@ -116,7 +116,7 @@ public class TrackCollectorTest {
   }
 
   @Test
-  public void testVisitWithEnvironmentExpr() {
+  void testVisitWithEnvironmentExpr() {
 
     TrackSucceeded track3 = new TrackSucceeded("third");
     TrackSucceeded track4 = new TrackSucceeded("fourth");

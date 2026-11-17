@@ -2,11 +2,11 @@ package org.batfish.common.topology.broadcast;
 
 import com.google.common.testing.EqualsTester;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class PhysicalInterfaceTest {
+class PhysicalInterfaceTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new PhysicalInterface(NodeInterfacePair.of("h", "i")),

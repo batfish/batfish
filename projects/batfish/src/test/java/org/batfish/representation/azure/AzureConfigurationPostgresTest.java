@@ -4,6 +4,7 @@ import static org.batfish.representation.azure.AzureConfigurationTestUtils.testS
 import static org.batfish.representation.azure.AzureConfigurationTestUtils.testTrace;
 
 import com.google.common.collect.ImmutableList;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.batfish.common.plugin.IBatfish;
@@ -11,12 +12,11 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public class AzureConfigurationPostgresTest {
+class AzureConfigurationPostgresTest {
 
   private static final String TESTCONFIGS_DIR = "org/batfish/representation/azure/test-postgres";
 
@@ -35,17 +35,17 @@ public class AzureConfigurationPostgresTest {
   private static final String DB = "testdb_id";
   private static final Ip DB_IP = Ip.parse("10.0.1.2"); // first IP after subnet router
 
-  @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public static File _folder;
 
   private static IBatfish _batfish;
 
-  @BeforeClass
-  public static void setup() throws IOException {
+  @BeforeAll
+  static void setup() throws IOException {
     _batfish = testSetup(TESTCONFIGS_DIR, fileNames, _folder);
   }
 
   @Test
-  public void testVm1ToDb() {
+  void testVm1ToDb() {
     testTrace(
         Flow.builder()
             .setIngressNode(VM_1)
@@ -61,7 +61,7 @@ public class AzureConfigurationPostgresTest {
   }
 
   @Test
-  public void testDbToVm1() {
+  void testDbToVm1() {
     testTrace(
         Flow.builder()
             .setIngressNode(DB)

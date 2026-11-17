@@ -1,13 +1,13 @@
 package org.batfish.datamodel;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class Ip6SpaceContainsIpTest {
+class Ip6SpaceContainsIpTest {
   private static final String IP_SPACE_NAME = "ip6Space";
   private static final String DESCRIPTION = "description";
   private static final Map<String, Ip6Space> NAMED_IP_SPACES =
@@ -18,7 +18,7 @@ public class Ip6SpaceContainsIpTest {
   }
 
   @Test
-  public void testVisitIpSpaceReference_true() {
+  void testVisitIpSpaceReference_true() {
     Ip6 ip1 = Ip6.parse("1:1:1:1::1");
     Ip6 ip2 = Ip6.parse("2:2:2:2::2");
     assertTrue(

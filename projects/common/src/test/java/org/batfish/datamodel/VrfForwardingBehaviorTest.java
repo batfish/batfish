@@ -2,12 +2,12 @@ package org.batfish.datamodel;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.testing.EqualsTester;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link VrfForwardingBehavior}. */
-public final class VrfForwardingBehaviorTest {
+final class VrfForwardingBehaviorTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     IpSpace a = Prefix.parse("10.0.0.0/8").toIpSpace();
     IpSpace b = Prefix.parse("10.0.0.0/16").toIpSpace();
     IpSpace e = EmptyIpSpace.INSTANCE;

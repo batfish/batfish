@@ -3,29 +3,28 @@ package org.batfish.datamodel.questions;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.Iterator;
 import java.util.Set;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link NodePropertySpecifier} */
-public class NodePropertySpecifierTest {
-
-  /** */
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class NodePropertySpecifierTest {
 
   @Test
-  public void testConstructorBadPropertyInList() {
-    _thrown.expect(IllegalArgumentException.class);
-    new NodePropertySpecifier(
-        ImmutableSet.of(NodePropertySpecifier.NTP_SOURCE_INTERFACE, "dumdum"));
+  void testConstructorBadPropertyInList() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> {
+          new NodePropertySpecifier(
+              ImmutableSet.of(NodePropertySpecifier.NTP_SOURCE_INTERFACE, "dumdum"));
+        });
   }
 
   @Test
-  public void testMatchingPropertiesSet() {
+  void testMatchingPropertiesSet() {
     Iterator<String> i = NodePropertySpecifier.ALL.getMatchingProperties().iterator();
     String prop1 = i.next();
     String prop2 = i.next();
@@ -38,7 +37,7 @@ public class NodePropertySpecifierTest {
   }
 
   @Test
-  public void testRegexNoMatch() {
+  void testRegexNoMatch() {
     NodePropertySpecifier spec = NodePropertySpecifier.create("/no-matching-properties/");
     assertThat(spec.getMatchingProperties(), empty());
   }

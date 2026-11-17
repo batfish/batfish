@@ -2,18 +2,18 @@ package org.batfish.common;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.table.Row;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class ColumnFilterTest {
+final class ColumnFilterTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new ColumnFilter("a", "1", false), new ColumnFilter("a", "1", false))
         .addEqualityGroup(new ColumnFilter("b", "1", false))
@@ -23,7 +23,7 @@ public final class ColumnFilterTest {
   }
 
   @Test
-  public void testMatchesContainsIgnoreCase() {
+  void testMatchesContainsIgnoreCase() {
     String columnName = "column";
     String filterText = "bLah";
     ColumnFilter filter = new ColumnFilter(columnName, filterText, false);
@@ -33,7 +33,7 @@ public final class ColumnFilterTest {
   }
 
   @Test
-  public void testMatchesExactIgnoreCase() {
+  void testMatchesExactIgnoreCase() {
     String columnName = "column";
     ColumnFilter filter = new ColumnFilter(columnName, "bLah", true);
     assertFalse(filter.matches(Row.builder().put(columnName, "xxBlaHxx").build()));
@@ -55,7 +55,7 @@ public final class ColumnFilterTest {
   }
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     ColumnFilter cf = new ColumnFilter("a", "b", true);
     assertThat(BatfishObjectMapper.clone(cf, ColumnFilter.class), equalTo(cf));
   }

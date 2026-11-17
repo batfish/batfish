@@ -1,17 +1,17 @@
 package org.batfish.datamodel;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link KernelRoute}. */
-public final class KernelRouteTest {
+final class KernelRouteTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     KernelRoute.Builder builder = KernelRoute.builder();
     KernelRoute kr = builder.setNetwork(Prefix.strict("10.0.0.0/24")).build();
     new EqualsTester()
@@ -24,7 +24,7 @@ public final class KernelRouteTest {
   }
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     KernelRoute route =
         KernelRoute.builder()
             .setNetwork(Prefix.ZERO)
@@ -36,7 +36,7 @@ public final class KernelRouteTest {
   }
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     KernelRoute route =
         KernelRoute.builder()
             .setNetwork(Prefix.ZERO)

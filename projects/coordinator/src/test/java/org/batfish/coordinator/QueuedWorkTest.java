@@ -10,9 +10,9 @@ import org.batfish.common.WorkItem;
 import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class QueuedWorkTest {
+final class QueuedWorkTest {
 
   private static QueuedWork createWork(String network, String snapshot) {
     return new QueuedWork(
@@ -25,7 +25,7 @@ public final class QueuedWorkTest {
   }
 
   @Test
-  public void testDateTerminated() {
+  void testDateTerminated() {
     QueuedWork work = createWork("network", "snapshot");
     // Work should start with no dateTerminated
     assertThat(work._dateTerminated, is(nullValue()));

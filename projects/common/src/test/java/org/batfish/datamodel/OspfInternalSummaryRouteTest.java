@@ -6,13 +6,13 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link OspfInternalSummaryRoute} */
-public class OspfInternalSummaryRouteTest {
+class OspfInternalSummaryRouteTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     OspfInternalSummaryRoute.Builder builder =
         OspfInternalSummaryRoute.builder().setArea(0).setNetwork(Prefix.ZERO);
     OspfInternalSummaryRoute r = builder.build();
@@ -26,7 +26,7 @@ public class OspfInternalSummaryRouteTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     OspfInternalSummaryRoute r =
         OspfInternalSummaryRoute.builder()
             .setNetwork(Prefix.ZERO)
@@ -38,7 +38,7 @@ public class OspfInternalSummaryRouteTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     OspfInternalSummaryRoute r =
         OspfInternalSummaryRoute.builder()
             .setNetwork(Prefix.ZERO)
@@ -50,7 +50,7 @@ public class OspfInternalSummaryRouteTest {
   }
 
   @Test
-  public void testToBuilder() {
+  void testToBuilder() {
     OspfInternalSummaryRoute r =
         OspfInternalSummaryRoute.builder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))

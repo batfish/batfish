@@ -9,11 +9,11 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.representation.juniper.PsFromValidationDatabase.State;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class PsFromValidationDatabaseTest {
+class PsFromValidationDatabaseTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new PsFromValidationDatabase(State.VALID), new PsFromValidationDatabase(State.VALID))
@@ -23,7 +23,7 @@ public class PsFromValidationDatabaseTest {
   }
 
   @Test
-  public void testConversion() {
+  void testConversion() {
     JuniperConfiguration jc = new JuniperConfiguration();
     Configuration c =
         Configuration.builder()

@@ -2,9 +2,9 @@ package org.batfish.representation.azure;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.io.IOException;
@@ -21,9 +21,9 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class NetworkSecurityGroupTest {
+class NetworkSecurityGroupTest {
 
   private static final IpSpace vnetIpSpace =
       AclIpSpace.union(
@@ -34,7 +34,7 @@ public class NetworkSecurityGroupTest {
       AclIpSpace.difference(UniverseIpSpace.INSTANCE, vnetIpSpace);
 
   @Test
-  public void testDeserialization() throws IOException {
+  void testDeserialization() throws IOException {
     String text =
         readResource("org/batfish/representation/azure/NetworkSecurityGroupTest.json", UTF_8);
     JsonNode node = BatfishObjectMapper.mapper().readTree(text);
@@ -88,7 +88,7 @@ public class NetworkSecurityGroupTest {
   }
 
   @Test
-  public void testAclRandom() {
+  void testAclRandom() {
     {
       SecurityRule.Properties properties =
           new SecurityRule.Properties(
@@ -128,7 +128,7 @@ public class NetworkSecurityGroupTest {
   }
 
   @Test
-  public void testAclIcmp() {
+  void testAclIcmp() {
     SecurityRule.Properties properties =
         new SecurityRule.Properties(
             null,
@@ -164,7 +164,7 @@ public class NetworkSecurityGroupTest {
   }
 
   @Test
-  public void testAclInternet() {
+  void testAclInternet() {
     SecurityRule.Properties properties =
         new SecurityRule.Properties(
             "1025",
@@ -200,7 +200,7 @@ public class NetworkSecurityGroupTest {
   }
 
   @Test
-  public void testAclVnetServiceTag() {
+  void testAclVnetServiceTag() {
     SecurityRule.Properties properties =
         new SecurityRule.Properties(
             null,

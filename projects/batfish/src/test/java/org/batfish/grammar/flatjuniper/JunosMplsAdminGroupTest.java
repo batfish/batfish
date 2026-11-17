@@ -17,20 +17,20 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.main.Batfish;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests for Juniper MPLS admin-group parsing. */
-public final class JunosMplsAdminGroupTest {
+final class JunosMplsAdminGroupTest {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testAdminGroupDefinitions() throws IOException {
+  void testAdminGroupDefinitions() throws IOException {
     String hostname = "junos-mpls-admin-groups";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfish(_folder, hostname);
@@ -56,7 +56,7 @@ public final class JunosMplsAdminGroupTest {
   }
 
   @Test
-  public void testAdminGroupReferences() throws IOException {
+  void testAdminGroupReferences() throws IOException {
     String hostname = "junos-mpls-admin-groups";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfish(_folder, hostname);
@@ -119,7 +119,7 @@ public final class JunosMplsAdminGroupTest {
   }
 
   @Test
-  public void testAdminGroupReferenceCount() throws IOException {
+  void testAdminGroupReferenceCount() throws IOException {
     String hostname = "junos-mpls-admin-groups";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfish(_folder, hostname);
@@ -150,7 +150,7 @@ public final class JunosMplsAdminGroupTest {
   }
 
   @Test
-  public void testUndefinedReferences() throws IOException {
+  void testUndefinedReferences() throws IOException {
     String hostname = "junos-mpls-admin-groups";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfish(_folder, hostname);

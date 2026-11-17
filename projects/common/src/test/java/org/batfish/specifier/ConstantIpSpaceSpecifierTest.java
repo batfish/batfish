@@ -1,15 +1,15 @@
 package org.batfish.specifier;
 
-import static junit.framework.TestCase.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.testing.EqualsTester;
 import org.batfish.datamodel.Ip;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ConstantIpSpaceSpecifierTest {
+class ConstantIpSpaceSpecifierTest {
 
   @Test
-  public void testResolve() {
+  void testResolve() {
     assertEquals(
         Ip.ZERO.toIpSpace(),
         new ConstantIpSpaceSpecifier(Ip.ZERO.toIpSpace())
@@ -18,7 +18,7 @@ public class ConstantIpSpaceSpecifierTest {
 
   @SuppressWarnings("UnstableApiUsage")
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new ConstantIpSpaceSpecifier(Ip.ZERO.toIpSpace()),

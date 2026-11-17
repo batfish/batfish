@@ -8,13 +8,13 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.collect.ImmutableList;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpaceMetadata;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link AddressSpaceToIpSpaceMetadata}. */
-public class AddressSpaceToIpSpaceMetadataTest {
+class AddressSpaceToIpSpaceMetadataTest {
 
   @Test
-  public void testAddressRange() {
+  void testAddressRange() {
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("2.2.2.2");
     AddressRange addrSpace =
@@ -25,7 +25,7 @@ public class AddressSpaceToIpSpaceMetadataTest {
   }
 
   @Test
-  public void testCpmiAnyObject() {
+  void testCpmiAnyObject() {
     CpmiAnyObject addrSpace = new CpmiAnyObject(Uid.of("1"));
     IpSpaceMetadata metadata = toIpSpaceMetadata(addrSpace);
     assertThat(metadata.getSourceName(), equalTo(addrSpace.getName()));
@@ -33,7 +33,7 @@ public class AddressSpaceToIpSpaceMetadataTest {
   }
 
   @Test
-  public void testGatewayOrServer() {
+  void testGatewayOrServer() {
     GatewayOrServer addrSpace =
         new SimpleGateway(
             Ip.parse("10.0.0.1"),
@@ -51,7 +51,7 @@ public class AddressSpaceToIpSpaceMetadataTest {
   }
 
   @Test
-  public void testGroup() {
+  void testGroup() {
     Uid group1Uid = Uid.of("1");
     Group addrSpace = new Group("group1", ImmutableList.of(), group1Uid);
     IpSpaceMetadata metadata = toIpSpaceMetadata(addrSpace);
@@ -60,7 +60,7 @@ public class AddressSpaceToIpSpaceMetadataTest {
   }
 
   @Test
-  public void testHost() {
+  void testHost() {
     Ip hostIp = Ip.parse("10.10.10.10");
     Host addrSpace = new Host(hostIp, NAT_SETTINGS_TEST_INSTANCE, "hostName", Uid.of("10"));
     IpSpaceMetadata metadata = toIpSpaceMetadata(addrSpace);
@@ -69,7 +69,7 @@ public class AddressSpaceToIpSpaceMetadataTest {
   }
 
   @Test
-  public void testNetwork() {
+  void testNetwork() {
     Ip ip = Ip.parse("1.1.1.0");
     Ip mask = Ip.parse("255.255.255.0");
     Network addrSpace = new Network("name", NAT_SETTINGS_TEST_INSTANCE, ip, mask, Uid.of("uid"));

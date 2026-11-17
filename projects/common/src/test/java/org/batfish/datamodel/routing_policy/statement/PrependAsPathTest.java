@@ -18,11 +18,11 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.expr.AsExpr;
 import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
 import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link PrependAsPath}. */
 @ParametersAreNonnullByDefault
-public final class PrependAsPathTest {
+final class PrependAsPathTest {
 
   private static Environment newTestEnvironment(Bgpv4Route.Builder outputRoute) {
     Configuration c = new Configuration("host", ConfigurationFormat.CISCO_IOS);
@@ -30,19 +30,19 @@ public final class PrependAsPathTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     Statement obj = new PrependAsPath(new LiteralAsList(ImmutableList.of(new ExplicitAs(1L))));
     assertThat(SerializationUtils.clone(obj), equalTo(obj));
   }
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     Statement obj = new PrependAsPath(new LiteralAsList(ImmutableList.of(new ExplicitAs(1L))));
     assertThat(BatfishObjectMapper.clone(obj, Statement.class), equalTo(obj));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     Statement obj = new PrependAsPath(new LiteralAsList(ImmutableList.of(new ExplicitAs(1L))));
     new EqualsTester()
         .addEqualityGroup(
@@ -53,7 +53,7 @@ public final class PrependAsPathTest {
   }
 
   @Test
-  public void testEvaluate() {
+  void testEvaluate() {
     List<AsExpr> prepend = Lists.newArrayList(new ExplicitAs(1L), new ExplicitAs(2L));
     PrependAsPath operation = new PrependAsPath(new LiteralAsList(prepend));
     Bgpv4Route.Builder builder = Bgpv4Route.testBuilder();
@@ -65,7 +65,7 @@ public final class PrependAsPathTest {
   }
 
   @Test
-  public void testEvaluateWriteIntermediateAttributes() {
+  void testEvaluateWriteIntermediateAttributes() {
     List<AsExpr> prepend = Lists.newArrayList(new ExplicitAs(1L), new ExplicitAs(2L));
     PrependAsPath operation = new PrependAsPath(new LiteralAsList(prepend));
     Bgpv4Route.Builder outputRoute = Bgpv4Route.testBuilder();
@@ -83,7 +83,7 @@ public final class PrependAsPathTest {
   }
 
   @Test
-  public void testEvaluateReadAndWriteIntermediateAttributes() {
+  void testEvaluateReadAndWriteIntermediateAttributes() {
     List<AsExpr> toPrepend = ImmutableList.of(new ExplicitAs(1L), new ExplicitAs(2L));
     PrependAsPath operation = new PrependAsPath(new LiteralAsList(toPrepend));
     Bgpv4Route.Builder outputRoute = Bgpv4Route.testBuilder();

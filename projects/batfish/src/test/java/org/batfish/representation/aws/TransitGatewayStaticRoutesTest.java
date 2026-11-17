@@ -13,13 +13,13 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Prefix;
 import org.batfish.representation.aws.Route.State;
 import org.batfish.representation.aws.TransitGatewayRoute.Type;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link TransitGatewayStaticRoutes} */
-public class TransitGatewayStaticRoutesTest {
+class TransitGatewayStaticRoutesTest {
 
   @Test
-  public void testDeserialization() throws IOException {
+  void testDeserialization() throws IOException {
     String text =
         readResource("org/batfish/representation/aws/TransitGatewayStaticRoutesTest.json", UTF_8);
 

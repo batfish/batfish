@@ -4,8 +4,10 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHop;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.Table;
+import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 import org.batfish.datamodel.Bgpv4Route;
@@ -17,21 +19,18 @@ import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * Tests that a router that sends all additional-paths will advertise routes that are not ECMP-best,
  * and that both will be present in the BGP RIB on a receiver.
  */
-public final class BgpAddPathNonEcmpBestTest {
+final class BgpAddPathNonEcmpBestTest {
 
   private static final Prefix PREFIX = Prefix.strict("10.0.0.0/32");
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+  @TempDir public File _folder;
   private DataPlane _dp;
 
   /*
@@ -47,8 +46,8 @@ public final class BgpAddPathNonEcmpBestTest {
    - as2border should advertise 2 routes to as2leaf
    - as2leaf should have 1 best and 1 backup route in its BGP RIB; and 1 routes in its main RIB
   */
-  @Before
-  public void setup() throws IOException {
+  @BeforeEach
+  void setup() throws IOException {
     String snapshotPath = "org/batfish/dataplane/ibdp/add-path/non-ecmp-best";
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
@@ -63,7 +62,7 @@ public final class BgpAddPathNonEcmpBestTest {
   }
 
   @Test
-  public void testBgpRib() {
+  void testBgpRib() {
     Table<String, String, Set<Bgpv4Route>> bgpRoutes = _dp.getBgpRoutes();
     Table<String, String, Set<Bgpv4Route>> backupRoutes = _dp.getBgpBackupRoutes();
 
@@ -80,14 +79,16 @@ public final class BgpAddPathNonEcmpBestTest {
         bgpRoutes.get("as2leaf", DEFAULT_VRF_NAME),
         contains(hasNextHop(NextHopIp.of(Ip.parse("10.12.2.1")))));
     // TODO: with add-path, advertise non-ecmp-best routes
-    _thrown.expect(AssertionError.class);
-    assertThat(
-        backupRoutes.get("as2leaf", DEFAULT_VRF_NAME),
-        contains(hasNextHop(NextHopIp.of(Ip.parse("10.12.1.1")))));
+    assertThrows(
+        AssertionError.class,
+        () ->
+            assertThat(
+                backupRoutes.get("as2leaf", DEFAULT_VRF_NAME),
+                contains(hasNextHop(NextHopIp.of(Ip.parse("10.12.1.1"))))));
   }
 
   @Test
-  public void testMainRib() {
+  void testMainRib() {
     Table<String, String, FinalMainRib> ribs = _dp.getRibs();
 
     // as2border

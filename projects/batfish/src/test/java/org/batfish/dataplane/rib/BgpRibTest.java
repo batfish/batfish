@@ -7,7 +7,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
-import static org.junit.Assert.assertSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -37,13 +37,13 @@ import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link BgpRib} */
-public class BgpRibTest {
+class BgpRibTest {
 
   @Test
-  public void testEvictSamePrefixReceivedFromPathId() {
+  void testEvictSamePrefixReceivedFromPathId() {
     Bgpv4Rib bestPathRib =
         new Bgpv4Rib(
             null,
@@ -83,7 +83,7 @@ public class BgpRibTest {
   }
 
   @Test
-  public void testMultipathMergeAndRemove_notMultipath() {
+  void testMultipathMergeAndRemove_notMultipath() {
     Bgpv4Rib bgpRib =
         new Bgpv4Rib(
             null,
@@ -155,7 +155,7 @@ public class BgpRibTest {
   }
 
   @Test
-  public void testMultipathMerge_order() {
+  void testMultipathMerge_order() {
     Bgpv4Route.Builder rb = Bgpv4Route.testBuilder().setNetwork(Prefix.ZERO);
     Supplier<Bgpv4Rib> makeRib =
         () ->
@@ -262,7 +262,7 @@ public class BgpRibTest {
   }
 
   @Test
-  public void testMultipathMergeAndRemove_multipath() {
+  void testMultipathMergeAndRemove_multipath() {
     Bgpv4Rib bgpRib =
         new Bgpv4Rib(
             null,
@@ -346,7 +346,7 @@ public class BgpRibTest {
   }
 
   @Test
-  public void testBestPathComparator() {
+  void testBestPathComparator() {
     BgpRib<Bgpv4Route> rib =
         new Bgpv4Rib(
             null,
@@ -400,7 +400,7 @@ public class BgpRibTest {
   }
 
   @Test
-  public void testBestPathComparatorClusterListLength() {
+  void testBestPathComparatorClusterListLength() {
     BgpRib<Bgpv4Route> rib =
         new Bgpv4Rib(
             null,
@@ -433,7 +433,7 @@ public class BgpRibTest {
   }
 
   @Test
-  public void testCompareReceivedFrom() {
+  void testCompareReceivedFrom() {
     // Preference order:
     //  1. Lowest receivedFromIp
     //  2. Best ReceivedFrom subtype (least -> most preferred: Interface, Ip, Self)
@@ -463,7 +463,7 @@ public class BgpRibTest {
   }
 
   @Test
-  public void testBestPathComparator_ClusterListAsIgpCost() {
+  void testBestPathComparator_ClusterListAsIgpCost() {
     BgpRib<Bgpv4Route> rib =
         new Bgpv4Rib(
             null,
@@ -512,7 +512,7 @@ public class BgpRibTest {
   }
 
   @Test
-  public void testBestPathComparator_Default() {
+  void testBestPathComparator_Default() {
     BgpRib<Bgpv4Route> rib =
         new Bgpv4Rib(
             null,
@@ -562,7 +562,7 @@ public class BgpRibTest {
   }
 
   @Test
-  public void testArrivalOrderRemovesBackupRoutesToo() {
+  void testArrivalOrderRemovesBackupRoutesToo() {
     Bgpv4Rib bestPathRib =
         new Bgpv4Rib(
             null,
@@ -621,7 +621,7 @@ public class BgpRibTest {
   }
 
   @Test
-  public void testGetBestPathRoutes_sameInstanceWhenUnchanged() {
+  void testGetBestPathRoutes_sameInstanceWhenUnchanged() {
     Bgpv4Rib rib = bestPathRib();
     assertSame(rib.getBestPathRoutes(), rib.getBestPathRoutes());
 
@@ -631,7 +631,7 @@ public class BgpRibTest {
   }
 
   @Test
-  public void testGetBestPathRoutes_newBestPath() {
+  void testGetBestPathRoutes_newBestPath() {
     Bgpv4Rib rib = bestPathRib();
     Bgpv4Route.Builder rb = Bgpv4Route.testBuilder().setNetwork(Prefix.ZERO);
     Bgpv4Route good =
@@ -653,7 +653,7 @@ public class BgpRibTest {
   }
 
   @Test
-  public void testGetBestPathRoutes_worsePathLeavesBestPathUnchanged() {
+  void testGetBestPathRoutes_worsePathLeavesBestPathUnchanged() {
     Bgpv4Rib rib = bestPathRib();
     Bgpv4Route.Builder rb = Bgpv4Route.testBuilder().setNetwork(Prefix.ZERO);
     Bgpv4Route best =
@@ -675,7 +675,7 @@ public class BgpRibTest {
   }
 
   @Test
-  public void testGetBestPathRoutes_removeBestPath() {
+  void testGetBestPathRoutes_removeBestPath() {
     Bgpv4Rib rib = bestPathRib();
     Bgpv4Route.Builder rb = Bgpv4Route.testBuilder().setNetwork(Prefix.ZERO);
     Bgpv4Route best =
@@ -697,7 +697,7 @@ public class BgpRibTest {
   }
 
   @Test
-  public void testGetBestPathRoutes_returnedSetIsNotMutatedLater() {
+  void testGetBestPathRoutes_returnedSetIsNotMutatedLater() {
     Bgpv4Rib rib = bestPathRib();
     Bgpv4Route.Builder rb = Bgpv4Route.testBuilder().setNetwork(Prefix.ZERO);
     Bgpv4Route good =

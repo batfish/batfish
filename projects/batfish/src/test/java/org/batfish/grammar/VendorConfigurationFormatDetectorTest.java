@@ -30,15 +30,12 @@ import static org.hamcrest.Matchers.not;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link VendorConfigurationFormatDetector}. */
-@RunWith(JUnit4.class)
-public class VendorConfigurationFormatDetectorTest {
+class VendorConfigurationFormatDetectorTest {
   @Test
-  public void testA10() {
+  void testA10() {
     String fileText =
         """
         !
@@ -49,13 +46,13 @@ public class VendorConfigurationFormatDetectorTest {
   }
 
   @Test
-  public void testA10BatfishFormat() {
+  void testA10BatfishFormat() {
     String fileText = "!BATFISH_FORMAT: a10_acos\n";
     assertThat(identifyConfigurationFormat(fileText), equalTo(A10_ACOS));
   }
 
   @Test
-  public void testFastPath() {
+  void testFastPath() {
     String fastpathHeader =
         """
         !Current Configuration:
@@ -117,7 +114,7 @@ public class VendorConfigurationFormatDetectorTest {
   }
 
   @Test
-  public void testArista() {
+  void testArista() {
     String eosFlash = "! boot system flash:/vEOS-lab.swi\n";
     String aristaBatfish = "!BATFISH_FORMAT: arista\n";
     String aristaRancid = "!RANCID-CONTENT-TYPE: arista\n";
@@ -139,7 +136,7 @@ public class VendorConfigurationFormatDetectorTest {
   }
 
   @Test
-  public void testBatfishFormatIsGenerous() {
+  void testBatfishFormatIsGenerous() {
     for (String s :
         new String[] {
           "!BATFISH-FORMAT: cisco_ios",
@@ -154,12 +151,12 @@ public class VendorConfigurationFormatDetectorTest {
   }
 
   @Test
-  public void testBatfishFormatUnknown() {
+  void testBatfishFormatUnknown() {
     assertThat(identifyConfigurationFormat("!BATFISH-FORMAT: deep_thought"), equalTo(UNKNOWN));
   }
 
   @Test
-  public void testCumulusConcatenated() {
+  void testCumulusConcatenated() {
     String fileText =
         "hostname\n"
             + "# ports.conf --\n" //
@@ -169,7 +166,7 @@ public class VendorConfigurationFormatDetectorTest {
   }
 
   @Test
-  public void testCadant() {
+  void testCadant() {
     String fileText =
         "# ChassisType=<E6000> shelfName=<Arris CER CMTS> shelfSwVersion=<CER_V03.05.02.0008> \n"
             + "configure\n"
@@ -178,7 +175,7 @@ public class VendorConfigurationFormatDetectorTest {
   }
 
   @Test
-  public void testCheckPoint() {
+  void testCheckPoint() {
     String fileText =
         "#\n"
             + "# Configuration of host_name-ch01-01\n"
@@ -189,7 +186,7 @@ public class VendorConfigurationFormatDetectorTest {
   }
 
   @Test
-  public void testCheckPointNewlines() {
+  void testCheckPointNewlines() {
     List<String> lines =
         ImmutableList.of("#", "# Configuration of host_name-ch01-01", "# Language version: 13.4v1");
 
@@ -202,7 +199,7 @@ public class VendorConfigurationFormatDetectorTest {
   }
 
   @Test
-  public void testF5BigipStructured() {
+  void testF5BigipStructured() {
     String batfish = "#BATFISH_FORMAT: f5_bigip_structured\n";
     String withRancid = "#RANCID-CONTENT-TYPE: bigip\n";
     String withoutRancid = "#TMSH-VERSION: 1.0\nsys global-settings { }\n";
@@ -214,13 +211,13 @@ public class VendorConfigurationFormatDetectorTest {
   }
 
   @Test
-  public void testIbmBnt() {
+  void testIbmBnt() {
     String ibmBnt = "!RANCID-CONTENT-TYPE: ibmbnt\n!";
     assertThat(identifyConfigurationFormat(ibmBnt), equalTo(IBM_BNT));
   }
 
   @Test
-  public void testIos() {
+  void testIos() {
     String asr1000 =
         "boot system flash bootflash:asr1000rp1-adventerprisek9.03.03.01.S.151-2.S1.bin \n";
     String catalyst =
@@ -232,7 +229,7 @@ public class VendorConfigurationFormatDetectorTest {
   }
 
   @Test
-  public void testIosXr() {
+  void testIosXr() {
     String batfish = "!BATFISH-FORMAT: cisco_ios_xr\n";
     String rancidGeneric = "!RANCID-CONTENT-TYPE: cisco\n";
     String xr = "!! IOS XR Configuration 5.2.4\n";
@@ -271,13 +268,13 @@ public class VendorConfigurationFormatDetectorTest {
   }
 
   @Test
-  public void testIpTablesFalsePositives() {
+  void testIpTablesFalsePositives() {
     String fileText = StringUtils.join("set system host-name test", "set FORWARD INPUT OUTPUT");
     assertThat(identifyConfigurationFormat(fileText), equalTo(FLAT_JUNIPER));
   }
 
   @Test
-  public void testJuniper() {
+  void testJuniper() {
 
     /* Confirm hierarchical configs are correctly identified */
     for (String fileText :
@@ -325,7 +322,7 @@ public class VendorConfigurationFormatDetectorTest {
   }
 
   @Test
-  public void testNxos() {
+  void testNxos() {
     String n7000 = "boot system bootflash:n7000-s2-dk9.7.2.1.D1.1.bin sup-2 \n";
     String nxos = "boot nxos bootflash:nxos.7.0.3.I4.7.bin \n";
     String nxosVirtual = "boot nxos bootflash:/nxos.9.2.3.bin\n";
@@ -337,7 +334,7 @@ public class VendorConfigurationFormatDetectorTest {
   }
 
   @Test
-  public void testPaloAlto() {
+  void testPaloAlto() {
     String rancid = "!RANCID-CONTENT-TYPE: paloalto\n!\nstructure {";
     String rancid2 = "#RANCID-CONTENT-TYPE: paloalto\n!\nstructure {";
     String panorama = "deviceconfig {\n  system {\n    panorama-server 1.2.3.4;\n  }\n}";
@@ -384,7 +381,7 @@ public class VendorConfigurationFormatDetectorTest {
   }
 
   @Test
-  public void testRuckusIcx() {
+  void testRuckusIcx() {
     String basic = "stack unit 2\n" + "  module 1 icx7450-48p-poe-management-module\n";
     for (String fileText : ImmutableList.of(basic)) {
       assertThat(identifyConfigurationFormat(fileText), equalTo(RUCKUS_ICX));
@@ -392,7 +389,7 @@ public class VendorConfigurationFormatDetectorTest {
   }
 
   @Test
-  public void testSros() {
+  void testSros() {
     // The config captured from the SR-SIM lab (admin show configuration, MD-CLI brace form).
     String capturedR1 =
         readResource(
@@ -421,7 +418,7 @@ public class VendorConfigurationFormatDetectorTest {
   }
 
   @Test
-  public void testFrr() {
+  void testFrr() {
     String rancidZebra = "!RANCID-CONTENT-TYPE: zebra\n";
     String rancidFrr = "!RANCID-CONTENT-TYPE: frr\n";
 
@@ -431,7 +428,7 @@ public class VendorConfigurationFormatDetectorTest {
   }
 
   @Test
-  public void testUnknown() {
+  void testUnknown() {
     String unknownConfig = "unknown config line\n";
     String unknownRancid = "!RANCID-CONTENT-TYPE: madeup\nThis is an ASA device";
 

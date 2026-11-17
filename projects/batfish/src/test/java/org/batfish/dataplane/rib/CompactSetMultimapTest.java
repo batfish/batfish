@@ -6,17 +6,17 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link CompactSetMultimap}. */
-public final class CompactSetMultimapTest {
+final class CompactSetMultimapTest {
 
   /** Enough values under one key to pass through every storage form going up and coming down. */
   private static final int MANY = 3 * MAX_LIST_SIZE;
@@ -26,7 +26,7 @@ public final class CompactSetMultimapTest {
   }
 
   @Test
-  public void testEmpty() {
+  void testEmpty() {
     CompactSetMultimap<String, Integer> m = new CompactSetMultimap<>();
 
     assertFalse(m.containsKey("k"));
@@ -35,7 +35,7 @@ public final class CompactSetMultimapTest {
   }
 
   @Test
-  public void testSingleValue() {
+  void testSingleValue() {
     CompactSetMultimap<String, Integer> m = new CompactSetMultimap<>();
 
     assertTrue(m.put("k", 1));
@@ -51,21 +51,21 @@ public final class CompactSetMultimapTest {
   }
 
   @Test
-  public void testPutAndRemoveThroughEveryForm() {
+  void testPutAndRemoveThroughEveryForm() {
     CompactSetMultimap<String, Integer> m = new CompactSetMultimap<>();
     List<Integer> expected = new ArrayList<>();
     for (int i = 0; i < MANY; i++) {
       assertTrue(m.put("k", i));
-      assertFalse("already present", m.put("k", i));
+      assertFalse(m.put("k", i), "already present");
       expected.add(i);
       assertTrue(m.containsKey("k"));
       assertThat(m.get("k"), hasSize(expected.size()));
       assertThat(m.get("k"), containsInAnyOrder(array(expected)));
     }
     for (int i = 0; i < MANY; i++) {
-      assertFalse("never present", m.remove("k", -1));
+      assertFalse(m.remove("k", -1), "never present");
       assertTrue(m.remove("k", i));
-      assertFalse("already removed", m.remove("k", i));
+      assertFalse(m.remove("k", i), "already removed");
       expected.remove(Integer.valueOf(i));
       assertThat(m.get("k"), hasSize(expected.size()));
       assertThat(m.get("k"), containsInAnyOrder(array(expected)));
@@ -74,7 +74,7 @@ public final class CompactSetMultimapTest {
   }
 
   @Test
-  public void testShrinkThenRegrow() {
+  void testShrinkThenRegrow() {
     CompactSetMultimap<String, Integer> m = new CompactSetMultimap<>();
     List<Integer> expected = new ArrayList<>();
     for (int i = 0; i < MANY; i++) {
@@ -94,7 +94,7 @@ public final class CompactSetMultimapTest {
   }
 
   @Test
-  public void testKeysAreIndependent() {
+  void testKeysAreIndependent() {
     CompactSetMultimap<String, Integer> m = new CompactSetMultimap<>();
     m.put("a", 1);
     m.put("b", 1);
@@ -106,7 +106,7 @@ public final class CompactSetMultimapTest {
   }
 
   @Test
-  public void testGetIsReadOnly() {
+  void testGetIsReadOnly() {
     CompactSetMultimap<String, Integer> m = new CompactSetMultimap<>();
     for (int i = 0; i < MANY; i++) {
       m.put("k", i);

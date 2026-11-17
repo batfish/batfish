@@ -6,12 +6,12 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
 import java.util.List;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link org.batfish.dataplane.ibdp.CrossVrfEdgeId} */
-public final class CrossVrfEdgeIdTest {
+final class CrossVrfEdgeIdTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new CrossVrfEdgeId("vrf", "rib"), new CrossVrfEdgeId("vrf", "rib"))
         .addEqualityGroup(new CrossVrfEdgeId("vrf2", "rib"))
@@ -20,7 +20,7 @@ public final class CrossVrfEdgeIdTest {
   }
 
   @Test
-  public void testComparator() {
+  void testComparator() {
     List<CrossVrfEdgeId> ordered =
         ImmutableList.of(
             new CrossVrfEdgeId("a", "a"),

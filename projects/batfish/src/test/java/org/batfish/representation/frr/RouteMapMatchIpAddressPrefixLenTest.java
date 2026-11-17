@@ -10,18 +10,18 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class RouteMapMatchIpAddressPrefixLenTest {
+class RouteMapMatchIpAddressPrefixLenTest {
 
   @Test
-  public void testConstructionAndGetter() {
+  void testConstructionAndGetter() {
     RouteMapMatchIpAddressPrefixLen match = new RouteMapMatchIpAddressPrefixLen(7);
     assertThat(match.getLen(), equalTo(7));
   }
 
   @Test
-  public void testToBooleanExpr() {
+  void testToBooleanExpr() {
     RouteMapMatchIpAddressPrefixLen match = new RouteMapMatchIpAddressPrefixLen(7);
     FrrConfiguration config = new FrrConfiguration();
     Configuration c = Configuration.builder().setHostname("c").build();

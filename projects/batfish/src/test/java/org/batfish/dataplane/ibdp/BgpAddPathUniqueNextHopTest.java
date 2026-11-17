@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 
 import com.google.common.collect.Table;
+import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 import org.batfish.datamodel.Bgpv4Route;
@@ -18,19 +19,18 @@ import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * Tests that a route reflector with multiple routes for a prefix will advertise only one route per
  * unique next hop for that given prefix.
  */
-public final class BgpAddPathUniqueNextHopTest {
+final class BgpAddPathUniqueNextHopTest {
 
   private static final Prefix PREFIX = Prefix.strict("10.0.0.0/32");
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
   private DataPlane _dp;
 
   /*
@@ -50,8 +50,8 @@ public final class BgpAddPathUniqueNextHopTest {
    - as2rr should advertise 1 route from as2border1 and 1 route from as2border2 to as2leaf
    - as2leaf should have 2 routes in its BGP RIB, and 2 routes in its main RIB
   */
-  @Before
-  public void setup() throws IOException {
+  @BeforeEach
+  void setup() throws IOException {
     String snapshotPath = "org/batfish/dataplane/ibdp/add-path/unique-next-hop";
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
@@ -74,7 +74,7 @@ public final class BgpAddPathUniqueNextHopTest {
   }
 
   @Test
-  public void testBgpRib() {
+  void testBgpRib() {
     Table<String, String, Set<Bgpv4Route>> bgpRoutes = _dp.getBgpRoutes();
     assertThat(bgpRoutes.get("as2border1", DEFAULT_VRF_NAME), hasSize(2));
     assertThat(bgpRoutes.get("as2border2", DEFAULT_VRF_NAME), hasSize(1));
@@ -88,7 +88,7 @@ public final class BgpAddPathUniqueNextHopTest {
   }
 
   @Test
-  public void testMainRib() {
+  void testMainRib() {
     Table<String, String, FinalMainRib> ribs = _dp.getRibs();
     assertThat(ribs.get("as2border1", DEFAULT_VRF_NAME).getRoutes(PREFIX), hasSize(2));
     assertThat(ribs.get("as2border2", DEFAULT_VRF_NAME).getRoutes(PREFIX), hasSize(1));

@@ -1,17 +1,17 @@
 package org.batfish.vendor.sonic.representation;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class L3InterfaceTest {
+class L3InterfaceTest {
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     L3Interface obj =
         new L3Interface(
             ImmutableMap.of(
@@ -22,7 +22,7 @@ public class L3InterfaceTest {
 
   @SuppressWarnings("UnstableApiUsage")
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new L3Interface(ImmutableMap.of()), new L3Interface(ImmutableMap.of()))
         .addEqualityGroup(

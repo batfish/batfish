@@ -2,7 +2,7 @@ package org.batfish.vendor.check_point_management;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
@@ -10,13 +10,13 @@ import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link SimpleGateway}. */
-public final class SimpleGatewayTest {
+final class SimpleGatewayTest {
 
   @Test
-  public void testJacksonDeserialization() throws JsonProcessingException {
+  void testJacksonDeserialization() throws JsonProcessingException {
     String input =
         "{"
             + "\"GARBAGE\":0,"
@@ -44,7 +44,7 @@ public final class SimpleGatewayTest {
   }
 
   @Test
-  public void testJacksonDeserialization_noIpv4Address() throws JsonProcessingException {
+  void testJacksonDeserialization_noIpv4Address() throws JsonProcessingException {
     String input =
         "{"
             + "\"GARBAGE\":0,"
@@ -71,7 +71,7 @@ public final class SimpleGatewayTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     SimpleGateway obj =
         new SimpleGateway(
             Ip.ZERO, "foo", ImmutableList.of(), GatewayOrServerPolicy.empty(), Uid.of("0"));
@@ -79,7 +79,7 @@ public final class SimpleGatewayTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     SimpleGateway obj =
         new SimpleGateway(
             Ip.ZERO, "foo", ImmutableList.of(), GatewayOrServerPolicy.empty(), Uid.of("0"));

@@ -9,15 +9,15 @@ import static org.hamcrest.Matchers.empty;
 
 import java.util.List;
 import org.batfish.datamodel.TraceElement;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link Tracer}. */
-public class TracerTest {
+class TracerTest {
   private static TraceElement E1 = TraceElement.of("1");
   private static TraceElement E2 = TraceElement.of("2");
 
   @Test
-  public void testBasic() {
+  void testBasic() {
     Tracer tracer = new Tracer();
     tracer.newSubTrace();
     tracer.setTraceElement(E1);
@@ -28,7 +28,7 @@ public class TracerTest {
   }
 
   @Test
-  public void testSubTrace() {
+  void testSubTrace() {
     Tracer tracer = new Tracer();
     tracer.newSubTrace();
     tracer.setTraceElement(E1);
@@ -49,7 +49,7 @@ public class TracerTest {
   }
 
   @Test
-  public void testDiscardSubTrace() {
+  void testDiscardSubTrace() {
     Tracer tracer = new Tracer();
     tracer.newSubTrace();
     tracer.setTraceElement(E1);
@@ -65,7 +65,7 @@ public class TracerTest {
   }
 
   @Test
-  public void testNoTraceElement_root() {
+  void testNoTraceElement_root() {
     Tracer tracer = new Tracer();
     tracer.newSubTrace();
 
@@ -88,7 +88,7 @@ public class TracerTest {
   }
 
   @Test
-  public void testNoTraceElement_leaf() {
+  void testNoTraceElement_leaf() {
     Tracer tracer = new Tracer();
     tracer.newSubTrace();
     tracer.setTraceElement(E1);
@@ -103,7 +103,7 @@ public class TracerTest {
   }
 
   @Test
-  public void testNoTraceElement_internal() {
+  void testNoTraceElement_internal() {
     Tracer tracer = new Tracer();
     tracer.newSubTrace(); // root
     tracer.setTraceElement(E1);

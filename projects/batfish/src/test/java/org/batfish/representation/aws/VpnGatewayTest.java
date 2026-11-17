@@ -42,13 +42,13 @@ import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.representation.aws.VpnConnection.GatewayType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link VpnGateway} */
-public class VpnGatewayTest {
+class VpnGatewayTest {
 
   @Test
-  public void testDeserialization() throws IOException {
+  void testDeserialization() throws IOException {
     String text = readResource("org/batfish/representation/aws/VpnGatewayTest.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
@@ -71,7 +71,7 @@ public class VpnGatewayTest {
   }
 
   @Test
-  public void testToConfigurationNodeNoBgp() {
+  void testToConfigurationNodeNoBgp() {
     Vpc vpc = getTestVpc("vpc", ImmutableSet.of(Prefix.parse("10.0.0.0/16")));
     Configuration vpcConfig = Utils.newAwsConfiguration(vpc.getId(), "awstest");
 
@@ -121,7 +121,7 @@ public class VpnGatewayTest {
   }
 
   @Test
-  public void testToConfigurationNodeBgp() {
+  void testToConfigurationNodeBgp() {
     Prefix vpcPrefix = Prefix.parse("10.0.0.0/16");
     Vpc vpc = getTestVpc("vpc", ImmutableSet.of(vpcPrefix));
     Configuration vpcConfig = Utils.newAwsConfiguration(vpc.getId(), "awstest");
@@ -208,7 +208,7 @@ public class VpnGatewayTest {
    * with the AWS-side address, dot1Q encapsulation, and a BGP peer toward the customer address.
    */
   @Test
-  public void testToConfigurationNodeVgwAttachedPrivateVif() {
+  void testToConfigurationNodeVgwAttachedPrivateVif() {
     Vpc vpc = getTestVpc("vpc", ImmutableSet.of(Prefix.parse("10.0.0.0/16")));
     Configuration vpcConfig = Utils.newAwsConfiguration(vpc.getId(), "awstest");
 

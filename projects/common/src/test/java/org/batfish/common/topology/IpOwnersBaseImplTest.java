@@ -28,8 +28,8 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -56,20 +56,20 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.hsrp.HsrpGroup;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link IpOwnersBaseImpl}. */
 @ParametersAreNonnullByDefault
-public class IpOwnersBaseImplTest {
+class IpOwnersBaseImplTest {
   private Configuration.Builder _cb;
   private Interface.Builder _ib;
   private Vrf.Builder _vb;
   private static final Prefix P1 = Prefix.parse("1.0.0.0/8");
   private static final Prefix P2 = Prefix.parse("2.0.0.0/16");
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     NetworkFactory nf = new NetworkFactory();
     _cb = nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     _vb = nf.vrfBuilder();
@@ -77,7 +77,7 @@ public class IpOwnersBaseImplTest {
   }
 
   @Test
-  public void testComputeInterfaceHostSubnetIps() {
+  void testComputeInterfaceHostSubnetIps() {
     Configuration c1 = _cb.build();
     Map<String, Configuration> configs = ImmutableMap.of(c1.getHostname(), c1);
     Vrf vrf1 = _vb.setOwner(c1).build();
@@ -131,7 +131,7 @@ public class IpOwnersBaseImplTest {
   }
 
   @Test
-  public void testComputeInterfaceHostSubnetIpsWithPrefixLength31() {
+  void testComputeInterfaceHostSubnetIpsWithPrefixLength31() {
     Configuration c1 = _cb.build();
     Map<String, Configuration> configs = ImmutableMap.of(c1.getHostname(), c1);
     Vrf vrf1 = _vb.setOwner(c1).build();
@@ -155,7 +155,7 @@ public class IpOwnersBaseImplTest {
   }
 
   @Test
-  public void testComputeIpIfaceOwners() {
+  void testComputeIpIfaceOwners() {
     String node = "node";
     String vrfName = "vrf";
     Vrf vrf = new Vrf(vrfName);
@@ -195,7 +195,7 @@ public class IpOwnersBaseImplTest {
   }
 
   @Test
-  public void testComputeIpVrfOwners() {
+  void testComputeIpVrfOwners() {
     String node = "node";
     String vrf1 = "vrf1";
     String vrf2 = "vrf2";
@@ -216,7 +216,7 @@ public class IpOwnersBaseImplTest {
   }
 
   @Test
-  public void testExtractHsrp() {
+  void testExtractHsrp() {
     ConcreteInterfaceAddress sourceAddress = ConcreteInterfaceAddress.parse("1.2.3.4/24");
     Configuration c =
         Configuration.builder()
@@ -293,7 +293,7 @@ public class IpOwnersBaseImplTest {
   }
 
   @Test
-  public void testProcessHsrpGroups() {
+  void testProcessHsrpGroups() {
     Map<Ip, Map<String, Set<String>>> ipOwners = new HashMap<>();
     Configuration c1 =
         Configuration.builder()
@@ -355,7 +355,7 @@ public class IpOwnersBaseImplTest {
   }
 
   @Test
-  public void testProcessHsrpGroupsPriorityTie() {
+  void testProcessHsrpGroupsPriorityTie() {
     Map<Ip, Map<String, Set<String>>> ipOwners = new HashMap<>();
     Map<Integer, Map<NodeInterfacePair, Set<Ip>>> groups = new HashMap<>();
     Ip hsrpIp = Ip.parse("1.1.1.1");
@@ -428,7 +428,7 @@ public class IpOwnersBaseImplTest {
   }
 
   @Test
-  public void testHsrpPriorityApplied() {
+  void testHsrpPriorityApplied() {
     Configuration c1 =
         Configuration.builder()
             .setHostname("c1")
@@ -480,7 +480,7 @@ public class IpOwnersBaseImplTest {
   }
 
   @Test
-  public void testVrrpPriorityApplied() {
+  void testVrrpPriorityApplied() {
     Configuration c1 =
         Configuration.builder()
             .setHostname("c1")
@@ -532,7 +532,7 @@ public class IpOwnersBaseImplTest {
   }
 
   @Test
-  public void testComputeHsrpPriority() {
+  void testComputeHsrpPriority() {
     int basePriority = 100;
     int track1Decrement = 50; // never applied
     int track2Decrement = 25; // always applied
@@ -574,7 +574,7 @@ public class IpOwnersBaseImplTest {
   }
 
   @Test
-  public void testComputeVrrpPriority() {
+  void testComputeVrrpPriority() {
     int basePriority = 100;
     int track1Decrement = 50; // never applied
     int track2Decrement = 25; // always applied
@@ -617,7 +617,7 @@ public class IpOwnersBaseImplTest {
   }
 
   @Test
-  public void testExtractVrrp() {
+  void testExtractVrrp() {
     ConcreteInterfaceAddress sourceAddress = ConcreteInterfaceAddress.parse("1.2.3.4/24");
     Configuration c =
         Configuration.builder()
@@ -697,7 +697,7 @@ public class IpOwnersBaseImplTest {
   }
 
   @Test
-  public void testProcessVrrpGroups() {
+  void testProcessVrrpGroups() {
     Map<Ip, Map<String, Set<String>>> ipOwners = new HashMap<>();
     Configuration c1 =
         Configuration.builder()
@@ -764,7 +764,7 @@ public class IpOwnersBaseImplTest {
   }
 
   @Test
-  public void testPartitionCandidates() {
+  void testPartitionCandidates() {
     class MockL3Adjacencies implements L3Adjacencies {
 
       private final Map<NodeInterfacePair, NodeInterfacePair> _pairs;
@@ -812,7 +812,7 @@ public class IpOwnersBaseImplTest {
   }
 
   @Test
-  public void testComputeInterfaceOwners() {
+  void testComputeInterfaceOwners() {
     Map<Ip, Map<String, Set<String>>> deviceOwnedIps =
         ImmutableMap.of(
             Ip.ZERO,
@@ -826,7 +826,7 @@ public class IpOwnersBaseImplTest {
   }
 
   @Test
-  public void testComputeNodeOwners() {
+  void testComputeNodeOwners() {
     Map<Ip, Map<String, Set<String>>> deviceOwnedIps =
         ImmutableMap.of(
             Ip.ZERO, ImmutableMap.of("c1", ImmutableSet.of("i1"), "c2", ImmutableSet.of("i2")));
@@ -858,7 +858,7 @@ public class IpOwnersBaseImplTest {
   }
 
   @Test
-  public void testRecordElections() {
+  void testRecordElections() {
     Configuration c =
         Configuration.builder()
             .setHostname("c")
@@ -994,7 +994,7 @@ public class IpOwnersBaseImplTest {
   }
 
   @Test
-  public void testRecordElectionPrioritiesSingleCandidate() {
+  void testRecordElectionPrioritiesSingleCandidate() {
     Configuration c =
         Configuration.builder()
             .setHostname("c")

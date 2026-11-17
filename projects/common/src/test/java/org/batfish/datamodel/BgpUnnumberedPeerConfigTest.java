@@ -17,11 +17,11 @@ import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.SessionVrfScope.SpecificVrf;
 import org.batfish.datamodel.dataplane.rib.RibGroup;
 import org.batfish.datamodel.dataplane.rib.RibId;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link BgpUnnumberedPeerConfig}. */
 @ParametersAreNonnullByDefault
-public final class BgpUnnumberedPeerConfigTest {
+final class BgpUnnumberedPeerConfigTest {
 
   private static final BgpAuthenticationSettings BGP_AUTHENTICATION_SETTINGS =
       initBgpAuthenticationSettings();
@@ -38,7 +38,7 @@ public final class BgpUnnumberedPeerConfigTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     BgpUnnumberedPeerConfig.Builder builder =
         BgpUnnumberedPeerConfig.builder()
             .setPeerInterface("eth1")
@@ -113,7 +113,7 @@ public final class BgpUnnumberedPeerConfigTest {
   }
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     BgpUnnumberedPeerConfig bgpUnnumberedPeerConfig =
         BgpUnnumberedPeerConfig.builder()
             .setAppliedRibGroup(
@@ -152,7 +152,7 @@ public final class BgpUnnumberedPeerConfigTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     BgpUnnumberedPeerConfig bgpUnnumberedPeerConfig =
         BgpUnnumberedPeerConfig.builder()
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())

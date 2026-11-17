@@ -8,11 +8,11 @@ import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class SelfNextHopTest {
+class SelfNextHopTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(SelfNextHop.getInstance())
         .addEqualityGroup(new IpNextHop(ImmutableList.of(Ip.ZERO)))
@@ -20,7 +20,7 @@ public class SelfNextHopTest {
   }
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     NextHopExpr first = SelfNextHop.getInstance();
     assertThat(SerializationUtils.clone(first), sameInstance(first));
     assertThat(BatfishObjectMapper.clone(first, NextHopExpr.class), sameInstance(first));

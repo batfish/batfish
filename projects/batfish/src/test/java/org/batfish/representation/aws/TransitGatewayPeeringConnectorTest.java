@@ -5,8 +5,8 @@ import static org.batfish.representation.aws.TransitGateway.receiveSidePeeringIn
 import static org.batfish.representation.aws.TransitGateway.sendSidePeeringInterfaceName;
 import static org.batfish.representation.aws.TransitGateway.vrfNameForRouteTable;
 import static org.batfish.representation.aws.TransitGatewayPeeringConnector.connectSenderReceiver;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -19,9 +19,9 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.representation.aws.TransitGateway.TransitGatewayOptions;
 import org.batfish.representation.aws.TransitGatewayAttachment.Association;
 import org.batfish.representation.aws.TransitGatewayAttachment.ResourceType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class TransitGatewayPeeringConnectorTest {
+class TransitGatewayPeeringConnectorTest {
 
   @VisibleForTesting
   static boolean arePeers(
@@ -34,52 +34,52 @@ public class TransitGatewayPeeringConnectorTest {
   }
 
   @Test
-  public void testArePeers() {
+  void testArePeers() {
     TransitGatewayAttachment attachment1 =
         new TransitGatewayAttachment(
             "attach", "tgw", "myAcc", ResourceType.PEERING, "resId", "resAcc", null);
 
     assertTrue(
-        "matching peers",
         arePeers(
             attachment1,
             new TransitGatewayAttachment(
-                "attach", "resId", "resAcc", ResourceType.PEERING, "tgw", "myAcc", null)));
+                "attach", "resId", "resAcc", ResourceType.PEERING, "tgw", "myAcc", null)),
+        "matching peers");
 
     assertFalse(
-        "wrong attachment id",
         arePeers(
             attachment1,
             new TransitGatewayAttachment(
-                "other", "resId", "resAcc", ResourceType.PEERING, "tgw", "myAcc", null)));
+                "other", "resId", "resAcc", ResourceType.PEERING, "tgw", "myAcc", null)),
+        "wrong attachment id");
     assertFalse(
-        "wrong gateway id",
         arePeers(
             attachment1,
             new TransitGatewayAttachment(
-                "attach", "other", "resAcc", ResourceType.PEERING, "tgw", "myAcc", null)));
+                "attach", "other", "resAcc", ResourceType.PEERING, "tgw", "myAcc", null)),
+        "wrong gateway id");
     assertFalse(
-        "wrong gateway owner (acccount) id",
         arePeers(
             attachment1,
             new TransitGatewayAttachment(
-                "attach", "resId", "other", ResourceType.PEERING, "tgw", "myAcc", null)));
+                "attach", "resId", "other", ResourceType.PEERING, "tgw", "myAcc", null)),
+        "wrong gateway owner (acccount) id");
     assertFalse(
-        "wrong resource id ",
         arePeers(
             attachment1,
             new TransitGatewayAttachment(
-                "attach", "resId", "resAcc", ResourceType.PEERING, "other", "myAcc", null)));
+                "attach", "resId", "resAcc", ResourceType.PEERING, "other", "myAcc", null)),
+        "wrong resource id ");
     assertFalse(
-        "wrong resource owner id ",
         arePeers(
             attachment1,
             new TransitGatewayAttachment(
-                "attach", "resId", "resAcc", ResourceType.PEERING, "tgw", "other", null)));
+                "attach", "resId", "resAcc", ResourceType.PEERING, "tgw", "other", null)),
+        "wrong resource owner id ");
   }
 
   @Test
-  public void testConnectSenderReceiver() {
+  void testConnectSenderReceiver() {
     Configuration sendTgwCfg = Utils.newAwsConfiguration("tgw-send", "aws");
     Configuration recvTgwCfg = Utils.newAwsConfiguration("tgw-recv", "aws");
 

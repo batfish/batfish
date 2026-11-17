@@ -13,9 +13,10 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import javax.annotation.Nonnull;
@@ -43,16 +44,15 @@ import org.batfish.representation.cisco_xr.ExtcommunitySetRtElemAsDotColon;
 import org.batfish.representation.cisco_xr.LiteralUint16;
 import org.batfish.representation.cisco_xr.LiteralUint32;
 import org.batfish.representation.cisco_xr.VrfAddressFamily;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests for https://github.com/batfish/batfish/issues/10062. */
-public final class GitHub10062Test {
+final class GitHub10062Test {
 
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/cisco_xr/testconfigs/";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private @Nonnull CiscoXrConfiguration parseVendorConfig(String hostname) {
     return parseVendorConfig(hostname, new Warnings());
@@ -93,7 +93,7 @@ public final class GitHub10062Test {
   }
 
   @Test
-  public void testBgpVrfRdExtraction() {
+  void testBgpVrfRdExtraction() {
     CiscoXrConfiguration c = parseVendorConfig("gh10062");
     assertThat(
         c.getVrfs(),
@@ -128,7 +128,7 @@ public final class GitHub10062Test {
   }
 
   @Test
-  public void testVrfRouteTargetExtraction() {
+  void testVrfRouteTargetExtraction() {
     // Route-targets under router bgp / vrf / address-family, including a 4-byte asplain
     // ASN administrator (the extcommunity/RT half of GH-10062). The 4-byte forms must both
     // parse cleanly and be extracted onto the VRF address-family import/export sets.
@@ -144,7 +144,7 @@ public final class GitHub10062Test {
   }
 
   @Test
-  public void testExtcommunitySetRtLocalAdministrator32Extraction() {
+  void testExtcommunitySetRtLocalAdministrator32Extraction() {
     // An RFC 4360 type-0 route target has a 2-byte global administrator and a 4-byte local
     // administrator; IOS-XR accepts this in an extcommunity-set rt. Both this shape and the
     // type-2 shape (4-byte GA, 2-byte LA) must extract, and neither may disturb the other.
@@ -182,7 +182,7 @@ public final class GitHub10062Test {
   }
 
   @Test
-  public void testExtcommunitySetRtLocalAdministrator32Conversion() {
+  void testExtcommunitySetRtLocalAdministrator32Conversion() {
     Configuration c = parseConfig("gh10062ecrt");
     CommunityContext ctx = CommunityContext.builder().build();
 

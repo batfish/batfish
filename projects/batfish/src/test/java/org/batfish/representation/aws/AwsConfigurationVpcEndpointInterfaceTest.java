@@ -6,14 +6,14 @@ import static org.batfish.representation.aws.AwsConfigurationTestUtils.testSetup
 import static org.batfish.representation.aws.VpcEndpointInterface.getNodeId;
 
 import com.google.common.collect.ImmutableList;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Ip;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * E2e tests for VPC endpoints of type interface. There is a single VPC with two subnets. Both
@@ -23,7 +23,7 @@ import org.junit.rules.TemporaryFolder;
  * <p>The configuration was pulled * manually after deployment using the setup.tf file in {@link
  * #TESTCONFIGS_DIR}.
  */
-public class AwsConfigurationVpcEndpointInterfaceTest {
+class AwsConfigurationVpcEndpointInterfaceTest {
 
   private static final String TESTCONFIGS_DIR =
       "org/batfish/representation/aws/test-vpc-endpoint-interface";
@@ -63,17 +63,17 @@ public class AwsConfigurationVpcEndpointInterfaceTest {
 
   private static Ip _endpointIp = Ip.parse("10.1.101.97");
 
-  @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public static File _folder;
 
   private static IBatfish _batfish;
 
-  @BeforeClass
-  public static void setup() throws IOException {
+  @BeforeAll
+  static void setup() throws IOException {
     _batfish = testSetup(TESTCONFIGS_DIR, fileNames, _folder);
   }
 
   @Test
-  public void testFromSubnetEndpoint() {
+  void testFromSubnetEndpoint() {
     testBidirectionalTrace(
         getTcpFlow(_instanceSubnetEndpoint, _endpointIp, 443, _batfish),
         ImmutableList.of(_instanceSubnetEndpoint, _instanceEndpoint),
@@ -82,7 +82,7 @@ public class AwsConfigurationVpcEndpointInterfaceTest {
   }
 
   @Test
-  public void testFromSubnetNonEndpoint() {
+  void testFromSubnetNonEndpoint() {
     testBidirectionalTrace(
         getTcpFlow(_instanceSubnetNotEndpoint, _endpointIp, 443, _batfish),
         ImmutableList.of(

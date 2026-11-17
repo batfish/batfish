@@ -29,9 +29,9 @@ import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.isis.IsisProcess;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class IsisEdgeTest {
+final class IsisEdgeTest {
 
   private static final String AREA1 = "0001";
 
@@ -87,7 +87,7 @@ public final class IsisEdgeTest {
   }
 
   @Test
-  public void testSameAreaEffect() {
+  void testSameAreaEffect() {
     Set<IsisEdge> isisEdgesSameArea = getIsisEdges(generateIsisConfigs(true, false));
     Set<IsisEdge> isisEdgesDifferentArea = getIsisEdges(generateIsisConfigs(false, false));
 
@@ -101,7 +101,7 @@ public final class IsisEdgeTest {
   }
 
   @Test
-  public void testSameSystemEffect() {
+  void testSameSystemEffect() {
     Set<IsisEdge> isisEdgesSameSystemId = getIsisEdges(generateIsisConfigs(true, true));
     Set<IsisEdge> isisEdgesDifferentSystemId = getIsisEdges(generateIsisConfigs(true, false));
 

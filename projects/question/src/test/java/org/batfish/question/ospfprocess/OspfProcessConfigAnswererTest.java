@@ -35,13 +35,13 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.NameNodeSpecifier;
 import org.batfish.specifier.NodeSpecifier;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link OspfProcessConfigurationAnswerer} */
-public class OspfProcessConfigAnswererTest {
+class OspfProcessConfigAnswererTest {
 
   @Test
-  public void testGetProperties() {
+  void testGetProperties() {
     NetworkFactory nf = new NetworkFactory();
     Configuration configuration =
         nf.configurationBuilder()
@@ -95,7 +95,7 @@ public class OspfProcessConfigAnswererTest {
   }
 
   @Test
-  public void testGetRow() {
+  void testGetRow() {
     NetworkFactory nf = new NetworkFactory();
     OspfProcess ospfProcess =
         nf.ospfProcessBuilder()
@@ -137,7 +137,7 @@ public class OspfProcessConfigAnswererTest {
   }
 
   @Test
-  public void testMetaData() {
+  void testMetaData() {
     List<ColumnMetadata> metas =
         OspfProcessConfigurationAnswerer.createColumnMetadata(COLUMNS_FROM_PROP_SPEC);
 

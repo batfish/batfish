@@ -1,6 +1,6 @@
 package org.batfish.datamodel.flow;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -9,12 +9,12 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopIp;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link RouteInfo}. */
-public class RouteInfoTest {
+class RouteInfoTest {
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     RouteInfo orig =
         new RouteInfo(
             RoutingProtocol.BGP, Prefix.parse("1.1.1.1/30"), NextHopDiscard.instance(), 0, 1);
@@ -23,7 +23,7 @@ public class RouteInfoTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     RoutingProtocol proto1 = RoutingProtocol.BGP;
     RoutingProtocol proto2 = RoutingProtocol.STATIC;
     Prefix p1 = Prefix.parse("1.1.1.1/32");

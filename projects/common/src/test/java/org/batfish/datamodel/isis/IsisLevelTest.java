@@ -10,12 +10,12 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class IsisLevelTest {
+class IsisLevelTest {
 
   @Test
-  public void testIncludes() {
+  void testIncludes() {
     assertThat(LEVEL_1_2.includes(LEVEL_1), is(true));
     assertThat(LEVEL_1_2.includes(LEVEL_2), is(true));
     assertThat(LEVEL_1.includes(LEVEL_1), is(true));
@@ -23,14 +23,14 @@ public class IsisLevelTest {
   }
 
   @Test
-  public void testIntersectionForVariableNumberOfLevels() {
+  void testIntersectionForVariableNumberOfLevels() {
     assertThat(intersection(), nullValue());
     assertThat(intersection(LEVEL_1), equalTo(LEVEL_1));
     assertThat(intersection(LEVEL_1, LEVEL_1_2, LEVEL_2), nullValue());
   }
 
   @Test
-  public void testUnionAndIntersectionForTwoLevels() {
+  void testUnionAndIntersectionForTwoLevels() {
     testUnionAndIntersection(null, null, null, null);
     testUnionAndIntersection(null, LEVEL_1, LEVEL_1, null);
     testUnionAndIntersection(null, LEVEL_1_2, LEVEL_1_2, null);

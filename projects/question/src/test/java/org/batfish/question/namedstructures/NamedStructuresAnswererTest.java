@@ -17,14 +17,14 @@ import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.table.Row;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class NamedStructuresAnswererTest {
+class NamedStructuresAnswererTest {
 
   private static final String ALL_NODES = ".*";
 
   @Test
-  public void testGetAllStructureNamesOfType() {
+  void testGetAllStructureNamesOfType() {
     NetworkFactory nf = new NetworkFactory();
 
     // c1 has both routing policies
@@ -50,7 +50,7 @@ public class NamedStructuresAnswererTest {
   }
 
   @Test
-  public void testRawAnswerDefinition() {
+  void testRawAnswerDefinition() {
 
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
@@ -99,7 +99,7 @@ public class NamedStructuresAnswererTest {
   }
 
   @Test
-  public void testRawAnswerIgnoreGenerated() {
+  void testRawAnswerIgnoreGenerated() {
 
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
@@ -135,7 +135,7 @@ public class NamedStructuresAnswererTest {
   }
 
   @Test
-  public void testRawAnswerPresence() {
+  void testRawAnswerPresence() {
 
     NetworkFactory nf = new NetworkFactory();
     Configuration c1 =
@@ -179,7 +179,7 @@ public class NamedStructuresAnswererTest {
   }
 
   @Test
-  public void testRawAnswerStructureNameRegex() {
+  void testRawAnswerStructureNameRegex() {
 
     NetworkFactory nf = new NetworkFactory();
     Configuration c =

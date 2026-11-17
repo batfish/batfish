@@ -6,12 +6,12 @@ import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.isp_configuration.traffic_filtering.IspTrafficFiltering;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class IspModelTest {
+class IspModelTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     IspModel.Builder builder = IspModel.builder().setAsn(1L).setName("name");
     new EqualsTester()
         .addEqualityGroup(builder.build(), builder.build())

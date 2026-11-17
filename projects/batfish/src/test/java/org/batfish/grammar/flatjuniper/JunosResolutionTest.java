@@ -16,9 +16,10 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
@@ -30,18 +31,17 @@ import org.batfish.main.Batfish;
 import org.batfish.representation.juniper.JuniperConfiguration;
 import org.batfish.representation.juniper.Resolution;
 import org.batfish.representation.juniper.ResolutionRib;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosResolutionTest {
+final class JunosResolutionTest {
 
   private static final String HOSTNAME = "resolution";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testExtractionAndReferences() throws IOException {
+  void testExtractionAndReferences() throws IOException {
     Batfish batfish = getBatfish(_folder, HOSTNAME);
     JuniperConfiguration config = getVendorConfiguration(batfish, HOSTNAME);
     Resolution defaultResolution =
@@ -89,7 +89,7 @@ public final class JunosResolutionTest {
   }
 
   @Test
-  public void testConversion() throws IOException {
+  void testConversion() throws IOException {
     Batfish batfish = getBatfish(_folder, HOSTNAME);
     Configuration config = batfish.loadConfigurations(batfish.getSnapshot()).get(HOSTNAME);
 

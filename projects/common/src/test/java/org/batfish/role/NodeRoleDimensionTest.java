@@ -10,12 +10,12 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class NodeRoleDimensionTest {
+class NodeRoleDimensionTest {
 
   @Test
-  public void testOne() {
+  void testOne() {
     RoleDimensionMapping rdMap = new RoleDimensionMapping("x(.+)y.*");
     NodeRoleDimension nrDim =
         NodeRoleDimension.builder()
@@ -31,7 +31,7 @@ public class NodeRoleDimensionTest {
   }
 
   @Test
-  public void testMultiple() {
+  void testMultiple() {
     RoleDimensionMapping rdMap1 = new RoleDimensionMapping("x(.+)y.*");
     RoleDimensionMapping rdMap2 = new RoleDimensionMapping("(.+)y.*");
     NodeRoleDimension nrDim =
@@ -48,7 +48,7 @@ public class NodeRoleDimensionTest {
   }
 
   @Test
-  public void testNodeRoles() {
+  void testNodeRoles() {
     NodeRole nodeRole = new NodeRole("roleName", "x(.+)y.*");
     RoleDimensionMapping rdMap = new RoleDimensionMapping(nodeRole);
 
@@ -69,7 +69,7 @@ public class NodeRoleDimensionTest {
   }
 
   @Test
-  public void testRoleNodesMap() {
+  void testRoleNodesMap() {
     RoleDimensionMapping rdMap1 = new RoleDimensionMapping("x(.+)y.*");
     RoleDimensionMapping rdMap2 = new RoleDimensionMapping("(.+)y.*");
     NodeRoleDimension nrDim =

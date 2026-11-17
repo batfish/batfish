@@ -2,7 +2,9 @@ package org.batfish.datamodel.table;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.IntNode;
@@ -13,14 +15,10 @@ import org.batfish.datamodel.answers.AnswerSummary;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.questions.Assertion;
 import org.batfish.datamodel.questions.Assertion.AssertionType;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link TableAnswerElement} */
-public class TableAnswerElementTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class TableAnswerElementTest {
 
   private static final ColumnMetadata key1ColMetadata =
       new ColumnMetadata("key1", Schema.STRING, "desc1");
@@ -32,7 +30,7 @@ public class TableAnswerElementTest {
 
   /** Does computerSummary compute the correct summary? */
   @Test
-  public void testComputeSummary() {
+  void testComputeSummary() {
     // generate an answer with two rows
     TableAnswerElement answer =
         new TableAnswerElement(
@@ -51,7 +49,7 @@ public class TableAnswerElementTest {
 
   /** Does evaluateAssertion do the right thing for counting assertions? */
   @Test
-  public void testEvaluateAssertionCount() {
+  void testEvaluateAssertionCount() {
     Assertion twoCount = new Assertion(AssertionType.countequals, new IntNode(2));
 
     TableAnswerElement oneRow =
@@ -73,7 +71,7 @@ public class TableAnswerElementTest {
 
   /** Does evaluateAssertion do the right thing for equality assertions? */
   @Test
-  public void testEvaluateAssertionEqualsFalse() throws IOException {
+  void testEvaluateAssertionEqualsFalse() throws IOException {
     Assertion assertion =
         new Assertion(
             AssertionType.equals,
@@ -94,33 +92,35 @@ public class TableAnswerElementTest {
   }
 
   @Test
-  public void testAddEmptyRow() {
+  void testAddEmptyRow() {
     TableAnswerElement table = new TableAnswerElement(oneKeyTableMetadata);
     Row row = Row.builder().build();
 
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage(
-        String.format(
-            "Row columns %s do not match metadata columns metadata %s",
-            row.getColumnNames(), oneKeyTableMetadata.toColumnMap().keySet()));
-    table.addRow(row);
+    Throwable exception = assertThrows(IllegalArgumentException.class, () -> table.addRow(row));
+    assertThat(
+        exception.getMessage(),
+        containsString(
+            String.format(
+                "Row columns %s do not match metadata columns metadata %s",
+                row.getColumnNames(), oneKeyTableMetadata.toColumnMap().keySet())));
   }
 
   @Test
-  public void testAddRowMissingColumn() {
+  void testAddRowMissingColumn() {
     TableAnswerElement table = new TableAnswerElement(twoKeyTableMetadata);
     Row row = Row.builder().put("key1", null).build();
 
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage(
-        String.format(
-            "Row columns %s do not match metadata columns metadata %s",
-            row.getColumnNames(), twoKeyTableMetadata.toColumnMap().keySet()));
-    table.addRow(row);
+    Throwable exception = assertThrows(IllegalArgumentException.class, () -> table.addRow(row));
+    assertThat(
+        exception.getMessage(),
+        containsString(
+            String.format(
+                "Row columns %s do not match metadata columns metadata %s",
+                row.getColumnNames(), twoKeyTableMetadata.toColumnMap().keySet())));
   }
 
   @Test
-  public void testAddValidRow() {
+  void testAddValidRow() {
     TableAnswerElement table = new TableAnswerElement(twoKeyTableMetadata);
     Row row = Row.builder().put("key1", null).put("key2", null).build();
     table.addRow(row);
@@ -128,15 +128,16 @@ public class TableAnswerElementTest {
   }
 
   @Test
-  public void testAddRowExtraColumn() {
+  void testAddRowExtraColumn() {
     TableAnswerElement table = new TableAnswerElement(twoKeyTableMetadata);
 
     Row row = Row.builder().put("key1", null).put("key2", null).put("key3", null).build();
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage(
-        String.format(
-            "Row columns %s do not match metadata columns metadata %s",
-            row.getColumnNames(), twoKeyTableMetadata.toColumnMap().keySet()));
-    table.addRow(row);
+    Throwable exception = assertThrows(IllegalArgumentException.class, () -> table.addRow(row));
+    assertThat(
+        exception.getMessage(),
+        containsString(
+            String.format(
+                "Row columns %s do not match metadata columns metadata %s",
+                row.getColumnNames(), twoKeyTableMetadata.toColumnMap().keySet())));
   }
 }

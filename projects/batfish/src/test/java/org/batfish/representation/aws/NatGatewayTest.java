@@ -47,13 +47,13 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.referencelibrary.GeneratedRefBookUtils;
 import org.batfish.referencelibrary.GeneratedRefBookUtils.BookType;
 import org.batfish.representation.aws.NetworkAcl.NetworkAclAssociation;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link NatGateway} */
-public class NatGatewayTest {
+class NatGatewayTest {
 
   @Test
-  public void testDeserialization() throws IOException {
+  void testDeserialization() throws IOException {
     String text = readResource("org/batfish/representation/aws/NatGatewayTest.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
@@ -82,7 +82,7 @@ public class NatGatewayTest {
   }
 
   @Test
-  public void testToConfigurationNode() {
+  void testToConfigurationNode() {
     NatGatewayAddress ngwAddress =
         new NatGatewayAddress(
             "allocationId", "netInterface", Ip.parse("10.10.10.10"), Ip.parse("1.1.1.1"));
@@ -192,7 +192,7 @@ public class NatGatewayTest {
   }
 
   @Test
-  public void testConnectToVpc() {
+  void testConnectToVpc() {
     NatGateway ngw = new NatGateway("ngw", "subnet", "vpc", ImmutableList.of(), ImmutableMap.of());
     Configuration ngwConfig = new Configuration("c", ConfigurationFormat.AWS);
     ngwConfig.getVrfs().put(DEFAULT_VRF_NAME, new Vrf(DEFAULT_VRF_NAME));
@@ -233,7 +233,7 @@ public class NatGatewayTest {
   }
 
   @Test
-  public void testComputePostTransformationIllegalPacketFilter() {
+  void testComputePostTransformationIllegalPacketFilter() {
     Ip privateIp = Ip.parse("10.10.10.10");
     IpAccessList filter = computePostTransformationIllegalPacketFilter(privateIp);
 
@@ -310,7 +310,7 @@ public class NatGatewayTest {
   }
 
   @Test
-  public void testInstallIncomingFilter() {
+  void testInstallIncomingFilter() {
     Configuration cfg = new Configuration("cfg", ConfigurationFormat.AWS);
     Interface iface = TestInterface.builder().setOwner(cfg).setName("test").build();
 

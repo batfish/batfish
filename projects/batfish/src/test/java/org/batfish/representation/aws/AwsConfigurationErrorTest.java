@@ -18,13 +18,13 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class AwsConfigurationErrorTest {
+class AwsConfigurationErrorTest {
 
   /** Test that conversion doesn't return empty topology if one of the regions fails to convert */
   @Test
-  public void toVendorIndependentConfigurations() {
+  void toVendorIndependentConfigurations() {
     Warnings w = new Warnings(true, true, true);
     AwsConfiguration awsConfiguration = new AwsConfiguration();
     awsConfiguration.setWarnings(w);

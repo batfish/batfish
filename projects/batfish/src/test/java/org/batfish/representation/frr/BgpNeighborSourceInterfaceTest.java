@@ -1,13 +1,13 @@
 package org.batfish.representation.frr;
 
 import com.google.common.testing.EqualsTester;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link org.batfish.representation.frr.BgpNeighborSourceInterface} */
-public class BgpNeighborSourceInterfaceTest {
+class BgpNeighborSourceInterfaceTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     BgpNeighborSourceInterface bgpNeighborSourceInterface = new BgpNeighborSourceInterface("lo");
 
     new EqualsTester()

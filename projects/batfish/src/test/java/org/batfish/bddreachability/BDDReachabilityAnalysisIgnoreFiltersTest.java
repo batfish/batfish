@@ -16,6 +16,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -44,12 +45,11 @@ import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.NameRegexNodeSpecifier;
 import org.batfish.specifier.NodeNameRegexInterfaceLocationSpecifier;
 import org.batfish.symbolic.IngressLocation;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public class BDDReachabilityAnalysisIgnoreFiltersTest {
+class BDDReachabilityAnalysisIgnoreFiltersTest {
   private static final String NODE1 = "node1";
   private static final ConcreteInterfaceAddress NODE1_ADDR =
       ConcreteInterfaceAddress.parse("1.2.3.1/24");
@@ -66,13 +66,13 @@ public class BDDReachabilityAnalysisIgnoreFiltersTest {
   private final BDDPacket _pkt = new BDDPacket();
   private final BDD _zero = _pkt.getFactory().zero();
 
-  public static @ClassRule TemporaryFolder temp = new TemporaryFolder();
+  @TempDir public static File temp;
 
   private static Batfish batfish;
   private static InterfaceLocation IFACE1_LOCATION;
 
-  @BeforeClass
-  public static void setup() throws IOException {
+  @BeforeAll
+  static void setup() throws IOException {
     NetworkFactory nf = new NetworkFactory();
 
     Configuration c1 =
@@ -146,7 +146,7 @@ public class BDDReachabilityAnalysisIgnoreFiltersTest {
   }
 
   @Test
-  public void ignoreInAcl() {
+  void ignoreInAcl() {
     Map<IngressLocation, BDD> reachableBDDs =
         initAnalysis(DENIED_IN_SRC_IP.toIpSpace(), ACCEPTED, true)
             .getIngressLocationReachableBDDs();
@@ -154,7 +154,7 @@ public class BDDReachabilityAnalysisIgnoreFiltersTest {
   }
 
   @Test
-  public void dontIgnoreInAcl() {
+  void dontIgnoreInAcl() {
     Map<IngressLocation, BDD> reachableBDDs =
         initAnalysis(DENIED_IN_SRC_IP.toIpSpace(), ACCEPTED, false)
             .getIngressLocationReachableBDDs();
@@ -162,7 +162,7 @@ public class BDDReachabilityAnalysisIgnoreFiltersTest {
   }
 
   @Test
-  public void ignoreOutAcl() {
+  void ignoreOutAcl() {
     Map<IngressLocation, BDD> reachableBDDs =
         initAnalysis(DENIED_OUT_SRC_IP.toIpSpace(), ACCEPTED, true)
             .getIngressLocationReachableBDDs();
@@ -170,7 +170,7 @@ public class BDDReachabilityAnalysisIgnoreFiltersTest {
   }
 
   @Test
-  public void dontIgnoreOutAcl() {
+  void dontIgnoreOutAcl() {
     Map<IngressLocation, BDD> reachableBDDs =
         initAnalysis(DENIED_OUT_SRC_IP.toIpSpace(), ACCEPTED, false)
             .getIngressLocationReachableBDDs();
@@ -178,7 +178,7 @@ public class BDDReachabilityAnalysisIgnoreFiltersTest {
   }
 
   @Test
-  public void testParameters() {
+  void testParameters() {
     ReachabilityParameters.Builder parameters =
         ReachabilityParameters.builder()
             .setActions(ImmutableSortedSet.of(ACCEPTED))

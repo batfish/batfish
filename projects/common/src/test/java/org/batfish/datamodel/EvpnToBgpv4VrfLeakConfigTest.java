@@ -6,26 +6,26 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class EvpnToBgpv4VrfLeakConfigTest {
+class EvpnToBgpv4VrfLeakConfigTest {
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     EvpnToBgpv4VrfLeakConfig val =
         EvpnToBgpv4VrfLeakConfig.builder().setImportFromVrf("v").setImportPolicy("p").build();
     assertThat(SerializationUtils.clone(val), equalTo(val));
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     EvpnToBgpv4VrfLeakConfig val =
         EvpnToBgpv4VrfLeakConfig.builder().setImportFromVrf("v").setImportPolicy("p").build();
     assertThat(BatfishObjectMapper.clone(val, EvpnToBgpv4VrfLeakConfig.class), equalTo(val));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     EvpnToBgpv4VrfLeakConfig.Builder b = EvpnToBgpv4VrfLeakConfig.builder().setImportFromVrf("v1");
     EvpnToBgpv4VrfLeakConfig val = b.build();
     new EqualsTester()

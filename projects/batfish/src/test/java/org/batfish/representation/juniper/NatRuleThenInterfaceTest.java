@@ -13,12 +13,12 @@ import org.batfish.datamodel.transformation.AssignPortFromPool;
 import org.batfish.datamodel.transformation.PortField;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.representation.juniper.Nat.Type;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link NatRuleThenInterface}. */
-public final class NatRuleThenInterfaceTest {
+final class NatRuleThenInterfaceTest {
   @Test
-  public void testToTransformationStep() {
+  void testToTransformationStep() {
     Ip ip = Ip.parse("1.1.1.1");
     Nat snat = new Nat(Type.SOURCE);
     List<TransformationStep> step = INSTANCE.toTransformationSteps(snat, null, ip, null);

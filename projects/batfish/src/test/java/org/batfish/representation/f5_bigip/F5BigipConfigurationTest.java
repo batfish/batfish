@@ -21,17 +21,17 @@ import org.batfish.referencelibrary.GeneratedRefBookUtils;
 import org.batfish.referencelibrary.GeneratedRefBookUtils.BookType;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.vendor.VendorStructureId;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link F5BigipConfiguration} */
-public class F5BigipConfigurationTest {
+class F5BigipConfigurationTest {
 
   /**
    * Tests if {@link F5BigipConfiguration#toVendorIndependentConfigurations()} includes reference
    * book for its pools
    */
   @Test
-  public void testPoolReferenceBooks() {
+  void testPoolReferenceBooks() {
     Pool p1 = new Pool("p1");
     F5BigipConfiguration f5Config = new F5BigipConfiguration();
     f5Config.setHostname("node");
@@ -50,7 +50,7 @@ public class F5BigipConfigurationTest {
   }
 
   @Test
-  public void testToAddressGroupVirtualAddress() {
+  void testToAddressGroupVirtualAddress() {
     VirtualAddress v1 = new VirtualAddress("v1");
     v1.setAddress(Ip.parse("1.1.1.1"));
     assertThat(
@@ -59,14 +59,14 @@ public class F5BigipConfigurationTest {
   }
 
   @Test
-  public void testToAddressGroupVirtualAddressNullAddress() {
+  void testToAddressGroupVirtualAddressNullAddress() {
     VirtualAddress v1 = new VirtualAddress("v1");
     assertThat(
         toAddressGroup(v1), equalTo(new AddressGroup(ImmutableSortedSet.of(), v1.getName())));
   }
 
   @Test
-  public void testToAddressGroupVirtualAddressMask() {
+  void testToAddressGroupVirtualAddressMask() {
     VirtualAddress v1 = new VirtualAddress("v1");
     v1.setAddress(Ip.parse("1.1.1.1"));
     v1.setMask(Ip.parse("255.255.255.254"));
@@ -76,7 +76,7 @@ public class F5BigipConfigurationTest {
   }
 
   @Test
-  public void testToAddressGroupPool() {
+  void testToAddressGroupPool() {
     PoolMember m1 = new PoolMember("m1", null, 1);
     m1.setAddress(Ip.parse("1.1.1.1"));
 
@@ -93,14 +93,14 @@ public class F5BigipConfigurationTest {
   }
 
   @Test
-  public void testToAddressGroupPoolNoMember() {
+  void testToAddressGroupPoolNoMember() {
     Pool p1 = new Pool("p1");
     assertThat(
         toAddressGroup(p1), equalTo(new AddressGroup(ImmutableSortedSet.of(), p1.getName())));
   }
 
   @Test
-  public void testToAddressGroupPoolNoAddresses() {
+  void testToAddressGroupPoolNoAddresses() {
     PoolMember m1 = new PoolMember("m1", null, 1);
     Pool p1 = new Pool("p1");
     p1.getMembers().put(m1.getName(), m1);
@@ -114,7 +114,7 @@ public class F5BigipConfigurationTest {
    * book for its virtual addresses
    */
   @Test
-  public void testVirtualAddressReferenceBooks() {
+  void testVirtualAddressReferenceBooks() {
     VirtualAddress v1 = new VirtualAddress("v1");
 
     F5BigipConfiguration f5Config = new F5BigipConfiguration();
@@ -135,7 +135,7 @@ public class F5BigipConfigurationTest {
 
   /** Test the case of a vlan with multiple selves and addresses */
   @Test
-  public void testMultipleVlanAddresses() {
+  void testMultipleVlanAddresses() {
     F5BigipConfiguration f5Config = new F5BigipConfiguration();
     f5Config.setHostname("node");
     f5Config.setVendor(ConfigurationFormat.F5_BIGIP_STRUCTURED);
@@ -165,7 +165,7 @@ public class F5BigipConfigurationTest {
 
   /** Check that vendorStructureId is set when ACL is converted to route filter list */
   @Test
-  public void testToRouterFilterList_AccessList_vendorStructureId() {
+  void testToRouterFilterList_AccessList_vendorStructureId() {
     AccessList acl = new AccessList("name");
     RouteFilterList rfl = toRouteFilterList(acl, "file");
     assertThat(
@@ -177,7 +177,7 @@ public class F5BigipConfigurationTest {
 
   /** Check that vendorStructureId is set when prefix list is converted to route filter list */
   @Test
-  public void testToRouterFilterList_prefixList_vendorStructureId() {
+  void testToRouterFilterList_prefixList_vendorStructureId() {
     PrefixList plist = new PrefixList("name");
     RouteFilterList rfl = toRouteFilterList(plist, new Warnings(), "file");
     assertThat(

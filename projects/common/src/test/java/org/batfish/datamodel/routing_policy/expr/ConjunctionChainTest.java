@@ -26,13 +26,10 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.Statements;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link ConjunctionChain} */
-@RunWith(JUnit4.class)
-public class ConjunctionChainTest {
+class ConjunctionChainTest {
 
   private static Prefix NETWORK_1 = Prefix.parse("1.1.1.0/24");
   private static Prefix NETWORK_2 = Prefix.parse("2.2.2.0/24");
@@ -93,7 +90,7 @@ public class ConjunctionChainTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new Object())
         .addEqualityGroup(
@@ -105,19 +102,19 @@ public class ConjunctionChainTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     ConjunctionChain cc = new ConjunctionChain(ImmutableList.of(BooleanExprs.TRUE));
     assertThat(SerializationUtils.clone(cc), equalTo(cc));
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     ConjunctionChain cc = new ConjunctionChain(ImmutableList.of(BooleanExprs.TRUE));
     assertThat(BatfishObjectMapper.clone(cc, ConjunctionChain.class), equalTo(cc));
   }
 
   @Test
-  public void testEvaluate() {
+  void testEvaluate() {
     // Test that AND is evaluated correctly
     ConjunctionChain cc =
         new ConjunctionChain(ImmutableList.of(BooleanExprs.TRUE, BooleanExprs.FALSE));
@@ -136,7 +133,7 @@ public class ConjunctionChainTest {
   }
 
   @Test
-  public void testWithCallExprs() {
+  void testWithCallExprs() {
     /*
     Two policies in chain, plus a default policy:
     - P1 accepts routes with tag 1 and rejects routes with tag 2
@@ -185,7 +182,7 @@ public class ConjunctionChainTest {
   }
 
   @Test
-  public void testToString() {
+  void testToString() {
     ConjunctionChain cc = new ConjunctionChain(ImmutableList.of(BooleanExprs.TRUE));
     assertThat(cc.toString(), equalTo("ConjunctionChain{subroutines=[True]}"));
   }

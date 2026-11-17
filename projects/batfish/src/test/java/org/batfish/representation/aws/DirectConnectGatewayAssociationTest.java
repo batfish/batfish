@@ -14,13 +14,13 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Prefix;
 import org.batfish.representation.aws.DirectConnectGatewayAssociation.AssociatedGateway;
 import org.batfish.representation.aws.DirectConnectGatewayAssociation.AssociatedGateway.GatewayType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link DirectConnectGatewayAssociation} */
-public class DirectConnectGatewayAssociationTest {
+class DirectConnectGatewayAssociationTest {
 
   @Test
-  public void testDeserialization() throws IOException {
+  void testDeserialization() throws IOException {
     String text =
         readResource(
             "org/batfish/representation/aws/DirectConnectGatewayAssociationTest.json", UTF_8);
@@ -47,7 +47,7 @@ public class DirectConnectGatewayAssociationTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     AssociatedGateway gw1 =
         new AssociatedGateway("tgw-1", GatewayType.TRANSIT_GATEWAY, "account", "us-east-1");
     AssociatedGateway gw2 =

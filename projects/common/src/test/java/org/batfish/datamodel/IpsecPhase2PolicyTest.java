@@ -9,13 +9,13 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link IpsecPhase2Policy} */
-public class IpsecPhase2PolicyTest {
+class IpsecPhase2PolicyTest {
 
   @Test
-  public void testDefaultConstructor() {
+  void testDefaultConstructor() {
     IpsecPhase2Policy policy = new IpsecPhase2Policy();
 
     assertThat(policy.getProposals(), empty());
@@ -23,7 +23,7 @@ public class IpsecPhase2PolicyTest {
   }
 
   @Test
-  public void testSetPfsKeyGroups() {
+  void testSetPfsKeyGroups() {
     IpsecPhase2Policy policy = new IpsecPhase2Policy();
     Set<DiffieHellmanGroup> dhGroups =
         ImmutableSet.of(DiffieHellmanGroup.GROUP14, DiffieHellmanGroup.GROUP24);
@@ -36,7 +36,7 @@ public class IpsecPhase2PolicyTest {
   }
 
   @Test
-  public void testSetPfsKeyGroup() {
+  void testSetPfsKeyGroup() {
     IpsecPhase2Policy policy = new IpsecPhase2Policy();
 
     policy.setPfsKeyGroup(DiffieHellmanGroup.GROUP2);
@@ -46,7 +46,7 @@ public class IpsecPhase2PolicyTest {
   }
 
   @Test
-  public void testSetPfsKeyGroupNull() {
+  void testSetPfsKeyGroupNull() {
     IpsecPhase2Policy policy = new IpsecPhase2Policy();
 
     policy.setPfsKeyGroup(null);
@@ -55,7 +55,7 @@ public class IpsecPhase2PolicyTest {
   }
 
   @Test
-  public void testSetPfsKeyGroupsNull() {
+  void testSetPfsKeyGroupsNull() {
     IpsecPhase2Policy policy = new IpsecPhase2Policy();
 
     policy.setPfsKeyGroups(null);
@@ -64,7 +64,7 @@ public class IpsecPhase2PolicyTest {
   }
 
   @Test
-  public void testSetProposals() {
+  void testSetProposals() {
     IpsecPhase2Policy policy = new IpsecPhase2Policy();
 
     policy.setProposals(ImmutableList.of("proposal1", "proposal2"));
@@ -73,7 +73,7 @@ public class IpsecPhase2PolicyTest {
   }
 
   @Test
-  public void testSetProposalsNull() {
+  void testSetProposalsNull() {
     IpsecPhase2Policy policy = new IpsecPhase2Policy();
 
     policy.setProposals(null);
@@ -82,7 +82,7 @@ public class IpsecPhase2PolicyTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     IpsecPhase2Policy policy1 = new IpsecPhase2Policy();
     policy1.setPfsKeyGroups(
         ImmutableSet.of(DiffieHellmanGroup.GROUP14, DiffieHellmanGroup.GROUP24));

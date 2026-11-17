@@ -1,23 +1,22 @@
 package org.batfish.datamodel;
 
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link HmmRoute}. */
-public final class HmmRouteTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+final class HmmRouteTest {
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     HmmRoute obj =
         HmmRoute.builder()
             .setNetwork(Prefix.strict("192.0.2.1/32"))
@@ -29,7 +28,7 @@ public final class HmmRouteTest {
   }
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     HmmRoute obj =
         HmmRoute.builder()
             .setNetwork(Prefix.strict("192.0.2.1/32"))
@@ -41,7 +40,7 @@ public final class HmmRouteTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     HmmRoute obj =
         HmmRoute.builder()
             .setNetwork(Prefix.strict("192.0.2.1/32"))
@@ -57,43 +56,62 @@ public final class HmmRouteTest {
   }
 
   @Test
-  public void testWrongNextHopType() {
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("NextHop type must be NextHopInterface, but was: NextHopDiscard");
-    HmmRoute.builder()
-        .setNetwork(Prefix.strict("192.0.2.1/32"))
-        .setNextHop(NextHopDiscard.instance())
-        .build();
+  void testWrongNextHopType() {
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () ->
+                HmmRoute.builder()
+                    .setNetwork(Prefix.strict("192.0.2.1/32"))
+                    .setNextHop(NextHopDiscard.instance())
+                    .build());
+    assertThat(
+        exception.getMessage(),
+        containsString("NextHop type must be NextHopInterface, but was: NextHopDiscard"));
   }
 
   @Test
-  public void testInvalidNextHopInterface() {
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("Cannot set non-null next-hop IP for HmmRoute");
-    HmmRoute.builder()
-        .setNetwork(Prefix.strict("192.0.2.1/32"))
-        .setNextHop(NextHopInterface.of("foo", Ip.parse("1.1.1.1")))
-        .build();
+  void testInvalidNextHopInterface() {
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () ->
+                HmmRoute.builder()
+                    .setNetwork(Prefix.strict("192.0.2.1/32"))
+                    .setNextHop(NextHopInterface.of("foo", Ip.parse("1.1.1.1")))
+                    .build());
+    assertThat(
+        exception.getMessage(), containsString("Cannot set non-null next-hop IP for HmmRoute"));
   }
 
   @Test
-  public void testInvalidPrefixLength() {
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("Invalid prefix length for HmmRoute: 0");
-    HmmRoute.builder().setNetwork(Prefix.ZERO).setNextHop(NextHopInterface.of("foo")).build();
+  void testInvalidPrefixLength() {
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () ->
+                HmmRoute.builder()
+                    .setNetwork(Prefix.ZERO)
+                    .setNextHop(NextHopInterface.of("foo"))
+                    .build());
+    assertThat(exception.getMessage(), containsString("Invalid prefix length for HmmRoute: 0"));
   }
 
   @Test
-  public void testMissingNetwork() {
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("Missing network");
-    HmmRoute.builder().setNextHop(NextHopInterface.of("foo")).build();
+  void testMissingNetwork() {
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> HmmRoute.builder().setNextHop(NextHopInterface.of("foo")).build());
+    assertThat(exception.getMessage(), containsString("Missing network"));
   }
 
   @Test
-  public void testMissingNextHop() {
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("Missing nextHop");
-    HmmRoute.builder().setNetwork(Prefix.strict("192.0.2.1/32")).build();
+  void testMissingNextHop() {
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> HmmRoute.builder().setNetwork(Prefix.strict("192.0.2.1/32")).build());
+    assertThat(exception.getMessage(), containsString("Missing nextHop"));
   }
 }

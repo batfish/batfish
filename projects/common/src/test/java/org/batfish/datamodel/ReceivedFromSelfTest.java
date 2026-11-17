@@ -6,25 +6,25 @@ import static org.hamcrest.Matchers.sameInstance;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link ReceivedFromSelf}. */
-public final class ReceivedFromSelfTest {
+final class ReceivedFromSelfTest {
 
   @Test
-  public void testJacksonSerialiation() {
+  void testJacksonSerialiation() {
     ReceivedFrom obj = ReceivedFromSelf.instance();
     assertThat(BatfishObjectMapper.clone(obj, ReceivedFrom.class), sameInstance(obj));
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     ReceivedFrom obj = ReceivedFromSelf.instance();
     assertThat(SerializationUtils.clone(obj), sameInstance(obj));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     ReceivedFrom obj = ReceivedFromSelf.instance();
     new EqualsTester().addEqualityGroup(obj, ReceivedFromSelf.instance()).testEquals();
   }

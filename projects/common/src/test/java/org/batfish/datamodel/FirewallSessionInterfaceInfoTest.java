@@ -1,18 +1,18 @@
 package org.batfish.datamodel;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link FirewallSessionInterfaceInfo}. */
-public final class FirewallSessionInterfaceInfoTest {
+final class FirewallSessionInterfaceInfoTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     ImmutableSet<String> ifaces = ImmutableSet.of("A");
     ImmutableSet<String> srcIfaces = ImmutableSet.of("B");
     new EqualsTester()
@@ -43,7 +43,7 @@ public final class FirewallSessionInterfaceInfoTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     FirewallSessionInterfaceInfo info =
         new FirewallSessionInterfaceInfo(
             Action.FORWARD_OUT_IFACE,

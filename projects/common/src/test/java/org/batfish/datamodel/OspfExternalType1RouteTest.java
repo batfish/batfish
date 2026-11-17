@@ -6,13 +6,13 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.testing.EqualsTester;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link OspfExternalType1Route} */
-public class OspfExternalType1RouteTest {
+class OspfExternalType1RouteTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
 
     OspfExternalType2Route.Builder b =
         OspfExternalRoute.builder()
@@ -39,7 +39,7 @@ public class OspfExternalType1RouteTest {
   }
 
   @Test
-  public void testToBuilder() {
+  void testToBuilder() {
     OspfExternalRoute r =
         OspfExternalRoute.builder()
             .setOspfMetricType(OspfMetricType.E1)

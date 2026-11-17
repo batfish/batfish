@@ -12,17 +12,17 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Mlag;
 import org.batfish.specifier.Grammar;
 import org.batfish.specifier.MockSpecifierContext;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link ParsedNameSetSpecifier} */
-public class ParsedNameSetSpecifierTest {
+class ParsedNameSetSpecifierTest {
 
   private MockSpecifierContext.Builder _ctxtB;
   private MockSpecifierContext _ctxt;
 
-  @Before
-  public void init() {
+  @BeforeEach
+  void init() {
     Configuration node1 = new Configuration("node1", ConfigurationFormat.CISCO_IOS);
 
     String mlag1 = "mlag1";
@@ -46,7 +46,7 @@ public class ParsedNameSetSpecifierTest {
   }
 
   @Test
-  public void testResolveName() {
+  void testResolveName() {
     assertThat(
         new ParsedNameSetSpecifier(new SingletonNameSetAstNode("mlag1"), Grammar.MLAG_ID_SPECIFIER)
             .resolve(_ctxt),
@@ -59,7 +59,7 @@ public class ParsedNameSetSpecifierTest {
   }
 
   @Test
-  public void testResolveNameRegex() {
+  void testResolveNameRegex() {
     assertThat(
         new ParsedNameSetSpecifier(new RegexNameSetAstNode("mlag.*"), Grammar.MLAG_ID_SPECIFIER)
             .resolve(_ctxt),
@@ -67,7 +67,7 @@ public class ParsedNameSetSpecifierTest {
   }
 
   @Test
-  public void testResolveUnion() {
+  void testResolveUnion() {
     assertThat(
         new ParsedNameSetSpecifier(
                 new UnionNameSetAstNode(

@@ -4,9 +4,9 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -15,28 +15,22 @@ import java.nio.file.Files;
 import java.util.Random;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests of {@link UnzipUtility}. */
-@RunWith(JUnit4.class)
-public class UnzipUtilityTest {
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class UnzipUtilityTest {
+  @TempDir public File _folder;
 
   @Test
-  public void testUnzipEmptyFile() throws IOException {
-    File empty = _folder.newFile("empty");
+  void testUnzipEmptyFile() throws IOException {
+    File empty = newFile(_folder, "empty");
     try (FileOutputStream fos = new FileOutputStream(empty);
         ZipOutputStream ignored = new ZipOutputStream(fos)) {
       // Opening and closing the stream produces an empty zip file.
     }
 
-    File dest = _folder.newFolder("dest");
+    File dest = newFolder(_folder, "dest");
     UnzipUtility.unzip(empty.toPath(), dest.toPath());
     assertThat("output folder exists", dest.exists(), is(true));
     assertThat("output folder is a directory", dest.isDirectory(), is(true));
@@ -44,16 +38,16 @@ public class UnzipUtilityTest {
   }
 
   @Test
-  public void testUnzipDirectoriesMissing() throws IOException {
+  void testUnzipDirectoriesMissing() throws IOException {
     byte[] contents = "contents of file.txt".getBytes();
-    File directoriesMissing = _folder.newFile("directories_missing");
+    File directoriesMissing = newFile(_folder, "directories_missing");
     try (FileOutputStream fos = new FileOutputStream(directoriesMissing);
         ZipOutputStream out = new ZipOutputStream(fos)) {
       out.putNextEntry(new ZipEntry("missing_dir/child_dir/file.txt"));
       out.write(contents);
     }
 
-    File dest = _folder.newFolder("dest");
+    File dest = newFolder(_folder, "dest");
     UnzipUtility.unzip(directoriesMissing.toPath(), dest.toPath());
 
     File file =
@@ -64,8 +58,8 @@ public class UnzipUtilityTest {
   }
 
   @Test
-  public void testUnzipPathViolation() throws IOException {
-    File pathViolation = _folder.newFile("pathViolation");
+  void testUnzipPathViolation() throws IOException {
+    File pathViolation = newFile(_folder, "pathViolation");
     try (FileOutputStream fos = new FileOutputStream(pathViolation);
         ZipOutputStream out = new ZipOutputStream(fos)) {
       out.putNextEntry(new ZipEntry("../../"));
@@ -73,9 +67,9 @@ public class UnzipUtilityTest {
       out.write("contents".getBytes());
     }
 
-    File dest = _folder.newFolder("dest");
-    _thrown.expect(instanceOf(IOException.class));
-    UnzipUtility.unzip(pathViolation.toPath(), dest.toPath());
+    File dest = newFolder(_folder, "dest");
+    assertThrows(
+        IOException.class, () -> UnzipUtility.unzip(pathViolation.toPath(), dest.toPath()));
   }
 
   /**
@@ -83,9 +77,9 @@ public class UnzipUtilityTest {
    * for parent directories appear before file entries.
    */
   @Test
-  public void testUnzipEntriesOutOfOrder() throws IOException {
+  void testUnzipEntriesOutOfOrder() throws IOException {
     byte[] contents = "contents of file.txt".getBytes();
-    File notOrdered = _folder.newFile("not_ordered");
+    File notOrdered = newFile(_folder, "not_ordered");
     try (FileOutputStream fos = new FileOutputStream(notOrdered);
         ZipOutputStream out = new ZipOutputStream(fos)) {
       out.putNextEntry(new ZipEntry("dir/file.txt"));
@@ -93,7 +87,7 @@ public class UnzipUtilityTest {
       out.putNextEntry(new ZipEntry("dir/"));
     }
 
-    File dest = _folder.newFolder("dest");
+    File dest = newFolder(_folder, "dest");
     // Don't crash
     UnzipUtility.unzip(notOrdered.toPath(), dest.toPath());
   }
@@ -103,13 +97,13 @@ public class UnzipUtilityTest {
    * check an entry's CRC on its own.
    */
   @Test
-  public void testUnzipCorruptEntry() throws IOException {
+  void testUnzipCorruptEntry() throws IOException {
     StringBuilder contents = new StringBuilder();
     Random random = new Random(1);
     for (int i = 0; i < 200000; i++) {
       contents.append((char) ('a' + random.nextInt(26)));
     }
-    File corrupt = _folder.newFile("corrupt");
+    File corrupt = newFile(_folder, "corrupt");
     try (FileOutputStream fos = new FileOutputStream(corrupt);
         ZipOutputStream out = new ZipOutputStream(fos)) {
       out.putNextEntry(new ZipEntry("dir/file.txt"));
@@ -120,24 +114,24 @@ public class UnzipUtilityTest {
     zip[zip.length / 2] ^= 0x5A;
     Files.write(corrupt.toPath(), zip);
 
-    File dest = _folder.newFolder("dest");
-    _thrown.expect(instanceOf(IOException.class));
-    _thrown.expectMessage("Invalid CRC for zip entry 'dir/file.txt'");
-    UnzipUtility.unzip(corrupt.toPath(), dest.toPath());
+    File dest = newFolder(_folder, "dest");
+    Throwable exception =
+        assertThrows(IOException.class, () -> UnzipUtility.unzip(corrupt.toPath(), dest.toPath()));
+    assertThat(exception.getMessage(), containsString("Invalid CRC for zip entry 'dir/file.txt'"));
   }
 
   /** Test that unzipping still throws IO exception on legitimate file system access errors */
   @Test
-  public void testUnzipThrowsOnMkdirErrors() {
+  void testUnzipThrowsOnMkdirErrors() {
     File dest;
     File test_zip;
     try {
-      test_zip = _folder.newFile("test_zip");
+      test_zip = newFile(_folder, "test_zip");
       try (FileOutputStream fos = new FileOutputStream(test_zip);
           ZipOutputStream out = new ZipOutputStream(fos)) {
         out.putNextEntry(new ZipEntry("dir/"));
       }
-      dest = _folder.newFolder("dest");
+      dest = newFolder(_folder, "dest");
       dest.setWritable(false);
     } catch (IOException e) {
       throw new AssertionError("test failed with IOException for the wrong reason");
@@ -148,5 +142,20 @@ public class UnzipUtilityTest {
     } catch (IOException e) {
       assertThat(e.getMessage(), containsString("Unable to make directory"));
     }
+  }
+
+  private static File newFile(File parent, String child) throws IOException {
+    File result = new File(parent, child);
+    result.createNewFile();
+    return result;
+  }
+
+  private static File newFolder(File root, String... subDirs) throws IOException {
+    String subFolder = String.join("/", subDirs);
+    File result = new File(root, subFolder);
+    if (!result.mkdirs()) {
+      throw new IOException("Couldn't create folders " + root);
+    }
+    return result;
   }
 }

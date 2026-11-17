@@ -12,16 +12,16 @@ import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.grammar.MockGrammarSettings;
 import org.batfish.grammar.recovery.RecoveryParser.RecoveryContext;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 @ParametersAreNonnullByDefault
-public final class RecoveryGrammarTest {
+final class RecoveryGrammarTest {
 
   private static final GrammarSettings SETTINGS =
       MockGrammarSettings.builder().setThrowOnLexerError(true).setThrowOnParserError(true).build();
 
   @Test
-  public void testParsingRecovery() {
+  void testParsingRecovery() {
     String recoveryText = readResource("org/batfish/grammar/recovery/recovery_text", UTF_8);
     int totalLines = recoveryText.split("\n", -1).length;
     RecoveryCombinedParser cp = new RecoveryCombinedParser(recoveryText, SETTINGS);
@@ -53,7 +53,7 @@ public final class RecoveryGrammarTest {
   }
 
   @Test
-  public void testParsingRecoveryWithModes() {
+  void testParsingRecoveryWithModes() {
     String recoveryText = readResource("org/batfish/grammar/recovery/recovery_badmode", UTF_8);
     RecoveryCombinedParser cp = new RecoveryCombinedParser(recoveryText, SETTINGS);
     RecoveryContext ctx = cp.parse();

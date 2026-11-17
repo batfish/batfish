@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
@@ -11,17 +12,13 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.route.nh.NextHopVrf;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link StaticRoute} */
-public final class StaticRouteTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+final class StaticRouteTest {
 
   @Test
-  public void checkAllAttrs() {
+  void checkAllAttrs() {
     StaticRoute sr =
         StaticRoute.testBuilder()
             .setNetwork(Prefix.ZERO)
@@ -40,7 +37,7 @@ public final class StaticRouteTest {
   }
 
   @Test
-  public void checkNullNextHop() {
+  void checkNullNextHop() {
     StaticRoute sr =
         StaticRoute.testBuilder()
             .setNetwork(Prefix.ZERO)
@@ -51,7 +48,7 @@ public final class StaticRouteTest {
   }
 
   @Test
-  public void checkNullNextHopInterface() {
+  void checkNullNextHopInterface() {
     StaticRoute sr =
         StaticRoute.testBuilder()
             .setNetwork(Prefix.ZERO)
@@ -63,7 +60,7 @@ public final class StaticRouteTest {
   }
 
   @Test
-  public void checkDefaults() {
+  void checkDefaults() {
     StaticRoute sr =
         StaticRoute.builder()
             .setNextHop(NextHopDiscard.instance())
@@ -76,13 +73,14 @@ public final class StaticRouteTest {
   }
 
   @Test
-  public void checkThrowsWithoutAdmin() {
-    _thrown.expect(IllegalArgumentException.class);
-    StaticRoute.builder().setNetwork(Prefix.ZERO).build();
+  void checkThrowsWithoutAdmin() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> StaticRoute.builder().setNetwork(Prefix.ZERO).build());
   }
 
   @Test
-  public void testToBuilderRoundTrip() {
+  void testToBuilderRoundTrip() {
     StaticRoute sr =
         StaticRoute.testBuilder()
             .setNextHopIp(Ip.parse("192.168.1.1"))
@@ -98,7 +96,7 @@ public final class StaticRouteTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     StaticRoute.Builder b =
         StaticRoute.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
@@ -119,7 +117,7 @@ public final class StaticRouteTest {
   }
 
   @Test
-  public void testInterning() {
+  void testInterning() {
     StaticRoute.Builder b =
         StaticRoute.testBuilder()
             .setNetwork(Prefix.parse("10.0.0.0/24"))
@@ -130,7 +128,7 @@ public final class StaticRouteTest {
   }
 
   @Test
-  public void checkJsonSerialization() {
+  void checkJsonSerialization() {
     StaticRoute sr =
         StaticRoute.testBuilder()
             .setNextHopIp(Ip.parse("192.168.1.1"))
@@ -146,7 +144,7 @@ public final class StaticRouteTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     StaticRoute sr =
         StaticRoute.testBuilder()
             .setNextHopIp(Ip.parse("192.168.1.1"))

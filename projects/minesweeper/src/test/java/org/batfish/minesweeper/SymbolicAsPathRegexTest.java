@@ -4,8 +4,8 @@ import static org.batfish.datamodel.routing_policy.Common.DEFAULT_UNDERSCORE_REP
 import static org.batfish.minesweeper.SymbolicAsPathRegex.AS_NUM_REGEX;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ContiguousSet;
 import com.google.common.collect.ImmutableList;
@@ -16,10 +16,10 @@ import dk.brics.automaton.RegExp;
 import java.util.Set;
 import org.apache.commons.text.StringEscapeUtils;
 import org.batfish.datamodel.routing_policy.as_path.AsSetsMatchingRanges;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for the {@link org.batfish.minesweeper.SymbolicAsPathRegex} class. */
-public class SymbolicAsPathRegexTest {
+class SymbolicAsPathRegexTest {
 
   // the commonly used _ character in Cisco regexes expands to the following regex in Java:
   // either a comma, a curly brace, the start or end of the string, or a space
@@ -27,7 +27,7 @@ public class SymbolicAsPathRegexTest {
       StringEscapeUtils.unescapeJava(DEFAULT_UNDERSCORE_REPLACEMENT);
 
   @Test
-  public void testToAutomatonRegex() {
+  void testToAutomatonRegex() {
 
     SymbolicAsPathRegex r1 = new SymbolicAsPathRegex("^40$");
     SymbolicAsPathRegex r2 = new SymbolicAsPathRegex("^$");
@@ -54,7 +54,7 @@ public class SymbolicAsPathRegexTest {
   }
 
   @Test
-  public void testToAutomatonJuniper() {
+  void testToAutomatonJuniper() {
 
     SymbolicAsPathRegex r1 = new SymbolicAsPathRegex("^(^| )40$");
     SymbolicAsPathRegex r2 = new SymbolicAsPathRegex("^$");
@@ -72,7 +72,7 @@ public class SymbolicAsPathRegexTest {
   }
 
   @Test
-  public void testConstructorFromAsSetsMatchingRanges() {
+  void testConstructorFromAsSetsMatchingRanges() {
     AsSetsMatchingRanges a1 =
         AsSetsMatchingRanges.of(false, false, ImmutableList.of(Range.closed(11L, 11L)));
     AsSetsMatchingRanges a2 =
@@ -90,7 +90,7 @@ public class SymbolicAsPathRegexTest {
   }
 
   @Test
-  public void testToRegex() {
+  void testToRegex() {
     String r1 = SymbolicAsPathRegex.toRegex(0L, Integer.MAX_VALUE);
     String r2 = SymbolicAsPathRegex.toRegex(500L, (long) Integer.MAX_VALUE + 20);
     String r3 =
@@ -107,7 +107,7 @@ public class SymbolicAsPathRegexTest {
   }
 
   @Test
-  public void testAsSetsMatchingRangesRegexBehavior() {
+  void testAsSetsMatchingRangesRegexBehavior() {
     SymbolicAsPathRegex r1 = singletonAsPathRegexForClosedInterval(50, 155);
     testRegexBehavior(
         r1,

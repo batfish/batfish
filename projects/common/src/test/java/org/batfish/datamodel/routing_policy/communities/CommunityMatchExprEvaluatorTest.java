@@ -1,7 +1,7 @@
 package org.batfish.datamodel.routing_policy.communities;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -14,37 +14,37 @@ import org.batfish.datamodel.routing_policy.expr.IntComparison;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LongComparison;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link CommunityMatchExprEvaluator}. */
-public final class CommunityMatchExprEvaluatorTest {
+final class CommunityMatchExprEvaluatorTest {
 
   private static final CommunityMatchExprEvaluator EVAL =
       CommunityContext.builder().build().getCommunityMatchExprEvaluator();
 
   @Test
-  public void testVisitAllExtendedCommunities() {
+  void testVisitAllExtendedCommunities() {
     assertFalse(AllExtendedCommunities.instance().accept(EVAL, StandardCommunity.of(1L)));
     assertTrue(AllExtendedCommunities.instance().accept(EVAL, ExtendedCommunity.of(1, 1L, 1L)));
     assertFalse(AllExtendedCommunities.instance().accept(EVAL, LargeCommunity.of(1L, 1L, 1L)));
   }
 
   @Test
-  public void testVisitAllLargeCommunities() {
+  void testVisitAllLargeCommunities() {
     assertFalse(AllLargeCommunities.instance().accept(EVAL, StandardCommunity.of(1L)));
     assertFalse(AllLargeCommunities.instance().accept(EVAL, ExtendedCommunity.of(1, 1L, 1L)));
     assertTrue(AllLargeCommunities.instance().accept(EVAL, LargeCommunity.of(1L, 1L, 1L)));
   }
 
   @Test
-  public void testVisitAllStandardCommunities() {
+  void testVisitAllStandardCommunities() {
     assertTrue(AllStandardCommunities.instance().accept(EVAL, StandardCommunity.of(1L)));
     assertFalse(AllStandardCommunities.instance().accept(EVAL, ExtendedCommunity.of(1, 1L, 1L)));
     assertFalse(AllStandardCommunities.instance().accept(EVAL, LargeCommunity.of(1L, 1L, 1L)));
   }
 
   @Test
-  public void testVisitCommunityAcl() {
+  void testVisitCommunityAcl() {
     assertFalse(new CommunityAcl(ImmutableList.of()).accept(EVAL, StandardCommunity.of(1L)));
 
     CommunityAcl denyThenPermit =
@@ -58,7 +58,7 @@ public final class CommunityMatchExprEvaluatorTest {
   }
 
   @Test
-  public void testVisitCommunityIn() {
+  void testVisitCommunityIn() {
     CommunityIn in =
         new CommunityIn(new LiteralCommunitySet(CommunitySet.of(StandardCommunity.of(1L))));
 
@@ -67,7 +67,7 @@ public final class CommunityMatchExprEvaluatorTest {
   }
 
   @Test
-  public void testVisitCommunityIs() {
+  void testVisitCommunityIs() {
     CommunityIs is = new CommunityIs(StandardCommunity.of(1L));
 
     assertTrue(is.accept(EVAL, StandardCommunity.of(1L)));
@@ -75,7 +75,7 @@ public final class CommunityMatchExprEvaluatorTest {
   }
 
   @Test
-  public void testVisitCommunityMatchAll() {
+  void testVisitCommunityMatchAll() {
     // empty permits everything
     assertTrue(new CommunityMatchAll(ImmutableList.of()).accept(EVAL, StandardCommunity.of(1L)));
 
@@ -96,7 +96,7 @@ public final class CommunityMatchExprEvaluatorTest {
   }
 
   @Test
-  public void testVisitCommunityMatchAny() {
+  void testVisitCommunityMatchAny() {
     // empty denies everything
     assertFalse(new CommunityMatchAny(ImmutableList.of()).accept(EVAL, StandardCommunity.of(1L)));
 
@@ -117,7 +117,7 @@ public final class CommunityMatchExprEvaluatorTest {
   }
 
   @Test
-  public void testVisitCommunityMatchExprReference() {
+  void testVisitCommunityMatchExprReference() {
     CommunityContext ctx =
         CommunityContext.builder()
             .setCommunityMatchExprs(
@@ -130,14 +130,14 @@ public final class CommunityMatchExprEvaluatorTest {
   }
 
   @Test
-  public void testVisitCommunityMatchRegex() {
+  void testVisitCommunityMatchRegex() {
     CommunityMatchRegex r = new CommunityMatchRegex(ColonSeparatedRendering.instance(), "^1:1$");
     assertTrue(r.accept(EVAL, StandardCommunity.of(1, 1)));
     assertFalse(r.accept(EVAL, StandardCommunity.of(11, 11)));
   }
 
   @Test
-  public void testVisitCommunityNot() {
+  void testVisitCommunityNot() {
     CommunityNot not = new CommunityNot(AllStandardCommunities.instance());
 
     assertFalse(not.accept(EVAL, StandardCommunity.of(1L)));
@@ -145,7 +145,7 @@ public final class CommunityMatchExprEvaluatorTest {
   }
 
   @Test
-  public void testVisitExtendedCommunityGlobalAdministratorHighMatch() {
+  void testVisitExtendedCommunityGlobalAdministratorHighMatch() {
     assertFalse(
         new ExtendedCommunityGlobalAdministratorHighMatch(
                 new IntComparison(IntComparator.EQ, new LiteralInt(1)))
@@ -157,7 +157,7 @@ public final class CommunityMatchExprEvaluatorTest {
   }
 
   @Test
-  public void testVisitExtendedCommunityGlobalAdministratorLowMatch() {
+  void testVisitExtendedCommunityGlobalAdministratorLowMatch() {
     assertTrue(
         new ExtendedCommunityGlobalAdministratorLowMatch(
                 new IntComparison(IntComparator.EQ, new LiteralInt(1)))
@@ -169,7 +169,7 @@ public final class CommunityMatchExprEvaluatorTest {
   }
 
   @Test
-  public void testVisitExtendedCommunityGlobalAdministratorMatch() {
+  void testVisitExtendedCommunityGlobalAdministratorMatch() {
     assertTrue(
         new ExtendedCommunityGlobalAdministratorMatch(
                 new LongComparison(IntComparator.EQ, new LiteralLong(0x10001L)))
@@ -185,7 +185,7 @@ public final class CommunityMatchExprEvaluatorTest {
   }
 
   @Test
-  public void testVisitExtendedCommunityLocalAdministratorMatch() {
+  void testVisitExtendedCommunityLocalAdministratorMatch() {
     assertFalse(
         new ExtendedCommunityLocalAdministratorMatch(
                 new LongComparison(IntComparator.EQ, new LiteralLong(1L)))
@@ -207,7 +207,7 @@ public final class CommunityMatchExprEvaluatorTest {
   }
 
   @Test
-  public void testVisitOpaqueExtendedCommunities() {
+  void testVisitOpaqueExtendedCommunities() {
     assertTrue(
         OpaqueExtendedCommunities.of(false, 0x00)
             .accept(EVAL, ExtendedCommunity.opaque(false, 0x00, 1L)));
@@ -227,7 +227,7 @@ public final class CommunityMatchExprEvaluatorTest {
   }
 
   @Test
-  public void testVisitRouteTargetExtendedCommunities() {
+  void testVisitRouteTargetExtendedCommunities() {
     assertTrue(
         RouteTargetExtendedCommunities.instance()
             .accept(EVAL, ExtendedCommunity.of(0x0002, 1L, 1L)));
@@ -238,7 +238,7 @@ public final class CommunityMatchExprEvaluatorTest {
   }
 
   @Test
-  public void testVisitSiteOfOriginExtendedCommunities() {
+  void testVisitSiteOfOriginExtendedCommunities() {
     assertTrue(
         SiteOfOriginExtendedCommunities.instance()
             .accept(EVAL, ExtendedCommunity.of(0x0003, 1L, 1L)));
@@ -249,7 +249,7 @@ public final class CommunityMatchExprEvaluatorTest {
   }
 
   @Test
-  public void testVisitStandardCommunityHighMatch() {
+  void testVisitStandardCommunityHighMatch() {
     assertTrue(
         new StandardCommunityHighMatch(new IntComparison(IntComparator.EQ, new LiteralInt(1)))
             .accept(EVAL, StandardCommunity.of(1, 2)));
@@ -259,7 +259,7 @@ public final class CommunityMatchExprEvaluatorTest {
   }
 
   @Test
-  public void testVisitStandardCommunityLowMatch() {
+  void testVisitStandardCommunityLowMatch() {
     assertFalse(
         new StandardCommunityLowMatch(new IntComparison(IntComparator.EQ, new LiteralInt(1)))
             .accept(EVAL, StandardCommunity.of(1, 2)));
@@ -269,7 +269,7 @@ public final class CommunityMatchExprEvaluatorTest {
   }
 
   @Test
-  public void testVisitVpnDistinguisherExtendedCommunities() {
+  void testVisitVpnDistinguisherExtendedCommunities() {
     assertTrue(
         VpnDistinguisherExtendedCommunities.instance()
             .accept(EVAL, ExtendedCommunity.of(0x0010, 1L, 1L)));

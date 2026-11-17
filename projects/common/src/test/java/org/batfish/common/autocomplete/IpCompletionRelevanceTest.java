@@ -2,21 +2,21 @@ package org.batfish.common.autocomplete;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class IpCompletionRelevanceTest {
+class IpCompletionRelevanceTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new IpCompletionRelevance("a", "b"),
@@ -27,7 +27,7 @@ public class IpCompletionRelevanceTest {
   }
 
   @Test
-  public void testConstructorNullAndEmptyFiltering() {
+  void testConstructorNullAndEmptyFiltering() {
     new EqualsTester()
         .addEqualityGroup(
             new IpCompletionRelevance("a"),
@@ -43,20 +43,20 @@ public class IpCompletionRelevanceTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     IpCompletionRelevance metadata = new IpCompletionRelevance("a", "b");
     IpCompletionRelevance clone = BatfishObjectMapper.clone(metadata, IpCompletionRelevance.class);
     assertEquals(metadata, clone);
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     IpCompletionRelevance metadata = new IpCompletionRelevance("a", "b");
     assertThat(SerializationUtils.clone(metadata), equalTo(metadata));
   }
 
   @Test
-  public void testMatches() {
+  void testMatches() {
     IpCompletionRelevance relevance = new IpCompletionRelevance("a", "tag1", "gat1");
     Ip testIp = Ip.parse("1.1.1.1");
 
@@ -72,7 +72,7 @@ public class IpCompletionRelevanceTest {
   }
 
   @Test
-  public void testMatches_caseInsensitive() {
+  void testMatches_caseInsensitive() {
     IpCompletionRelevance relevance = new IpCompletionRelevance("a", "TAG");
     Ip testIp = Ip.parse("1.1.1.1");
 

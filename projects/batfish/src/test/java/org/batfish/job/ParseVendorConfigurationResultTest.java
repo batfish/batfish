@@ -22,12 +22,12 @@ import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection.SilentSyntaxElem;
 import org.batfish.representation.cisco.CiscoConfiguration;
 import org.batfish.vendor.VendorConfiguration;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ParseVendorConfigurationResultTest {
+class ParseVendorConfigurationResultTest {
 
   @Test
-  public void testApplyTo() {
+  void testApplyTo() {
     String filename = "file.cfg";
     VendorConfiguration config = new CiscoConfiguration();
     config.setHostname("hostname");
@@ -75,7 +75,7 @@ public class ParseVendorConfigurationResultTest {
   }
 
   @Test
-  public void testApplyTo_multiFile() {
+  void testApplyTo_multiFile() {
     VendorConfiguration config = new CiscoConfiguration();
     config.setHostname("hostname");
 

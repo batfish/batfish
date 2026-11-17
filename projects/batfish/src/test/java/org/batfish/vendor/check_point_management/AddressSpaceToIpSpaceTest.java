@@ -14,12 +14,12 @@ import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.UniverseIpSpace;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link AddressSpaceToIpSpace}. */
-public class AddressSpaceToIpSpaceTest {
+class AddressSpaceToIpSpaceTest {
   @Test
-  public void testAddressRange() {
+  void testAddressRange() {
     AddressSpaceToIpSpace visitor = new AddressSpaceToIpSpace(ImmutableMap.of());
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("2.2.2.2");
@@ -29,7 +29,7 @@ public class AddressSpaceToIpSpaceTest {
   }
 
   @Test
-  public void testAddressRangeIpv6() {
+  void testAddressRangeIpv6() {
     AddressSpaceToIpSpace visitor = new AddressSpaceToIpSpace(ImmutableMap.of());
     Ip6 ip1 = Ip6.parse("1::1");
     Ip6 ip2 = Ip6.parse("1::2");
@@ -39,14 +39,14 @@ public class AddressSpaceToIpSpaceTest {
   }
 
   @Test
-  public void testCpmiAnyObject() {
+  void testCpmiAnyObject() {
     AddressSpaceToIpSpace visitor = new AddressSpaceToIpSpace(ImmutableMap.of());
     CpmiAnyObject cpmiAnyObject = new CpmiAnyObject(Uid.of("1"));
     assertThat(cpmiAnyObject.accept(visitor), equalTo(UniverseIpSpace.INSTANCE));
   }
 
   @Test
-  public void testGatewayOrServer() {
+  void testGatewayOrServer() {
     AddressSpaceToIpSpace visitor = new AddressSpaceToIpSpace(ImmutableMap.of());
     GatewayOrServer gatewayOrServer =
         new SimpleGateway(
@@ -63,7 +63,7 @@ public class AddressSpaceToIpSpaceTest {
   }
 
   @Test
-  public void testGroup() {
+  void testGroup() {
     Uid group1Uid = Uid.of("1");
     Uid group2Uid = Uid.of("2");
     Uid group3Uid = Uid.of("3");
@@ -102,7 +102,7 @@ public class AddressSpaceToIpSpaceTest {
   }
 
   @Test
-  public void testHost() {
+  void testHost() {
     AddressSpaceToIpSpace visitor = new AddressSpaceToIpSpace(ImmutableMap.of());
     Ip hostIp = Ip.parse("10.10.10.10");
     Host host = new Host(hostIp, NAT_SETTINGS_TEST_INSTANCE, "hostName", Uid.of("10"));
@@ -110,14 +110,14 @@ public class AddressSpaceToIpSpaceTest {
   }
 
   @Test
-  public void testHost_noIpv4() {
+  void testHost_noIpv4() {
     AddressSpaceToIpSpace visitor = new AddressSpaceToIpSpace(ImmutableMap.of());
     Host host = new Host(null, NAT_SETTINGS_TEST_INSTANCE, "hostName", Uid.of("10"));
     assertThat(host.accept(visitor), equalTo(EmptyIpSpace.INSTANCE));
   }
 
   @Test
-  public void testNetwork() {
+  void testNetwork() {
     AddressSpaceToIpSpace visitor = new AddressSpaceToIpSpace(ImmutableMap.of());
     Ip ip = Ip.parse("1.1.1.0");
     Ip mask = Ip.parse("255.255.255.0");
@@ -126,7 +126,7 @@ public class AddressSpaceToIpSpaceTest {
   }
 
   @Test
-  public void testVisitGatewayOrServer_noInterfaceIp() {
+  void testVisitGatewayOrServer_noInterfaceIp() {
     AddressSpaceToIpSpace visitor = new AddressSpaceToIpSpace(ImmutableMap.of());
     GatewayOrServer gw =
         new CpmiVsClusterNetobj(

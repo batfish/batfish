@@ -4,11 +4,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.lessThan;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class CiscoIosNatTest {
+class CiscoIosNatTest {
   @Test
-  public void testCompareStaticVsDynamic() {
+  void testCompareStaticVsDynamic() {
     // Static rules should always come before dynamic
     CiscoIosNat staticNat = new CiscoIosStaticNat();
     CiscoIosNat dynamicNat = new CiscoIosDynamicNat();

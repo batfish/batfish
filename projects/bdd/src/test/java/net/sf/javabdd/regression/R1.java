@@ -28,12 +28,14 @@
  */
 package net.sf.javabdd.regression;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDDomain;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.bdd.BDDTestCase;
-import org.junit.internal.runners.JUnit38ClassRunner;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * satCount bug
@@ -41,13 +43,9 @@ import org.junit.runner.RunWith;
  * @author John Whaley
  * @version $Id: R1.java,v 1.6 2004/10/19 11:46:30 joewhaley Exp $
  */
-@RunWith(JUnit38ClassRunner.class)
-public class R1 extends BDDTestCase {
-  public static void main(String[] args) {
-    junit.textui.TestRunner.run(R1.class);
-  }
-
-  public void testR1() {
+class R1 extends BDDTestCase {
+  @Test
+  void testR1() {
     assertTrue(hasNext());
     while (hasNext()) {
       BDDFactory bdd = next();
@@ -59,7 +57,7 @@ public class R1 extends BDDTestCase {
         bdd.setVarNum(20);
       }
       double s2 = x.satCount(set);
-      assertEquals(bdd.toString(), s1, s2, 0.00001);
+      assertEquals(s1, s2, 0.00001, bdd.toString());
       x.free();
       set.free();
     }

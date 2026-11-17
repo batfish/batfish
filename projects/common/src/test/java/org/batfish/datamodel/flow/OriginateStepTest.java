@@ -7,12 +7,12 @@ import static org.hamcrest.Matchers.instanceOf;
 import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.flow.OriginateStep.OriginateStepDetail;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link OriginateStep} */
-public class OriginateStepTest {
+class OriginateStepTest {
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     OriginateStep step =
         OriginateStep.builder()
             .setAction(StepAction.ORIGINATED)
@@ -26,7 +26,7 @@ public class OriginateStepTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new Object())
         .addEqualityGroup(

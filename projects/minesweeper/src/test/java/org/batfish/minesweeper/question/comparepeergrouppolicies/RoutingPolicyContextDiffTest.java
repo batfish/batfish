@@ -1,9 +1,9 @@
 package org.batfish.minesweeper.question.comparepeergrouppolicies;
 
 import static org.batfish.datamodel.LineAction.PERMIT;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -34,10 +34,10 @@ import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statements;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class RoutingPolicyContextDiffTest {
+class RoutingPolicyContextDiffTest {
   private static final String HOSTNAME = "hostname";
   private static final String AS_PATH_1 = "asPath1";
   private static final String AS_PATH_2 = "asPath2";
@@ -48,8 +48,8 @@ public class RoutingPolicyContextDiffTest {
   private RoutingPolicyContextDiff _contextDiff;
   private RoutingPolicy.Builder _policyBuilder;
 
-  @Before
-  public void setup() throws IOException {
+  @BeforeEach
+  void setup() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder()
@@ -117,17 +117,17 @@ public class RoutingPolicyContextDiffTest {
   }
 
   @Test
-  public void testAsPathDiff() {
+  void testAsPathDiff() {
     assertEquals(ImmutableSet.of(AS_PATH_1), _contextDiff.getAsPathAccessListsDiff());
   }
 
   @Test
-  public void testRouteFilterListDiff() {
+  void testRouteFilterListDiff() {
     assertEquals(ImmutableSet.of(PFX_LST_1, PFX_LST_2), _contextDiff.getRouteFilterListsDiff());
   }
 
   @Test
-  public void testCommunityMatchExprDiff() {
+  void testCommunityMatchExprDiff() {
     assertEquals(ImmutableSet.of(COMM_LST_1), _contextDiff.getCommunityListsDiff());
   }
 
@@ -135,7 +135,7 @@ public class RoutingPolicyContextDiffTest {
    * Test that the difference due to the as-path is found if the AS-Path list that differs is used.
    */
   @Test
-  public void testDifferOnAsPath() {
+  void testDifferOnAsPath() {
     RoutingPolicy p =
         _policyBuilder
             .addStatement(
@@ -151,7 +151,7 @@ public class RoutingPolicyContextDiffTest {
    * is used.
    */
   @Test
-  public void testDifferOnCommunity() {
+  void testDifferOnCommunity() {
     RoutingPolicy p =
         _policyBuilder
             .addStatement(
@@ -169,7 +169,7 @@ public class RoutingPolicyContextDiffTest {
    * is used.
    */
   @Test
-  public void testDifferOnPrefixList() {
+  void testDifferOnPrefixList() {
     RoutingPolicy p =
         _policyBuilder
             .addStatement(
@@ -183,7 +183,7 @@ public class RoutingPolicyContextDiffTest {
 
   /** Test that differences are ignored if they are not used in the given routing policy */
   @Test
-  public void testDifferencesIgnored() {
+  void testDifferencesIgnored() {
     RoutingPolicy p =
         _policyBuilder
             .addStatement(

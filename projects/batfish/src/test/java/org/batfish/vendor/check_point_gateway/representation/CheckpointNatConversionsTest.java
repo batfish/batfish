@@ -39,8 +39,9 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -84,14 +85,12 @@ import org.batfish.vendor.check_point_management.SimpleGateway;
 import org.batfish.vendor.check_point_management.TypedManagementObject;
 import org.batfish.vendor.check_point_management.Uid;
 import org.batfish.vendor.check_point_management.UnhandledNatHideBehind;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link CheckpointNatConversions}. */
-public final class CheckpointNatConversionsTest {
+final class CheckpointNatConversionsTest {
   @Test
-  public void testGetApplicableNatRules() {
+  void testGetApplicableNatRules() {
     NatRule ruleForAllGateways =
         new NatRule(
             true,
@@ -165,7 +164,7 @@ public final class CheckpointNatConversionsTest {
   }
 
   @Test
-  public void testCheckValidManualHide() {
+  void testCheckValidManualHide() {
     Uid uid = Uid.of("1");
     TypedManagementObject addressSpace = new Host(Ip.ZERO, NAT_SETTINGS_TEST_INSTANCE, "foo", uid);
     TypedManagementObject service = new ServiceTcp("foo", "1", uid);
@@ -203,7 +202,7 @@ public final class CheckpointNatConversionsTest {
   }
 
   @Test
-  public void testManualHideTransformationSteps() {
+  void testManualHideTransformationSteps() {
     Warnings warnings = new Warnings();
     {
       // Invalid translated-types
@@ -341,7 +340,7 @@ public final class CheckpointNatConversionsTest {
   }
 
   @Test
-  public void testManualRuleTransformation_hide() {
+  void testManualRuleTransformation_hide() {
     Warnings warnings = new Warnings();
     Uid hostUid = Uid.of("1");
     Ip hostIp = Ip.parse("1.1.1.1");
@@ -399,7 +398,7 @@ public final class CheckpointNatConversionsTest {
   }
 
   @Test
-  public void testMatchInternalTraffic() {
+  void testMatchInternalTraffic() {
     NatSettings natSettings =
         new NatSettings(true, NatHideBehindGateway.INSTANCE, "All", null, NatMethod.HIDE);
     {
@@ -434,7 +433,7 @@ public final class CheckpointNatConversionsTest {
   }
 
   @Test
-  public void testAutomaticHideRuleTransformationStep() {
+  void testAutomaticHideRuleTransformationStep() {
     {
       // Hide behind gateway
       NatSettings natSettings =
@@ -463,13 +462,13 @@ public final class CheckpointNatConversionsTest {
       // use a different HasNatSettings type just for fun
       Network network =
           new Network("nw", natSettings, Ip.parse("1.0.0.0"), Ip.parse("255.255.255.0"), UID);
-      _thrown.expect(IllegalArgumentException.class);
-      automaticHideRuleTransformationStep(network);
+      assertThrows(
+          IllegalArgumentException.class, () -> automaticHideRuleTransformationStep(network));
     }
   }
 
   @Test
-  public void testMatchAutomaticStaticRule() {
+  void testMatchAutomaticStaticRule() {
     Ip natIp = Ip.parse("5.5.5.5");
     Ip hostIp = Ip.parse("1.1.1.1");
     NatSettings natSettings = new NatSettings(true, null, "All", natIp, NatMethod.STATIC);
@@ -487,7 +486,7 @@ public final class CheckpointNatConversionsTest {
   }
 
   @Test
-  public void testAutomaticStaticRuleTransformationStep() {
+  void testAutomaticStaticRuleTransformationStep() {
     Ip natIp = Ip.parse("5.5.5.5");
     Ip hostIp = Ip.parse("1.1.1.1");
     NatSettings natSettings = new NatSettings(true, null, "All", natIp, NatMethod.STATIC);
@@ -505,7 +504,7 @@ public final class CheckpointNatConversionsTest {
   }
 
   @Test
-  public void testShouldConvertAutomaticRule() {
+  void testShouldConvertAutomaticRule() {
     Uid hostUid = Uid.of("12345");
     Host host = new Host(Ip.parse("1.1.1.1"), NAT_SETTINGS_TEST_INSTANCE, "host", hostUid);
     Map<Uid, TypedManagementObject> objs =
@@ -573,7 +572,7 @@ public final class CheckpointNatConversionsTest {
   }
 
   @Test
-  public void testIsValidAutomaticHideRule() {
+  void testIsValidAutomaticHideRule() {
     {
       // Hide rule missing hide-behind
       NatSettings natSettings = new NatSettings(true, null, "All", null, NatMethod.HIDE);
@@ -605,7 +604,7 @@ public final class CheckpointNatConversionsTest {
   }
 
   @Test
-  public void testIsValidAutomaticStaticRule() {
+  void testIsValidAutomaticStaticRule() {
     {
       // Static rule on non-host object
       NatSettings natSettings =
@@ -648,7 +647,7 @@ public final class CheckpointNatConversionsTest {
   }
 
   @Test
-  public void testCheckValidManualStatic() {
+  void testCheckValidManualStatic() {
     Uid hostUid1 = Uid.of("1");
     Uid hostUid2 = Uid.of("2");
     Uid addrRangeUid = Uid.of("3");
@@ -843,7 +842,7 @@ public final class CheckpointNatConversionsTest {
   }
 
   @Test
-  public void testManualStaticTransformationSteps() {
+  void testManualStaticTransformationSteps() {
     Warnings warnings = new Warnings();
     Uid hostUid1 = Uid.of("1");
     Ip hostIp1 = Ip.parse("1.1.1.1");
@@ -1033,7 +1032,7 @@ public final class CheckpointNatConversionsTest {
   }
 
   @Test
-  public void testMatchManualRule() {
+  void testMatchManualRule() {
     Warnings warnings = new Warnings();
     ServiceToMatchExpr serviceToMatchExpr = new ServiceToMatchExpr(ImmutableMap.of());
     {
@@ -1091,7 +1090,7 @@ public final class CheckpointNatConversionsTest {
   }
 
   @Test
-  public void testManualRuleTransformation_static() {
+  void testManualRuleTransformation_static() {
     Warnings warnings = new Warnings();
     Uid hostUid1 = Uid.of("1");
     Ip hostIp1 = Ip.parse("1.1.1.1");
@@ -1150,14 +1149,14 @@ public final class CheckpointNatConversionsTest {
   }
 
   @Test
-  public void visitHost_noIp() {
+  void visitHost_noIp() {
     Host host = new Host(null, NAT_SETTINGS_TEST_INSTANCE, "host", Uid.of("1"));
     assertThat(
         TRANSLATED_SOURCE_TO_TRANSFORMATION_STEPS.visitHost(host), equalTo(ImmutableList.of()));
   }
 
   @Test
-  public void testGetOutgoingTransformations() {
+  void testGetOutgoingTransformations() {
     Ip ifaceIp = Ip.parse("10.10.10.1");
     Interface viIface =
         TestInterface.builder()
@@ -1172,7 +1171,7 @@ public final class CheckpointNatConversionsTest {
   }
 
   @Test
-  public void testMergeTransformations() {
+  void testMergeTransformations() {
     {
       List<Transformation> transformations = ImmutableList.of();
       assertThat(mergeTransformations(transformations), equalTo(Optional.empty()));
@@ -1190,8 +1189,6 @@ public final class CheckpointNatConversionsTest {
           mergeTransformations(transformations), equalTo(Optional.of(tb1.setOrElse(t2).build())));
     }
   }
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private static final Uid UID = Uid.of("1001");
   private static final Uid PT_UID = Uid.of("1002");

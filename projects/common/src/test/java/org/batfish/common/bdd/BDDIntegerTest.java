@@ -3,22 +3,21 @@ package org.batfish.common.bdd;
 import static org.batfish.common.bdd.BDDMatchers.isOne;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Optional;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.datamodel.Prefix;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-public class BDDIntegerTest {
-  @Rule public ExpectedException _exception = ExpectedException.none();
+class BDDIntegerTest {
 
   @Test
-  public void testSatAssignmentToLong() {
+  void testSatAssignmentToLong() {
     BDDInteger dstIp = new BDDPacket().getDstIp();
     long value = 12345;
     BDD bdd = dstIp.value(value);
@@ -30,7 +29,7 @@ public class BDDIntegerTest {
   }
 
   @Test
-  public void testGetValueSatisfying() {
+  void testGetValueSatisfying() {
     BDDInteger dstIp = new BDDPacket().getDstIp();
     BDD bdd = dstIp.geq(1).and(dstIp.leq(0));
     assertThat(dstIp.getValueSatisfying(bdd), equalTo(Optional.empty()));
@@ -40,7 +39,7 @@ public class BDDIntegerTest {
   }
 
   @Test
-  public void testGetValuesSatisfying() {
+  void testGetValuesSatisfying() {
     BDDInteger dstIp = new BDDPacket().getDstIp();
     BDD bdd = dstIp.geq(1).and(dstIp.leq(0));
     assertThat(dstIp.getValuesSatisfying(bdd, 10), hasSize(0));
@@ -55,34 +54,31 @@ public class BDDIntegerTest {
   }
 
   @Test
-  public void testGeqOutOfRange() {
+  void testGeqOutOfRange() {
     BDDFactory factory = BDDUtils.bddFactory(5);
     ImmutableBDDInteger var = ImmutableBDDInteger.makeFromIndex(factory, 5, 0);
-    _exception.expect(IllegalArgumentException.class);
-    _exception.expectMessage("value 32 is out of range [0, 31]");
-    var.geq(32);
+    Throwable exception = assertThrows(IllegalArgumentException.class, () -> var.geq(32));
+    assertThat(exception.getMessage(), containsString("value 32 is out of range [0, 31]"));
   }
 
   @Test
-  public void testLeqOutOfRange() {
+  void testLeqOutOfRange() {
     BDDFactory factory = BDDUtils.bddFactory(5);
     ImmutableBDDInteger var = ImmutableBDDInteger.makeFromIndex(factory, 5, 0);
-    _exception.expect(IllegalArgumentException.class);
-    _exception.expectMessage("value 32 is out of range [0, 31]");
-    var.leq(32);
+    Throwable exception = assertThrows(IllegalArgumentException.class, () -> var.leq(32));
+    assertThat(exception.getMessage(), containsString("value 32 is out of range [0, 31]"));
   }
 
   @Test
-  public void testValueOutOfRange() {
+  void testValueOutOfRange() {
     BDDFactory factory = BDDUtils.bddFactory(5);
     ImmutableBDDInteger var = ImmutableBDDInteger.makeFromIndex(factory, 5, 0);
-    _exception.expect(IllegalArgumentException.class);
-    _exception.expectMessage("value 32 is out of range [0, 31]");
-    var.value(32);
+    Throwable exception = assertThrows(IllegalArgumentException.class, () -> var.value(32));
+    assertThat(exception.getMessage(), containsString("value 32 is out of range [0, 31]"));
   }
 
   @Test
-  public void testBoundary() {
+  void testBoundary() {
     BDDFactory factory = BDDUtils.bddFactory(63);
     ImmutableBDDInteger var = ImmutableBDDInteger.makeFromIndex(factory, 63, 0);
     assertThat(
@@ -93,7 +89,7 @@ public class BDDIntegerTest {
   }
 
   @Test
-  public void testRange() {
+  void testRange() {
     BDDFactory factory = BDDUtils.bddFactory(10);
     ImmutableBDDInteger x = ImmutableBDDInteger.makeFromIndex(factory, 5, 0);
     for (int a = 0; a < 32; ++a) {
@@ -106,7 +102,7 @@ public class BDDIntegerTest {
   }
 
   @Test
-  public void testSymbolicComparisons() {
+  void testSymbolicComparisons() {
     // Two independent 4-bit integers over disjoint variables; exhaustively check every (a, b).
     BDDFactory factory = BDDUtils.bddFactory(8);
     ImmutableBDDInteger x = ImmutableBDDInteger.makeFromIndex(factory, 4, 0);
@@ -128,7 +124,7 @@ public class BDDIntegerTest {
   }
 
   @Test
-  public void testFirstBitsEqual() {
+  void testFirstBitsEqual() {
     // Two independent 4-bit integers; firstBitsEqual(n) holds iff the top n (most-significant) bits
     // match. Exhaustive over every (a, b) and every n in [0, 4].
     BDDFactory factory = BDDUtils.bddFactory(8);
@@ -153,7 +149,7 @@ public class BDDIntegerTest {
   }
 
   @Test
-  public void testSymbolicComparisonsAgainstConstantForm() {
+  void testSymbolicComparisonsAgainstConstantForm() {
     // For a fixed constant c, comparing the symbolic var against a constant-valued BDDInteger must
     // agree with the existing constant-comparison methods.
     BDDFactory factory = BDDUtils.bddFactory(10);
@@ -169,7 +165,7 @@ public class BDDIntegerTest {
   }
 
   @Test
-  public void testSymbolicComparisonsMutable() {
+  void testSymbolicComparisonsMutable() {
     // Same exhaustive check as testSymbolicComparisons, but over MutableBDDIntegers whose bits are
     // compound formulas (sums) rather than plain variables, to exercise the general case.
     BDDFactory factory = BDDUtils.bddFactory(8);
@@ -200,7 +196,7 @@ public class BDDIntegerTest {
   }
 
   @Test
-  public void testRangeBounds() {
+  void testRangeBounds() {
     {
       BDDFactory factory = BDDUtils.bddFactory(32);
       ImmutableBDDInteger x = ImmutableBDDInteger.makeFromIndex(factory, 32, 0);

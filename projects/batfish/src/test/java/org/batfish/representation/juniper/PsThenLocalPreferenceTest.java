@@ -15,11 +15,11 @@ import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.representation.juniper.PsThenLocalPreference.Operator;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class PsThenLocalPreferenceTest {
+class PsThenLocalPreferenceTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(5L)
         .addEqualityGroup(
@@ -44,7 +44,7 @@ public class PsThenLocalPreferenceTest {
   }
 
   @Test
-  public void testConversion() {
+  void testConversion() {
     assertThat(
         getStatements(new PsThenLocalPreference(1, Operator.SET)),
         contains(new SetLocalPreference(new LiteralLong(1))));

@@ -8,11 +8,11 @@ import java.util.Optional;
 import org.batfish.common.topology.broadcast.DomainToL2Interface.AccessMode;
 import org.batfish.common.topology.broadcast.DomainToL2Interface.Trunk;
 import org.batfish.datamodel.IntegerSpace;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class DomainToL2InterfaceTest {
+class DomainToL2InterfaceTest {
   @Test
-  public void testAccessMode() {
+  void testAccessMode() {
     AccessMode testing = new AccessMode(5);
     assertThat(testing.receiveTag(EthernetTag.untagged()), equalTo(Optional.of(5)));
     assertThat(testing.receiveTag(EthernetTag.tagged(5)), equalTo(Optional.empty()));
@@ -22,7 +22,7 @@ public class DomainToL2InterfaceTest {
   }
 
   @Test
-  public void testTrunk() {
+  void testTrunk() {
     Trunk testing = new Trunk(IntegerSpace.of(Range.closed(4, 5)), 5);
     assertThat(testing.receiveTag(EthernetTag.tagged(4)), equalTo(Optional.of(4)));
     assertThat(testing.receiveTag(EthernetTag.untagged()), equalTo(Optional.of(5)));

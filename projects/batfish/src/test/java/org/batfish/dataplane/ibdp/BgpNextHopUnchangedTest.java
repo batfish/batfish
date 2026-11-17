@@ -8,6 +8,7 @@ import static org.batfish.dataplane.ibdp.TestUtils.assertRoute;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 import java.util.SortedMap;
@@ -33,12 +34,11 @@ import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public class BgpNextHopUnchangedTest {
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+class BgpNextHopUnchangedTest {
+  @TempDir public File _folder;
 
   private NetworkFactory _nf = new NetworkFactory();
 
@@ -226,7 +226,7 @@ public class BgpNextHopUnchangedTest {
   }
 
   @Test
-  public void ebgpNhUnchangedNotPresent() throws IOException {
+  void ebgpNhUnchangedNotPresent() throws IOException {
     Batfish batfish = BatfishTestUtils.getBatfish(network(true, false), _folder);
     batfish.computeDataPlane(batfish.getSnapshot());
     IncrementalDataPlane dataplane =
@@ -240,7 +240,7 @@ public class BgpNextHopUnchangedTest {
   }
 
   @Test
-  public void ebgpNhUnchangedPresent() throws IOException {
+  void ebgpNhUnchangedPresent() throws IOException {
     Batfish batfish = BatfishTestUtils.getBatfish(network(true, true), _folder);
     batfish.computeDataPlane(batfish.getSnapshot());
     IncrementalDataPlane dataplane =
@@ -254,7 +254,7 @@ public class BgpNextHopUnchangedTest {
   }
 
   @Test
-  public void ibgpNhUnchangedNotPresent() throws IOException {
+  void ibgpNhUnchangedNotPresent() throws IOException {
     Batfish batfish = BatfishTestUtils.getBatfish(network(false, false), _folder);
     batfish.computeDataPlane(batfish.getSnapshot());
     IncrementalDataPlane dataplane =

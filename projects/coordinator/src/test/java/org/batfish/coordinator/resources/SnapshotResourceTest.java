@@ -9,12 +9,13 @@ import static org.batfish.coordinator.WorkMgrTestUtils.uploadTestSnapshot;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableSet;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -34,14 +35,13 @@ import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.Topology;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
+final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private Builder getCompletedWorkTarget(String network, String snapshot) {
     return target(CoordConsts.SVC_CFG_WORK_MGR2)
@@ -98,13 +98,13 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
         .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY);
   }
 
-  @Before
-  public void initTestEnvironment() {
+  @BeforeEach
+  void initTestEnvironment() {
     WorkMgrTestUtils.initWorkManager(_folder);
   }
 
   @Test
-  public void testDeleteSnapshotMissingNetwork() {
+  void testDeleteSnapshotMissingNetwork() {
     String network = "network1";
     String snapshot = "snapshot1";
     try (Response response = getTarget(network, snapshot).delete()) {
@@ -113,7 +113,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testDeleteSnapshotMissingSnapshot() {
+  void testDeleteSnapshotMissingSnapshot() {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
@@ -123,7 +123,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testDeleteSnapshotSuccess() throws IOException {
+  void testDeleteSnapshotSuccess() throws IOException {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
@@ -142,7 +142,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testCompletedWorkMissingNetwork() {
+  void testCompletedWorkMissingNetwork() {
     String network = "network1";
     String snapshot = "snapshot1";
     try (Response response = getCompletedWorkTarget(network, snapshot).get()) {
@@ -151,7 +151,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testCompletedWorkMissingSnapshot() {
+  void testCompletedWorkMissingSnapshot() {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
@@ -161,7 +161,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testCompletedWork() throws IOException {
+  void testCompletedWork() throws IOException {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
@@ -173,7 +173,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetPojoTopologyMissingNetwork() {
+  void testGetPojoTopologyMissingNetwork() {
     String network = "network1";
     String snapshot = "snapshot1";
     try (Response response = getPojoTopologyTarget(network, snapshot).get()) {
@@ -182,7 +182,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetPojoTopologyMissingSnapshot() {
+  void testGetPojoTopologyMissingSnapshot() {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
@@ -192,7 +192,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetPojoTopologyPresent() throws IOException {
+  void testGetPojoTopologyPresent() throws IOException {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
@@ -204,7 +204,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetSnapshotMetadataMissingNetwork() {
+  void testGetSnapshotMetadataMissingNetwork() {
     String network = "network1";
     String snapshot = "snapshot1";
     try (Response response = getTarget(network, snapshot).get()) {
@@ -213,7 +213,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetSnapshotMetadataMissingSnapshot() {
+  void testGetSnapshotMetadataMissingSnapshot() {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
@@ -223,7 +223,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetSnapshotMetadataPresent() throws IOException {
+  void testGetSnapshotMetadataPresent() throws IOException {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
@@ -235,7 +235,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetTopologyMissingNetwork() {
+  void testGetTopologyMissingNetwork() {
     String network = "network1";
     String snapshot = "snapshot1";
     try (Response response = getTopologyTarget(network, snapshot).get()) {
@@ -244,7 +244,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetTopologyMissingSnapshot() {
+  void testGetTopologyMissingSnapshot() {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
@@ -254,7 +254,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetTopologyPresent() throws IOException {
+  void testGetTopologyPresent() throws IOException {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
@@ -266,7 +266,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetWorkLogMissingNetwork() {
+  void testGetWorkLogMissingNetwork() {
     String network = "network1";
     String snapshot = "snapshot1";
 
@@ -276,7 +276,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetWorkLogMissingSnapshot() {
+  void testGetWorkLogMissingSnapshot() {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
@@ -287,7 +287,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetWorkLogMissingFile() throws IOException {
+  void testGetWorkLogMissingFile() throws IOException {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
@@ -299,7 +299,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetWorkLogPresent() throws IOException {
+  void testGetWorkLogPresent() throws IOException {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
@@ -318,7 +318,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testUploadSnapshot() throws IOException {
+  void testUploadSnapshot() throws IOException {
     String network = "network1";
     String snapshot = "snapshot1";
     String filename = "snapshot.zip";
@@ -348,7 +348,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testUploadSnapshotAlreadyExists() throws IOException {
+  void testUploadSnapshotAlreadyExists() throws IOException {
     String network = "network1";
     String snapshot = "snapshot1";
     String filename = "snapshot.zip";
@@ -371,7 +371,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testUploadSnapshotBadContent() throws IOException {
+  void testUploadSnapshotBadContent() throws IOException {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);

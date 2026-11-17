@@ -14,9 +14,9 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.in;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -27,6 +27,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Table;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.ValueGraph;
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
@@ -36,6 +37,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.NetworkSnapshot;
@@ -92,19 +94,17 @@ import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests for {@link IncrementalDataPlanePlugin}. */
-public class IncrementalDataPlanePluginTest {
+class IncrementalDataPlanePluginTest {
 
   private static final String TESTRIGS_PREFIX = "org/batfish/dataplane/ibdp/testrigs/";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+  @TempDir public File _folder;
 
   private static final String CORE_NAME = "core";
   private NetworkFactory _nf;
@@ -114,8 +114,8 @@ public class IncrementalDataPlanePluginTest {
   private Vrf.Builder _vb;
   private RoutingPolicy.Builder _epb;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _nf = new NetworkFactory();
     _cb = _nf.configurationBuilder();
     _ib = _nf.interfaceBuilder();
@@ -124,8 +124,12 @@ public class IncrementalDataPlanePluginTest {
     _epb = _nf.routingPolicyBuilder();
   }
 
-  @Test(timeout = 5000)
-  public void testComputeFixedPoint() throws IOException {
+  @Test
+  @Timeout(
+      value = 5000,
+      unit = TimeUnit.MILLISECONDS,
+      threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
+  void testComputeFixedPoint() throws IOException {
     SortedMap<String, Configuration> configurations = new TreeMap<>();
     Configuration h1 =
         BatfishTestUtils.createTestConfiguration("h1", ConfigurationFormat.HOST, "eth0");
@@ -239,7 +243,7 @@ public class IncrementalDataPlanePluginTest {
    - R2 and R3 should both be able to send packets to 1.1.1.1 that are accepted at R1.
   */
   @Test
-  public void testBgpNondeterministic() throws IOException {
+  void testBgpNondeterministic() throws IOException {
     String testrigName = "bgp-nondeterministic";
     List<String> configurationNames = ImmutableList.of("r1", "r2", "r3");
 
@@ -304,7 +308,7 @@ public class IncrementalDataPlanePluginTest {
    - R2 should still reflect 5.5.5.5/32 to R3
   */
   @Test
-  public void testRouteReflectorRibFailure() throws IOException {
+  void testRouteReflectorRibFailure() throws IOException {
     String testrigName = "rr-rib-failure";
     List<String> configurationNames = ImmutableList.of("r1", "r2", "r3");
     Prefix advPrefix = Prefix.strict("5.5.5.5/32");
@@ -351,7 +355,7 @@ public class IncrementalDataPlanePluginTest {
    - R2 should still reflect 5.5.5.5/32 to R3
   */
   @Test
-  public void testClientToNonClientRouteReflectorRibFailure() throws IOException {
+  void testClientToNonClientRouteReflectorRibFailure() throws IOException {
     String testrigName = "rr-rib-failure-client-non-client";
     List<String> configurationNames = ImmutableList.of("r1", "r2", "r3");
     Prefix advPrefix = Prefix.strict("5.5.5.5/32");
@@ -392,7 +396,7 @@ public class IncrementalDataPlanePluginTest {
   }
 
   @Test
-  public void testEbgpAcceptSameNeighborID() throws IOException {
+  void testEbgpAcceptSameNeighborID() throws IOException {
     String testrigName = "ebgp-accept-routerid-match";
     List<String> configurationNames = ImmutableList.of("r1", "r2", "r3");
 
@@ -423,7 +427,7 @@ public class IncrementalDataPlanePluginTest {
   }
 
   @Test
-  public void testEbgpDynamicLocalIps() throws IOException {
+  void testEbgpDynamicLocalIps() throws IOException {
     /*
      * Setup:       11.11.11.0/30       13.13.13.0/30
      *          r1 --------------- r2 ---------------- r3
@@ -465,7 +469,7 @@ public class IncrementalDataPlanePluginTest {
   }
 
   @Test
-  public void testIbgpDynamicLocalIps() throws IOException {
+  void testIbgpDynamicLocalIps() throws IOException {
     // See testEbgpDynamicLocalIps for setup. Only difference is peers are now iBGP.
     String testrigName = "ibgp-dynamic-local-ips";
     List<String> configurationNames = ImmutableList.of("r1", "r2", "r3");
@@ -493,7 +497,7 @@ public class IncrementalDataPlanePluginTest {
   }
 
   @Test
-  public void testIbgpRejectOwnAs() throws IOException {
+  void testIbgpRejectOwnAs() throws IOException {
     String testrigName = "ibgp-reject-own-as";
     List<String> configurationNames = ImmutableList.of("r1", "r2a", "r2b");
 
@@ -529,7 +533,7 @@ public class IncrementalDataPlanePluginTest {
   }
 
   @Test
-  public void testIbgpRejectSameNeighborID() throws IOException {
+  void testIbgpRejectSameNeighborID() throws IOException {
     String testrigName = "ibgp-reject-routerid-match";
     List<String> configurationNames = ImmutableList.of("r1", "r2", "r3", "r4");
 
@@ -561,7 +565,7 @@ public class IncrementalDataPlanePluginTest {
   }
 
   @Test
-  public void testStaticInterfaceRoutesWithoutEdge() {
+  void testStaticInterfaceRoutesWithoutEdge() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
@@ -606,7 +610,7 @@ public class IncrementalDataPlanePluginTest {
   }
 
   @Test
-  public void testStaticNextVrfRoute() {
+  void testStaticNextVrfRoute() {
     String hostname = "n1";
     String nextVrf = "nextVrf";
     NetworkFactory nf = new NetworkFactory();
@@ -640,7 +644,7 @@ public class IncrementalDataPlanePluginTest {
   }
 
   @Test
-  public void testBgpNeighborReachability() throws IOException {
+  void testBgpNeighborReachability() throws IOException {
     // Only connect one neighbor (n2) to core router
     SortedMap<String, Configuration> configs = generateNetworkWithDuplicates();
 
@@ -685,7 +689,7 @@ public class IncrementalDataPlanePluginTest {
   }
 
   @Test
-  public void testGeneratedRoutesInMainRib() throws IOException {
+  void testGeneratedRoutesInMainRib() throws IOException {
     Configuration n1 =
         _nf.configurationBuilder()
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
@@ -711,7 +715,7 @@ public class IncrementalDataPlanePluginTest {
   }
 
   @Test
-  public void testCanEstablishBgpSession_ebgpSinglehopSuccess() throws IOException {
+  void testCanEstablishBgpSession_ebgpSinglehopSuccess() throws IOException {
     SortedMap<String, Configuration> configs = generateNetworkWithThreeHops(false, false);
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
@@ -778,7 +782,7 @@ public class IncrementalDataPlanePluginTest {
   }
 
   @Test
-  public void testCanEstablishBgpSession_ebgpSinglehopFailure() throws IOException {
+  void testCanEstablishBgpSession_ebgpSinglehopFailure() throws IOException {
     SortedMap<String, Configuration> configs = generateNetworkWithThreeHops(false, false);
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
@@ -824,7 +828,7 @@ public class IncrementalDataPlanePluginTest {
   }
 
   @Test
-  public void testCanEstablishBgpSession_ebgpMultihopSuccess() throws IOException {
+  void testCanEstablishBgpSession_ebgpMultihopSuccess() throws IOException {
     SortedMap<String, Configuration> configs = generateNetworkWithThreeHops(false, false);
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
@@ -870,7 +874,7 @@ public class IncrementalDataPlanePluginTest {
   }
 
   @Test
-  public void testCanEstablishBgpSession_ebgpMultihopFailureWithAcl() throws IOException {
+  void testCanEstablishBgpSession_ebgpMultihopFailureWithAcl() throws IOException {
     // use a network with a deny all ACL on node 3
     SortedMap<String, Configuration> configs = generateNetworkWithThreeHops(true, false);
 
@@ -918,7 +922,7 @@ public class IncrementalDataPlanePluginTest {
   }
 
   @Test
-  public void testCanEstablishBgpSession_ebgpWithAclPermitEstablished() throws IOException {
+  void testCanEstablishBgpSession_ebgpWithAclPermitEstablished() throws IOException {
     // use a network with an allow established connection ACL on node1
     SortedMap<String, Configuration> configs = generateNetworkWithThreeHops(false, true);
 
@@ -1066,7 +1070,7 @@ public class IncrementalDataPlanePluginTest {
    * that iBGP adjacency are established between loopbacks over IS-IS as the IGP.
    */
   @Test
-  public void testBgpOverIsis() throws IOException {
+  void testBgpOverIsis() throws IOException {
     /*
     *
     * Network setup: an IBGP loopback peering with ISIS as the IGP.
@@ -1197,7 +1201,7 @@ public class IncrementalDataPlanePluginTest {
   }
 
   @Test
-  public void testGetForwardingAnalysisDeserialized() throws IOException {
+  void testGetForwardingAnalysisDeserialized() throws IOException {
     String hostname = "n1";
     Configuration c = new Configuration(hostname, ConfigurationFormat.CISCO_IOS);
     Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), _folder);

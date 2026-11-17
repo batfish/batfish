@@ -5,19 +5,19 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link NextHopSelf}. */
-public final class NextHopSelfTest {
+final class NextHopSelfTest {
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     NextHopSelf obj = NextHopSelf.instance();
     assertThat(BatfishObjectMapper.clone(obj, NextHopResult.class), equalTo(obj));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     NextHopSelf obj = NextHopSelf.instance();
     new EqualsTester().addEqualityGroup(obj, NextHopSelf.instance()).testEquals();
   }

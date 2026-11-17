@@ -7,12 +7,12 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class NameNodeSpecifierTest {
+class NameNodeSpecifierTest {
 
   @Test
-  public void testResolve() {
+  void testResolve() {
     MockSpecifierContext ctxt =
         MockSpecifierContext.builder()
             .setConfigs(

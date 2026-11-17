@@ -7,6 +7,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 import org.batfish.datamodel.Bgpv4Route;
@@ -15,9 +16,8 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * Test that local preference set by an export route-map is not propagated across EBGP sessions.
@@ -26,16 +26,16 @@ import org.junit.rules.TemporaryFolder;
  *
  * <p>Regression test for https://github.com/batfish/batfish/issues/9262
  */
-public final class BgpLocalPrefEbgpTest {
+final class BgpLocalPrefEbgpTest {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   /**
    * R1 (AS 400) advertises 100.0.0.0/8 to R2 (AS 512) with an outbound route-map that sets
    * local-preference to 50. R2 should install the route with the default local-preference of 100.
    */
   @Test
-  public void testEbgpLocalPreferenceReset() throws IOException {
+  void testEbgpLocalPreferenceReset() throws IOException {
     String snapshotPath = "org/batfish/dataplane/ibdp/bgp-local-pref-ebgp";
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(

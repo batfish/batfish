@@ -1,17 +1,17 @@
 package org.batfish.common.util.jackson;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-public class SingletonOrSingletonListTest {
+class SingletonOrSingletonListTest {
   @Test
-  public void deserialize() {
+  void deserialize() {
     assertThat(SingletonOrSingletonList.deserialize(null, Integer.class), nullValue());
     assertThat(
         SingletonOrSingletonList.deserialize(
@@ -23,24 +23,36 @@ public class SingletonOrSingletonListTest {
         equalTo(8));
   }
 
-  @Rule public ExpectedException _thrown = ExpectedException.none();
-
   @Test
-  public void deserializeNotAnInt() {
-    _thrown.expectMessage("abc");
-    SingletonOrSingletonList.deserialize(new JsonNodeFactory(false).textNode("abc"), Integer.class);
+  void deserializeNotAnInt() {
+    Throwable exception =
+        assertThrows(
+            Exception.class,
+            () ->
+                SingletonOrSingletonList.deserialize(
+                    new JsonNodeFactory(false).textNode("abc"), Integer.class));
+    assertThat(exception.getMessage(), containsString("abc"));
   }
 
   @Test
-  public void deserializeShortArray() {
-    _thrown.expectMessage("not with size 0");
-    SingletonOrSingletonList.deserialize(new JsonNodeFactory(false).arrayNode(), Integer.class);
+  void deserializeShortArray() {
+    Throwable exception =
+        assertThrows(
+            Exception.class,
+            () ->
+                SingletonOrSingletonList.deserialize(
+                    new JsonNodeFactory(false).arrayNode(), Integer.class));
+    assertThat(exception.getMessage(), containsString("not with size 0"));
   }
 
   @Test
-  public void deserializeLongArray() {
-    _thrown.expectMessage("not with size 2");
-    SingletonOrSingletonList.deserialize(
-        new JsonNodeFactory(false).arrayNode().add("8").add("7"), Integer.class);
+  void deserializeLongArray() {
+    Throwable exception =
+        assertThrows(
+            Exception.class,
+            () ->
+                SingletonOrSingletonList.deserialize(
+                    new JsonNodeFactory(false).arrayNode().add("8").add("7"), Integer.class));
+    assertThat(exception.getMessage(), containsString("not with size 2"));
   }
 }

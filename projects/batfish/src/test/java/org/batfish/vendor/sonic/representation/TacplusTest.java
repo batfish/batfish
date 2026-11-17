@@ -1,24 +1,24 @@
 package org.batfish.vendor.sonic.representation;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class TacplusTest {
+class TacplusTest {
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     Tacplus obj = Tacplus.builder().setSrcIntf("ll").build();
     assertEquals(obj, SerializationUtils.clone(obj));
   }
 
   @SuppressWarnings("UnstableApiUsage")
   @Test
-  public void testEquals() {
+  void testEquals() {
     Tacplus.Builder builder = Tacplus.builder();
     new EqualsTester()
         .addEqualityGroup(builder.build(), builder.build())
@@ -27,7 +27,7 @@ public class TacplusTest {
   }
 
   @Test
-  public void testJacksonDeserialization() throws JsonProcessingException {
+  void testJacksonDeserialization() throws JsonProcessingException {
     String input =
         "{" + "    \"auth_type\": \"login\"," + "    \"src_intf\": \"Loopback0\"" + "    }";
     assertEquals(

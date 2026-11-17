@@ -31,10 +31,10 @@ package net.sf.javabdd.bdd;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -49,17 +49,14 @@ import net.sf.javabdd.BDDException;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
 import net.sf.javabdd.JFactory;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Basic tests of {@link BDDFactory} implementations. */
-@RunWith(JUnit4.class)
-public class BasicTest {
+class BasicTest {
   BDDFactory _factory = JFactory.init(1000, 1000);
 
   @Test
-  public void testIsAssignment() {
+  void testIsAssignment() {
     BDD zero = _factory.zero();
     BDD one = _factory.one();
     if (_factory.varNum() < 5) {
@@ -96,7 +93,7 @@ public class BasicTest {
   }
 
   @Test
-  public void testIsVar() {
+  void testIsVar() {
     if (_factory.varNum() < 5) {
       _factory.setVarNum(5);
     }
@@ -113,7 +110,7 @@ public class BasicTest {
   }
 
   @Test
-  public void testIsAnd() {
+  void testIsAnd() {
     if (_factory.varNum() < 5) {
       _factory.setVarNum(5);
     }
@@ -130,7 +127,7 @@ public class BasicTest {
   }
 
   @Test
-  public void testIsNor() {
+  void testIsNor() {
     if (_factory.varNum() < 5) {
       _factory.setVarNum(5);
     }
@@ -165,7 +162,7 @@ public class BasicTest {
   }
 
   @Test
-  public void testRandomSatOne() {
+  void testRandomSatOne() {
     if (_factory.varNum() < 100) {
       _factory.setVarNum(100);
     }
@@ -195,7 +192,7 @@ public class BasicTest {
   }
 
   @Test
-  public void testMinAssignmentBits() {
+  void testMinAssignmentBits() {
     _factory.setVarNum(17);
     assertTrue(_factory.zero().minAssignmentBits().isEmpty());
     assertTrue(_factory.one().minAssignmentBits().isEmpty());
@@ -229,7 +226,7 @@ public class BasicTest {
   }
 
   @Test
-  public void testIsZeroOne() {
+  void testIsZeroOne() {
     BDD x = _factory.zero();
     BDD y = _factory.one();
     if (_factory.varNum() < 5) {
@@ -248,7 +245,7 @@ public class BasicTest {
   }
 
   @Test
-  public void testVar() {
+  void testVar() {
     if (_factory.varNum() < 5) {
       _factory.setVarNum(5);
     }
@@ -282,7 +279,7 @@ public class BasicTest {
   }
 
   @Test
-  public void testVarOrder() {
+  void testVarOrder() {
     if (_factory.varNum() < 5) {
       _factory.setVarNum(5);
     }
@@ -316,7 +313,7 @@ public class BasicTest {
   }
 
   @Test
-  public void testLowHigh() {
+  void testLowHigh() {
     if (_factory.varNum() < 5) {
       _factory.setVarNum(5);
     }
@@ -342,7 +339,7 @@ public class BasicTest {
   }
 
   @Test
-  public void testNot() {
+  void testNot() {
     if (_factory.varNum() < 5) {
       _factory.setVarNum(5);
     }
@@ -363,7 +360,7 @@ public class BasicTest {
   }
 
   @Test
-  public void testId() {
+  void testId() {
     if (_factory.varNum() < 5) {
       _factory.setVarNum(5);
     }
@@ -463,7 +460,7 @@ public class BasicTest {
   }
 
   @Test
-  public void testAndSat() {
+  void testAndSat() {
     if (_factory.varNum() < 5) {
       _factory.setVarNum(5);
     }
@@ -483,7 +480,7 @@ public class BasicTest {
   }
 
   @Test
-  public void testOr() {
+  void testOr() {
     if (_factory.varNum() < 5) {
       _factory.setVarNum(5);
     }
@@ -505,7 +502,7 @@ public class BasicTest {
   }
 
   @Test
-  public void testXor() {
+  void testXor() {
     if (_factory.varNum() < 5) {
       _factory.setVarNum(5);
     }
@@ -527,19 +524,19 @@ public class BasicTest {
   }
 
   @Test
-  public void testImp() {
+  void testImp() {
     // TODO: more tests
     testApply(_factory, BDDFactory.imp, true, true, false, true);
   }
 
   @Test
-  public void testBiimp() {
+  void testBiimp() {
     // TODO: more tests
     testApply(_factory, BDDFactory.biimp, true, false, false, true);
   }
 
   @Test
-  public void testDiff() {
+  void testDiff() {
     if (_factory.varNum() < 5) {
       _factory.setVarNum(5);
     }
@@ -558,7 +555,7 @@ public class BasicTest {
   }
 
   @Test
-  public void testDiffSat() {
+  void testDiffSat() {
     if (_factory.varNum() < 5) {
       _factory.setVarNum(5);
     }
@@ -578,7 +575,7 @@ public class BasicTest {
   }
 
   @Test
-  public void testLess() {
+  void testLess() {
     if (_factory.varNum() < 5) {
       _factory.setVarNum(5);
     }
@@ -597,7 +594,7 @@ public class BasicTest {
   }
 
   @Test
-  public void testLessSat() {
+  void testLessSat() {
     if (_factory.varNum() < 5) {
       _factory.setVarNum(5);
     }
@@ -617,13 +614,13 @@ public class BasicTest {
   }
 
   @Test
-  public void testInvImp() {
+  void testInvImp() {
     // TODO: more tests
     testApply(_factory, BDDFactory.invimp, true, false, true, true);
   }
 
   @Test
-  public void testNand() {
+  void testNand() {
     if (_factory.varNum() < 5) {
       _factory.setVarNum(5);
     }
@@ -650,7 +647,7 @@ public class BasicTest {
   }
 
   @Test
-  public void testNor() {
+  void testNor() {
     if (_factory.varNum() < 5) {
       _factory.setVarNum(5);
     }
@@ -674,7 +671,7 @@ public class BasicTest {
   }
 
   @Test
-  public void testApplyWith() {
+  void testApplyWith() {
     // TODO: more tests
     testApplyWith(_factory, BDDFactory.and, false, false, false, true);
     testApplyWith(_factory, BDDFactory.or, false, true, true, true);
@@ -689,7 +686,7 @@ public class BasicTest {
   }
 
   @Test
-  public void testIte() {
+  void testIte() {
     if (_factory.varNum() < 5) {
       _factory.setVarNum(5);
     }
@@ -717,7 +714,7 @@ public class BasicTest {
   }
 
   @Test
-  public void testReplace() {
+  void testReplace() {
     if (_factory.varNum() < 5) {
       _factory.setVarNum(5);
     }
@@ -761,7 +758,7 @@ public class BasicTest {
   }
 
   @Test
-  public void testCompose() {
+  void testCompose() {
     if (_factory.varNum() < 4) {
       _factory.setVarNum(4);
     }
@@ -790,7 +787,7 @@ public class BasicTest {
   }
 
   @Test
-  public void testVeccompose() {
+  void testVeccompose() {
     if (_factory.varNum() < 4) {
       _factory.setVarNum(4);
     }

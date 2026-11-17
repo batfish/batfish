@@ -1,18 +1,18 @@
 package org.batfish.representation.cisco_xr;
 
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.isIpv4AclUsedForAbf;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class CiscoXrConfigurationTest {
+class CiscoXrConfigurationTest {
   @Test
-  public void testIsIpv4AclUsedForAbf() {
+  void testIsIpv4AclUsedForAbf() {
     Ipv4AccessListLine nonAbfLine =
         Ipv4AccessListLine.builder()
             .setSeq(10L)

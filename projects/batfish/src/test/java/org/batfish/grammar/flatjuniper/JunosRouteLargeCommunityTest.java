@@ -8,6 +8,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.GeneratedRoute;
@@ -19,11 +20,10 @@ import org.batfish.main.Batfish;
 import org.batfish.representation.juniper.JuniperConfiguration;
 import org.batfish.representation.juniper.RoutingInformationBase;
 import org.batfish.representation.juniper.RoutingInstance;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosRouteLargeCommunityTest {
+final class JunosRouteLargeCommunityTest {
 
   private static final String HOSTNAME = "route-large-community";
   private static final Prefix AGGREGATE_ROUTE_PREFIX = Prefix.parse("10.21.0.0/16");
@@ -31,7 +31,7 @@ public final class JunosRouteLargeCommunityTest {
   private static final Prefix AGGREGATE_DEFAULTS_PREFIX = Prefix.parse("10.50.0.0/16");
   private static final Prefix GENERATED_DEFAULTS_PREFIX = Prefix.parse("10.60.0.0/16");
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private static void assertCommunities(Iterable<Community> actual, int value) {
     assertThat(
@@ -48,7 +48,7 @@ public final class JunosRouteLargeCommunityTest {
   }
 
   @Test
-  public void testExtractionAndConversion() throws IOException {
+  void testExtractionAndConversion() throws IOException {
     Batfish batfish = getBatfish(_folder, HOSTNAME);
     JuniperConfiguration juniperConfiguration = getVendorConfiguration(batfish, HOSTNAME);
     assertThat(getParseWarnings(batfish, HOSTNAME), empty());

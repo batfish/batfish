@@ -9,12 +9,12 @@ import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.ReferenceBook;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ReferenceAddressGroupIpSpaceSpecifierTest {
+class ReferenceAddressGroupIpSpaceSpecifierTest {
 
   @Test
-  public void testResolve() {
+  void testResolve() {
     ReferenceBook book =
         ReferenceBook.builder("book1")
             .setAddressGroups(

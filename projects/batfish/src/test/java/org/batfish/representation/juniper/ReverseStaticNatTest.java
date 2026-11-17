@@ -6,16 +6,17 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.batfish.datamodel.Prefix;
 import org.batfish.representation.juniper.Nat.Type;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ReverseStaticNatTest {
+class ReverseStaticNatTest {
 
   @Test
-  public void testThenToMatch() {
+  void testThenToMatch() {
     Prefix prefix = Prefix.parse("1.1.1.1/24");
     NatRuleThen then = new NatRuleThenPrefix(prefix, DESTINATION);
     assertThat(ReverseStaticNat.thenToMatch(then), equalTo(new NatRuleMatchSrcAddr(prefix)));
@@ -24,26 +25,38 @@ public class ReverseStaticNatTest {
     assertThat(ReverseStaticNat.thenToMatch(then), equalTo(new NatRuleMatchSrcAddrName("prefix")));
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void testNotSupportedThenToMatch1() {
-    NatRuleThen then = new NatRuleThenPool("pool");
-    ReverseStaticNat.thenToMatch(then);
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void testNotSupportedThenToMatch2() {
-    NatRuleThen then = NatRuleThenOff.INSTANCE;
-    ReverseStaticNat.thenToMatch(then);
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void testNotSupportedThenToMatch3() {
-    NatRuleThen then = NatRuleThenInterface.INSTANCE;
-    ReverseStaticNat.thenToMatch(then);
+  @Test
+  void testNotSupportedThenToMatch1() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> {
+          NatRuleThen then = new NatRuleThenPool("pool");
+          ReverseStaticNat.thenToMatch(then);
+        });
   }
 
   @Test
-  public void testSrcMatchToDstMatch() {
+  void testNotSupportedThenToMatch2() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> {
+          NatRuleThen then = NatRuleThenOff.INSTANCE;
+          ReverseStaticNat.thenToMatch(then);
+        });
+  }
+
+  @Test
+  void testNotSupportedThenToMatch3() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> {
+          NatRuleThen then = NatRuleThenInterface.INSTANCE;
+          ReverseStaticNat.thenToMatch(then);
+        });
+  }
+
+  @Test
+  void testSrcMatchToDstMatch() {
     Prefix p1 = Prefix.parse("1.1.1.1/24");
     NatRuleMatch srcMatch = new NatRuleMatchSrcAddr(p1);
     assertThat(
@@ -71,7 +84,7 @@ public class ReverseStaticNatTest {
   }
 
   @Test
-  public void testDstMatchToThen() {
+  void testDstMatchToThen() {
     Prefix p1 = Prefix.parse("1.1.1.1/24");
     NatRuleMatch dstMatch = new NatRuleMatchDstAddr(p1);
     assertThat(
@@ -97,7 +110,7 @@ public class ReverseStaticNatTest {
   }
 
   @Test
-  public void testReverseRule() {
+  void testReverseRule() {
     // src=p1, srcport=[10000,30000], dst=p2 -> translate to p3
     // the revered should be src=p3, dst=p1, dstport=[10000,30000] -> translate to p2
     Prefix p1 = Prefix.parse("1.1.1.1/24");
@@ -154,7 +167,7 @@ public class ReverseStaticNatTest {
   }
 
   @Test
-  public void testReverseRuleSet() {
+  void testReverseRuleSet() {
     Prefix p1 = Prefix.parse("1.1.1.1/24");
     Prefix p2 = Prefix.parse("2.2.2.2/24");
     Prefix p3 = Prefix.parse("3.3.3.3/24");
@@ -215,7 +228,7 @@ public class ReverseStaticNatTest {
   }
 
   @Test
-  public void testReverseNat() {
+  void testReverseNat() {
     Prefix p1 = Prefix.parse("1.1.1.1/24");
     Prefix p2 = Prefix.parse("2.2.2.2/24");
     Prefix p3 = Prefix.parse("3.3.3.3/24");

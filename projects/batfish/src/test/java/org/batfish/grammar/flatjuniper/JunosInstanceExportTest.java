@@ -10,23 +10,23 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.representation.juniper.RoutingInstance;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosInstanceExportTest {
+final class JunosInstanceExportTest {
 
   private static final String HOSTNAME = "instance-export";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testExtractionAndReferences() throws IOException {
+  void testExtractionAndReferences() throws IOException {
     Batfish batfish = getBatfish(_folder, HOSTNAME);
     RoutingInstance tenant =
         getVendorConfiguration(batfish, HOSTNAME)

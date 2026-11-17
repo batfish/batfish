@@ -2,36 +2,38 @@ package org.batfish.datamodel.table;
 
 import static org.batfish.datamodel.table.TableMetadata.toColumnMap;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import org.batfish.datamodel.answers.Schema;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-public class TableMetadataTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class TableMetadataTest {
 
   @Test
-  public void constructorDuplicateColumnNames() {
+  void constructorDuplicateColumnNames() {
     List<ColumnMetadata> columns =
         ImmutableList.of(
             new ColumnMetadata("col1", Schema.STRING, "desc"),
             new ColumnMetadata("col2", Schema.STRING, "desc"),
             new ColumnMetadata("col1", Schema.STRING, "desc"));
 
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("Cannot have two columns with the same name");
-
-    new TableMetadata(columns, "desc");
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> {
+              new TableMetadata(columns, "desc");
+            });
+    assertThat(
+        exception.getMessage(), containsString("Cannot have two columns with the same name"));
   }
 
   @Test
-  public void testToColumnMap() {
+  void testToColumnMap() {
     ColumnMetadata metadata1 = new ColumnMetadata("col1", Schema.STRING, "desc1");
     ColumnMetadata metadata2 = new ColumnMetadata("col2", Schema.STRING, "desc2");
     List<ColumnMetadata> columns = ImmutableList.of(metadata1, metadata2);

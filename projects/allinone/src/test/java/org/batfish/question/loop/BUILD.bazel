@@ -13,7 +13,7 @@ junit_tests(
         "//projects/common/src/test:common_testlib",
         "//projects/common/src/test/java/org/batfish/datamodel/matchers",
         "//projects/question/src/main/java/org/batfish/question",
-        "@maven//:junit_junit",
         "@maven//:org_hamcrest_hamcrest",
+        "@maven//:org_junit_jupiter_junit_jupiter_api",
     ],
 )

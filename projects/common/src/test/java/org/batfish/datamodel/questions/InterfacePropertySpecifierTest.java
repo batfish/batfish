@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -17,30 +18,31 @@ import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.TestInterface;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link InterfacePropertySpecifier} */
-public class InterfacePropertySpecifierTest {
-
-  /** */
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class InterfacePropertySpecifierTest {
 
   @Test
-  public void testConstructorBadProperty() {
-    _thrown.expect(IllegalArgumentException.class);
-    new InterfacePropertySpecifier(ImmutableSet.of("ntp"));
+  void testConstructorBadProperty() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> {
+          new InterfacePropertySpecifier(ImmutableSet.of("ntp"));
+        });
   }
 
   @Test
-  public void testConstructorBadPropertyInList() {
-    _thrown.expect(IllegalArgumentException.class);
-    new InterfacePropertySpecifier(ImmutableSet.of(INCOMING_FILTER_NAME, "dumdum"));
+  void testConstructorBadPropertyInList() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> {
+          new InterfacePropertySpecifier(ImmutableSet.of(INCOMING_FILTER_NAME, "dumdum"));
+        });
   }
 
   @Test
-  public void getMatchingProperties() {
+  void getMatchingProperties() {
     // match everything
     assertThat(
         InterfacePropertySpecifier.create("/.*/").getMatchingProperties(),
@@ -53,7 +55,7 @@ public class InterfacePropertySpecifierTest {
   }
 
   @Test
-  public void testMatchingPropertiesSet() {
+  void testMatchingPropertiesSet() {
     Iterator<String> i = InterfacePropertySpecifier.ALL.getMatchingProperties().iterator();
     String prop1 = i.next();
     String prop2 = i.next();
@@ -66,7 +68,7 @@ public class InterfacePropertySpecifierTest {
   }
 
   @Test
-  public void testIncomingFilterReturnsName() {
+  void testIncomingFilterReturnsName() {
     Configuration c = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
     IpAccessList acl =
         IpAccessList.builder()
@@ -83,7 +85,7 @@ public class InterfacePropertySpecifierTest {
   }
 
   @Test
-  public void testInterfaceType() {
+  void testInterfaceType() {
     assertThat(
         InterfacePropertySpecifier.create(InterfacePropertySpecifier.INTERFACE_TYPE)
             .getMatchingProperties(),
@@ -91,7 +93,7 @@ public class InterfacePropertySpecifierTest {
   }
 
   @Test
-  public void testDefault() {
+  void testDefault() {
     assertThat(
         InterfacePropertySpecifier.create(null).getMatchingProperties(),
         not(hasItem(InterfacePropertySpecifier.INTERFACE_TYPE)));

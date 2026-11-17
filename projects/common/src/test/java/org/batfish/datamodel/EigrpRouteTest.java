@@ -7,16 +7,13 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.eigrp.EigrpMetricVersion;
 import org.batfish.datamodel.eigrp.WideMetric;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link org.batfish.datamodel.EigrpRoute} */
-@RunWith(JUnit4.class)
-public class EigrpRouteTest {
+class EigrpRouteTest {
 
   @Test
-  public void testEigrpInternalRouteClone() {
+  void testEigrpInternalRouteClone() {
     EigrpInternalRoute route =
         EigrpInternalRoute.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.1/32"))
@@ -32,7 +29,7 @@ public class EigrpRouteTest {
   }
 
   @Test
-  public void testEigrpExternalRouteClone() {
+  void testEigrpExternalRouteClone() {
     EigrpExternalRoute route =
         EigrpExternalRoute.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.1/32"))

@@ -17,30 +17,25 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.isBlacklisted;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isLineUp;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link org.batfish.datamodel.Interface} */
-@RunWith(JUnit4.class)
-public class InterfaceTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class InterfaceTest {
 
   @Test
-  public void testDependencyEquals() {
+  void testDependencyEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new Dependency("i1", DependencyType.BIND), new Dependency("i1", DependencyType.BIND))
@@ -50,7 +45,7 @@ public class InterfaceTest {
   }
 
   @Test
-  public void testInterfaceStatus() {
+  void testInterfaceStatus() {
     // no line status
     assertThat(
         TestInterface.builder().setName("foo").setType(LOGICAL).build(),
@@ -98,14 +93,18 @@ public class InterfaceTest {
   }
 
   @Test
-  public void testInterfaceStatusInvalid() {
-    _thrown.expect(IllegalStateException.class);
-    _thrown.expectMessage("Cannot set lineUp value for interface type: LOGICAL");
-    TestInterface.builder().setName("foo").setType(LOGICAL).setLineUp(true).build();
+  void testInterfaceStatusInvalid() {
+    Throwable exception =
+        assertThrows(
+            IllegalStateException.class,
+            () -> TestInterface.builder().setName("foo").setType(LOGICAL).setLineUp(true).build());
+    assertThat(
+        exception.getMessage(),
+        containsString("Cannot set lineUp value for interface type: LOGICAL"));
   }
 
   @Test
-  public void testDeactivate() {
+  void testDeactivate() {
     {
       // default case
       Interface i = TestInterface.builder().setName("foo").setType(PHYSICAL).build();
@@ -192,17 +191,17 @@ public class InterfaceTest {
   }
 
   @Test
-  public void testDeactivateInvalidTwice() {
+  void testDeactivateInvalidTwice() {
     Interface i = TestInterface.builder().setName("foo").setType(PHYSICAL).build();
     i.deactivate(IGNORE_MGMT);
 
-    _thrown.expect(IllegalStateException.class);
-    _thrown.expectMessage("Cannot deactivate an inactive interface");
-    i.deactivate(IGNORE_MGMT);
+    Throwable exception =
+        assertThrows(IllegalStateException.class, () -> i.deactivate(IGNORE_MGMT));
+    assertThat(exception.getMessage(), containsString("Cannot deactivate an inactive interface"));
   }
 
   @Test
-  public void testReactivateForAutostate() {
+  void testReactivateForAutostate() {
     Interface i = TestInterface.builder().setName("foo").setType(LOGICAL).build();
     i.deactivate(InactiveReason.AUTOSTATE_FAILURE);
     assertThat(i, allOf(isActive(false), hasInactiveReason(InactiveReason.AUTOSTATE_FAILURE)));
@@ -212,24 +211,24 @@ public class InterfaceTest {
   }
 
   @Test
-  public void testReactivateForAutostateAlreadyActive() {
+  void testReactivateForAutostateAlreadyActive() {
     Interface i = TestInterface.builder().setName("foo").setType(LOGICAL).build();
-    _thrown.expect(IllegalStateException.class);
-    _thrown.expectMessage("Cannot reactivate an active interface");
-    i.reactivateForAutostate();
+    Throwable exception =
+        assertThrows(IllegalStateException.class, () -> i.reactivateForAutostate());
+    assertThat(exception.getMessage(), containsString("Cannot reactivate an active interface"));
   }
 
   @Test
-  public void testReactivateForAutostateWrongReason() {
+  void testReactivateForAutostateWrongReason() {
     Interface i = TestInterface.builder().setName("foo").setType(PHYSICAL).build();
     i.deactivate(PARENT_DOWN);
-    _thrown.expect(IllegalStateException.class);
-    _thrown.expectMessage("AUTOSTATE_FAILURE");
-    i.reactivateForAutostate();
+    Throwable exception =
+        assertThrows(IllegalStateException.class, () -> i.reactivateForAutostate());
+    assertThat(exception.getMessage(), containsString("AUTOSTATE_FAILURE"));
   }
 
   @Test
-  public void testAdminDown() {
+  void testAdminDown() {
     // admin down
     Interface i = TestInterface.builder().setName("foo").setType(PHYSICAL).build();
     assertThat(i, allOf(isActive(), isAdminUp(), isLineUp()));
@@ -239,28 +238,27 @@ public class InterfaceTest {
   }
 
   @Test
-  public void testAdminDownInvalidTwice() {
+  void testAdminDownInvalidTwice() {
     Interface i = TestInterface.builder().setName("foo").setType(PHYSICAL).build();
     i.adminDown();
 
-    _thrown.expect(IllegalStateException.class);
-    _thrown.expectMessage(
-        "Cannot administratively disable an interface that is already admin down");
-    i.adminDown();
+    Throwable exception = assertThrows(IllegalStateException.class, () -> i.adminDown());
+    assertThat(
+        exception.getMessage(),
+        containsString("Cannot administratively disable an interface that is already admin down"));
   }
 
   @Test
-  public void testAdminDownInvalidInactive() {
+  void testAdminDownInvalidInactive() {
     Interface i = TestInterface.builder().setName("foo").setType(PHYSICAL).build();
     i.deactivate(IGNORE_MGMT);
 
-    _thrown.expect(IllegalStateException.class);
-    _thrown.expectMessage("Cannot admin down an inactive interface");
-    i.adminDown();
+    Throwable exception = assertThrows(IllegalStateException.class, () -> i.adminDown());
+    assertThat(exception.getMessage(), containsString("Cannot admin down an inactive interface"));
   }
 
   @Test
-  public void testBlacklist() {
+  void testBlacklist() {
     {
       // blacklist
       Interface i = TestInterface.builder().setName("foo").setType(PHYSICAL).build();
@@ -347,27 +345,28 @@ public class InterfaceTest {
   }
 
   @Test
-  public void testBlacklistInvalidTwice() {
+  void testBlacklistInvalidTwice() {
     Interface i = TestInterface.builder().setName("foo").setType(PHYSICAL).build();
     i.blacklist();
 
-    _thrown.expect(IllegalStateException.class);
-    _thrown.expectMessage("Cannot blacklist an interface that is already blacklisted");
-    i.blacklist();
+    Throwable exception = assertThrows(IllegalStateException.class, () -> i.blacklist());
+    assertThat(
+        exception.getMessage(),
+        containsString("Cannot blacklist an interface that is already blacklisted"));
   }
 
   @Test
-  public void testBlacklistInvalidType() {
+  void testBlacklistInvalidType() {
     Interface i = TestInterface.builder().setName("foo").setType(LOGICAL).build();
 
-    _thrown.expect(IllegalStateException.class);
-    _thrown.expectMessage(
-        "Cannot blacklist an interface of type 'LOGICAL' that has no line status");
-    i.blacklist();
+    Throwable exception = assertThrows(IllegalStateException.class, () -> i.blacklist());
+    assertThat(
+        exception.getMessage(),
+        containsString("Cannot blacklist an interface of type 'LOGICAL' that has no line status"));
   }
 
   @Test
-  public void testDisconnect() {
+  void testDisconnect() {
     {
       // disconnect
       Interface i = TestInterface.builder().setName("foo").setType(PHYSICAL).build();
@@ -402,27 +401,29 @@ public class InterfaceTest {
   }
 
   @Test
-  public void testDisconnectInvalidTwice() {
+  void testDisconnectInvalidTwice() {
     Interface i = TestInterface.builder().setName("foo").setType(PHYSICAL).build();
     i.disconnect(FORCED_LINE_DOWN);
 
-    _thrown.expect(IllegalStateException.class);
-    _thrown.expectMessage("Cannot disconnect a disconnected interface");
-    i.disconnect(FORCED_LINE_DOWN);
+    Throwable exception =
+        assertThrows(IllegalStateException.class, () -> i.disconnect(FORCED_LINE_DOWN));
+    assertThat(
+        exception.getMessage(), containsString("Cannot disconnect a disconnected interface"));
   }
 
   @Test
-  public void testDisconnectInvalidType() {
+  void testDisconnectInvalidType() {
     Interface i = TestInterface.builder().setName("foo").setType(LOGICAL).build();
 
-    _thrown.expect(IllegalStateException.class);
-    _thrown.expectMessage(
-        "Cannot disconnect an interface of type 'LOGICAL' that has no line status");
-    i.disconnect(FORCED_LINE_DOWN);
+    Throwable exception =
+        assertThrows(IllegalStateException.class, () -> i.disconnect(FORCED_LINE_DOWN));
+    assertThat(
+        exception.getMessage(),
+        containsString("Cannot disconnect an interface of type 'LOGICAL' that has no line status"));
   }
 
   @Test
-  public void testPhysicalNeighborDown() {
+  void testPhysicalNeighborDown() {
     Interface i = TestInterface.builder().setName("foo").setType(PHYSICAL).build();
     assertThat(i, allOf(isActive(), isAdminUp(), isLineUp()));
     i.physicalNeighborDown();
@@ -436,7 +437,7 @@ public class InterfaceTest {
   }
 
   @Test
-  public void testNodeDown() {
+  void testNodeDown() {
     // physical
     {
       Interface i = TestInterface.builder().setName("foo").setType(PHYSICAL).build();
@@ -467,7 +468,7 @@ public class InterfaceTest {
   }
 
   @Test
-  public void testActivateForTest() {
+  void testActivateForTest() {
     {
       // physical
       Interface i =
@@ -518,7 +519,7 @@ public class InterfaceTest {
   }
 
   @Test
-  public void testRealInterfaceName() {
+  void testRealInterfaceName() {
     assertThat(isRealInterfaceName("Ethernet0"), equalTo(true));
     assertThat(isRealInterfaceName("ge-0/0/0"), equalTo(true));
     assertThat(isRealInterfaceName("asdfasdf"), equalTo(true));
@@ -529,7 +530,7 @@ public class InterfaceTest {
   }
 
   @Test
-  public void testRoutingPolicySettingInBuilder() {
+  void testRoutingPolicySettingInBuilder() {
     String policy = "some_policy";
     Interface i =
         TestInterface.builder()
@@ -541,7 +542,7 @@ public class InterfaceTest {
   }
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     // TODO: more thorough testing
     Interface i =
         TestInterface.builder()
@@ -558,7 +559,7 @@ public class InterfaceTest {
   }
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     // TODO: more thorough testing
     Interface obj =
         TestInterface.builder()
@@ -570,7 +571,7 @@ public class InterfaceTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     // TODO: more thorough testing
     Configuration c =
         Configuration.builder()

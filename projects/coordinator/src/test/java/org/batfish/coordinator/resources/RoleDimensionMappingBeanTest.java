@@ -8,12 +8,12 @@ import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import java.util.Map;
 import org.batfish.role.RoleDimensionMapping;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class RoleDimensionMappingBeanTest {
+class RoleDimensionMappingBeanTest {
 
   @Test
-  public void testProperties() {
+  void testProperties() {
     String regex = "(.*)";
     List<Integer> groups = ImmutableList.of(3, 4, 1);
     Map<String, String> canonicalRoleNames = ImmutableMap.of("baz", "bar", "bar", "foo");
@@ -26,7 +26,7 @@ public class RoleDimensionMappingBeanTest {
   }
 
   @Test
-  public void toRoleDimensionMap() {
+  void toRoleDimensionMap() {
     String regex = "(.*)";
     List<Integer> groups = ImmutableList.of(3, 4, 1);
     Map<String, String> canonicalRoleNames = ImmutableMap.of("baz", "bar", "bar", "foo");

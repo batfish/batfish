@@ -5,13 +5,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import org.batfish.datamodel.IpWildcard;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link FwFromDestinationAddress} */
-public class FwFromDestinationAddressTest {
+class FwFromDestinationAddressTest {
 
   @Test
-  public void testToAclLineMatchExpr() {
+  void testToAclLineMatchExpr() {
     FwFromDestinationAddress from =
         new FwFromDestinationAddress(IpWildcard.parse("1.1.1.0/24"), "1.1.1.0/24");
     assertThat(

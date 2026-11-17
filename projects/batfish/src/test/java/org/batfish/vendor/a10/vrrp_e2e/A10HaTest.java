@@ -5,6 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 
 import com.google.common.collect.ImmutableSet;
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
@@ -13,17 +14,16 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.vendor.a10.representation.Interface.Type;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** End-to-end tests of HA on A10v2 with paired devices. */
-public final class A10HaTest {
+final class A10HaTest {
 
   private static final String SNAPSHOT_FOLDER = "org/batfish/vendor/a10/vrrp_e2e/snapshots/ha";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private Batfish _batfish;
 
@@ -49,8 +49,8 @@ public final class A10HaTest {
    *   - On the winner (r1), the addresses for the VIP, SNAT pool, and floating IPs should be
    *     installed on Ethernet2
    */
-  @Before
-  public void setup() throws IOException {
+  @BeforeEach
+  void setup() throws IOException {
     _batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
@@ -62,7 +62,7 @@ public final class A10HaTest {
   }
 
   @Test
-  public void testIpOwners() {
+  void testIpOwners() {
     Map<String, Map<String, Set<Ip>>> ipOwners =
         _batfish
             .getTopologyProvider()

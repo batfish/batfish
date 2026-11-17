@@ -6,9 +6,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
@@ -23,10 +24,9 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * E2e tests for AWS Direct Connect Gateway modeling. The topology has an on-prem router connected
@@ -34,7 +34,7 @@ import org.junit.rules.TemporaryFolder;
  *
  * <p>Path: onprem-router -> DXGW -> TGW -> VPC -> subnet -> instance
  */
-public class AwsConfigurationDirectConnectTest {
+class AwsConfigurationDirectConnectTest {
 
   private static final String TESTCONFIGS_DIR =
       "org/batfish/representation/aws/test-direct-connect-gateway";
@@ -75,12 +75,12 @@ public class AwsConfigurationDirectConnectTest {
   private static final String _instance = "i-dx01";
   private static final Ip _instanceIp = Ip.parse("10.100.1.10");
 
-  @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public static File _folder;
 
   private static IBatfish _batfish;
 
-  @BeforeClass
-  public static void setup() throws IOException {
+  @BeforeAll
+  static void setup() throws IOException {
     _batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
@@ -92,7 +92,7 @@ public class AwsConfigurationDirectConnectTest {
   }
 
   @Test
-  public void testFromOnPremToInstance() {
+  void testFromOnPremToInstance() {
     // Instance is at 10.100.1.10, in VPC 10.100.0.0/16. The on-prem router learns the VPC CIDR
     // via the VPN tunnel BGP session (TGW advertises VPC routes via the VPN attachment) and the
     // allowed-prefix summary 10.0.0.0/8 via the Direct Connect VIF. Longest-match selects the
@@ -121,7 +121,7 @@ public class AwsConfigurationDirectConnectTest {
    * DXGW node, not the TGW's VPN tunnel.
    */
   @Test
-  public void testFromInstanceToOnPrem() {
+  void testFromInstanceToOnPrem() {
     testTrace(
         getAnyFlow(_instance, Ip.parse("10.10.0.1"), _batfish),
         FlowDisposition.ACCEPTED,
@@ -136,7 +136,7 @@ public class AwsConfigurationDirectConnectTest {
    * about 10.100.0.0/16 (vpc-dx01) but NOT about 10.200.0.0/16 (vpc-iso01).
    */
   @Test
-  public void testDxgwOnlySeesVpcsInDxRouteTable() {
+  void testDxgwOnlySeesVpcsInDxRouteTable() {
     DataPlane dp = _batfish.loadDataPlane(_batfish.getSnapshot());
     Set<Prefix> dxgwRoutes =
         dp.getRibs().get(_dxgw, "default").getRoutes().stream()
@@ -159,7 +159,7 @@ public class AwsConfigurationDirectConnectTest {
    * use default local-pref 100) for the same prefix in TGW route selection.
    */
   @Test
-  public void testTgwReceivesDxRoutesWithDxLocalPreference() {
+  void testTgwReceivesDxRoutesWithDxLocalPreference() {
     DataPlane dp = _batfish.loadDataPlane(_batfish.getSnapshot());
     String tgwVrfName = TransitGateway.vrfNameForRouteTable("tgw-rtb-dx01");
     Set<AbstractRoute> tgwRoutes =
@@ -183,7 +183,7 @@ public class AwsConfigurationDirectConnectTest {
    * AWS-side path preference among multiple DX paths.
    */
   @Test
-  public void testDxCommunityToLocalPreferenceMapping() {
+  void testDxCommunityToLocalPreferenceMapping() {
     Configuration tgwCfg = _batfish.loadConfigurations(_batfish.getSnapshot()).get(_tgw);
     String policyName = "~tgw~dx-import-policy~tgw-rtb-dx01~";
     org.batfish.datamodel.routing_policy.RoutingPolicy policy =

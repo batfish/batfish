@@ -1,6 +1,7 @@
 package org.batfish.minesweeper.communities;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -41,13 +42,11 @@ import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LongComparison;
 import org.batfish.minesweeper.CommunityVar;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link CommunityMatchExprVarCollector}. */
-public class CommunityMatchExprVarCollectorTest {
+class CommunityMatchExprVarCollectorTest {
   private static final String HOSTNAME = "hostname";
   private Configuration _baseConfig;
   private CommunityMatchExprVarCollector _varCollector;
@@ -55,8 +54,8 @@ public class CommunityMatchExprVarCollectorTest {
   private static final Community COMM1 = StandardCommunity.parse("20:30");
   private static final Community COMM2 = StandardCommunity.parse("21:30");
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder()
@@ -69,7 +68,7 @@ public class CommunityMatchExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitCommunityAcl() {
+  void testVisitCommunityAcl() {
     CommunityAcl cacl =
         new CommunityAcl(
             ImmutableList.of(
@@ -85,7 +84,7 @@ public class CommunityMatchExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitCommunityIn() {
+  void testVisitCommunityIn() {
     CommunityIn ci = new CommunityIn(new LiteralCommunitySet(CommunitySet.of(COMM1, COMM2)));
 
     Set<CommunityVar> result = _varCollector.visitCommunityIn(ci, _baseConfig);
@@ -97,7 +96,7 @@ public class CommunityMatchExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitCommunityIs() {
+  void testVisitCommunityIs() {
     CommunityIs ci = new CommunityIs(COMM1);
 
     Set<CommunityVar> result = _varCollector.visitCommunityIs(ci, _baseConfig);
@@ -108,7 +107,7 @@ public class CommunityMatchExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitCommunityMatchAll() {
+  void testVisitCommunityMatchAll() {
     CommunityMatchAll cma =
         new CommunityMatchAll(ImmutableList.of(new CommunityIs(COMM1), new CommunityIs(COMM2)));
 
@@ -121,7 +120,7 @@ public class CommunityMatchExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitCommunityMatchAny() {
+  void testVisitCommunityMatchAny() {
     CommunityMatchAny cma =
         new CommunityMatchAny(ImmutableList.of(new CommunityIs(COMM1), new CommunityIs(COMM2)));
 
@@ -134,7 +133,7 @@ public class CommunityMatchExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitCommunityMatchExprReference() {
+  void testVisitCommunityMatchExprReference() {
     String name = "name";
     _baseConfig.setCommunityMatchExprs(
         ImmutableMap.of(name, new CommunityMatchRegex(ColonSeparatedRendering.instance(), "^20:")));
@@ -148,7 +147,7 @@ public class CommunityMatchExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitCommunityMatchRegex_ColonSeparatedRendering() {
+  void testVisitCommunityMatchRegex_ColonSeparatedRendering() {
     CommunityMatchRegex cmr = new CommunityMatchRegex(ColonSeparatedRendering.instance(), "^20:");
     Set<CommunityVar> result = _varCollector.visitCommunityMatchRegex(cmr, _baseConfig);
     CommunityVar cvar = CommunityVar.from("^20:");
@@ -156,27 +155,29 @@ public class CommunityMatchExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitCommunityMatchRegex_SpecialCasesRendering() {
+  void testVisitCommunityMatchRegex_SpecialCasesRendering() {
     CommunityMatchRegex cmr =
         new CommunityMatchRegex(
             SpecialCasesRendering.of(ColonSeparatedRendering.instance(), ImmutableMap.of()),
             "^20:");
     // TODO: support
-    _thrown.expect(IllegalArgumentException.class);
-    _varCollector.visitCommunityMatchRegex(cmr, _baseConfig);
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> _varCollector.visitCommunityMatchRegex(cmr, _baseConfig));
   }
 
   @Test
-  public void testVisitCommunityMatchRegex_IntegerValueRendering() {
+  void testVisitCommunityMatchRegex_IntegerValueRendering() {
     CommunityMatchRegex cmr = new CommunityMatchRegex(IntegerValueRendering.instance(), "^20:");
 
     // TODO: support
-    _thrown.expect(IllegalArgumentException.class);
-    _varCollector.visitCommunityMatchRegex(cmr, _baseConfig);
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> _varCollector.visitCommunityMatchRegex(cmr, _baseConfig));
   }
 
   @Test
-  public void testVisitCommunityNot() {
+  void testVisitCommunityNot() {
     CommunityNot cn = new CommunityNot(new CommunityIs(COMM1));
 
     Set<CommunityVar> result = _varCollector.visitCommunityNot(cn, _baseConfig);
@@ -187,7 +188,7 @@ public class CommunityMatchExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitExtendedCommunityGlobalAdministratorHighMatch() {
+  void testVisitExtendedCommunityGlobalAdministratorHighMatch() {
     ExtendedCommunityGlobalAdministratorHighMatch ec =
         new ExtendedCommunityGlobalAdministratorHighMatch(
             new IntComparison(IntComparator.EQ, new LiteralInt(3)));
@@ -197,7 +198,7 @@ public class CommunityMatchExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitExtendedCommunityGlobalAdministratorLowMatch() {
+  void testVisitExtendedCommunityGlobalAdministratorLowMatch() {
     ExtendedCommunityGlobalAdministratorLowMatch ec =
         new ExtendedCommunityGlobalAdministratorLowMatch(
             new IntComparison(IntComparator.EQ, new LiteralInt(3)));
@@ -207,7 +208,7 @@ public class CommunityMatchExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitExtendedCommunityGlobalAdministratorMatch() {
+  void testVisitExtendedCommunityGlobalAdministratorMatch() {
     ExtendedCommunityGlobalAdministratorMatch ec =
         new ExtendedCommunityGlobalAdministratorMatch(
             new LongComparison(IntComparator.EQ, new LiteralLong(3L)));
@@ -217,7 +218,7 @@ public class CommunityMatchExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitExtendedCommunityLocalAdministratorMatch() {
+  void testVisitExtendedCommunityLocalAdministratorMatch() {
     ExtendedCommunityLocalAdministratorMatch ec =
         new ExtendedCommunityLocalAdministratorMatch(
             new LongComparison(IntComparator.EQ, new LiteralLong(3L)));
@@ -227,21 +228,21 @@ public class CommunityMatchExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitRouteTargetExtendedCommunities() {
+  void testVisitRouteTargetExtendedCommunities() {
     RouteTargetExtendedCommunities ec = RouteTargetExtendedCommunities.instance();
     Set<CommunityVar> result = _varCollector.visitRouteTargetExtendedCommunities(ec, _baseConfig);
     assertEquals(ImmutableSet.of(), result);
   }
 
   @Test
-  public void testVisitSiteOfOriginExtendedCommunities() {
+  void testVisitSiteOfOriginExtendedCommunities() {
     SiteOfOriginExtendedCommunities ec = SiteOfOriginExtendedCommunities.instance();
     Set<CommunityVar> result = _varCollector.visitSiteOfOriginExtendedCommunities(ec, _baseConfig);
     assertEquals(ImmutableSet.of(), result);
   }
 
   @Test
-  public void testVisitStandardCommunityHighMatch() {
+  void testVisitStandardCommunityHighMatch() {
     StandardCommunityHighMatch schm =
         new StandardCommunityHighMatch(new IntComparison(IntComparator.EQ, new LiteralInt(20)));
 
@@ -253,7 +254,7 @@ public class CommunityMatchExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitStandardCommunityHighMatchUnsupported() {
+  void testVisitStandardCommunityHighMatchUnsupported() {
     StandardCommunityHighMatch schm =
         new StandardCommunityHighMatch(new IntComparison(IntComparator.LT, new LiteralInt(20)));
 
@@ -263,7 +264,7 @@ public class CommunityMatchExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitStandardCommunityLowMatch() {
+  void testVisitStandardCommunityLowMatch() {
     StandardCommunityLowMatch sclm =
         new StandardCommunityLowMatch(new IntComparison(IntComparator.EQ, new LiteralInt(30)));
 
@@ -275,7 +276,7 @@ public class CommunityMatchExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitStandardCommunityLowMatchUnsupported() {
+  void testVisitStandardCommunityLowMatchUnsupported() {
     StandardCommunityLowMatch sclm =
         new StandardCommunityLowMatch(new IntComparison(IntComparator.LT, new LiteralInt(30)));
 
@@ -285,12 +286,10 @@ public class CommunityMatchExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitVpnDistinguisherExtendedCommunities() {
+  void testVisitVpnDistinguisherExtendedCommunities() {
     VpnDistinguisherExtendedCommunities ec = VpnDistinguisherExtendedCommunities.instance();
     Set<CommunityVar> result =
         _varCollector.visitVpnDistinguisherExtendedCommunities(ec, _baseConfig);
     assertEquals(ImmutableSet.of(), result);
   }
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
 }

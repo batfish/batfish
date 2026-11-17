@@ -1,17 +1,17 @@
 package org.batfish.representation.juniper;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableSet;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.SubRange;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Class for {@link FwFromFragmentOffset} */
-public class FwFromFragmentOffsetTest {
+class FwFromFragmentOffsetTest {
 
   @Test
-  public void testToHeaderspace_notExcept() {
+  void testToHeaderspace_notExcept() {
     FwFromFragmentOffset from = new FwFromFragmentOffset(new SubRange(1, 2), false);
     assertEquals(
         from.toHeaderspace(),
@@ -19,7 +19,7 @@ public class FwFromFragmentOffsetTest {
   }
 
   @Test
-  public void testToHeaderspace_except() {
+  void testToHeaderspace_except() {
     FwFromFragmentOffset from = new FwFromFragmentOffset(new SubRange(1, 2), true);
     assertEquals(
         from.toHeaderspace(),

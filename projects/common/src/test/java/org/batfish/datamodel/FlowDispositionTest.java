@@ -6,12 +6,12 @@ import static org.batfish.datamodel.FlowDisposition.FAILURE_DISPOSITIONS;
 import static org.batfish.datamodel.FlowDisposition.SUCCESS_DISPOSITIONS;
 
 import com.google.common.collect.Sets;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link FlowDisposition}. */
-public class FlowDispositionTest {
+class FlowDispositionTest {
   @Test
-  public void testInvariants() {
+  void testInvariants() {
     checkState(
         Sets.intersection(SUCCESS_DISPOSITIONS, FAILURE_DISPOSITIONS).isEmpty(),
         "A FlowDisposition cannot be both a success and a failure.");

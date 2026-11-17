@@ -7,21 +7,21 @@ import com.google.common.collect.Range;
 import com.google.common.testing.EqualsTester;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link RoutePolicyBooleanAsPathOriginatesFrom}. */
 @ParametersAreNonnullByDefault
-public final class RoutePolicyBooleanAsPathOriginatesFromTest {
+final class RoutePolicyBooleanAsPathOriginatesFromTest {
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     RoutePolicyBooleanAsPathOriginatesFrom obj =
         new RoutePolicyBooleanAsPathOriginatesFrom(false, Range.singleton(1L));
     assertThat(SerializationUtils.clone(obj), equalTo(obj));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     RoutePolicyBooleanAsPathOriginatesFrom obj =
         new RoutePolicyBooleanAsPathOriginatesFrom(false, Range.singleton(1L));
     new EqualsTester()

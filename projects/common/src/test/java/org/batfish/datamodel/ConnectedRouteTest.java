@@ -3,35 +3,35 @@ package org.batfish.datamodel;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link ConnectedRoute} */
-public class ConnectedRouteTest {
+class ConnectedRouteTest {
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     ConnectedRoute cr = new ConnectedRoute(Prefix.parse("1.1.1.0/24"), "Ethernet0", 3, 4L);
     assertThat(SerializationUtils.clone(cr), equalTo(cr));
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     ConnectedRoute cr = new ConnectedRoute(Prefix.parse("1.1.1.0/24"), "Ethernet0", 3, 4L);
     assertThat(BatfishObjectMapper.clone(cr, ConnectedRoute.class), equalTo(cr));
   }
 
   @Test
-  public void testToBuilder() {
+  void testToBuilder() {
     ConnectedRoute cr = new ConnectedRoute(Prefix.parse("1.1.1.0/24"), "Ethernet0", 3, 4L);
     assertThat(cr, equalTo(cr.toBuilder().build()));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     ConnectedRoute.Builder cr =
         ConnectedRoute.builder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
@@ -56,7 +56,7 @@ public class ConnectedRouteTest {
 
   /** admin and tag are stored as unsigned 32-bit ints. Test boundary values round-trip. */
   @Test
-  public void testUnsignedAdminAndTagRoundTrip() {
+  void testUnsignedAdminAndTagRoundTrip() {
     // MAX values (0xFFFFFFFF as unsigned int)
     ConnectedRoute maxRoute =
         new ConnectedRoute(
@@ -88,7 +88,7 @@ public class ConnectedRouteTest {
 
   /** MAX_TAG and UNSET_ROUTE_TAG must be distinguishable despite both mapping to int -1. */
   @Test
-  public void testMaxTagNotEqualToUnsetTag() {
+  void testMaxTagNotEqualToUnsetTag() {
     ConnectedRoute withMaxTag =
         new ConnectedRoute(Prefix.parse("1.0.0.0/8"), "Ethernet0", 0, AbstractRoute.MAX_TAG);
     ConnectedRoute withUnsetTag = new ConnectedRoute(Prefix.parse("1.0.0.0/8"), "Ethernet0", 0);
@@ -103,7 +103,7 @@ public class ConnectedRouteTest {
 
   /** Tags outside the valid u32 range should be rejected. */
   @Test
-  public void testRejectsOutOfRangeTag() {
+  void testRejectsOutOfRangeTag() {
     assertThrows(
         IllegalArgumentException.class,
         () -> new ConnectedRoute(Prefix.parse("1.0.0.0/8"), "Ethernet0", 0, 1L << 32));

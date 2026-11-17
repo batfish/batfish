@@ -17,10 +17,10 @@ import org.batfish.referencelibrary.InterfaceGroup;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link InterfaceNoMatchMessages} */
-public class InterfaceNoMatchMessagesTest {
+class InterfaceNoMatchMessagesTest {
 
   private static List<String> getMessages(
       InterfaceNoMatchMessages interfaceNoMatchMessages, CompletionMetadata completionMetadata) {
@@ -35,7 +35,7 @@ public class InterfaceNoMatchMessagesTest {
   }
 
   @Test
-  public void testName() {
+  void testName() {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder()
             .setInterfaces(
@@ -52,7 +52,7 @@ public class InterfaceNoMatchMessagesTest {
   }
 
   @Test
-  public void testNameRegex() {
+  void testNameRegex() {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder()
             .setInterfaces(
@@ -69,7 +69,7 @@ public class InterfaceNoMatchMessagesTest {
   }
 
   @Test
-  public void testVrf() {
+  void testVrf() {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder().setVrfs(ImmutableSet.of("v1", "v2")).build();
     assertThat(
@@ -82,7 +82,7 @@ public class InterfaceNoMatchMessagesTest {
   }
 
   @Test
-  public void testZone() {
+  void testZone() {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder().setZones(ImmutableSet.of("v1", "v2")).build();
     assertThat(
@@ -96,7 +96,7 @@ public class InterfaceNoMatchMessagesTest {
   }
 
   @Test
-  public void testInterfaceGroup() {
+  void testInterfaceGroup() {
     ReferenceLibrary referenceLibrary =
         new ReferenceLibrary(
             ImmutableList.of(
@@ -125,7 +125,7 @@ public class InterfaceNoMatchMessagesTest {
   }
 
   @Test
-  public void testWithNode() {
+  void testWithNode() {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder()
             .setNodes(ImmutableSet.of("h1", "h2"))
@@ -160,7 +160,7 @@ public class InterfaceNoMatchMessagesTest {
   }
 
   @Test
-  public void testSetOp() {
+  void testSetOp() {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder()
             .setInterfaces(
@@ -198,7 +198,7 @@ public class InterfaceNoMatchMessagesTest {
 
   /** a subset of the input is empty */
   @Test
-  public void testEmptySubset() {
+  void testEmptySubset() {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder()
             .setInterfaces(

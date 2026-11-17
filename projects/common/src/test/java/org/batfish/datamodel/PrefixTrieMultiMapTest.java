@@ -11,9 +11,9 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableRangeSet;
@@ -38,14 +38,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.datamodel.PrefixTrieMultiMap.FoldOperator;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link PrefixTrieMultiMap} */
-public class PrefixTrieMultiMapTest {
-
-  @Rule public ExpectedException thrown = ExpectedException.none();
+class PrefixTrieMultiMapTest {
 
   private static List<Prefix> keysInPostOrder(PrefixTrieMultiMap<Integer> map) {
     List<Prefix> prefixes = new ArrayList<>();
@@ -68,7 +64,7 @@ public class PrefixTrieMultiMapTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     PrefixTrieMultiMap<Integer> ptm1 = new PrefixTrieMultiMap<>();
     ptm1.put(Prefix.ZERO, 1);
     PrefixTrieMultiMap<Integer> ptm2 = new PrefixTrieMultiMap<>();
@@ -84,25 +80,25 @@ public class PrefixTrieMultiMapTest {
   }
 
   @Test
-  public void testAdd() {
+  void testAdd() {
     PrefixTrieMultiMap<Integer> ptm1 = new PrefixTrieMultiMap<>();
-    assertTrue("Element was added", ptm1.put(Prefix.ZERO, 1));
+    assertTrue(ptm1.put(Prefix.ZERO, 1), "Element was added");
     assertThat(ptm1.getAllElements(), contains(1));
     assertThat(ptm1.getNumElements(), equalTo(1));
     assertThat(ptm1.get(Prefix.ZERO), equalTo(ImmutableSet.of(1)));
   }
 
   @Test
-  public void testAddDeeper() {
+  void testAddDeeper() {
     Prefix p = Prefix.parse("1.1.1.0/24");
     PrefixTrieMultiMap<Integer> ptm1 = new PrefixTrieMultiMap<>();
-    assertTrue("Element was added", ptm1.put(p, 1));
+    assertTrue(ptm1.put(p, 1), "Element was added");
     assertThat(ptm1.get(p), equalTo(ImmutableSet.of(1)));
     assertThat(ptm1.get(Prefix.ZERO), empty());
   }
 
   @Test
-  public void testAddAll() {
+  void testAddAll() {
     PrefixTrieMultiMap<Integer> ptm1 = new PrefixTrieMultiMap<>();
     ptm1.putAll(Prefix.ZERO, ImmutableSet.of(1, 2, 3));
     assertThat(ptm1.getAllElements(), containsInAnyOrder(1, 2, 3));
@@ -111,23 +107,23 @@ public class PrefixTrieMultiMapTest {
   }
 
   @Test
-  public void testRemove() {
+  void testRemove() {
     PrefixTrieMultiMap<Integer> ptm1 = new PrefixTrieMultiMap<>();
     ptm1.put(Prefix.ZERO, 1);
-    assertFalse("Nothing to remove", ptm1.remove(Prefix.ZERO, 2));
-    assertTrue("Element removed", ptm1.remove(Prefix.ZERO, 1));
+    assertFalse(ptm1.remove(Prefix.ZERO, 2), "Nothing to remove");
+    assertTrue(ptm1.remove(Prefix.ZERO, 1), "Element removed");
     assertThat(ptm1.getAllElements(), empty());
     assertThat(ptm1.getNumElements(), equalTo(0));
   }
 
   @Test
-  public void testRemoveDeeper() {
+  void testRemoveDeeper() {
     PrefixTrieMultiMap<Integer> ptm1 = new PrefixTrieMultiMap<>();
     Prefix p = Prefix.parse("1.1.1.0/24");
     ptm1.put(p, 1);
     ptm1.put(p, 2);
-    assertFalse("Nothing to remove", ptm1.remove(Prefix.ZERO, 2));
-    assertTrue("Element removed", ptm1.remove(p, 2));
+    assertFalse(ptm1.remove(Prefix.ZERO, 2), "Nothing to remove");
+    assertTrue(ptm1.remove(p, 2), "Element removed");
     assertThat(ptm1.get(Prefix.ZERO), empty());
     assertThat(ptm1.get(p), equalTo(ImmutableSet.of(1)));
     assertThat(ptm1.getAllElements(), equalTo(ImmutableSet.of(1)));
@@ -135,7 +131,7 @@ public class PrefixTrieMultiMapTest {
   }
 
   @Test
-  public void testLongestPrefixMatch() {
+  void testLongestPrefixMatch() {
     PrefixTrieMultiMap<Integer> ptm1 = new PrefixTrieMultiMap<>();
     Prefix p1 = Prefix.parse("1.1.1.0/24");
     Prefix p2 = Prefix.parse("1.1.1.128/25");
@@ -151,7 +147,7 @@ public class PrefixTrieMultiMapTest {
   }
 
   @Test
-  public void testPutAtRoot() {
+  void testPutAtRoot() {
     PrefixTrieMultiMap<Integer> map = new PrefixTrieMultiMap<>();
     Prefix prefix = Prefix.parse("128.0.0.0/1");
     map.put(prefix, 3);
@@ -166,7 +162,7 @@ public class PrefixTrieMultiMapTest {
   }
 
   @Test
-  public void testPutAllAtRoot() {
+  void testPutAllAtRoot() {
     PrefixTrieMultiMap<Integer> map = new PrefixTrieMultiMap<>();
     Prefix prefix = Prefix.parse("128.0.0.0/1");
     map.put(prefix, 1);
@@ -181,14 +177,14 @@ public class PrefixTrieMultiMapTest {
   }
 
   @Test
-  public void testRemoveWrongNode() {
+  void testRemoveWrongNode() {
     PrefixTrieMultiMap<Integer> ptm1 = new PrefixTrieMultiMap<>();
     ptm1.put(Prefix.parse("128.0.0.0/1"), 1);
     assertFalse(ptm1.remove(Prefix.ZERO, 1));
   }
 
   @Test
-  public void testReplaceNewRoot() {
+  void testReplaceNewRoot() {
     Prefix prefix = Prefix.parse("128.0.0.0/1");
     ImmutableSet<Integer> prefixValues = ImmutableSet.of(4, 5, 6);
     PrefixTrieMultiMap<Integer> map = new PrefixTrieMultiMap<>();
@@ -205,7 +201,7 @@ public class PrefixTrieMultiMapTest {
   }
 
   @Test
-  public void testLegalLeftChildPrefix() {
+  void testLegalLeftChildPrefix() {
     Prefix parent = Prefix.parse("1.0.0.0/8");
 
     // child prefix cannot equal parent prefix
@@ -225,7 +221,7 @@ public class PrefixTrieMultiMapTest {
   }
 
   @Test
-  public void testLegalRightChildPrefix() {
+  void testLegalRightChildPrefix() {
     Prefix parent = Prefix.parse("1.0.0.0/8");
 
     // child prefix cannot equal parent prefix
@@ -245,7 +241,7 @@ public class PrefixTrieMultiMapTest {
   }
 
   @Test
-  public void testTraverseEntries() {
+  void testTraverseEntries() {
     PrefixTrieMultiMap<Integer> map = new PrefixTrieMultiMap<>();
     Prefix l = Prefix.parse("0.0.0.0/8");
     Prefix ll = Prefix.parse("0.0.0.0/16");
@@ -269,7 +265,7 @@ public class PrefixTrieMultiMapTest {
   }
 
   @Test
-  public void testTraverseEntriesFiltered() {
+  void testTraverseEntriesFiltered() {
     PrefixTrieMultiMap<Integer> map = new PrefixTrieMultiMap<>();
     Prefix l = Prefix.parse("0.0.0.0/8");
     Prefix ll = Prefix.parse("0.0.0.0/16");
@@ -292,7 +288,7 @@ public class PrefixTrieMultiMapTest {
   }
 
   @Test
-  public void testTraverseEntriesFilteredNodeVisitedNoChildren() {
+  void testTraverseEntriesFilteredNodeVisitedNoChildren() {
     PrefixTrieMultiMap<Integer> map = new PrefixTrieMultiMap<>();
     map.put(Prefix.ZERO, 1);
 
@@ -301,7 +297,7 @@ public class PrefixTrieMultiMapTest {
   }
 
   @Test
-  public void testTraverseEntriesFilteredNodeVisitedMixedChildren() {
+  void testTraverseEntriesFilteredNodeVisitedMixedChildren() {
     PrefixTrieMultiMap<Integer> map = new PrefixTrieMultiMap<>();
     Prefix l = Prefix.parse("0.0.0.0/8");
     Prefix r = Prefix.parse("128.0.0.0/16");
@@ -314,7 +310,7 @@ public class PrefixTrieMultiMapTest {
   }
 
   @Test
-  public void testTraverseEntriesFilteredNodeNotVisitedValidChild() {
+  void testTraverseEntriesFilteredNodeNotVisitedValidChild() {
     PrefixTrieMultiMap<Integer> map = new PrefixTrieMultiMap<>();
     Prefix l = Prefix.parse("0.0.0.0/8");
     Prefix ll = Prefix.parse("0.0.0.0/16");
@@ -326,7 +322,7 @@ public class PrefixTrieMultiMapTest {
   }
 
   @Test
-  public void testTraverseEntriesFilteredRootNotVisitedValidChild() {
+  void testTraverseEntriesFilteredRootNotVisitedValidChild() {
     PrefixTrieMultiMap<Integer> map = new PrefixTrieMultiMap<>();
     Prefix l = Prefix.parse("0.0.0.0/8");
     map.put(Prefix.ZERO, 0);
@@ -337,7 +333,7 @@ public class PrefixTrieMultiMapTest {
   }
 
   @Test
-  public void testPutWithCombineAtRoot() {
+  void testPutWithCombineAtRoot() {
     PrefixTrieMultiMap<Integer> map = new PrefixTrieMultiMap<>();
     assertThat(entriesPostOrder(map), empty());
 
@@ -351,7 +347,7 @@ public class PrefixTrieMultiMapTest {
   }
 
   @Test
-  public void testPutWithCombineInternal() {
+  void testPutWithCombineInternal() {
     PrefixTrieMultiMap<Integer> map = new PrefixTrieMultiMap<>();
     assertThat(entriesPostOrder(map), empty());
 
@@ -365,7 +361,7 @@ public class PrefixTrieMultiMapTest {
   }
 
   @Test
-  public void test() {
+  void test() {
     PrefixTrieMultiMap<Integer> map = new PrefixTrieMultiMap<>();
     assertThat(entriesPostOrder(map), empty());
 
@@ -388,7 +384,7 @@ public class PrefixTrieMultiMapTest {
   }
 
   @Test
-  public void testClear() {
+  void testClear() {
     PrefixTrieMultiMap<Integer> map = new PrefixTrieMultiMap<>();
     Prefix l = Prefix.parse("0.0.0.0/8");
     Prefix ll = Prefix.parse("0.0.0.0/16");
@@ -410,7 +406,7 @@ public class PrefixTrieMultiMapTest {
   }
 
   @Test
-  public void testFold() {
+  void testFold() {
     // Use a fold to construct a postorder list of prefixes
     PrefixTrieMultiMap<Integer> map = new PrefixTrieMultiMap<>();
     Prefix l = Prefix.parse("0.0.0.0/8");
@@ -454,7 +450,7 @@ public class PrefixTrieMultiMapTest {
   }
 
   @Test
-  public void testIntersectsPrefixRange() {
+  void testIntersectsPrefixRange() {
     PrefixTrieMultiMap<Integer> map = new PrefixTrieMultiMap<>();
     Prefix l = Prefix.parse("0.0.0.0/8");
     Prefix ll = Prefix.parse("0.0.0.0/16");
@@ -502,7 +498,7 @@ public class PrefixTrieMultiMapTest {
   }
 
   @Test
-  public void testGetOverlappingEntries() {
+  void testGetOverlappingEntries() {
     PrefixTrieMultiMap<Prefix> trie = new PrefixTrieMultiMap<>();
 
     Prefix p111 = Prefix.parse("1.1.1.0/24");
@@ -536,7 +532,7 @@ public class PrefixTrieMultiMapTest {
   }
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     PrefixTrieMultiMap<Integer> ptmm = new PrefixTrieMultiMap<>();
     int i = 0;
     ptmm.put(Prefix.ZERO, ++i);
@@ -674,7 +670,7 @@ public class PrefixTrieMultiMapTest {
   }
 
   @Test
-  public void testRandomizedAgainstModel() {
+  void testRandomizedAgainstModel() {
     Random rng = new Random(20260901);
     for (int trial = 0; trial < 20; ++trial) {
       PrefixTrieMultiMap<Integer> trie = new PrefixTrieMultiMap<>();
@@ -730,7 +726,7 @@ public class PrefixTrieMultiMapTest {
   }
 
   @Test
-  public void testManyHostRoutes() {
+  void testManyHostRoutes() {
     // Enough nodes to grow the backing arrays several times, in a shape that maximizes depth.
     PrefixTrieMultiMap<Integer> trie = new PrefixTrieMultiMap<>();
     int n = 5000;
@@ -756,7 +752,7 @@ public class PrefixTrieMultiMapTest {
   }
 
   @Test
-  public void testValueTransitions() {
+  void testValueTransitions() {
     PrefixTrieMultiMap<Integer> trie = new PrefixTrieMultiMap<>();
     Prefix p = Prefix.parse("10.0.0.0/8");
     // empty -> single -> multi -> single -> empty
@@ -789,7 +785,7 @@ public class PrefixTrieMultiMapTest {
   }
 
   @Test
-  public void testHandle() {
+  void testHandle() {
     PrefixTrieMultiMap<Integer> trie = new PrefixTrieMultiMap<>();
     Prefix p = Prefix.parse("10.0.0.0/8");
     PrefixTrieMultiMap<Integer>.Handle h = trie.handle(p);
@@ -821,7 +817,7 @@ public class PrefixTrieMultiMapTest {
   }
 
   @Test
-  public void testExistingHandle() {
+  void testExistingHandle() {
     PrefixTrieMultiMap<Integer> trie = new PrefixTrieMultiMap<>();
     trie.put(Prefix.parse("10.0.0.0/16"), 1);
     trie.put(Prefix.parse("10.1.0.0/16"), 2);
@@ -841,7 +837,7 @@ public class PrefixTrieMultiMapTest {
   }
 
   @Test
-  public void testTraverseEntriesAround() {
+  void testTraverseEntriesAround() {
     PrefixTrieMultiMap<Integer> trie = new PrefixTrieMultiMap<>();
     trie.put(Prefix.ZERO, 0);
     trie.put(Prefix.parse("10.0.0.0/8"), 8);
@@ -913,7 +909,7 @@ public class PrefixTrieMultiMapTest {
   }
 
   @Test
-  public void testPutOnInternalNode() {
+  void testPutOnInternalNode() {
     PrefixTrieMultiMap<Integer> trie = new PrefixTrieMultiMap<>();
     trie.put(Prefix.parse("10.0.0.0/16"), 1);
     trie.put(Prefix.parse("10.1.0.0/16"), 2);
@@ -934,7 +930,7 @@ public class PrefixTrieMultiMapTest {
   }
 
   @Test
-  public void testJavaSerializationCompact() {
+  void testJavaSerializationCompact() {
     PrefixTrieMultiMap<String> map = new PrefixTrieMultiMap<>();
     map.put(Prefix.parse("0.0.0.0/0"), "default");
     map.put(Prefix.parse("10.0.0.0/8"), "a");

@@ -7,21 +7,21 @@ import com.google.common.collect.Range;
 import com.google.common.testing.EqualsTester;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link RoutePolicyBooleanAsPathPassesThrough}. */
 @ParametersAreNonnullByDefault
-public final class RoutePolicyBooleanAsPathPassesThroughTest {
+final class RoutePolicyBooleanAsPathPassesThroughTest {
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     RoutePolicyBooleanAsPathPassesThrough obj =
         new RoutePolicyBooleanAsPathPassesThrough(false, Range.singleton(1L));
     assertThat(SerializationUtils.clone(obj), equalTo(obj));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     RoutePolicyBooleanAsPathPassesThrough obj =
         new RoutePolicyBooleanAsPathPassesThrough(false, Range.singleton(1L));
     new EqualsTester()

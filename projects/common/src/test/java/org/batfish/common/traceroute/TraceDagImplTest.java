@@ -5,7 +5,7 @@ import static org.batfish.datamodel.flow.HopTestUtils.forwardedHop;
 import static org.batfish.datamodel.flow.HopTestUtils.noRouteHop;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
@@ -22,14 +22,14 @@ import org.batfish.datamodel.flow.PostNatFibLookup;
 import org.batfish.datamodel.flow.SessionMatchExpr;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class TraceDagImplTest {
+class TraceDagImplTest {
   private static final Flow TEST_FLOW =
       Flow.builder().setDstIp(Ip.parse("1.1.1.1")).setIngressNode("src").build();
 
   @Test
-  public void testTraceDag() {
+  void testTraceDag() {
     Hop hopA = forwardedHop("A", "vrf"); // 0
     Hop hopB1 = forwardedHop("B1", "vrf"); // 1
     Hop hopB2 = forwardedHop("B2", "vrf"); // 2

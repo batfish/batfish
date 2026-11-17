@@ -20,8 +20,9 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -45,16 +46,12 @@ import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.GeneratedRefBookUtils;
 import org.batfish.referencelibrary.GeneratedRefBookUtils.BookType;
 import org.batfish.referencelibrary.ReferenceBook;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-public class UtilsTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class UtilsTest {
 
   @Test
-  public void testCreatePublicIpsRefBook() {
+  void testCreatePublicIpsRefBook() {
     NetworkInterface networkInterface =
         new NetworkInterface(
             "interface",
@@ -116,12 +113,13 @@ public class UtilsTest {
                 .build()));
 
     // running it again should barf since we already have the reference book
-    _thrown.expect(IllegalArgumentException.class);
-    createPublicIpsRefBook(ImmutableList.of(networkInterface), cfgNode);
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> createPublicIpsRefBook(ImmutableList.of(networkInterface), cfgNode));
   }
 
   @Test
-  public void testConnectGatewayToVpc() {
+  void testConnectGatewayToVpc() {
     Prefix vpcPrefix = Prefix.parse("10.10.0.0/16");
     Vpc vpc = getTestVpc("vpc", ImmutableSet.of(vpcPrefix));
     Configuration vpcCfg = new Configuration(vpc.getId(), ConfigurationFormat.AWS);
@@ -186,7 +184,7 @@ public class UtilsTest {
   }
 
   @Test
-  public void testAddNodeToSubnet_noValidAddress() {
+  void testAddNodeToSubnet_noValidAddress() {
     Configuration cfg = Utils.newAwsConfiguration("test", "aws");
     NetworkInterface networkInterface =
         new NetworkInterface(
@@ -213,7 +211,7 @@ public class UtilsTest {
   }
 
   @Test
-  public void testCreateBackboneConnection() {
+  void testCreateBackboneConnection() {
     Configuration cfg = newAwsConfiguration("test", "aws");
     String policyName = "export policy";
 
@@ -237,7 +235,7 @@ public class UtilsTest {
   }
 
   @Test
-  public void testToIpProtocol() {
+  void testToIpProtocol() {
     // Should convert "all traffic" to null
     assertNull(Utils.toIpProtocol("-1"));
     // Should convert tcp, udp and icmp correctly
@@ -249,13 +247,15 @@ public class UtilsTest {
   }
 
   @Test
-  public void testToIpProtocolError() {
-    _thrown.expectMessage("icmpv6 protocol should have been handled before calling this function");
-    Utils.toIpProtocol("icmpv6");
+  void testToIpProtocolError() {
+    Throwable exception = assertThrows(Exception.class, () -> Utils.toIpProtocol("icmpv6"));
+    assertThat(
+        exception.getMessage(),
+        containsString("icmpv6 protocol should have been handled before calling this function"));
   }
 
-  @Test(expected = BatfishException.class)
-  public void testToIpProtocol_invalid() {
-    Utils.toIpProtocol("crap");
+  @Test
+  void testToIpProtocol_invalid() {
+    assertThrows(BatfishException.class, () -> Utils.toIpProtocol("crap"));
   }
 }

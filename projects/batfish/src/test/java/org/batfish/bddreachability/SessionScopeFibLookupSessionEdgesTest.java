@@ -27,9 +27,9 @@ import org.batfish.symbolic.state.OriginateVrf;
 import org.batfish.symbolic.state.PostInVrfSession;
 import org.batfish.symbolic.state.PreInInterface;
 import org.hamcrest.Matcher;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class SessionScopeFibLookupSessionEdgesTest {
+class SessionScopeFibLookupSessionEdgesTest {
   private static final String HOSTNAME = "node";
   private static final String VRF_NAME = "vrf";
   private static final String IFACE_NAME = "iface";
@@ -53,7 +53,7 @@ public class SessionScopeFibLookupSessionEdgesTest {
           HOSTNAME, ImmutableMap.of(IFACE_NAME, IFACE), _sessionHeaders, _transformation, _srcMgr);
 
   @Test
-  public void testIncomingSessionScope() {
+  void testIncomingSessionScope() {
     // Applying visitor to IncomingSessionScope for the known interface should give edge from
     // PreInInterface to PostInVrf
     IncomingSessionScope scope = new IncomingSessionScope(ImmutableSet.of(IFACE_NAME));
@@ -72,7 +72,7 @@ public class SessionScopeFibLookupSessionEdgesTest {
   }
 
   @Test
-  public void testOriginatingSessionScope() {
+  void testOriginatingSessionScope() {
     // Applying visitor to OriginatingSessionScope for the known VRF should give edges from
     // OriginateInterface and OriginateVrf to PostInVrf
     OriginatingSessionScope scope = new OriginatingSessionScope(VRF_NAME);

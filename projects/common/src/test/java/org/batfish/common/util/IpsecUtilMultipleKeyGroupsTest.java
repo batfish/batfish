@@ -24,11 +24,11 @@ import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecSession;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.NetworkFactory;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link IpsecUtil} with multiple PFS key groups */
-public class IpsecUtilMultipleKeyGroupsTest {
+class IpsecUtilMultipleKeyGroupsTest {
 
   private Configuration _initiatorHost;
   private Configuration _responderHost;
@@ -40,8 +40,8 @@ public class IpsecUtilMultipleKeyGroupsTest {
   private IkePhase1Policy _responderIkePhase1Policy;
   private IkePhase1Proposal _ikePhase1Proposal;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb = nf.configurationBuilder();
     _initiatorHost = cb.setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
@@ -109,7 +109,7 @@ public class IpsecUtilMultipleKeyGroupsTest {
   }
 
   @Test
-  public void testNegotiateIpsecSessionWithOverlappingKeyGroups() {
+  void testNegotiateIpsecSessionWithOverlappingKeyGroups() {
     // Set up initiator with multiple PFS key groups
     _initiatorPhase2Policy.setPfsKeyGroups(
         ImmutableSet.of(
@@ -146,7 +146,7 @@ public class IpsecUtilMultipleKeyGroupsTest {
   }
 
   @Test
-  public void testNegotiateIpsecSessionWithNoOverlappingKeyGroups() {
+  void testNegotiateIpsecSessionWithNoOverlappingKeyGroups() {
     // Set up initiator with PFS key groups
     _initiatorPhase2Policy.setPfsKeyGroups(
         ImmutableSet.of(DiffieHellmanGroup.GROUP2, DiffieHellmanGroup.GROUP5));
@@ -181,7 +181,7 @@ public class IpsecUtilMultipleKeyGroupsTest {
   }
 
   @Test
-  public void testNegotiateIpsecSessionWithEmptyKeyGroups() {
+  void testNegotiateIpsecSessionWithEmptyKeyGroups() {
     // Set up initiator with empty PFS key groups
     _initiatorPhase2Policy.setPfsKeyGroups(ImmutableSet.of());
 
@@ -215,7 +215,7 @@ public class IpsecUtilMultipleKeyGroupsTest {
   }
 
   @Test
-  public void testBackwardCompatibility() {
+  void testBackwardCompatibility() {
     // Set up initiator with a single PFS key group using the old method
     _initiatorPhase2Policy.setPfsKeyGroup(DiffieHellmanGroup.GROUP14);
 

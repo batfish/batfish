@@ -3,8 +3,10 @@ package org.batfish.specifier.parse;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -23,11 +25,9 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.referencelibrary.InterfaceGroup;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.specifier.MockSpecifierContext;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-public class ParsedInterfaceSpecifierTest {
+class ParsedInterfaceSpecifierTest {
 
   // Set up a basic network with two nodes and three interfaces.
   private Configuration _node1 = new Configuration("node1", ConfigurationFormat.CISCO_IOS);
@@ -58,7 +58,7 @@ public class ParsedInterfaceSpecifierTest {
   }
 
   @Test
-  public void testResolveDifference() {
+  void testResolveDifference() {
     build();
     assertThat(
         new ParsedInterfaceSpecifier(
@@ -75,7 +75,7 @@ public class ParsedInterfaceSpecifierTest {
   }
 
   @Test
-  public void testResolveInterfaceGroup() {
+  void testResolveInterfaceGroup() {
     String interfaceGroup = "ig";
     String book = "book";
     _ctxtB.setReferenceBooks(
@@ -101,7 +101,7 @@ public class ParsedInterfaceSpecifierTest {
   }
 
   @Test
-  public void testResolveInterfaceWithNode() {
+  void testResolveInterfaceWithNode() {
     build();
     assertThat(
         new ParsedInterfaceSpecifier(
@@ -113,7 +113,7 @@ public class ParsedInterfaceSpecifierTest {
   }
 
   @Test
-  public void testResolveIntersection() {
+  void testResolveIntersection() {
     build();
     assertThat(
         new ParsedInterfaceSpecifier(
@@ -130,7 +130,7 @@ public class ParsedInterfaceSpecifierTest {
   }
 
   @Test
-  public void testResolveName() {
+  void testResolveName() {
     build();
     assertThat(
         new ParsedInterfaceSpecifier(new NameInterfaceAstNode("iface11")).resolve(_nodes, _ctxt),
@@ -142,7 +142,7 @@ public class ParsedInterfaceSpecifierTest {
   }
 
   @Test
-  public void testResolveNameRegex() {
+  void testResolveNameRegex() {
     build();
     assertThat(
         new ParsedInterfaceSpecifier(new NameRegexInterfaceAstNode("iface.*2"))
@@ -151,7 +151,7 @@ public class ParsedInterfaceSpecifierTest {
   }
 
   @Test
-  public void testResolveType() {
+  void testResolveType() {
     _iface11B.setType(InterfaceType.VLAN);
     _iface12B.setType(InterfaceType.TUNNEL);
     build();
@@ -161,7 +161,7 @@ public class ParsedInterfaceSpecifierTest {
   }
 
   @Test
-  public void testResolveUnion() {
+  void testResolveUnion() {
     build();
     assertThat(
         new ParsedInterfaceSpecifier(
@@ -172,7 +172,7 @@ public class ParsedInterfaceSpecifierTest {
   }
 
   @Test
-  public void testResolveVrf() {
+  void testResolveVrf() {
     Vrf vrf1 = new Vrf("vrf1");
     _iface11B.setVrf(vrf1);
     build();
@@ -183,7 +183,7 @@ public class ParsedInterfaceSpecifierTest {
   }
 
   @Test
-  public void testResolveZone() {
+  void testResolveZone() {
     Zone zone1 = new Zone("zone1");
     _node1.setZones(ImmutableSortedMap.of("zone1", zone1));
     _node2.setZones(ImmutableSortedMap.of("zone1", zone1));
@@ -194,17 +194,16 @@ public class ParsedInterfaceSpecifierTest {
         containsInAnyOrder(NodeInterfacePair.of(_iface11), NodeInterfacePair.of(_iface2)));
   }
 
-  @Rule public ExpectedException _thrown = ExpectedException.none();
-
   @Test
-  public void testParseBadInput() {
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("Error parsing");
-    ParsedInterfaceSpecifier.parse("@connected");
+  void testParseBadInput() {
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class, () -> ParsedInterfaceSpecifier.parse("@connected"));
+    assertThat(exception.getMessage(), containsString("Error parsing"));
   }
 
   @Test
-  public void testParseGoodInput() {
+  void testParseGoodInput() {
     assertThat(
         ParsedInterfaceSpecifier.parse("eth0"),
         equalTo(new ParsedInterfaceSpecifier(new NameInterfaceAstNode("eth0"))));

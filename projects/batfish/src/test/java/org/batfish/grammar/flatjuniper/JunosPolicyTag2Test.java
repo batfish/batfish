@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
@@ -20,15 +21,14 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.main.Batfish;
 import org.batfish.representation.juniper.JuniperConfiguration;
 import org.batfish.representation.juniper.PsFromTag2;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosPolicyTag2Test {
+final class JunosPolicyTag2Test {
 
   private static final String HOSTNAME = "policy-statement-tag2";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private static Bgpv4Route route(long tag2) {
     return Bgpv4Route.testBuilder()
@@ -41,7 +41,7 @@ public final class JunosPolicyTag2Test {
   }
 
   @Test
-  public void testExtraction() throws IOException {
+  void testExtraction() throws IOException {
     Batfish batfish = getBatfish(_folder, HOSTNAME);
     JuniperConfiguration juniperConfiguration = getVendorConfiguration(batfish, HOSTNAME);
 
@@ -59,7 +59,7 @@ public final class JunosPolicyTag2Test {
   }
 
   @Test
-  public void testConversion() throws IOException {
+  void testConversion() throws IOException {
     Batfish batfish = getBatfish(_folder, HOSTNAME);
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(HOSTNAME);
 

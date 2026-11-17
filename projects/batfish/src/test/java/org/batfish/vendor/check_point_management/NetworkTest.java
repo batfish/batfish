@@ -3,23 +3,23 @@ package org.batfish.vendor.check_point_management;
 import static org.batfish.vendor.check_point_management.TestSharedInstances.NAT_SETTINGS_TEST_INSTANCE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link Network}. */
-public final class NetworkTest {
+final class NetworkTest {
 
   public static final Network TEST_INSTANCE =
       new Network("foo", NAT_SETTINGS_TEST_INSTANCE, Ip.ZERO, Ip.MAX, Uid.of("0"));
 
   @Test
-  public void testJacksonDeserialization() throws JsonProcessingException {
+  void testJacksonDeserialization() throws JsonProcessingException {
     String input =
         "{"
             + "\"GARBAGE\":0,"
@@ -41,12 +41,12 @@ public final class NetworkTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     assertEquals(TEST_INSTANCE, SerializationUtils.clone(TEST_INSTANCE));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     Network obj = new Network("foo", NAT_SETTINGS_TEST_INSTANCE, Ip.ZERO, Ip.MAX, Uid.of("0"));
     new EqualsTester()
         .addEqualityGroup(

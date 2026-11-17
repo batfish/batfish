@@ -2,6 +2,7 @@ package org.batfish.specifier;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -14,12 +15,9 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-public class TypesInterfaceSpecifierTest {
-  @Rule public final ExpectedException thrown = ExpectedException.none();
+class TypesInterfaceSpecifierTest {
 
   private static final Interface AGGREGATED;
   private static final Interface LOOPBACK;
@@ -74,9 +72,12 @@ public class TypesInterfaceSpecifierTest {
   }
 
   @Test
-  public void testBadRegex() {
-    thrown.expect(IllegalArgumentException.class);
-    new TypesInterfaceSpecifier(Pattern.compile("bad regex"));
+  void testBadRegex() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> {
+          new TypesInterfaceSpecifier(Pattern.compile("bad regex"));
+        });
   }
 
   private static Set<NodeInterfacePair> specifiedInterfaces(String regex) {
@@ -85,7 +86,7 @@ public class TypesInterfaceSpecifierTest {
   }
 
   @Test
-  public void test() {
+  void test() {
     assertThat(
         specifiedInterfaces("a.*"), equalTo(ImmutableSet.of(NodeInterfacePair.of(AGGREGATED))));
     assertThat(

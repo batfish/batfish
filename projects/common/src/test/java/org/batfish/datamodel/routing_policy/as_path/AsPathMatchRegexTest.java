@@ -6,25 +6,25 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link AsPathMatchRegex}. */
-public final class AsPathMatchRegexTest {
+final class AsPathMatchRegexTest {
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     AsPathMatchRegex obj = AsPathMatchRegex.of("a");
     assertThat(SerializationUtils.clone(obj), equalTo(obj));
   }
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     AsPathMatchRegex obj = AsPathMatchRegex.of("a");
     assertThat(BatfishObjectMapper.clone(obj, AsPathMatchRegex.class), equalTo(obj));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     AsPathMatchRegex obj = AsPathMatchRegex.of("a");
     new EqualsTester()
         .addEqualityGroup(AsPathMatchRegex.of("a"), obj)

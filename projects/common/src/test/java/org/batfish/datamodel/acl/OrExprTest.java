@@ -7,9 +7,9 @@ import static org.hamcrest.Matchers.not;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import org.batfish.datamodel.Flow;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class OrExprTest {
+class OrExprTest {
   private Flow createFlow() {
     Flow.Builder b = Flow.builder();
     b.setIngressNode("ingressNode");
@@ -17,7 +17,7 @@ public class OrExprTest {
   }
 
   @Test
-  public void testSingleExpr() {
+  void testSingleExpr() {
     // Test that if and only if the only ACL line is a match, the OrMatchExpr returns a match
 
     // Setup simple expression with a single true boolean expr
@@ -35,7 +35,7 @@ public class OrExprTest {
   }
 
   @Test
-  public void testMultipleExprs() {
+  void testMultipleExprs() {
     // Test that if either of two ACL lines is a match, the OrMatchExpr returns a match
 
     List<AclLineMatchExpr> setTrueTrue = ImmutableList.of(TrueExpr.INSTANCE, TrueExpr.INSTANCE);

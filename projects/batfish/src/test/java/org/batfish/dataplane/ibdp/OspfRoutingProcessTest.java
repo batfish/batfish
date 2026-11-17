@@ -20,8 +20,8 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -91,11 +91,11 @@ import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.dataplane.rib.RibDelta;
 import org.batfish.dataplane.rib.RouteAdvertisement;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link OspfRoutingProcess} */
-public class OspfRoutingProcessTest {
+class OspfRoutingProcessTest {
   private static final ConcreteInterfaceAddress INACTIVE_ADDR =
       ConcreteInterfaceAddress.parse("1.1.1.1/24");
   private static final ConcreteInterfaceAddress ACTIVE_ADDR_1 =
@@ -137,8 +137,8 @@ public class OspfRoutingProcessTest {
           RoutingProtocol.OSPF_E2,
           230);
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
     NetworkFactory nf = new NetworkFactory();
     _c =
         nf.configurationBuilder()
@@ -252,7 +252,7 @@ public class OspfRoutingProcessTest {
   }
 
   @Test
-  public void testApplyDistributeList() {
+  void testApplyDistributeList() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
         nf.configurationBuilder()
@@ -317,12 +317,12 @@ public class OspfRoutingProcessTest {
 
   /** Check that a new (but un-initialized) process is not dirty */
   @Test
-  public void testNotDirtyOnCreation() {
+  void testNotDirtyOnCreation() {
     assertFalse(_routingProcess.isDirty());
   }
 
   @Test
-  public void testDirtyPostInitialization() {
+  void testDirtyPostInitialization() {
     _routingProcess.initialize(new Node(_c));
     assertTrue(_routingProcess.isDirty());
   }
@@ -332,20 +332,20 @@ public class OspfRoutingProcessTest {
    * non-dirty state
    */
   @Test
-  public void testNotDirtyAfterOneIteration() {
+  void testNotDirtyAfterOneIteration() {
     _routingProcess.initialize(new Node(_c));
     // Empty map in this particular case just means no valid neighbors.
     _routingProcess.executeIteration(
         ImmutableMap.of(), NetworkConfigurations.of(ImmutableMap.of()));
-    assertTrue("Still have updates to main RIB", _routingProcess.isDirty());
+    assertTrue(_routingProcess.isDirty(), "Still have updates to main RIB");
     _routingProcess.getUpdatesForMainRib();
 
     // Initialization delta should have been cleared
-    assertFalse("All dirty state is cleared", _routingProcess.isDirty());
+    assertFalse(_routingProcess.isDirty(), "All dirty state is cleared");
   }
 
   @Test
-  public void testInitializeRoutesByArea() {
+  void testInitializeRoutesByArea() {
     // Must not crash on non-existent interface
     RibDelta<OspfIntraAreaRoute> delta = _routingProcess.initializeRoutesByArea(AREA0_CONFIG);
     // All routes were added
@@ -368,7 +368,7 @@ public class OspfRoutingProcessTest {
   }
 
   @Test
-  public void testInitializeInterAreaRoutes() {
+  void testInitializeInterAreaRoutes() {
     OspfIntraAreaRoute notSummarized =
         OspfIntraAreaRoute.builder()
             .setArea(0)
@@ -393,7 +393,7 @@ public class OspfRoutingProcessTest {
   }
 
   @Test
-  public void testGetIncrementalCost() {
+  void testGetIncrementalCost() {
     // Default behavior
     assertThat(_routingProcess.getIncrementalCost(ACTIVE_IFACE_NAME, false), equalTo(10L));
 
@@ -429,7 +429,7 @@ public class OspfRoutingProcessTest {
   }
 
   @Test
-  public void testComputeDefaultInterAreaRouteToInject() {
+  void testComputeDefaultInterAreaRouteToInject() {
     OspfArea.Builder areaBuilder = OspfArea.builder().setNumber(1L);
     Ip nextHopIp = Ip.parse("1.1.1.1");
     assertFalse(computeDefaultInterAreaRouteToInject(areaBuilder.build(), nextHopIp).isPresent());
@@ -472,7 +472,7 @@ public class OspfRoutingProcessTest {
   }
 
   @Test
-  public void testComputeDefaultInterAreaRouteToInjectRepeatedCalls() {
+  void testComputeDefaultInterAreaRouteToInjectRepeatedCalls() {
     OspfArea area =
         OspfArea.builder()
             .setNumber(1L)
@@ -519,7 +519,7 @@ public class OspfRoutingProcessTest {
   }
 
   @Test
-  public void testUpdateTopology() {
+  void testUpdateTopology() {
     _routingProcess.updateTopology(nonEmptyOspfTopology());
     OspfNeighborConfigId n1 =
         new OspfNeighborConfigId(HOSTNAME, VRF_NAME, "1", ACTIVE_IFACE_NAME, ACTIVE_ADDR_1);
@@ -532,7 +532,7 @@ public class OspfRoutingProcessTest {
   }
 
   @Test
-  public void updateTopologyIsNonDestructive() {
+  void updateTopologyIsNonDestructive() {
     _routingProcess.updateTopology(nonEmptyOspfTopology());
     OspfNeighborConfigId n1 =
         new OspfNeighborConfigId(HOSTNAME, VRF_NAME, "1", ACTIVE_IFACE_NAME, ACTIVE_ADDR_1);
@@ -555,7 +555,7 @@ public class OspfRoutingProcessTest {
   }
 
   @Test
-  public void testTransformIntraAreaRouteOnImport() {
+  void testTransformIntraAreaRouteOnImport() {
     final OspfIntraAreaRoute.Builder builder =
         OspfIntraAreaRoute.builder()
             .setArea(0)
@@ -582,7 +582,7 @@ public class OspfRoutingProcessTest {
   }
 
   @Test
-  public void testTransformInterAreaRouteOnImport() {
+  void testTransformInterAreaRouteOnImport() {
     final OspfInterAreaRoute.Builder builder =
         OspfInterAreaRoute.builder()
             .setArea(0)
@@ -594,7 +594,7 @@ public class OspfRoutingProcessTest {
 
     Optional<OspfInterAreaRoute.Builder> transformedBuilder =
         _routingProcess.transformInterAreaRouteOnImport(builder.build(), "e1", 10);
-    assertFalse("Default route rejected by ABR", transformedBuilder.isPresent());
+    assertFalse(transformedBuilder.isPresent(), "Default route rejected by ABR");
 
     // Non-default route
     builder.setNetwork(Prefix.parse("1.1.1.1/29"));
@@ -614,7 +614,7 @@ public class OspfRoutingProcessTest {
   }
 
   @Test
-  public void testFilterInterAreaRoutesToPropagateAtABR() {
+  void testFilterInterAreaRoutesToPropagateAtABR() {
     OspfInterAreaRoute route0 =
         OspfInterAreaRoute.builder()
             .setArea(0)
@@ -693,7 +693,7 @@ public class OspfRoutingProcessTest {
   }
 
   @Test
-  public void testTransformInterAreaRoutesOnExportNonABR() {
+  void testTransformInterAreaRoutesOnExportNonABR() {
     OspfInterAreaRoute route0 =
         OspfInterAreaRoute.builder()
             .setArea(0)
@@ -743,7 +743,7 @@ public class OspfRoutingProcessTest {
   }
 
   @Test
-  public void testTransformIntraAreaRoutesOnExport() {
+  void testTransformIntraAreaRoutesOnExport() {
     OspfIntraAreaRoute route0 =
         OspfIntraAreaRoute.builder()
             .setArea(0)
@@ -779,7 +779,7 @@ public class OspfRoutingProcessTest {
   }
 
   @Test
-  public void testTransformType1RouteOnImport() {
+  void testTransformType1RouteOnImport() {
     final OspfExternalRoute.Builder builder =
         OspfExternalType1Route.builder()
             .setNetwork(Prefix.parse("2.2.2.2/32"))
@@ -808,7 +808,7 @@ public class OspfRoutingProcessTest {
   }
 
   @Test
-  public void testTransformType2RouteOnImport() {
+  void testTransformType2RouteOnImport() {
     final OspfExternalRoute.Builder builder =
         OspfExternalType2Route.builder()
             .setNetwork(Prefix.parse("2.2.2.2/32"))
@@ -836,7 +836,7 @@ public class OspfRoutingProcessTest {
   }
 
   @Test
-  public void testTransformType1RouteOnExportNoMetricOverride() {
+  void testTransformType1RouteOnExportNoMetricOverride() {
     Ip nextHopIp = Ip.parse("1.1.1.1");
     final OspfExternalRoute base =
         OspfExternalType1Route.builder()
@@ -926,7 +926,7 @@ public class OspfRoutingProcessTest {
   }
 
   @Test
-  public void testTransformType1RouteOnExportWithMetricOverride() {
+  void testTransformType1RouteOnExportWithMetricOverride() {
     Ip nextHopIp = Ip.parse("1.1.1.1");
     // Overriden behavior for summary routes
     final long overrideMetric = 8888L;
@@ -987,7 +987,7 @@ public class OspfRoutingProcessTest {
   }
 
   @Test
-  public void testTransformType2RouteOnExport() {
+  void testTransformType2RouteOnExport() {
     Ip nextHopIp = Ip.parse("1.1.1.1");
     final OspfExternalRoute base =
         OspfExternalType2Route.builder()
@@ -1028,7 +1028,7 @@ public class OspfRoutingProcessTest {
   }
 
   @Test
-  public void testActivateGeneratedRoute() {
+  void testActivateGeneratedRoute() {
     RibDelta<AnnotatedRoute<AbstractRoute>> delta =
         RibDelta.<AnnotatedRoute<AbstractRoute>>builder()
             .add(
@@ -1067,7 +1067,7 @@ public class OspfRoutingProcessTest {
   }
 
   @Test
-  public void testConvertToExternalRoute() {
+  void testConvertToExternalRoute() {
     StaticRoute.Builder sb =
         StaticRoute.testBuilder()
             .setAdministrativeCost(1)
@@ -1110,14 +1110,14 @@ public class OspfRoutingProcessTest {
                 .build()));
     // Not allowed to export
     assertFalse(
-        "Export policy does not permit export",
         _routingProcess
             .convertToExternalRoute(sb.setNetwork(Prefix.parse("1.1.1.1/32")).build(), exportPolicy)
-            .isPresent());
+            .isPresent(),
+        "Export policy does not permit export");
   }
 
   @Test
-  public void testFilterExternalRoutesOnExport() {
+  void testFilterExternalRoutesOnExport() {
     RibDelta<OspfExternalRoute> routes =
         RibDelta.<OspfExternalRoute>builder()
             .add(
@@ -1172,7 +1172,7 @@ public class OspfRoutingProcessTest {
   }
 
   @Test
-  public void testFilterExternalRoutesOnExportWithInterfaceFilter() {
+  void testFilterExternalRoutesOnExportWithInterfaceFilter() {
     RoutingPolicy rp_accept =
         RoutingPolicy.builder()
             .setName("~OSPF_TYPE_5_FILTER~")
@@ -1225,7 +1225,7 @@ public class OspfRoutingProcessTest {
 
   // For p2mp interfaces, initial route is the interface IP instead of subnet
   @Test
-  public void testInitializeRoutesByArea_p2mp() {
+  void testInitializeRoutesByArea_p2mp() {
     NetworkFactory nf = new NetworkFactory();
     _c =
         nf.configurationBuilder()
@@ -1295,7 +1295,7 @@ public class OspfRoutingProcessTest {
   }
 
   @Test
-  public void testGetIfaceAddressesForIARoutes() {
+  void testGetIfaceAddressesForIARoutes() {
     ConcreteInterfaceAddress primary = ConcreteInterfaceAddress.parse("1.1.1.1/24");
     ConcreteInterfaceAddress secondary = ConcreteInterfaceAddress.parse("2.2.2.1/24");
     Interface.Builder ifaceBuilder =
@@ -1338,7 +1338,7 @@ public class OspfRoutingProcessTest {
   }
 
   @Test
-  public void testProcessIntraAreaAdvertisementSummaries() {
+  void testProcessIntraAreaAdvertisementSummaries() {
     RibDelta.Builder<OspfIntraAreaRoute> intraAreaDelta = RibDelta.builder();
     RibDelta.Builder<OspfInterAreaRoute> interAreaDelta = RibDelta.builder();
     Prefix notSummarized = Prefix.parse("1.1.1.1/29");

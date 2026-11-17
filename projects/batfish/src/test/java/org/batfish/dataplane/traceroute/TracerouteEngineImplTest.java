@@ -59,9 +59,10 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableList;
@@ -70,6 +71,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
@@ -140,16 +142,13 @@ import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.hamcrest.Matchers;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests for {@link TracerouteEngineImpl} */
-public class TracerouteEngineImplTest {
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class TracerouteEngineImplTest {
 
-  @Rule public TemporaryFolder _tempFolder = new TemporaryFolder();
+  @TempDir public File _tempFolder;
 
   private static Flow makeFlow() {
     Flow.Builder builder = Flow.builder();
@@ -186,7 +185,7 @@ public class TracerouteEngineImplTest {
    * iface1. Should accept if and only if iface1 and iface2 are in the same VRF.
    */
   @Test
-  public void testAcceptVrf() throws IOException {
+  void testAcceptVrf() throws IOException {
     // Construct network
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
@@ -219,7 +218,7 @@ public class TracerouteEngineImplTest {
   }
 
   @Test
-  public void testNullRouted() throws IOException {
+  void testNullRouted() throws IOException {
     // Construct network
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
@@ -264,7 +263,7 @@ public class TracerouteEngineImplTest {
   }
 
   @Test
-  public void testArpMultipleAccess() throws IOException {
+  void testArpMultipleAccess() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -315,7 +314,7 @@ public class TracerouteEngineImplTest {
   }
 
   @Test
-  public void testAclBeforeArpNoEdge() throws IOException {
+  void testAclBeforeArpNoEdge() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -343,7 +342,7 @@ public class TracerouteEngineImplTest {
   }
 
   @Test
-  public void testAclBeforeArpWithEdge() throws IOException {
+  void testAclBeforeArpWithEdge() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -386,7 +385,7 @@ public class TracerouteEngineImplTest {
 
   /** Tests ingressInterface with an incoming ACL. */
   @Test
-  public void testDeniedInVsAccept() throws IOException {
+  void testDeniedInVsAccept() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
@@ -429,7 +428,7 @@ public class TracerouteEngineImplTest {
 
   /** When ingress node is non-existent, don't crash with null-pointer. */
   @Test
-  public void testTracerouteOutsideNetwork() throws IOException {
+  void testTracerouteOutsideNetwork() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -440,8 +439,9 @@ public class TracerouteEngineImplTest {
     batfish.computeDataPlane(snapshot);
     Set<Flow> flows = ImmutableSet.of(builder().setIngressNode("missingNode").build());
 
-    _thrown.expect(IllegalArgumentException.class);
-    batfish.getTracerouteEngine(snapshot).computeTraces(flows, false);
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> batfish.getTracerouteEngine(snapshot).computeTraces(flows, false));
   }
 
   /*
@@ -450,7 +450,7 @@ public class TracerouteEngineImplTest {
    * iteration, and drop with an ingress ACL in the second iteration.
    */
   @Test
-  public void testLoop() throws IOException {
+  void testLoop() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -519,7 +519,7 @@ public class TracerouteEngineImplTest {
   }
 
   @Test
-  public void testGetFinalActionForDisposition() {
+  void testGetFinalActionForDisposition() {
     assertThat(
         getFinalActionForDisposition(DELIVERED_TO_SUBNET), equalTo(StepAction.DELIVERED_TO_SUBNET));
     assertThat(getFinalActionForDisposition(EXITS_NETWORK), equalTo(StepAction.EXITS_NETWORK));
@@ -531,7 +531,7 @@ public class TracerouteEngineImplTest {
   }
 
   @Test
-  public void testApplyPreSourceNatFilter() {
+  void testApplyPreSourceNatFilter() {
     String iface1 = "iface1";
     String iface2 = "iface2";
     String prefix = "1.2.3.4/24";
@@ -586,7 +586,7 @@ public class TracerouteEngineImplTest {
   }
 
   @Test
-  public void testPreSourceNatFilter() throws IOException {
+  void testPreSourceNatFilter() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -719,7 +719,7 @@ public class TracerouteEngineImplTest {
   }
 
   @Test
-  public void testPreSourceNatFilterOriginatingPackets() throws IOException {
+  void testPreSourceNatFilterOriginatingPackets() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -796,7 +796,7 @@ public class TracerouteEngineImplTest {
   }
 
   @Test
-  public void testTransformationSteps() throws IOException {
+  void testTransformationSteps() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
@@ -983,7 +983,7 @@ public class TracerouteEngineImplTest {
   }
 
   @Test
-  public void testIngressSteps() throws IOException {
+  void testIngressSteps() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -1086,7 +1086,7 @@ public class TracerouteEngineImplTest {
   }
 
   @Test
-  public void testOutgoingSteps() throws IOException {
+  void testOutgoingSteps() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -1195,7 +1195,7 @@ public class TracerouteEngineImplTest {
    * return flow for different dispositions.
    */
   @Test
-  public void testReturnFlow() throws IOException {
+  void testReturnFlow() throws IOException {
     // Construct network
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
@@ -1371,7 +1371,7 @@ public class TracerouteEngineImplTest {
   }
 
   @Test
-  public void testSessionReturnFibLookupSameVrf() throws IOException {
+  void testSessionReturnFibLookupSameVrf() throws IOException {
     String i1Name = "i1";
     String i2Name = "i2";
     NetworkFactory nf = new NetworkFactory();
@@ -1431,7 +1431,7 @@ public class TracerouteEngineImplTest {
   }
 
   @Test
-  public void testSessionReturnFibLookupDifferentVrf() throws IOException {
+  void testSessionReturnFibLookupDifferentVrf() throws IOException {
     String i1Name = "i1";
     String i2Name = "i2";
     NetworkFactory nf = new NetworkFactory();
@@ -1511,7 +1511,7 @@ public class TracerouteEngineImplTest {
   }
 
   @Test
-  public void testEstablishedFlowDisposition() throws IOException {
+  void testEstablishedFlowDisposition() throws IOException {
     // Construct network
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
@@ -1636,7 +1636,7 @@ public class TracerouteEngineImplTest {
   }
 
   @Test
-  public void testNewSessionsSingleHop() throws IOException {
+  void testNewSessionsSingleHop() throws IOException {
     // Construct network
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
@@ -1855,7 +1855,7 @@ public class TracerouteEngineImplTest {
   }
 
   @Test
-  public void testNewSessionsMultiHop() throws IOException {
+  void testNewSessionsMultiHop() throws IOException {
     // Construct network
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
@@ -1966,7 +1966,7 @@ public class TracerouteEngineImplTest {
 
   /** A test that uses sessions. */
   @Test
-  public void testUseSession() throws IOException {
+  void testUseSession() throws IOException {
     // Construct network
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
@@ -2343,7 +2343,7 @@ public class TracerouteEngineImplTest {
 
   @SuppressWarnings("unchecked")
   @Test
-  public void testMultipleNextHopInterfaces() throws IOException {
+  void testMultipleNextHopInterfaces() throws IOException {
     // Construct network
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
@@ -2398,7 +2398,7 @@ public class TracerouteEngineImplTest {
   }
 
   @Test
-  public void testPAT() throws IOException {
+  void testPAT() throws IOException {
     // Construct network
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
@@ -2462,7 +2462,7 @@ public class TracerouteEngineImplTest {
   }
 
   @Test
-  public void testFilterStep() throws IOException {
+  void testFilterStep() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -2555,7 +2555,7 @@ public class TracerouteEngineImplTest {
   }
 
   @Test
-  public void testBidirectionalTracerouteWithDeliveredStep() throws IOException {
+  void testBidirectionalTracerouteWithDeliveredStep() throws IOException {
     // Construct network
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
@@ -2668,20 +2668,20 @@ public class TracerouteEngineImplTest {
     assertThat(reverseHops, hasSize(2));
 
     assertThat(reverseHops.get(0).getSteps(), hasSize(4));
-    assertTrue(reverseHops.get(0).getSteps().get(0) instanceof EnterInputIfaceStep);
-    assertTrue(reverseHops.get(0).getSteps().get(1) instanceof MatchSessionStep);
-    assertTrue(reverseHops.get(0).getSteps().get(2) instanceof RoutingStep);
-    assertTrue(reverseHops.get(0).getSteps().get(3) instanceof ExitOutputIfaceStep);
+    assertThat(reverseHops.get(0).getSteps().get(0), instanceOf(EnterInputIfaceStep.class));
+    assertThat(reverseHops.get(0).getSteps().get(1), instanceOf(MatchSessionStep.class));
+    assertThat(reverseHops.get(0).getSteps().get(2), instanceOf(RoutingStep.class));
+    assertThat(reverseHops.get(0).getSteps().get(3), instanceOf(ExitOutputIfaceStep.class));
 
     assertThat(reverseHops.get(1).getSteps(), hasSize(4));
-    assertTrue(reverseHops.get(1).getSteps().get(0) instanceof EnterInputIfaceStep);
-    assertTrue(reverseHops.get(1).getSteps().get(1) instanceof RoutingStep);
-    assertTrue(reverseHops.get(1).getSteps().get(2) instanceof ExitOutputIfaceStep);
-    assertTrue(reverseHops.get(1).getSteps().get(3) instanceof DeliveredStep);
+    assertThat(reverseHops.get(1).getSteps().get(0), instanceOf(EnterInputIfaceStep.class));
+    assertThat(reverseHops.get(1).getSteps().get(1), instanceOf(RoutingStep.class));
+    assertThat(reverseHops.get(1).getSteps().get(2), instanceOf(ExitOutputIfaceStep.class));
+    assertThat(reverseHops.get(1).getSteps().get(3), instanceOf(DeliveredStep.class));
   }
 
   @Test
-  public void testBidirectionalTracerouteWithArpErrorStep() throws IOException {
+  void testBidirectionalTracerouteWithArpErrorStep() throws IOException {
     // Construct network
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
@@ -2818,10 +2818,10 @@ public class TracerouteEngineImplTest {
     assertThat(reverseHops, hasSize(1));
 
     assertThat(reverseHops.get(0).getSteps(), hasSize(5));
-    assertTrue(reverseHops.get(0).getSteps().get(0) instanceof EnterInputIfaceStep);
-    assertTrue(reverseHops.get(0).getSteps().get(1) instanceof MatchSessionStep);
-    assertTrue(reverseHops.get(0).getSteps().get(2) instanceof RoutingStep);
-    assertTrue(reverseHops.get(0).getSteps().get(3) instanceof ExitOutputIfaceStep);
-    assertTrue(reverseHops.get(0).getSteps().get(4) instanceof ArpErrorStep);
+    assertThat(reverseHops.get(0).getSteps().get(0), instanceOf(EnterInputIfaceStep.class));
+    assertThat(reverseHops.get(0).getSteps().get(1), instanceOf(MatchSessionStep.class));
+    assertThat(reverseHops.get(0).getSteps().get(2), instanceOf(RoutingStep.class));
+    assertThat(reverseHops.get(0).getSteps().get(3), instanceOf(ExitOutputIfaceStep.class));
+    assertThat(reverseHops.get(0).getSteps().get(4), instanceOf(ArpErrorStep.class));
   }
 }

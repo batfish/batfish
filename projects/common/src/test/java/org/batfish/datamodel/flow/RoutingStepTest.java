@@ -9,13 +9,13 @@ import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.flow.RoutingStep.RoutingStepDetail;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link RoutingStep} */
-public class RoutingStepTest {
+class RoutingStepTest {
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     RoutingStep obj =
         RoutingStep.builder()
             .setAction(StepAction.FORWARDED_TO_NEXT_VRF)
@@ -34,7 +34,7 @@ public class RoutingStepTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     RoutingStepDetail.Builder detailBuilder =
         RoutingStepDetail.builder()
             .setForwardingDetail(Discarded.instance())

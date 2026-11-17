@@ -7,16 +7,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link org.batfish.datamodel.dataplane.rib.RibGroup} */
-@RunWith(JUnit4.class)
-public class RibGroupTest {
+class RibGroupTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     RibId rib1 = new RibId("hostname", "vrfname", "ribname");
     RibId rib2 = new RibId("hostname", "vrfname", "secondaryRib");
     RibId exportRib = new RibId("hostname", "vrfname", "exportRib");
@@ -32,7 +29,7 @@ public class RibGroupTest {
   }
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     RibId rib1 = new RibId("hostname", "vrfname", "ribname");
     RibId exportRib = new RibId("hostname", "vrfname", "exportRib");
     RibGroup rg = new RibGroup("name", ImmutableList.of(rib1), "policy1", exportRib);

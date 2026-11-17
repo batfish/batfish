@@ -17,6 +17,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
@@ -45,7 +46,6 @@ import org.batfish.storage.FileBasedStorage;
 import org.batfish.storage.StorageProvider;
 import org.batfish.vendor.ConversionContext;
 import org.batfish.vendor.VendorConfiguration;
-import org.junit.rules.TemporaryFolder;
 
 public class BatfishTestUtils {
 
@@ -92,14 +92,14 @@ public class BatfishTestUtils {
   }
 
   private static Batfish initBatfish(
-      SortedMap<String, Configuration> configurations, @Nonnull TemporaryFolder tempFolder)
+      SortedMap<String, Configuration> configurations, @Nonnull File tempFolder)
       throws IOException {
     Settings settings = new Settings(new String[] {});
     retainAnnotatedRibs(settings);
     settings.setLogger(new BatfishLogger("debug", false));
     final Cache<NetworkSnapshot, SortedMap<String, Configuration>> testrigs = makeTestrigCache();
 
-    settings.setStorageBase(tempFolder.newFolder().toPath());
+    settings.setStorageBase(Files.createTempDirectory(tempFolder.toPath(), "junit"));
     setNextTestNetworkSnapshot(settings);
     if (!configurations.isEmpty()) {
       testrigs.put(
@@ -124,14 +124,14 @@ public class BatfishTestUtils {
   private static Batfish initBatfish(
       @Nonnull SortedMap<String, Configuration> baseConfigs,
       @Nonnull SortedMap<String, Configuration> deltaConfigs,
-      @Nonnull TemporaryFolder tempFolder)
+      @Nonnull File tempFolder)
       throws IOException {
     Settings settings = new Settings(new String[] {});
     retainAnnotatedRibs(settings);
     settings.setLogger(new BatfishLogger("debug", false));
     final Cache<NetworkSnapshot, SortedMap<String, Configuration>> testrigs = makeTestrigCache();
 
-    settings.setStorageBase(tempFolder.newFolder().toPath());
+    settings.setStorageBase(Files.createTempDirectory(tempFolder.toPath(), "junit"));
     setNextTestNetworkSnapshot(settings);
     if (!baseConfigs.isEmpty()) {
       testrigs.put(
@@ -197,9 +197,10 @@ public class BatfishTestUtils {
    * @param tempFolder Temporary folder to be used to files required for Batfish
    * @return Batfish instance pointing at new testrig comprising testrigText
    */
-  public static Batfish getBatfishFromTestrigText(
-      TestrigText testrigText, TemporaryFolder tempFolder) throws IOException {
-    return getBatfishFromTestrigText(testrigText, tempFolder.newFolder().toPath());
+  public static Batfish getBatfishFromTestrigText(TestrigText testrigText, File tempFolder)
+      throws IOException {
+    return getBatfishFromTestrigText(
+        testrigText, Files.createTempDirectory(tempFolder.toPath(), "junit"));
   }
 
   /**
@@ -325,7 +326,7 @@ public class BatfishTestUtils {
    * @return New Batfish instance
    */
   public static Batfish getBatfish(
-      SortedMap<String, Configuration> configurations, @Nonnull TemporaryFolder tempFolder)
+      SortedMap<String, Configuration> configurations, @Nonnull File tempFolder)
       throws IOException {
     return initBatfish(configurations, tempFolder);
   }
@@ -362,13 +363,13 @@ public class BatfishTestUtils {
   public static Batfish getBatfish(
       @Nonnull SortedMap<String, Configuration> baseConfigs,
       @Nonnull SortedMap<String, Configuration> deltaConfigs,
-      @Nonnull TemporaryFolder tempFolder)
+      @Nonnull File tempFolder)
       throws IOException {
     return initBatfish(baseConfigs, deltaConfigs, tempFolder);
   }
 
-  public static Batfish getBatfishForTextConfigs(
-      TemporaryFolder folder, String... configurationNames) throws IOException {
+  public static Batfish getBatfishForTextConfigs(File folder, String... configurationNames)
+      throws IOException {
     SortedMap<String, byte[]> configurationBytesMap = new TreeMap<>();
     for (String configName : configurationNames) {
       byte[] configurationBytes = readResourceBytes(configName);
@@ -379,7 +380,7 @@ public class BatfishTestUtils {
   }
 
   public static Batfish getBatfishForTextConfigsAndConversionContext(
-      TemporaryFolder folder, ConversionContext conversionContext, String... configurationNames)
+      File folder, ConversionContext conversionContext, String... configurationNames)
       throws IOException {
     SortedMap<String, byte[]> configurationBytesMap = new TreeMap<>();
     for (String configName : configurationNames) {
@@ -395,7 +396,7 @@ public class BatfishTestUtils {
   }
 
   public static SortedMap<String, Configuration> parseTextConfigs(
-      TemporaryFolder folder, String... configurationNames) throws IOException {
+      File folder, String... configurationNames) throws IOException {
     IBatfish iBatfish = getBatfishForTextConfigs(folder, configurationNames);
     return iBatfish.loadConfigurations(iBatfish.getSnapshot());
   }

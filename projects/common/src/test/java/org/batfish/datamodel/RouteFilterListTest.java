@@ -5,18 +5,18 @@ import static org.batfish.datamodel.matchers.RouteFilterListMatchers.rejects;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.google.common.collect.ImmutableList;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link RouteFilterList} */
-public class RouteFilterListTest {
+class RouteFilterListTest {
 
   private RouteFilterList _rfAddressMask;
   private RouteFilterList _rfPrefixMoreSpecific;
   private RouteFilterList _rfPrefixExact;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _rfAddressMask =
         new RouteFilterList(
             "test-route-filter-mask",
@@ -44,7 +44,7 @@ public class RouteFilterListTest {
   }
 
   @Test
-  public void testRfAddressMask() {
+  void testRfAddressMask() {
     Prefix acceptedPrefix1 = Prefix.parse("1.5.3.127/24");
     Prefix deniedPrefix1 = Prefix.parse("2.5.6.127/24");
     Prefix deniedPrefix2 = Prefix.parse("1.5.3.127/26");
@@ -55,7 +55,7 @@ public class RouteFilterListTest {
   }
 
   @Test
-  public void testRfPrefixMoreSpecific() {
+  void testRfPrefixMoreSpecific() {
     Prefix acceptedPrefix1 = Prefix.parse("1.2.16.0/27");
     Prefix deniedPrefix1 = Prefix.parse("1.3.5.6/27");
     // matching prefix but is less specific
@@ -67,7 +67,7 @@ public class RouteFilterListTest {
   }
 
   @Test
-  public void testRfPrefixExact() {
+  void testRfPrefixExact() {
     Prefix acceptedPrefix1 = Prefix.parse("1.2.16.0/26");
     // matching prefix with non-equal prefix length
     Prefix deniedPrefix1 = Prefix.parse("1.2.16.0/27");

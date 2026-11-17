@@ -12,12 +12,12 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link PsFromAsPath}. */
-public class PsFromAsPathTest {
+class PsFromAsPathTest {
   @Test
-  public void testUndefined() {
+  void testUndefined() {
     Warnings w = new Warnings(true, true, true);
     BooleanExpr ret = PsFromAsPath.toBooleanExpr(null, w);
     assertThat(ret, is(BooleanExprs.FALSE));
@@ -25,7 +25,7 @@ public class PsFromAsPathTest {
   }
 
   @Test
-  public void testConversionError() {
+  void testConversionError() {
     AsPath unsupportedRegex = new AsPath("this is not a valid as-path regex");
     Warnings w = new Warnings(true, true, true);
     BooleanExpr ret = PsFromAsPath.toBooleanExpr(unsupportedRegex, w);
@@ -38,7 +38,7 @@ public class PsFromAsPathTest {
   }
 
   @Test
-  public void testConversion() {
+  void testConversion() {
     AsPath regex = new AsPath("1 2");
     Warnings w = new Warnings(true, true, true);
     BooleanExpr ret = PsFromAsPath.toBooleanExpr(regex, w);

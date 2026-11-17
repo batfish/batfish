@@ -10,6 +10,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import javax.ws.rs.client.Entity;
@@ -22,14 +23,13 @@ import org.batfish.common.CoordConstsV2;
 import org.batfish.coordinator.Main;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class NetworkObjectsResourceTest extends WorkMgrServiceV2TestBase {
+final class NetworkObjectsResourceTest extends WorkMgrServiceV2TestBase {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private Builder getTarget(String network, String key) {
     return target(CoordConsts.SVC_CFG_WORK_MGR2)
@@ -41,13 +41,13 @@ public final class NetworkObjectsResourceTest extends WorkMgrServiceV2TestBase {
         .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY);
   }
 
-  @Before
-  public void initNetworkEnvironment() {
+  @BeforeEach
+  void initNetworkEnvironment() {
     WorkMgrTestUtils.initWorkManager(_folder);
   }
 
   @Test
-  public void testDeleteAbsent() {
+  void testDeleteAbsent() {
     String network = "network1";
     String key = "foo/bar";
     Main.getWorkMgr().initNetwork(network, null);
@@ -57,7 +57,7 @@ public final class NetworkObjectsResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testDeleteMissingNetwork() {
+  void testDeleteMissingNetwork() {
     String network = "network1";
     String key = "foo/bar";
     try (Response response = getTarget(network, key).delete()) {
@@ -66,7 +66,7 @@ public final class NetworkObjectsResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testDeletePresent() throws IOException {
+  void testDeletePresent() throws IOException {
     String network = "network1";
     String key = "foo/bar";
     Main.getWorkMgr().initNetwork(network, null);
@@ -85,7 +85,7 @@ public final class NetworkObjectsResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetAbsent() {
+  void testGetAbsent() {
     String network = "network1";
     String key = "foo/bar";
     Main.getWorkMgr().initNetwork(network, null);
@@ -95,7 +95,7 @@ public final class NetworkObjectsResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetMissingNetwork() {
+  void testGetMissingNetwork() {
     String network = "network1";
     String key = "foo/bar";
     try (Response response = getTarget(network, key).get()) {
@@ -104,7 +104,7 @@ public final class NetworkObjectsResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetPresent() throws IOException {
+  void testGetPresent() throws IOException {
     String network = "network1";
     String key = "foo/bar";
     Main.getWorkMgr().initNetwork(network, null);
@@ -118,7 +118,7 @@ public final class NetworkObjectsResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testPutMissingNetwork() {
+  void testPutMissingNetwork() {
     String network = "network1";
     String key = "foo/bar";
     String content = "baz";
@@ -131,7 +131,7 @@ public final class NetworkObjectsResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testPutNew() throws IOException {
+  void testPutNew() throws IOException {
     String network = "network1";
     String key = "foo/bar";
     Main.getWorkMgr().initNetwork(network, null);
@@ -147,7 +147,7 @@ public final class NetworkObjectsResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testPutOverwrite() throws IOException {
+  void testPutOverwrite() throws IOException {
     String network = "network1";
     String key = "foo/bar";
     Main.getWorkMgr().initNetwork(network, null);

@@ -8,7 +8,7 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignSour
 import static org.batfish.datamodel.transformation.TransformationStep.shiftDestinationIp;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
@@ -29,11 +29,11 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.transformation.Transformation;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link BDDReverseFlowTransformationFactoryImpl}. */
-public class BDDReverseFlowTransformationFactoryImplTest {
+class BDDReverseFlowTransformationFactoryImplTest {
   private final BDDPacket _pkt = new BDDPacket();
   private final BDD _one = _pkt.getFactory().one();
   private final BDD _zero = _pkt.getFactory().zero();
@@ -46,8 +46,8 @@ public class BDDReverseFlowTransformationFactoryImplTest {
   private Interface.Builder _ib;
   private HeaderSpaceToBDD _headerSpaceToBDD;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     NetworkFactory nf = new NetworkFactory();
     Configuration config =
         nf.configurationBuilder()
@@ -89,10 +89,10 @@ public class BDDReverseFlowTransformationFactoryImplTest {
   }
 
   @Test
-  public void testNoTransformation() {}
+  void testNoTransformation() {}
 
   @Test
-  public void testSrcAssignToPool() {
+  void testSrcAssignToPool() {
     Ip poolStart = Ip.parse("1.1.1.1");
     Ip poolEnd = Ip.parse("1.1.1.5");
     Transformation transformation = always().apply(assignSourceIp(poolStart, poolEnd)).build();
@@ -107,10 +107,10 @@ public class BDDReverseFlowTransformationFactoryImplTest {
 
     BDD poolBdd = dstBdd(poolStart, poolEnd);
     assertTrue(
-        "Anything might have been natted", incomingTransformation.transitForward(poolBdd).isOne());
+        incomingTransformation.transitForward(poolBdd).isOne(), "Anything might have been natted");
     assertTrue(
-        "If outside the pool, not natted",
-        incomingTransformation.transitForward(poolBdd.not()).isZero());
+        incomingTransformation.transitForward(poolBdd.not()).isZero(),
+        "If outside the pool, not natted");
 
     Transition outgoingTransformation =
         factory.reverseFlowOutgoingTransformation(HOSTNAME, i.getName());
@@ -126,7 +126,7 @@ public class BDDReverseFlowTransformationFactoryImplTest {
   }
 
   @Test
-  public void testMatchAndAssignSameField() {
+  void testMatchAndAssignSameField() {
     Ip matchIp = Ip.parse("255.255.255.255");
     Ip poolIp = Ip.parse("0.0.0.0");
     Transformation transformation =
@@ -153,7 +153,7 @@ public class BDDReverseFlowTransformationFactoryImplTest {
   }
 
   @Test
-  public void testShiftPrefix() {
+  void testShiftPrefix() {
     Prefix shiftPrefix = Prefix.parse("1.1.1.0/24");
     Transformation transformation = always().apply(shiftDestinationIp(shiftPrefix)).build();
 
@@ -189,7 +189,7 @@ public class BDDReverseFlowTransformationFactoryImplTest {
   }
 
   @Test
-  public void testAssignAndMatchSameField() {
+  void testAssignAndMatchSameField() {
     // match after assigning the same field.
 
     Ip poolIp = Ip.parse("2.2.2.2");
@@ -246,7 +246,7 @@ public class BDDReverseFlowTransformationFactoryImplTest {
   }
 
   @Test
-  public void testAndThen() {
+  void testAndThen() {
     Prefix match1Prefix = Prefix.parse("1.0.0.0/8");
     Prefix match2Prefix = Prefix.parse("1.1.0.0/16");
     Ip pool1 = Ip.parse("255.255.255.255");
@@ -302,7 +302,7 @@ public class BDDReverseFlowTransformationFactoryImplTest {
   }
 
   @Test
-  public void testOrElse() {
+  void testOrElse() {
     Prefix matchPrefix = Prefix.parse("1.0.0.0/8");
     Ip pool1 = Ip.parse("5.5.5.5");
     Ip pool2 = Ip.parse("6.6.6.6");

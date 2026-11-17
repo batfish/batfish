@@ -8,26 +8,26 @@ import static org.batfish.main.StreamDecoder.decodeStreamAndAppendNewline;
 import static org.batfish.main.StreamDecoder.isPrintableAscii;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.primitives.Bytes;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import org.apache.commons.io.ByteOrderMark;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link StreamDecoder}. */
-public final class StreamDecoderTest {
+final class StreamDecoderTest {
 
   @Test
-  public void testDecodeStreamAndAppendNewlineEmpty() throws IOException {
+  void testDecodeStreamAndAppendNewlineEmpty() throws IOException {
     assertThat(decodeStreamAndAppendNewline(new ByteArrayInputStream(new byte[0])), equalTo(""));
   }
 
   @Test
-  public void testDecodeStreamAndAppendNewlineUtf8() throws IOException {
+  void testDecodeStreamAndAppendNewlineUtf8() throws IOException {
     String text = "café";
     assertThat(
         decodeStreamAndAppendNewline(new ByteArrayInputStream(text.getBytes(UTF_8))),
@@ -35,7 +35,7 @@ public final class StreamDecoderTest {
   }
 
   @Test
-  public void testDecodeStreamAndAppendNewlineAscii() throws IOException {
+  void testDecodeStreamAndAppendNewlineAscii() throws IOException {
     String text = "hostname r1\r\n!\tinterface e1\n";
     assertThat(
         decodeStreamAndAppendNewline(new ByteArrayInputStream(text.getBytes(US_ASCII))),
@@ -43,7 +43,7 @@ public final class StreamDecoderTest {
   }
 
   @Test
-  public void testIsPrintableAscii() {
+  void testIsPrintableAscii() {
     assertTrue(isPrintableAscii("hostname r1\r\n!\tinterface e1\f\n".getBytes(US_ASCII)));
     assertTrue(isPrintableAscii(new byte[0]));
     // Latin-1 and UTF-8 bytes above 0x7F.
@@ -61,7 +61,7 @@ public final class StreamDecoderTest {
           byte[] bytes = new byte[length];
           Arrays.fill(bytes, (byte) 'x');
           bytes[position] = bad;
-          assertFalse(length + "/" + position + "/" + bad, isPrintableAscii(bytes));
+          assertFalse(isPrintableAscii(bytes), length + "/" + position + "/" + bad);
           bytes[position] = position % 2 == 0 ? (byte) '\t' : (byte) '~';
           assertTrue(isPrintableAscii(bytes));
         }
@@ -70,7 +70,7 @@ public final class StreamDecoderTest {
   }
 
   @Test
-  public void testDecodeStreamAndAppendNewlineUtf16LeBom() throws IOException {
+  void testDecodeStreamAndAppendNewlineUtf16LeBom() throws IOException {
     String text = "café";
     byte[] bytes = Bytes.concat(ByteOrderMark.UTF_16LE.getBytes(), text.getBytes(UTF_16LE));
     assertThat(decodeStreamAndAppendNewline(new ByteArrayInputStream(bytes)), equalTo(text + "\n"));

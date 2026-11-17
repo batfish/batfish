@@ -9,12 +9,12 @@ import static org.hamcrest.Matchers.sameInstance;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class Ip6Ip6SpaceTest {
+class Ip6Ip6SpaceTest {
 
   @Test
-  public void testContainsIp() {
+  void testContainsIp() {
     Ip6 ip1 = Ip6.parse("2001:db8::1");
     Ip6 ip2 = Ip6.parse("2001:db8::2");
     Ip6Ip6Space ipSpace = Ip6Ip6Space.create(ip1);
@@ -29,7 +29,7 @@ public class Ip6Ip6SpaceTest {
   }
 
   @Test
-  public void testCaching() {
+  void testCaching() {
     Ip6 ip = Ip6.parse("2001:db8::1");
     Ip6Ip6Space ipSpace1 = Ip6Ip6Space.create(ip);
     Ip6Ip6Space ipSpace2 = Ip6Ip6Space.create(ip);
@@ -39,14 +39,14 @@ public class Ip6Ip6SpaceTest {
   }
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     Ip6Ip6Space original = Ip6Ip6Space.create(Ip6.parse("2001:db8::1"));
     assertThat(BatfishObjectMapper.clone(original, Ip6Space.class), equalTo(original));
     assertThat(SerializationUtils.clone(original), equalTo(original));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     Ip6 ip1 = Ip6.parse("2001:db8::1");
     Ip6 ip2 = Ip6.parse("2001:db8::2");
 
@@ -57,7 +57,7 @@ public class Ip6Ip6SpaceTest {
   }
 
   @Test
-  public void testComplement() {
+  void testComplement() {
     Ip6 ip = Ip6.parse("2001:db8::1");
     Ip6Ip6Space ipSpace = Ip6Ip6Space.create(ip);
     Ip6Space complement = ipSpace.complement();

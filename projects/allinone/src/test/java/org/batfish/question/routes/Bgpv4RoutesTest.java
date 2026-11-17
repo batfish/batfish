@@ -11,6 +11,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasItem;
 
 import com.google.common.collect.ImmutableList;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.batfish.datamodel.Prefix;
@@ -21,14 +22,13 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.question.routes.RoutesQuestion.RibProtocol;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Test of routes answer for BGP routes */
-public final class Bgpv4RoutesTest {
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+final class Bgpv4RoutesTest {
+  @TempDir public File _folder;
 
   private static final String NODE1 = "r1";
   private static final String NODE2 = "r2";
@@ -38,8 +38,8 @@ public final class Bgpv4RoutesTest {
 
   private Batfish _batfish;
 
-  @Before
-  public void setup() throws IOException {
+  @BeforeEach
+  void setup() throws IOException {
     _batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
@@ -50,7 +50,7 @@ public final class Bgpv4RoutesTest {
   }
 
   @Test
-  public void testBestRoutes() {
+  void testBestRoutes() {
     RoutesQuestion question =
         new RoutesQuestion(
             null, NODE1, null, null, BgpRouteStatus.BEST.name(), RibProtocol.BGP, null);
@@ -65,7 +65,7 @@ public final class Bgpv4RoutesTest {
   }
 
   @Test
-  public void testBackupRoutes() {
+  void testBackupRoutes() {
     RoutesQuestion question =
         new RoutesQuestion(
             null, NODE1, null, null, BgpRouteStatus.BACKUP.name(), RibProtocol.BGP, null);

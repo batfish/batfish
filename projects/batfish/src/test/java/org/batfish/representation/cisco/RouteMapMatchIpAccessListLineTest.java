@@ -17,10 +17,10 @@ import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link RouteMapMatchIpAccessListLine}. */
-public class RouteMapMatchIpAccessListLineTest {
+class RouteMapMatchIpAccessListLineTest {
 
   /**
    * Helper method to test {@link RouteMapMatchIpAccessListLine#toBooleanExpr} with specified
@@ -46,7 +46,7 @@ public class RouteMapMatchIpAccessListLineTest {
   }
 
   @Test
-  public void testToBooleanExpr_allUndefined() {
+  void testToBooleanExpr_allUndefined() {
     // All ACLs undefined - should return TRUE
     BooleanExpr result =
         toBooleanExprHelper(ImmutableSet.of("UNDEFINED1", "UNDEFINED2"), ImmutableSet.of());
@@ -54,14 +54,14 @@ public class RouteMapMatchIpAccessListLineTest {
   }
 
   @Test
-  public void testToBooleanExpr_singleUndefined() {
+  void testToBooleanExpr_singleUndefined() {
     // Single undefined ACL - should return TRUE
     BooleanExpr result = toBooleanExprHelper(ImmutableSet.of("UNDEFINED"), ImmutableSet.of());
     assertThat(result, equalTo(BooleanExprs.TRUE));
   }
 
   @Test
-  public void testToBooleanExpr_singleDefined() {
+  void testToBooleanExpr_singleDefined() {
     // Single defined ACL - should return MatchPrefixSet for that ACL
     BooleanExpr result =
         toBooleanExprHelper(ImmutableSet.of("DEFINED"), ImmutableSet.of("DEFINED"));
@@ -71,7 +71,7 @@ public class RouteMapMatchIpAccessListLineTest {
   }
 
   @Test
-  public void testToBooleanExpr_multipleDefined() {
+  void testToBooleanExpr_multipleDefined() {
     // Multiple defined ACLs - should return Disjunction
     BooleanExpr result =
         toBooleanExprHelper(ImmutableSet.of("ACL1", "ACL2"), ImmutableSet.of("ACL1", "ACL2"));
@@ -84,7 +84,7 @@ public class RouteMapMatchIpAccessListLineTest {
   }
 
   @Test
-  public void testToBooleanExpr_mixedDefinedUndefined() {
+  void testToBooleanExpr_mixedDefinedUndefined() {
     // Mixed defined and undefined ACLs - should return Disjunction of only defined ACLs
     BooleanExpr result =
         toBooleanExprHelper(
@@ -99,7 +99,7 @@ public class RouteMapMatchIpAccessListLineTest {
   }
 
   @Test
-  public void testToBooleanExpr_mixedSingleDefined() {
+  void testToBooleanExpr_mixedSingleDefined() {
     // Mixed with only one defined ACL - should return single MatchPrefixSet
     BooleanExpr result =
         toBooleanExprHelper(
@@ -110,14 +110,14 @@ public class RouteMapMatchIpAccessListLineTest {
   }
 
   @Test
-  public void testToBooleanExpr_emptyList() {
+  void testToBooleanExpr_emptyList() {
     // Empty ACL list - should return TRUE
     BooleanExpr result = toBooleanExprHelper(ImmutableSet.of(), ImmutableSet.of());
     assertThat(result, equalTo(BooleanExprs.TRUE));
   }
 
   @Test
-  public void testGetListNames() {
+  void testGetListNames() {
     Set<String> aclNames = ImmutableSet.of("ACL1", "ACL2");
     RouteMapMatchIpAccessListLine line = new RouteMapMatchIpAccessListLine(aclNames);
     assertThat(line.getListNames(), equalTo(aclNames));

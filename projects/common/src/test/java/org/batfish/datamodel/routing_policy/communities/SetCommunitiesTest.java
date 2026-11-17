@@ -17,10 +17,10 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.Environment;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link SetCommunities}. */
-public final class SetCommunitiesTest {
+final class SetCommunitiesTest {
 
   private static final SetCommunities OBJ = new SetCommunities(new CommunitySetExprReference("a"));
 
@@ -33,17 +33,17 @@ public final class SetCommunitiesTest {
   }
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     assertThat(BatfishObjectMapper.clone(OBJ, SetCommunities.class), equalTo(OBJ));
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     assertThat(SerializationUtils.clone(OBJ), equalTo(OBJ));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(OBJ, OBJ, new SetCommunities(new CommunitySetExprReference("a")))
         .addEqualityGroup(new SetCommunities(new CommunitySetExprReference("b")))
@@ -52,7 +52,7 @@ public final class SetCommunitiesTest {
   }
 
   @Test
-  public void testExecute() {
+  void testExecute() {
     Configuration c = new Configuration("h", ConfigurationFormat.CISCO_IOS);
     CommunitySet cs = CommunitySet.of(StandardCommunity.of(1L));
     SetCommunities set = new SetCommunities(new LiteralCommunitySet(cs));

@@ -186,7 +186,7 @@ Note that some packages are excluded from coverage instrumentation to prevent cr
 
 ### JUnit with Hamcrest matchers
 
-- Use JUnit 4 for new tests
+- Use JUnit Jupiter for new tests
 - Use Hamcrest matchers for more readable assertions
 - Create custom matchers for domain-specific assertions
 

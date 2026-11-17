@@ -1,12 +1,12 @@
 package org.batfish.common;
 
 import com.google.common.testing.EqualsTester;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class ColumnSortOptionTest {
+final class ColumnSortOptionTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     ColumnSortOption group1Elem1 = new ColumnSortOption("a", false);
     ColumnSortOption group1Elem2 = new ColumnSortOption("a", false);
     ColumnSortOption group2Elem1 = new ColumnSortOption("a", true);

@@ -13,6 +13,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
@@ -21,19 +22,18 @@ import org.batfish.main.Batfish;
 import org.batfish.representation.juniper.JuniperConfiguration;
 import org.batfish.representation.juniper.OspfInterfaceSettings;
 import org.batfish.representation.juniper.RoutingInstance;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosOspfTopologyTest {
+final class JunosOspfTopologyTest {
 
   private static final String HOSTNAME = "junos-ospf-topology";
   private static final String INVALID_HOSTNAME = "junos-ospf-invalid-topology";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testTopology() throws IOException {
+  void testTopology() throws IOException {
     Batfish batfish = getBatfish(_folder, HOSTNAME);
     JuniperConfiguration jc = getVendorConfiguration(batfish, HOSTNAME);
     RoutingInstance ri = jc.getMasterLogicalSystem().getDefaultRoutingInstance();
@@ -70,7 +70,7 @@ public final class JunosOspfTopologyTest {
   }
 
   @Test
-  public void testProcessTopologyMetricIsUnrecognized() {
+  void testProcessTopologyMetricIsUnrecognized() {
     JuniperConfiguration jc = parseJuniperConfig(_folder, INVALID_HOSTNAME, true);
     assertThat(jc.getWarnings().getParseWarnings(), hasSize(1));
   }

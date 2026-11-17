@@ -46,20 +46,19 @@ import org.batfish.dataplane.ibdp.Node;
 import org.batfish.dataplane.ibdp.TestUtils;
 import org.batfish.dataplane.ibdp.TopologyContext;
 import org.batfish.dataplane.ibdp.schedule.NodeColoredSchedule.Coloring;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.Parameter;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /** Tests for {@link org.batfish.dataplane.ibdp.schedule.NodeColoredSchedule} */
-@RunWith(Parameterized.class)
-public class NodeColoredScheduleTest {
+@ParameterizedClass
+@MethodSource("data")
+class NodeColoredScheduleTest {
 
   private ImmutableSortedMap<String, Configuration> _configurations;
 
-  @Parameters
   public static Collection<Object[]> data() {
     return ImmutableList.copyOf(
         new Coloring[][] {{Coloring.SATURATION}, {Coloring.GREEDY}, {Coloring.RANDOM}});
@@ -67,8 +66,8 @@ public class NodeColoredScheduleTest {
 
   @Parameter public Coloring _coloring;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     // Init BGP processes
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
@@ -155,7 +154,7 @@ public class NodeColoredScheduleTest {
   }
 
   @Test
-  public void testSingleNodeColoring() {
+  void testSingleNodeColoring() {
     Node n = TestUtils.makeIosRouter("r1");
     Map<String, Node> nodes = ImmutableMap.of("r1", n);
     Map<String, Configuration> configs = ImmutableMap.of("r1", n.getConfiguration());
@@ -170,7 +169,7 @@ public class NodeColoredScheduleTest {
   }
 
   @Test
-  public void testTwoNodeColoringNoAdjacencies() {
+  void testTwoNodeColoringNoAdjacencies() {
     Map<String, Node> nodes =
         ImmutableMap.of("r1", TestUtils.makeIosRouter("r1"), "r2", TestUtils.makeIosRouter("r2"));
 
@@ -190,7 +189,7 @@ public class NodeColoredScheduleTest {
   }
 
   @Test
-  public void testTwoNodesConnectedDirectlyViaBGP() {
+  void testTwoNodesConnectedDirectlyViaBGP() {
     BgpTopology bgpTopology =
         initBgpTopology(
             _configurations, new TestIpOwners(_configurations).getIpVrfOwners(), false, null);
@@ -209,7 +208,7 @@ public class NodeColoredScheduleTest {
   }
 
   @Test
-  public void testNodeColoringWithOspfEdge() {
+  void testNodeColoringWithOspfEdge() {
     ImmutableMap<String, Node> nodes =
         _configurations.entrySet().stream()
             .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> new Node(e.getValue())));
@@ -230,7 +229,7 @@ public class NodeColoredScheduleTest {
   }
 
   @Test
-  public void testSaturationColoringCanonical() {
+  void testSaturationColoringCanonical() {
     Node a = TestUtils.makeIosRouter("a");
     Node b = TestUtils.makeIosRouter("b");
     Node c = TestUtils.makeIosRouter("c");

@@ -2,6 +2,7 @@ package org.batfish.datamodel.routing_policy.expr;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
@@ -17,11 +18,11 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.MatchBgpSessionType.Type;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class MatchBgpSessionTypeTest {
+class MatchBgpSessionTypeTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new MatchBgpSessionType(Type.EBGP), new MatchBgpSessionType(Type.EBGP))
         .addEqualityGroup(new MatchBgpSessionType(Type.EBGP, Type.IBGP))
@@ -30,7 +31,7 @@ public class MatchBgpSessionTypeTest {
   }
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     BooleanExpr ebgp = new MatchBgpSessionType(Type.EBGP);
     assertThat(SerializationUtils.clone(ebgp), equalTo(ebgp));
     assertThat(BatfishObjectMapper.clone(ebgp, BooleanExpr.class), equalTo(ebgp));
@@ -60,7 +61,7 @@ public class MatchBgpSessionTypeTest {
   }
 
   @Test
-  public void testEvaluate() {
+  void testEvaluate() {
     MatchBgpSessionType ebgp = new MatchBgpSessionType(Type.EBGP);
     MatchBgpSessionType ibgp = new MatchBgpSessionType(Type.IBGP);
     MatchBgpSessionType eibgp = new MatchBgpSessionType(Type.EBGP, Type.IBGP);
@@ -88,13 +89,19 @@ public class MatchBgpSessionTypeTest {
     }
   }
 
-  @Test(expected = IllegalStateException.class)
-  public void testUnsetCrashes() {
-    runAssertion(false, new MatchBgpSessionType(Type.EBGP), SessionType.UNSET);
+  @Test
+  void testUnsetCrashes() {
+    assertThrows(
+        IllegalStateException.class,
+        () -> runAssertion(false, new MatchBgpSessionType(Type.EBGP), SessionType.UNSET));
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void testTypeRequired() {
-    new MatchBgpSessionType(ImmutableList.of());
+  @Test
+  void testTypeRequired() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> {
+          new MatchBgpSessionType(ImmutableList.of());
+        });
   }
 }

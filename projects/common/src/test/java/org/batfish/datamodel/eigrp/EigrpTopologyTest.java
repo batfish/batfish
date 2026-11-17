@@ -1,6 +1,6 @@
 package org.batfish.datamodel.eigrp;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.graph.MutableNetwork;
 import com.google.common.graph.NetworkBuilder;
@@ -8,11 +8,11 @@ import com.google.common.testing.EqualsTester;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link EigrpTopology}. */
 @ParametersAreNonnullByDefault
-public final class EigrpTopologyTest {
+final class EigrpTopologyTest {
 
   private static @Nonnull EigrpTopology nonTrivialTopology() {
     MutableNetwork<EigrpNeighborConfigId, EigrpEdge> network =
@@ -24,7 +24,7 @@ public final class EigrpTopologyTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new Object())
         .addEqualityGroup(
@@ -40,7 +40,7 @@ public final class EigrpTopologyTest {
   }
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     assertEquals(
         nonTrivialTopology(), BatfishObjectMapper.clone(nonTrivialTopology(), EigrpTopology.class));
   }

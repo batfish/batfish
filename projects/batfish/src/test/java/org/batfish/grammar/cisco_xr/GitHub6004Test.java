@@ -17,16 +17,12 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.representation.cisco_xr.CiscoXrConfiguration;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests for https://github.com/batfish/batfish/issues/6004. */
-public final class GitHub6004Test {
+final class GitHub6004Test {
 
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/cisco_xr/testconfigs/";
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private @Nonnull CiscoXrConfiguration parseVendorConfig(String hostname) {
     String src = readResource(TESTCONFIGS_PREFIX + hostname, UTF_8);
@@ -52,7 +48,7 @@ public final class GitHub6004Test {
   }
 
   @Test
-  public void testGitHub6004() {
+  void testGitHub6004() {
     CiscoXrConfiguration c = parseVendorConfig("gh6004");
     assertThat(c.getIpv4Acls(), hasKeys("FOO", "BAR", "BAZ"));
   }

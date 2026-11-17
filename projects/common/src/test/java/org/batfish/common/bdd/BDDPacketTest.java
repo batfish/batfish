@@ -14,8 +14,8 @@ import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Optional;
 import java.util.function.BiFunction;
@@ -27,11 +27,11 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.TcpFlags;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class BDDPacketTest {
+class BDDPacketTest {
   @Test
-  public void testAllocateBDDBit() {
+  void testAllocateBDDBit() {
     BDDPacket pkt = new BDDPacket();
     int varNum = pkt.getFactory().varNum();
     BDD bdd = pkt.allocateBDDBit("foo");
@@ -40,7 +40,7 @@ public class BDDPacketTest {
   }
 
   @Test
-  public void testAllocateBDDBit_beforePacketVars() {
+  void testAllocateBDDBit_beforePacketVars() {
     BDDPacket pkt = new BDDPacket();
     BDD bdd = pkt.allocateBDDBit("foo", true);
     assertThat(bdd, notNullValue());
@@ -48,7 +48,7 @@ public class BDDPacketTest {
   }
 
   @Test
-  public void testAllocateBDDInteger() {
+  void testAllocateBDDInteger() {
     BDDPacket pkt = new BDDPacket();
     int varNum = pkt.getFactory().varNum();
     BDDInteger var = pkt.allocateBDDInteger("foo", 5);
@@ -57,7 +57,7 @@ public class BDDPacketTest {
   }
 
   @Test
-  public void testAllocateBDDInteger_beforePacketVars() {
+  void testAllocateBDDInteger_beforePacketVars() {
     BDDPacket pkt = new BDDPacket();
     BDDInteger var = pkt.allocateBDDInteger("foo", 5, true);
     assertThat(var, notNullValue());
@@ -65,13 +65,13 @@ public class BDDPacketTest {
   }
 
   @Test
-  public void testGetFlow_empty() {
+  void testGetFlow_empty() {
     BDDPacket pkt = new BDDPacket();
     assertThat(pkt.getFlow(pkt.getFactory().zero()), equalTo(Optional.empty()));
   }
 
   @Test
-  public void testGetFlow_not_sane() {
+  void testGetFlow_not_sane() {
     BDDPacket pkt = new BDDPacket();
     BDDPacketLength length = pkt.getPacketLength();
     BDDIpProtocol protocol = pkt.getIpProtocol();
@@ -102,7 +102,7 @@ public class BDDPacketTest {
   }
 
   @Test
-  public void testGetFlow_ICMP() {
+  void testGetFlow_ICMP() {
     BDDPacket pkt = new BDDPacket();
     Ip dstIp = Ip.parse("123.45.78.0");
     Ip srcIp = Ip.parse("255.255.255.255");
@@ -121,7 +121,7 @@ public class BDDPacketTest {
             .randomFullSatOne(7654321);
 
     Optional<Flow.Builder> flowBuilder = pkt.getFlow(bdd);
-    assertTrue("Unsat", flowBuilder.isPresent());
+    assertTrue(flowBuilder.isPresent(), "Unsat");
     Flow flow = flowBuilder.get().setIngressNode("ingressNode").build();
 
     assertThat(flow, hasDstIp(dstIp));
@@ -135,7 +135,7 @@ public class BDDPacketTest {
   }
 
   @Test
-  public void testGetFlow_TCP() {
+  void testGetFlow_TCP() {
     BDDPacket pkt = new BDDPacket();
     Ip dstIp = Ip.parse("123.45.78.0");
     int dstPort = 0xA0;
@@ -163,7 +163,7 @@ public class BDDPacketTest {
             .randomFullSatOne(7654321);
 
     Optional<Flow.Builder> flowBuilder = pkt.getFlow(bdd);
-    assertTrue("Unsat", flowBuilder.isPresent());
+    assertTrue(flowBuilder.isPresent(), "Unsat");
     Flow flow = flowBuilder.get().setIngressNode("ingressNode").build();
 
     assertThat(flow, hasDstIp(dstIp));
@@ -179,7 +179,7 @@ public class BDDPacketTest {
   }
 
   @Test
-  public void testGetFlow_UDP() {
+  void testGetFlow_UDP() {
     BDDPacket pkt = new BDDPacket();
     Ip dstIp = Ip.parse("123.45.78.0");
     int dstPort = 0xA0;
@@ -199,7 +199,7 @@ public class BDDPacketTest {
             .randomFullSatOne(7654321);
 
     Optional<Flow.Builder> flowBuilder = pkt.getFlow(bdd);
-    assertTrue("Unsat", flowBuilder.isPresent());
+    assertTrue(flowBuilder.isPresent(), "Unsat");
     Flow flow = flowBuilder.get().setIngressNode("ingressNode").build();
 
     assertThat(flow, hasDstIp(dstIp));
@@ -213,7 +213,7 @@ public class BDDPacketTest {
   }
 
   @Test
-  public void testGetFlow_packetLength() {
+  void testGetFlow_packetLength() {
     BDDPacket pkt = new BDDPacket();
 
     // getFlow prefers DEFAULT_PACKET_LENGTH
@@ -225,7 +225,7 @@ public class BDDPacketTest {
   }
 
   @Test
-  public void testGetFlowPreference1() {
+  void testGetFlowPreference1() {
     BDDPacket pkt = new BDDPacket();
     Ip dstIp = Ip.parse("123.45.78.0");
     Ip srcIp = Ip.parse("1.2.3.4");
@@ -233,7 +233,7 @@ public class BDDPacketTest {
     BDD bdd = pkt.getDstIp().value(dstIp.asLong()).and(pkt.getSrcIp().value(srcIp.asLong()));
 
     Optional<Flow.Builder> flowBuilder = pkt.getFlow(bdd);
-    assertTrue("Unsat", flowBuilder.isPresent());
+    assertTrue(flowBuilder.isPresent(), "Unsat");
     Flow flow = flowBuilder.get().setIngressNode("ingressNode").build();
 
     assertThat(flow, hasDstIp(dstIp));
@@ -244,7 +244,7 @@ public class BDDPacketTest {
   }
 
   @Test
-  public void testGetFlowPreference2() {
+  void testGetFlowPreference2() {
     BDDPacket pkt = new BDDPacket();
     Ip dstIp = Ip.parse("123.45.78.0");
     Ip srcIp = Ip.parse("1.2.3.4");
@@ -256,7 +256,7 @@ public class BDDPacketTest {
     bdd = bdd.and(icmpbdd.not());
 
     Optional<Flow.Builder> flowBuilder = pkt.getFlow(bdd);
-    assertTrue("Unsat", flowBuilder.isPresent());
+    assertTrue(flowBuilder.isPresent(), "Unsat");
     Flow flow = flowBuilder.get().setIngressNode("ingressNode").build();
 
     assertThat(flow, hasDstIp(dstIp));
@@ -265,7 +265,7 @@ public class BDDPacketTest {
   }
 
   @Test
-  public void testGetFlowPreference3() {
+  void testGetFlowPreference3() {
     BDDPacket pkt = new BDDPacket();
     Ip dstIp = Ip.parse("123.45.78.0");
     Ip srcIp = Ip.parse("1.2.3.4");
@@ -279,7 +279,7 @@ public class BDDPacketTest {
     bdd = bdd.and(icmpbdd.not()).and(udpbdd.not());
 
     Optional<Flow.Builder> flowBuilder = pkt.getFlow(bdd);
-    assertTrue("Unsat", flowBuilder.isPresent());
+    assertTrue(flowBuilder.isPresent(), "Unsat");
     Flow flow = flowBuilder.get().setIngressNode("ingressNode").build();
 
     assertThat(flow, hasDstIp(dstIp));
@@ -290,7 +290,7 @@ public class BDDPacketTest {
   }
 
   @Test
-  public void testGetFlowPreference_preferenceApplication() {
+  void testGetFlowPreference_preferenceApplication() {
     BDDPacket pkt = new BDDPacket();
     Ip dstIp = Ip.parse("123.45.78.0");
     Ip srcIp = Ip.parse("1.2.3.4");
@@ -298,7 +298,7 @@ public class BDDPacketTest {
     BDD bdd = pkt.getDstIp().value(dstIp.asLong()).and(pkt.getSrcIp().value(srcIp.asLong()));
 
     Optional<Flow.Builder> flowBuilder = pkt.getFlow(bdd, FlowPreference.APPLICATION);
-    assertTrue("Unsat", flowBuilder.isPresent());
+    assertTrue(flowBuilder.isPresent(), "Unsat");
     Flow flow = flowBuilder.get().setIngressNode("ingressNode").build();
 
     assertThat(flow, hasDstIp(dstIp));
@@ -309,14 +309,14 @@ public class BDDPacketTest {
   }
 
   @Test
-  public void testGetFlowPreference_preferenceTestFilter() {
+  void testGetFlowPreference_preferenceTestFilter() {
     BDDPacket pkt = new BDDPacket();
     Ip srcIp = Ip.parse("1.2.3.4");
 
     BDD bdd = pkt.getSrcIp().value(srcIp.asLong());
 
     Optional<Flow.Builder> flowBuilder = pkt.getFlow(bdd, FlowPreference.TESTFILTER);
-    assertTrue("Unsat", flowBuilder.isPresent());
+    assertTrue(flowBuilder.isPresent(), "Unsat");
     Flow flow = flowBuilder.get().setIngressNode("ingressNode").build();
 
     assertThat(flow, hasDstIp(Ip.parse("10.0.0.0")));
@@ -327,7 +327,7 @@ public class BDDPacketTest {
   }
 
   @Test
-  public void testSwapSourceAndDestinationFields() {
+  void testSwapSourceAndDestinationFields() {
     BDDPacket pkt = new BDDPacket();
     BDDInteger dstIp = pkt.getDstIp();
     BDDInteger srcIp = pkt.getSrcIp();
@@ -355,7 +355,7 @@ public class BDDPacketTest {
   }
 
   @Test
-  public void testGetRepresentativeFlowIgnoresIrrelevantBits() {
+  void testGetRepresentativeFlowIgnoresIrrelevantBits() {
     BDDPacket pkt = new BDDPacket();
     // A random flow that cannot have ports, icmp type/code, or tcp flags.
     BDD randomAssignment = pkt.getIpProtocol().value(IpProtocol.OSPF).randomFullSatOne(76451234);

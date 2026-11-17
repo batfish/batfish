@@ -17,10 +17,11 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.startsWith;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import java.io.File;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -40,19 +41,15 @@ import org.batfish.coordinator.authorizer.Authorizer;
 import org.batfish.coordinator.version.ApiVersion;
 import org.batfish.datamodel.questions.TestQuestion;
 import org.batfish.version.BatfishVersion;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-@RunWith(JUnit4.class)
-public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
+  @TempDir public File _folder;
 
-  @Before
-  public void initTestEnvironment() {
+  @BeforeEach
+  void initTestEnvironment() {
     WorkMgrTestUtils.initWorkManager(_folder);
   }
 
@@ -61,7 +58,7 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void getContainers() {
+  void getContainers() {
     try (Response response =
         getContainersTarget()
             .request()
@@ -83,7 +80,7 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void redirectContainer() {
+  void redirectContainer() {
     try (Response response =
         target(CoordConsts.SVC_CFG_WORK_MGR2)
             .path(CoordConstsV2.RSC_NETWORK)
@@ -97,7 +94,7 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetQuestionTemplatesUnconfigured() {
+  void testGetQuestionTemplatesUnconfigured() {
     try (Response response =
         target(CoordConsts.SVC_CFG_WORK_MGR2)
             .path(CoordConstsV2.RSC_QUESTION_TEMPLATES)
@@ -109,7 +106,7 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetQuestionTemplatesConfigured() {
+  void testGetQuestionTemplatesConfigured() {
     String templateName = "template1";
     String templateText = writeTemplateFile(templateName);
     try (Response response =
@@ -125,7 +122,7 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
   }
 
   private @Nonnull String writeTemplateFile(String templateName) {
-    Path questionTemplateDir = _folder.getRoot().toPath().resolve("templates");
+    Path questionTemplateDir = _folder.toPath().resolve("templates");
     String templateText =
         String.format(
             "{\"class\":\"%s\",\"%s\":{\"%s\":\"%s\"}}",
@@ -138,7 +135,7 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetQuestionTemplatesConfiguredVerbose() {
+  void testGetQuestionTemplatesConfiguredVerbose() {
     String templateName = "template1";
     String hiddenTemplateName = "__template2";
     String templateText = writeTemplateFile(templateName);
@@ -173,7 +170,7 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
 
   /** Test that the ApiKey is extracted from the correct header */
   @Test
-  public void apiKeyValidationAndCorrectReturnCodes() {
+  void apiKeyValidationAndCorrectReturnCodes() {
     // Set up by making a call to authorize container
     String containerName = "someContainer";
     String otherContainerName = "anotherContainer";
@@ -225,7 +222,7 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetVersion() {
+  void testGetVersion() {
     try (Response response =
         target(CoordConsts.SVC_CFG_WORK_MGR2).path(CoordConstsV2.RSC_VERSION).request().get()) {
 
@@ -239,7 +236,7 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
 
   /** Tests that clients that include the now-unnecessary version header are still allowed. */
   @Test
-  public void testGetVersionExtraHeader() {
+  void testGetVersionExtraHeader() {
     try (Response response =
         target(CoordConsts.SVC_CFG_WORK_MGR2)
             .path(CoordConstsV2.RSC_VERSION)
@@ -267,7 +264,7 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testInitNetworkDefaultPrefix() {
+  void testInitNetworkDefaultPrefix() {
     URI outputPath;
     Container c;
     try (Response response =
@@ -290,7 +287,7 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testInitNetworkAlreadyExists() {
+  void testInitNetworkAlreadyExists() {
     String network = Main.getWorkMgr().initNetwork("network", null);
     try (Response response =
         initNetworkTarget(network, null)
@@ -304,7 +301,7 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testInitNetworkQpNetworkNullNetworkPrefix() {
+  void testInitNetworkQpNetworkNullNetworkPrefix() {
     String network = "net1";
     URI outputPath;
     Container c;
@@ -328,7 +325,7 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testInitNetworkQpNetworkEmptyNetworkPrefix() {
+  void testInitNetworkQpNetworkEmptyNetworkPrefix() {
     String network = "net1";
     URI outputPath;
     Container c;
@@ -352,7 +349,7 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testInitNetworkQpNetworkAndNetworkPrefix() {
+  void testInitNetworkQpNetworkAndNetworkPrefix() {
     String network = "net1";
     URI outputPath;
     Container c;
@@ -376,7 +373,7 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testInitNetworkQpNetworkPrefixNullNetwork() {
+  void testInitNetworkQpNetworkPrefixNullNetwork() {
     String networkPrefix = "prefix";
     URI outputPath;
     Container c;
@@ -400,7 +397,7 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testInitNetworkQpNetworkPrefixEmptyNetwork() {
+  void testInitNetworkQpNetworkPrefixEmptyNetwork() {
     String networkPrefix = "prefix";
     URI outputPath;
     Container c;

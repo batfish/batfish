@@ -1,19 +1,19 @@
 package org.batfish.representation.juniper;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link FwFromIcmpCode} */
-public class FwFromIcmpCodeTest {
+class FwFromIcmpCodeTest {
 
   @Test
-  public void testToAclLineMatchExpr() {
+  void testToAclLineMatchExpr() {
     FwFromIcmpCode from = new FwFromIcmpCode(new SubRange(1, 2));
     assertEquals(
         from.toAclLineMatchExpr(null, null, null),

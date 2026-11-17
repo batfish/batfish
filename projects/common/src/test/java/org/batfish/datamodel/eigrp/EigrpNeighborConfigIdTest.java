@@ -6,12 +6,12 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link EigrpNeighborConfigId} */
-public class EigrpNeighborConfigIdTest {
+class EigrpNeighborConfigIdTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     EigrpNeighborConfigId ei = new EigrpNeighborConfigId(1L, "h", "i", "v");
     new EqualsTester()
         .addEqualityGroup(ei, ei, new EigrpNeighborConfigId(1L, "h", "i", "v"))
@@ -23,13 +23,13 @@ public class EigrpNeighborConfigIdTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     EigrpNeighborConfigId ei = new EigrpNeighborConfigId(1L, "h", "i", "v");
     assertThat(SerializationUtils.clone(ei), equalTo(ei));
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     EigrpNeighborConfigId ei = new EigrpNeighborConfigId(1L, "h", "i", "v");
     assertThat(BatfishObjectMapper.clone(ei, EigrpNeighborConfigId.class), equalTo(ei));
   }

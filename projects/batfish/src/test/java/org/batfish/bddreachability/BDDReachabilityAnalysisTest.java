@@ -17,13 +17,14 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Table;
 import com.google.common.collect.Tables;
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -70,14 +71,13 @@ import org.batfish.symbolic.state.PreOutVrf;
 import org.batfish.symbolic.state.Query;
 import org.batfish.symbolic.state.StateExpr;
 import org.batfish.symbolic.state.VrfAccept;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests of {@link BDDReachabilityAnalysis}. */
-public final class BDDReachabilityAnalysisTest {
-  @Rule public TemporaryFolder temp = new TemporaryFolder();
+final class BDDReachabilityAnalysisTest {
+  @TempDir public File temp;
 
   private BDDPacket _pkt;
 
@@ -138,8 +138,8 @@ public final class BDDReachabilityAnalysisTest {
 
   private BDD _tcpBdd;
 
-  @Before
-  public void setup() throws IOException {
+  @BeforeEach
+  void setup() throws IOException {
     _net = new TestNetwork();
     Batfish batfish = BatfishTestUtils.getBatfish(_net._configs, temp);
 
@@ -258,7 +258,7 @@ public final class BDDReachabilityAnalysisTest {
   }
 
   @Test
-  public void testBDDTransitions_InterfaceAccept_VrfAccept() {
+  void testBDDTransitions_InterfaceAccept_VrfAccept() {
     assertThat(bddTransition(_link1SrcAccept, _srcVrfAccept), isOne());
     assertThat(bddTransition(_link2SrcAccept, _srcVrfAccept), isOne());
     assertThat(bddTransition(_link1DstAccept, _dstVrfAccept), isOne());
@@ -268,19 +268,19 @@ public final class BDDReachabilityAnalysisTest {
   }
 
   @Test
-  public void testBDDTransitions_VrfAccept_NodeAccept() {
+  void testBDDTransitions_VrfAccept_NodeAccept() {
     assertThat(bddTransition(_srcVrfAccept, _srcNodeAccept), isOne());
     assertThat(bddTransition(_dstVrfAccept, _dstNodeAccept), isOne());
   }
 
   @Test
-  public void testBDDTransitions_NodeAccept_Accept() {
+  void testBDDTransitions_NodeAccept_Accept() {
     assertThat(bddTransition(_srcNodeAccept, Accept.INSTANCE), isOne());
     assertThat(bddTransition(_dstNodeAccept, Accept.INSTANCE), isOne());
   }
 
   @Test
-  public void testBDDTransitions_PostInVrf_outEdges() {
+  void testBDDTransitions_PostInVrf_outEdges() {
     Set<StateExpr> srcPostInVrfOutStates = _graph.getForwardEdgeMap().get(_srcPostInVrf).keySet();
     Set<StateExpr> dstPostInVrfOutStates = _graph.getForwardEdgeMap().get(_dstPostInVrf).keySet();
 
@@ -321,7 +321,7 @@ public final class BDDReachabilityAnalysisTest {
   }
 
   @Test
-  public void testBDDTransitions_PostInVrf_InterfaceAccept() {
+  void testBDDTransitions_PostInVrf_InterfaceAccept() {
     BDD link1SrcAcceptBdd = bddTransition(_srcPostInVrf, _link1SrcAccept);
     BDD link2SrcAcceptBdd = bddTransition(_srcPostInVrf, _link2SrcAccept);
     assertThat(link1SrcAcceptBdd, equalTo(_link1SrcIpBDD));
@@ -338,7 +338,7 @@ public final class BDDReachabilityAnalysisTest {
   }
 
   @Test
-  public void testBDDTransitions_PostInVrf_PreOutVrf() {
+  void testBDDTransitions_PostInVrf_PreOutVrf() {
     assertThat(
         bddTransition(_dstPostInVrf, _dstPreOutVrf), equalTo(or(_link1SrcIpBDD, _link2SrcIpBDD)));
 
@@ -348,14 +348,14 @@ public final class BDDReachabilityAnalysisTest {
   }
 
   @Test
-  public void testBDDTransitions_PreInInterface_NodeDropAclIn() {
+  void testBDDTransitions_PreInInterface_NodeDropAclIn() {
     NodeDropAclIn dstDropAclIn = new NodeDropAclIn(_dstName);
     assertThat(bddTransition(_dstPreInInterface1, dstDropAclIn), equalTo(dstIpBDD(_dstIface2Ip)));
     assertThat(edge(_dstPreInInterface2, dstDropAclIn), nullValue());
   }
 
   @Test
-  public void testBDDTransitions_PreInInterface_PostInInterface() {
+  void testBDDTransitions_PreInInterface_PostInInterface() {
     // link1: not(_dstIface2Ip)
     assertThat(
         bddTransition(_dstPreInInterface1, _dstPostInInterface1),
@@ -365,7 +365,7 @@ public final class BDDReachabilityAnalysisTest {
   }
 
   @Test
-  public void testBDDTransitions_PreOutVrf_outEdges() {
+  void testBDDTransitions_PreOutVrf_outEdges() {
     String link1SrcName = _net._link1Src.getName();
     String link2SrcName = _net._link2Src.getName();
     BDD nodeDropNullRoute = bddTransition(_srcPreOutVrf, new NodeDropNullRoute(_srcName));
@@ -396,7 +396,7 @@ public final class BDDReachabilityAnalysisTest {
   }
 
   @Test
-  public void testBDDTransitions_PreOutVrf_NodeInterfaceDisposition() {
+  void testBDDTransitions_PreOutVrf_NodeInterfaceDisposition() {
     // delievered to subnet
     assertThat(
         _graph
@@ -495,7 +495,7 @@ public final class BDDReachabilityAnalysisTest {
   }
 
   @Test
-  public void testBDDTransitions_PreOutVrf_PreOutEdge() {
+  void testBDDTransitions_PreOutVrf_PreOutEdge() {
     assertThat(
         bddTransition(_srcPreOutVrf, _srcPreOutEdge1),
         equalTo(or(_link1DstIpBDD, _dstIface1IpBDD, _dstIface2IpBDD)));
@@ -508,7 +508,7 @@ public final class BDDReachabilityAnalysisTest {
   }
 
   @Test
-  public void testBDDTransitions_PreOutEdgePostNat_NodeDropAclOut() {
+  void testBDDTransitions_PreOutEdgePostNat_NodeDropAclOut() {
     assertThat(edge(_dstPreOutEdgePostNat1, new NodeDropAclOut(_dstName)), nullValue());
     assertThat(edge(_dstPreOutEdgePostNat2, new NodeDropAclOut(_dstName)), nullValue());
     assertThat(edge(_srcPreOutEdgePostNat1, new NodeDropAclOut(_srcName)), nullValue());
@@ -518,7 +518,7 @@ public final class BDDReachabilityAnalysisTest {
   }
 
   @Test
-  public void testBDDTransitions_PreOutEdgePostNat_PreInInterface() {
+  void testBDDTransitions_PreOutEdgePostNat_PreInInterface() {
     assertThat(bddTransition(_dstPreOutEdgePostNat1, _srcPreInInterface1), isOne());
     assertThat(bddTransition(_dstPreOutEdgePostNat2, _srcPreInInterface2), isOne());
     assertThat(bddTransition(_srcPreOutEdgePostNat1, _dstPreInInterface1), isOne());
@@ -528,7 +528,7 @@ public final class BDDReachabilityAnalysisTest {
   }
 
   @Test
-  public void testDefaultAcceptBDD() {
+  void testDefaultAcceptBDD() {
     BDDPacket pkt = new BDDPacket();
     String hostname = "host";
     OriginateVrf originateVrf = new OriginateVrf(hostname, "vrf");
@@ -545,7 +545,7 @@ public final class BDDReachabilityAnalysisTest {
   }
 
   @Test
-  public void testGetSrcLocationBdds() {
+  void testGetSrcLocationBdds() {
     // Simple reachability graph starting with interface states. Include an intermediate state to
     // ensure reverseReachableStates are being correctly used (intermediate state is PostInVrf).
     String hostname = "c";
@@ -580,7 +580,7 @@ public final class BDDReachabilityAnalysisTest {
   }
 
   @Test
-  public void testFixpoint() {
+  void testFixpoint() {
     StateExpr a = new NodeAccept("A");
     StateExpr b = new NodeAccept("B");
     StateExpr c = new NodeAccept("C");

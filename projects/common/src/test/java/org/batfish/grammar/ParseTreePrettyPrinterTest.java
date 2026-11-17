@@ -13,11 +13,11 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.grammar.recovery.RecoveryCombinedParser;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link ParseTreePrettyPrinter}. */
 @ParametersAreNonnullByDefault
-public final class ParseTreePrettyPrinterTest {
+final class ParseTreePrettyPrinterTest {
 
   private static final GrammarSettings SETTINGS =
       MockGrammarSettings.builder()
@@ -29,7 +29,7 @@ public final class ParseTreePrettyPrinterTest {
           .build();
 
   @Test
-  public void testParseTreePrettyPrintWithCharacterLimit() {
+  void testParseTreePrettyPrintWithCharacterLimit() {
     List<String> strings = new ArrayList<>();
     strings.add("1234");
 
@@ -57,7 +57,7 @@ public final class ParseTreePrettyPrinterTest {
   }
 
   @Test
-  public void testGetParseTreeSentencesLineNumbers() {
+  void testGetParseTreeSentencesLineNumbers() {
     String configText = readResource("org/batfish/grammar/line_numbers", UTF_8);
     RecoveryCombinedParser cp = new RecoveryCombinedParser(configText, SETTINGS);
     ParserRuleContext tree = cp.parse();
@@ -74,7 +74,7 @@ public final class ParseTreePrettyPrinterTest {
   }
 
   @Test
-  public void testGetParseTreeSentencesMappedLineNumbers() {
+  void testGetParseTreeSentencesMappedLineNumbers() {
     String configText = readResource("org/batfish/grammar/line_numbers", UTF_8);
     FlattenerLineMap lineMap = new FlattenerLineMap();
     /* Map words on each line to different original lines */

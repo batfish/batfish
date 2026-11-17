@@ -49,9 +49,9 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -60,6 +60,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Streams;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -158,13 +159,12 @@ import org.batfish.symbolic.state.SetupSessionDeliveredToSubnet;
 import org.batfish.symbolic.state.SetupSessionExitsNetwork;
 import org.batfish.symbolic.state.StateExpr;
 import org.hamcrest.Matcher;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests of {@link BDDReachabilityAnalysisFactory}. */
-public final class BDDReachabilityAnalysisFactoryTest {
-  @Rule public TemporaryFolder temp = new TemporaryFolder();
+final class BDDReachabilityAnalysisFactoryTest {
+  @TempDir public File temp;
 
   private final BDDPacket _pkt = new BDDPacket();
   private final BDD _one = _pkt.getFactory().one();
@@ -215,14 +215,14 @@ public final class BDDReachabilityAnalysisFactoryTest {
   }
 
   @Test
-  public void testBDDFactory() throws IOException {
+  void testBDDFactory() throws IOException {
     // Confirm factory building does not throw, even with IpSpace and ACL indirection
     TestNetworkIndirection net = new TestNetworkIndirection();
     makeBddReachabilityAnalysisFactory(net._configs);
   }
 
   @Test
-  public void testAnalysisUseInterfaceRootsParam() throws IOException {
+  void testAnalysisUseInterfaceRootsParam() throws IOException {
     SortedMap<String, Configuration> configs = TestNetworkSources.twoNodeNetwork();
     Batfish batfish = BatfishTestUtils.getBatfish(configs, temp);
     BDDReachabilityAnalysisFactory factory = makeBddReachabilityAnalysisFactory(configs);
@@ -282,7 +282,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
   }
 
   @Test
-  public void testFinalNodes() throws IOException {
+  void testFinalNodes() throws IOException {
     SortedMap<String, Configuration> configs = TestNetworkSources.twoNodeNetwork();
     Batfish batfish = BatfishTestUtils.getBatfish(configs, temp);
     BDDReachabilityAnalysisFactory factory = makeBddReachabilityAnalysisFactory(configs);
@@ -326,7 +326,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
   }
 
   @Test
-  public void testForbiddenTransitNodes() throws IOException {
+  void testForbiddenTransitNodes() throws IOException {
     SortedMap<String, Configuration> configs = TestNetworkSources.twoNodeNetwork();
     Batfish batfish = BatfishTestUtils.getBatfish(configs, temp);
     BDDReachabilityAnalysisFactory factory = makeBddReachabilityAnalysisFactory(configs);
@@ -347,19 +347,19 @@ public final class BDDReachabilityAnalysisFactoryTest {
       Set<Edge> edges = getEdges(edgeMap);
 
       assertTrue(
-          "Edges at which a forbiddenTransitNode would become transited should be removed.",
           edges.stream()
               .noneMatch(edge ->
                   edge.getPreState() instanceof PreOutEdgePostNat
                       && edge.getPostState() instanceof PreInInterface
-                      && ((PreOutEdgePostNat) edge.getPreState()).getSrcNode().equals(node)));
+                      && ((PreOutEdgePostNat) edge.getPreState()).getSrcNode().equals(node)),
+          "Edges at which a forbiddenTransitNode would become transited should be removed.");
       assertTrue(
-          "Edges at which a non-forbiddenTransitNodes become transited should not be removed.",
           edges.stream()
               .anyMatch(edge ->
                   edge.getPreState() instanceof PreOutEdgePostNat
                       && edge.getPostState() instanceof PreInInterface
-                      && ((PreOutEdgePostNat) edge.getPreState()).getSrcNode().equals(otherNode)));
+                      && ((PreOutEdgePostNat) edge.getPreState()).getSrcNode().equals(otherNode)),
+          "Edges at which a non-forbiddenTransitNodes become transited should not be removed.");
     }
   }
 
@@ -373,7 +373,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
   }
 
   @Test
-  public void testRequiredTransitNodes() throws IOException {
+  void testRequiredTransitNodes() throws IOException {
     SortedMap<String, Configuration> configs = TestNetworkSources.twoNodeNetwork();
     Batfish batfish = BatfishTestUtils.getBatfish(configs, temp);
     assertThat(configs.size(), equalTo(2));
@@ -399,11 +399,11 @@ public final class BDDReachabilityAnalysisFactoryTest {
           .filter(edge -> edge.getPostState() == Query.INSTANCE)
           .forEach(edge -> {
             assertFalse(
-                "Edge into query state must require requiredTransitNodes bit to be one",
-                edge.traverseForward(_one).andSat(notTransited));
+                edge.traverseForward(_one).andSat(notTransited),
+                "Edge into query state must require requiredTransitNodes bit to be one");
             assertFalse(
-                "Edge into query state must require requiredTransitNodes bit to be one",
-                edge.traverseBackward(_one).andSat(notTransited));
+                edge.traverseBackward(_one).andSat(notTransited),
+                "Edge into query state must require requiredTransitNodes bit to be one");
           });
 
       // all edges from originate states initialize the transit nodes bit to zero
@@ -420,12 +420,12 @@ public final class BDDReachabilityAnalysisFactoryTest {
               hostname = ((OriginateInterfaceLink) preState).getHostname();
             }
             assertFalse(
-                "Edge out of originate state must require requiredTransitNodes bit to be zero",
-                edge.traverseForward(_one).andSat(transited));
+                edge.traverseForward(_one).andSat(transited),
+                "Edge out of originate state must require requiredTransitNodes bit to be zero");
             assertFalse(
-                "Edge out of originate state must require requiredTransitNodes bit to be zero",
                 edge.traverseBackward(factory.getBDDSourceManagers().get(hostname).isValidValue())
-                    .andSat(transited));
+                    .andSat(transited),
+                "Edge out of originate state must require requiredTransitNodes bit to be zero");
           });
 
       edges.stream()
@@ -439,38 +439,38 @@ public final class BDDReachabilityAnalysisFactoryTest {
             BDD peerValidSrc = factory.getBDDSourceManagers().get(peername).isValidValue();
             if (hostname.equals(node)) {
               assertFalse(
+                  edge.traverseForward(validSrc).andSat(notTransited),
                   "Forward Edge from PreOutEdgePostNat to PreInInterface for a "
-                      + "requiredTransitNode must set the requiredTransitNodes bit",
-                  edge.traverseForward(validSrc).andSat(notTransited));
+                      + "requiredTransitNode must set the requiredTransitNodes bit");
               BDD backwardOne = edge.traverseBackward(peerValidSrc);
               assertFalse(
+                  backwardOne.testsVars(requiredTransitNodesBDD),
                   "Backward Edge from PreOutEdgePostNat to PreInInterface for a "
-                      + " requiredTransitNode must not constrain the bit after exit",
-                  backwardOne.testsVars(requiredTransitNodesBDD));
+                      + " requiredTransitNode must not constrain the bit after exit");
             } else {
               assertFalse(
+                  edge.traverseForward(transited.and(validSrc)).andSat(notTransited),
                   "Edge from PreOutEdgePostNat to PreInInterface for a "
-                      + "non-requiredTransitNode must not touch the requiredTransitNodes bit",
-                  edge.traverseForward(transited.and(validSrc)).andSat(notTransited));
+                      + "non-requiredTransitNode must not touch the requiredTransitNodes bit");
               assertFalse(
+                  edge.traverseForward(notTransited.and(validSrc)).andSat(transited),
                   "Edge from PreOutEdgePostNat to PreInInterface for a "
-                      + "non-requiredTransitNode must not touch the requiredTransitNodes bit",
-                  edge.traverseForward(notTransited.and(validSrc)).andSat(transited));
+                      + "non-requiredTransitNode must not touch the requiredTransitNodes bit");
               assertFalse(
+                  edge.traverseBackward(transited.and(peerValidSrc)).andSat(notTransited),
                   "Edge from PreOutEdgePostNat to PreInInterface for a "
-                      + "non-requiredTransitNode must not touch the requiredTransitNodes bit",
-                  edge.traverseBackward(transited.and(peerValidSrc)).andSat(notTransited));
+                      + "non-requiredTransitNode must not touch the requiredTransitNodes bit");
               assertFalse(
+                  edge.traverseBackward(notTransited.and(peerValidSrc)).andSat(transited),
                   "Edge from PreOutEdgePostNat to PreInInterface for a "
-                      + "non-requiredTransitNode must not touch the requiredTransitNodes bit",
-                  edge.traverseBackward(notTransited.and(peerValidSrc)).andSat(transited));
+                      + "non-requiredTransitNode must not touch the requiredTransitNodes bit");
             }
           });
     }
   }
 
   @Test
-  public void testGetAllBDDsLoop() throws IOException {
+  void testGetAllBDDsLoop() throws IOException {
     SortedMap<String, Configuration> configs = LoopNetwork.testLoopNetwork(true);
     Batfish batfish = BatfishTestUtils.getBatfish(configs, temp);
     batfish.computeDataPlane(batfish.getSnapshot());
@@ -506,7 +506,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
   }
 
   @Test
-  public void testGetAllBDDsLoopWithNoroute() throws IOException {
+  void testGetAllBDDsLoopWithNoroute() throws IOException {
     SortedMap<String, Configuration> configs = new TreeMap<>(LoopNetwork.testLoopNetwork(true));
 
     // adding an isolated config which has no route to the looping destination prefix
@@ -559,7 +559,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
   }
 
   @Test
-  public void testInactiveInterface() throws IOException {
+  void testInactiveInterface() throws IOException {
     Ip ip = Ip.parse("1.2.3.4");
     BDD ipBDD = new IpSpaceToBDD(_pkt.getDstIp()).toBDD(ip);
 
@@ -597,7 +597,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
   }
 
   @Test
-  public void testDestNat() throws IOException {
+  void testDestNat() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration config =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
@@ -655,7 +655,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
    * rule, then the packet is not natted and no further rules are applied.
    */
   @Test
-  public void testDestNatNullPool() throws IOException {
+  void testDestNatNullPool() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration config =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
@@ -717,7 +717,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
   }
 
   @Test
-  public void testSrcNatNullPool() throws IOException {
+  void testSrcNatNullPool() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration config =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
@@ -780,7 +780,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
   }
 
   @Test
-  public void testSourceNatExitsNetwork() throws IOException {
+  void testSourceNatExitsNetwork() throws IOException {
     /*
      * Pre-NAT out ACL permits dest source ports 50 - 150
      * Source NAT will write source IP to 5.5.5.5 if source port is 100
@@ -913,7 +913,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
   }
 
   @Test
-  public void testEdgeWithPreNatAcl() throws IOException {
+  void testEdgeWithPreNatAcl() throws IOException {
     /*
      * Pre-NAT out ACL permits dest source ports 50 - 150
      * Source NAT will write source IP to 5.5.5.5 if source port is 100
@@ -1011,7 +1011,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
    *  owned by any device, so traffic of destination 8.8.8.0/24 should have disposition EXITS NETWORK.
    */
   @Test
-  public void testInsufficientInfoVsExitsNetwork1() throws IOException {
+  void testInsufficientInfoVsExitsNetwork1() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -1075,7 +1075,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
    *  owned by a device, so traffic of destination 8.8.8.0/24 should have disposition INSUFFICIENT_INFO.
    */
   @Test
-  public void testInsufficientInfoVsExitsNetwork2() throws IOException {
+  void testInsufficientInfoVsExitsNetwork2() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -1146,7 +1146,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
   }
 
   @Test
-  public void testFinalHeaderSpaceBdd() throws IOException {
+  void testFinalHeaderSpaceBdd() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -1203,7 +1203,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
   }
 
   @Test
-  public void testFinalHeaderSpaceBddForPorts() throws IOException {
+  void testFinalHeaderSpaceBddForPorts() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -1241,7 +1241,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
   }
 
   @Test
-  public void testTransformationGuardWithIpSpaceReference() throws IOException {
+  void testTransformationGuardWithIpSpaceReference() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -1366,7 +1366,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
    * Test with a simple network where a lookup is done using policy-based routing in a different VRF
    */
   @Test
-  public void testPBRCrossVrfLookupExitsNetwork() throws IOException {
+  void testPBRCrossVrfLookupExitsNetwork() throws IOException {
 
     // no neighbor, expect exits network
     ImmutableSortedMap<String, Configuration> configs = makePBRNetwork(false);
@@ -1417,7 +1417,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
    * Test with a simple network where a lookup is done using policy-based routing in a different VRF
    */
   @Test
-  public void testPBRCrossVrfLookupExitsEdge() throws IOException {
+  void testPBRCrossVrfLookupExitsEdge() throws IOException {
 
     // with neighbor, expect accepted disposition
     ImmutableSortedMap<String, Configuration> configs = makePBRNetwork(true);
@@ -1522,7 +1522,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
   }
 
   @Test
-  public void testNextVrfWithNeighbor() throws IOException {
+  void testNextVrfWithNeighbor() throws IOException {
     // with neighbor, expect accepted disposition
     ImmutableSortedMap<String, Configuration> configs = makeNextVrfNetwork(true);
     BDDReachabilityAnalysisFactory factory = makeBddReachabilityAnalysisFactory(configs);
@@ -1576,7 +1576,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
   }
 
   @Test
-  public void testNextVrfWithoutNeighbor() throws IOException {
+  void testNextVrfWithoutNeighbor() throws IOException {
     // with neighbor, expect accepted disposition
     ImmutableSortedMap<String, Configuration> configs = makeNextVrfNetwork(false);
     BDDReachabilityAnalysisFactory factory = makeBddReachabilityAnalysisFactory(configs);
@@ -1666,7 +1666,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
   }
 
   @Test
-  public void testOutgoingInterfaceIsOneOf() throws IOException {
+  void testOutgoingInterfaceIsOneOf() throws IOException {
     ImmutableSortedMap<String, Configuration> configs = makeOutgoingInterfaceIsOneOfNetwork();
     BDDReachabilityAnalysisFactory factory = makeBddReachabilityAnalysisFactory(configs);
 
@@ -1702,7 +1702,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
   }
 
   @Test
-  public void testGenerateRootEdges_OriginateInterface_PostInVrf() throws IOException {
+  void testGenerateRootEdges_OriginateInterface_PostInVrf() throws IOException {
     // Create network with two interfaces
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
@@ -1820,7 +1820,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
    * that the outgoing original flow filter is still applied if outgoing filter is null.
    */
   @Test
-  public void testOutgoingOriginalFlowFilterWithoutOutgoingFilter_arpSuccess() throws IOException {
+  void testOutgoingOriginalFlowFilterWithoutOutgoingFilter_arpSuccess() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -1891,7 +1891,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
    * that the outgoing original flow filter is still applied if outgoing filter is null.
    */
   @Test
-  public void testOutgoingOriginalFlowFilterWithoutOutgoingFilter_arpFailure() throws IOException {
+  void testOutgoingOriginalFlowFilterWithoutOutgoingFilter_arpFailure() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -1932,7 +1932,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
         factory
             .generateRules_PreOutInterfaceDisposition_NodeDropAclOut()
             .collect(Collectors.toList());
-    assertFalse("edges must not be empty", edges.isEmpty());
+    assertFalse(edges.isEmpty(), "edges must not be empty");
     assertThat(
         edges,
         everyItem(
@@ -1947,7 +1947,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
 
   /** Test that PBR takes precedence over incoming filter when both are present on an interface. */
   @Test
-  public void testIncomingFilterVsPBR() throws IOException {
+  void testIncomingFilterVsPBR() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration n1 =
         Configuration.builder()
@@ -1989,7 +1989,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
   }
 
   @Test
-  public void testOutgoingFilters() throws IOException {
+  void testOutgoingFilters() throws IOException {
     /*
     Test that flow is denied unless it matches all outgoing filters.
     - Src IP 1.0.0.0 permitted by all filters (original flow, pre-transformation, and outgoing)
@@ -2057,7 +2057,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
   }
 
   @Test
-  public void testOutgoingFilters_PreOutEdgePostNat() throws IOException {
+  void testOutgoingFilters_PreOutEdgePostNat() throws IOException {
     /*
     Test that NAT flow is denied unless it matches original flow filter and outgoing filter (the
     pre-transformation filter should not touch NAT flows). 1.0.0.0 and 3.0.0.0 should be allowed.
@@ -2120,7 +2120,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
   }
 
   @Test
-  public void testOutgoingOriginalFlowFilterManagersTrivialIfIgnoreFiltersOn() throws IOException {
+  void testOutgoingOriginalFlowFilterManagersTrivialIfIgnoreFiltersOn() throws IOException {
     /* When ignoreFilters is on, we artificially make all original flow filter managers trivial. */
     SortedMap<String, Configuration> configs = makeOutgoingFiltersNetwork(false, false);
     BDDReachabilityAnalysisFactory factory = makeBddReachabilityAnalysisFactory(configs, true);
@@ -2128,7 +2128,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
   }
 
   @Test
-  public void testAddOutgoingOriginalFlowFiltersConstraint_PostInInterface() throws IOException {
+  void testAddOutgoingOriginalFlowFiltersConstraint_PostInInterface() throws IOException {
     /*
     Test that the correct outgoingOriginalFlowFiltersConstraint is placed on flows entering a node
     with an interface with an outgoingOriginalFlowFilter. In this case, c1 has interfaces i1 and i2,
@@ -2177,7 +2177,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
   }
 
   @Test
-  public void testAddOutgoingOriginalFlowFiltersConstraint_Originate() throws IOException {
+  void testAddOutgoingOriginalFlowFiltersConstraint_Originate() throws IOException {
     /*
     Test that the correct outgoingOriginalFlowFiltersConstraint is placed on flows originating in a
     VRF or interface on a node with an interface with an outgoingOriginalFlowFilter. In this case,
@@ -2231,7 +2231,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
   }
 
   @Test
-  public void testAddOutgoingOriginalFlowFiltersConstraint_PacketPolicy() throws IOException {
+  void testAddOutgoingOriginalFlowFiltersConstraint_PacketPolicy() throws IOException {
     /*
     Test that the correct outgoingOriginalFlowFiltersConstraint is placed on flows that match a
     packet policy. In this case, the config has INGRESS_IFACE with a packet policy and interface i1

@@ -1,23 +1,23 @@
 package org.batfish.common.topology;
 
 import static org.batfish.common.topology.Layer2Topology.fromEdges;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class Layer2TopologyTest {
+final class Layer2TopologyTest {
 
   @Test
-  public void testFromEdgesAsymmetric() {
+  void testFromEdgesAsymmetric() {
     // should properly register nodes and initialize without error
     fromEdges(ImmutableSet.of(new Layer2Edge("node1", "i", null, "node2", "i", null)));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new Object())
         .addEqualityGroup(
@@ -31,7 +31,7 @@ public final class Layer2TopologyTest {
   }
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     Layer2Topology topology =
         Layer2Topology.fromDomains(
             ImmutableSet.of(

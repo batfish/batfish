@@ -5,13 +5,13 @@ import static org.hamcrest.Matchers.equalTo;
 
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link OspfInterfaceConfigurationQuestion} */
-public class OspfInterfaceConfigurationQuestionTest {
+class OspfInterfaceConfigurationQuestionTest {
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     OspfInterfaceConfigurationQuestion q =
         new OspfInterfaceConfigurationQuestion("nodes", InterfacePropertySpecifier.ACCESS_VLAN);
     assertThat(BatfishObjectMapper.clone(q, OspfInterfaceConfigurationQuestion.class), equalTo(q));

@@ -1,19 +1,17 @@
 package org.batfish.representation.juniper;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-public class InterfaceRangeMemberRangeTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class InterfaceRangeMemberRangeTest {
 
   @Test
-  public void testGetAllMembers() {
+  void testGetAllMembers() {
     assertThat(
         new InterfaceRangeMemberRange("ge-0/0/0", "ge-0/0/0").getAllMembers(),
         equalTo(ImmutableList.of("ge-0/0/0")));
@@ -29,16 +27,26 @@ public class InterfaceRangeMemberRangeTest {
   }
 
   @Test
-  public void testConstructorBadInterfaceId() {
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("Unexpected interface id pattern");
-    new InterfaceRangeMemberRange("ge-0/0/0", "ge-0/*/0");
+  void testConstructorBadInterfaceId() {
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> {
+              new InterfaceRangeMemberRange("ge-0/0/0", "ge-0/*/0");
+            });
+    assertThat(exception.getMessage(), containsString("Unexpected interface id pattern"));
   }
 
   @Test
-  public void testConstructorDiffTypes() {
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("Cannot have a range with different interface types");
-    new InterfaceRangeMemberRange("ge-0/0/0", "xe-0/0/0");
+  void testConstructorDiffTypes() {
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> {
+              new InterfaceRangeMemberRange("ge-0/0/0", "xe-0/0/0");
+            });
+    assertThat(
+        exception.getMessage(),
+        containsString("Cannot have a range with different interface types"));
   }
 }

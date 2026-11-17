@@ -9,18 +9,18 @@ import java.util.List;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class SetWeightTest {
+class SetWeightTest {
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     Statement sw = new SetWeight(new LiteralInt(6));
     assertThat(BatfishObjectMapper.clone(sw, Statement.class), equalTo(sw));
     assertThat(SerializationUtils.clone(sw), equalTo(sw));
   }
 
   @Test
-  public void testSimplifyIsNoop() {
+  void testSimplifyIsNoop() {
     Statement sw = new SetWeight(new LiteralInt(6));
     List<Statement> simplified = sw.simplify();
     assertThat(simplified, hasSize(1));

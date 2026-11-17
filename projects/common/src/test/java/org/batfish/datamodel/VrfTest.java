@@ -14,12 +14,12 @@ import com.google.common.collect.ImmutableSortedMap;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.ospf.OspfProcess;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class VrfTest {
+class VrfTest {
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     Vrf vrf = new Vrf("vrf");
     vrf.setOspfProcesses(
         ImmutableSortedMap.of(

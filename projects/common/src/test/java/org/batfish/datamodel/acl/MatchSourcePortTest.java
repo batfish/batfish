@@ -10,11 +10,11 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.TraceElement;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class MatchSourcePortTest {
+class MatchSourcePortTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new MatchSourcePort(IntegerSpace.of(1), null),
@@ -25,7 +25,7 @@ public class MatchSourcePortTest {
   }
 
   @Test
-  public void testSerialization() throws IOException {
+  void testSerialization() throws IOException {
     MatchSourcePort test1 = new MatchSourcePort(IntegerSpace.of(1), null);
     MatchSourcePort test2 = new MatchSourcePort(IntegerSpace.of(1), TraceElement.of("test"));
     for (MatchSourcePort t : ImmutableList.of(test1, test2)) {

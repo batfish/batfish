@@ -260,12 +260,12 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -276,6 +276,7 @@ import com.google.common.collect.Range;
 import com.google.common.collect.Table;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.ValueGraph;
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -473,13 +474,11 @@ import org.batfish.representation.cisco.VrfAddressFamily;
 import org.batfish.vendor.VendorStructureId;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests for {@link CiscoParser} and {@link CiscoControlPlaneExtractor}. */
-public final class CiscoGrammarTest {
+final class CiscoGrammarTest {
 
   // TODO: confirm, link
   private static final String DEFAULT_VRF_NAME = "default";
@@ -487,9 +486,7 @@ public final class CiscoGrammarTest {
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/cisco/testconfigs/";
   private static final String TESTRIGS_PREFIX = "org/batfish/grammar/cisco/testrigs/";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+  @TempDir public File _folder;
 
   private Batfish getBatfishForConfigurationNames(String... configurationNames) throws IOException {
     String[] names =
@@ -516,7 +513,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testAaaNewmodel() throws IOException {
+  void testAaaNewmodel() throws IOException {
     Configuration newModelConfiguration = parseConfig("aaaNewmodel");
     boolean aaaNewmodel = newModelConfiguration.getVendorFamily().getCisco().getAaa().getNewModel();
     assertTrue(aaaNewmodel);
@@ -527,7 +524,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testAaaVendorSpecificModel() throws IOException {
+  void testAaaVendorSpecificModel() throws IOException {
     CiscoConfiguration vc = parseCiscoConfig("iosAaaVsModel", ConfigurationFormat.CISCO_IOS);
 
     assertThat(vc.getAaa(), notNullValue());
@@ -581,19 +578,19 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testEncoding() throws IOException {
+  void testEncoding() throws IOException {
     // Don't crash with lexer error
     parseConfig("encoding_test");
   }
 
   @Test
-  public void testCryptoParsing() throws IOException {
+  void testCryptoParsing() throws IOException {
     // Don't crash
     parseConfig("ios-xe-crypto-parsing");
   }
 
   @Test
-  public void testLineAuthenticationMethods() throws IOException {
+  void testLineAuthenticationMethods() throws IOException {
     // test IOS
     Configuration iosConfiguration = parseConfig("aaaAuthenticationIos");
     SortedMap<String, Line> iosLines = iosConfiguration.getVendorFamily().getCisco().getLines();
@@ -613,7 +610,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testMplsReferences() throws IOException {
+  void testMplsReferences() throws IOException {
     String hostname = "mpls_references";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     batfish.loadConfigurations(batfish.getSnapshot());
@@ -624,7 +621,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testAaaAuthenticationLogin() throws IOException {
+  void testAaaAuthenticationLogin() throws IOException {
     // test IOS config
     Configuration aaaAuthIosConfiguration = parseConfig("aaaAuthenticationIos");
     SortedMap<String, Line> iosLines =
@@ -676,7 +673,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testAaaGroupServer() throws IOException {
+  void testAaaGroupServer() throws IOException {
     String hostname = "ios-aaa-group-server";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -686,9 +683,10 @@ public final class CiscoGrammarTest {
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
-    assertTrue(vc.getAaaServerGroups().get("ldap_group") instanceof LdapServerGroup);
-    assertTrue(vc.getAaaServerGroups().get("radius_group") instanceof RadiusServerGroup);
-    assertTrue(vc.getAaaServerGroups().get("tacacs_group") instanceof TacacsPlusServerGroup);
+    assertThat(vc.getAaaServerGroups().get("ldap_group"), instanceOf(LdapServerGroup.class));
+    assertThat(vc.getAaaServerGroups().get("radius_group"), instanceOf(RadiusServerGroup.class));
+    assertThat(
+        vc.getAaaServerGroups().get("tacacs_group"), instanceOf(TacacsPlusServerGroup.class));
 
     assertEquals(
         ImmutableList.of("192.168.2.1", "192.168.2.2"),
@@ -717,7 +715,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testAGAclReferrers() throws IOException {
+  void testAGAclReferrers() throws IOException {
     String filename = "configs/iosAccessGroupAcl";
     String testrigName = "access-group-acl";
     List<String> configurationNames = ImmutableList.of("iosAccessGroupAcl");
@@ -740,7 +738,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testAGAclUndefined() throws IOException {
+  void testAGAclUndefined() throws IOException {
     String filename = "configs/iosAccessGroupAcl";
     String testrigName = "access-group-acl";
     List<String> configurationNames = ImmutableList.of("iosAccessGroupAcl");
@@ -772,7 +770,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosBgpExtcommunityParsing() throws IOException {
+  void testIosBgpExtcommunityParsing() throws IOException {
     CiscoConfiguration c = parseCiscoConfig("ios-bgp-extcommunity", ConfigurationFormat.CISCO_IOS);
     ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
     c.getStructureManager().saveInto(ccae, c.getFilename());
@@ -790,24 +788,24 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosUnicodeConversion() throws IOException {
+  void testIosUnicodeConversion() throws IOException {
     Configuration c = parseConfig("ios-unicode");
     assertThat(c, hasInterface("GigabitEthernet0/0", hasAddress("10.0.0.1/24")));
   }
 
   @Test
-  public void testIosUnicodeBomConversion() throws IOException {
+  void testIosUnicodeBomConversion() throws IOException {
     Configuration c = parseConfig("ios-unicode-bom");
     assertThat(c, hasInterface("GigabitEthernet0/0", hasAddress("10.0.0.1/24")));
   }
 
   @Test
-  public void testIosLineParsing() {
+  void testIosLineParsing() {
     assertNotNull(parseCiscoConfig("ios-line", null));
   }
 
   @Test
-  public void testIosLoggingExtraction() {
+  void testIosLoggingExtraction() {
     CiscoConfiguration vc = parseCiscoConfig("ios-logging", ConfigurationFormat.CISCO_IOS);
     Logging logging = vc.getIosLogging();
 
@@ -853,7 +851,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosNtpExtraction() {
+  void testIosNtpExtraction() {
     CiscoConfiguration vc = parseCiscoConfig("ios-ntp", ConfigurationFormat.CISCO_IOS);
 
     assertTrue(vc.getNtpAuthenticate());
@@ -894,7 +892,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosNtpNoAuthenticateExtraction() {
+  void testIosNtpNoAuthenticateExtraction() {
     CiscoConfiguration vc =
         parseCiscoConfig("ios-ntp-no-authenticate", ConfigurationFormat.CISCO_IOS);
 
@@ -920,7 +918,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosEncapsulationVlanExtraction() {
+  void testIosEncapsulationVlanExtraction() {
     CiscoConfiguration vc =
         parseCiscoConfig("ios-encapsulation-vlan", ConfigurationFormat.CISCO_IOS);
     assertThat(
@@ -928,19 +926,19 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosEncapsulationVlanConversion() throws IOException {
+  void testIosEncapsulationVlanConversion() throws IOException {
     Configuration c = parseConfig("ios-encapsulation-vlan");
     assertThat(c, hasInterface("GigabitEthernet0/1.203", hasEncapsulationVlan(203)));
   }
 
   @Test
-  public void testIosLoggingOnDefault() throws IOException {
+  void testIosLoggingOnDefault() throws IOException {
     Configuration loggingOnOmitted = parseConfig("iosLoggingOnOmitted");
     assertThat(loggingOnOmitted, hasVendorFamily(hasCisco(hasLogging(isOn()))));
   }
 
   @Test
-  public void testIosAccessVlan() throws IOException {
+  void testIosAccessVlan() throws IOException {
     String hostname = "ios-access-vlan";
     Configuration c = parseConfig(hostname);
 
@@ -951,7 +949,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosAccessSessionPortControl() throws IOException {
+  void testIosAccessSessionPortControl() throws IOException {
     String hostname = "ios-access-session-port-control";
     Configuration c = parseConfig(hostname);
 
@@ -961,7 +959,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosAclInRouteMap() throws IOException {
+  void testIosAclInRouteMap() throws IOException {
     String hostname = "ios-acl-in-routemap";
     Configuration c = parseConfig(hostname);
     assertThat(c, hasRouteFilterList("10", permits(Prefix.parse("10.0.0.0/8"))));
@@ -998,7 +996,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosBanner() throws IOException {
+  void testIosBanner() throws IOException {
     Configuration c = parseConfig("ios_banner");
     assertThat(
         c.getVendorFamily().getCisco().getBanners(),
@@ -1011,7 +1009,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosRipPassive() throws IOException {
+  void testIosRipPassive() throws IOException {
     Configuration c = parseConfig("ios-rip-passive");
 
     String iface1 = "Ethernet0";
@@ -1024,7 +1022,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosAclObjectGroup() throws IOException {
+  void testIosAclObjectGroup() throws IOException {
     String hostname = "ios-acl-object-group";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -1091,7 +1089,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosAclReferences() throws IOException {
+  void testIosAclReferences() throws IOException {
     String hostname = "ios-acl";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -1117,7 +1115,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosAclLineVsids() throws IOException {
+  void testIosAclLineVsids() throws IOException {
     String hostname = "ios-acl";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -1151,7 +1149,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosBfdTemplate() throws IOException {
+  void testIosBfdTemplate() throws IOException {
     String hostname = "ios-bfd-template";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -1167,7 +1165,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosBgpConfedExtraction() {
+  void testIosBgpConfedExtraction() {
     CiscoConfiguration c = parseCiscoConfig("ios-bgp-confed", ConfigurationFormat.CISCO_IOS);
     org.batfish.representation.cisco.BgpProcess p = c.getDefaultVrf().getBgpProcess();
     assertThat(p, notNullValue());
@@ -1176,7 +1174,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosBgpConfedConversion() throws IOException {
+  void testIosBgpConfedConversion() throws IOException {
     Configuration c = parseConfig("ios-bgp-confed");
     BgpProcess p = c.getDefaultVrf().getBgpProcess();
     assertThat(p, notNullValue());
@@ -1198,7 +1196,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testBgpDefaultInformationOriginate() throws IOException {
+  void testBgpDefaultInformationOriginate() throws IOException {
     /*
      * Default-information originate is required for default routes to be redistributed into BGP via
      * redistribute statements. It does not affect routes added to BGP via network statements.
@@ -1236,7 +1234,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosBgpEnforceAsExtraction() {
+  void testIosBgpEnforceAsExtraction() {
     {
       CiscoConfiguration c =
           parseCiscoConfig("ios-bgp-enforce-first-as-disabled", ConfigurationFormat.CISCO_IOS);
@@ -1261,7 +1259,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosBgpEnforceAsConversion() throws IOException {
+  void testIosBgpEnforceAsConversion() throws IOException {
     Ip ip = Ip.parse("1.2.3.4");
     {
       Configuration c = parseConfig("ios-bgp-enforce-first-as-disabled");
@@ -1290,7 +1288,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosBgpPrefixListReferences() throws IOException {
+  void testIosBgpPrefixListReferences() throws IOException {
     String hostname = "ios_bgp_prefix_list_references";
     String filename = String.format("configs/%s", hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -1304,7 +1302,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testBgpRedistributionWithRouteMap() throws IOException {
+  void testBgpRedistributionWithRouteMap() throws IOException {
     /*
      Config contains two VRFs, each of which has a static route for 1.1.1.1/32. Both VRFs redistribute
      static routes into BGP with a route-map. The redistribution route-map in VRF1 permits 1.1.1.1/32,
@@ -1333,7 +1331,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosIbgpMissingUpdateSource() throws IOException {
+  void testIosIbgpMissingUpdateSource() throws IOException {
     /*
     r1 is missing update-source, but session should still be established between r1 and r2. Both
     redistribute static routes, so should see BGP routes on both for the other's static route.
@@ -1369,7 +1367,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosEigrpFilterList() throws IOException {
+  void testIosEigrpFilterList() throws IOException {
     String testrigName = "eigrp-distribute-list-wildcard";
     List<String> configurationNames = ImmutableList.of("sender", "receiver");
     Batfish batfish =
@@ -1414,7 +1412,7 @@ public final class CiscoGrammarTest {
    * in any way. The nesting is only one layer.
    */
   @Test
-  public void testIosEigrpAddressFamily() throws IOException {
+  void testIosEigrpAddressFamily() throws IOException {
     Configuration c = parseConfig("ios-eigrp-address-family");
 
     /* Confirm both processes are present */
@@ -1431,7 +1429,7 @@ public final class CiscoGrammarTest {
    * number this way, but it is possible.
    */
   @Test
-  public void testIosEigrpAsn() throws IOException {
+  void testIosEigrpAsn() throws IOException {
     Configuration c = parseConfig("ios-eigrp-asn");
 
     /* Confirm both processes are present */
@@ -1445,7 +1443,7 @@ public final class CiscoGrammarTest {
 
   /** Test classic EIGRP process with passive interfaces */
   @Test
-  public void testIosEigrpClassic() throws IOException {
+  void testIosEigrpClassic() throws IOException {
     Configuration c = parseConfig("ios-eigrp-classic");
 
     /* Confirm process is present */
@@ -1467,7 +1465,7 @@ public final class CiscoGrammarTest {
 
   /** Test mixing named and classic EIGRP processes in separate VRFs */
   @Test
-  public void testIosEigrpMixed() throws IOException {
+  void testIosEigrpMixed() throws IOException {
     Configuration c = parseConfig("ios-eigrp-mixed");
 
     /* Confirm classic mode networks are configured correctly */
@@ -1481,7 +1479,7 @@ public final class CiscoGrammarTest {
 
   /** Test multiple classic EIGRP processes in the same VRF */
   @Test
-  public void testIosEigrpMultiple() throws IOException {
+  void testIosEigrpMultiple() throws IOException {
     Configuration c = parseConfig("ios-eigrp-multiple");
 
     /* Confirm both processes are present */
@@ -1495,7 +1493,7 @@ public final class CiscoGrammarTest {
 
   /** Test named EIGRP process with passive interfaces */
   @Test
-  public void testIosEigrpNamed() throws IOException {
+  void testIosEigrpNamed() throws IOException {
     Configuration c = parseConfig("ios-eigrp-named");
 
     /* Confirm process is present */
@@ -1512,7 +1510,7 @@ public final class CiscoGrammarTest {
 
   /** Test named EIGRP process with passive interfaces */
   @Test
-  public void testIosPortChannelEigrpMetric() throws IOException {
+  void testIosPortChannelEigrpMetric() throws IOException {
     Configuration c = parseConfig("ios-portchannel-eigrp");
 
     /* Port-channel23 should have EIGRP bandwidth based on member interfaces' bandwidths */
@@ -1531,7 +1529,7 @@ public final class CiscoGrammarTest {
    * sets metric correctly.
    */
   @Test
-  public void testIosEigrpRedistributeEigrp() throws IOException {
+  void testIosEigrpRedistributeEigrp() throws IOException {
     Configuration c = parseConfig("ios-eigrp-redistribute-eigrp");
 
     assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasKey(1L))));
@@ -1577,7 +1575,7 @@ public final class CiscoGrammarTest {
    * accepts OSPF routes given "redistribute ospf 1"
    */
   @Test
-  public void testIosEigrpRedistribution() throws IOException {
+  void testIosEigrpRedistribution() throws IOException {
     Configuration c = parseConfig("ios-eigrp-redistribution");
     long asn = 1L;
 
@@ -1652,7 +1650,7 @@ public final class CiscoGrammarTest {
    * in EIGRP.
    */
   @Test
-  public void testIosEigrpRedistributeMultiple() {
+  void testIosEigrpRedistributeMultiple() {
     String hostname = "ios-eigrp-redistribute-eigrp-multi";
     CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
     Map<Long, EigrpProcess> eigrpProc = vc.getDefaultVrf().getEigrpProcesses();
@@ -1690,7 +1688,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosInspection() throws IOException {
+  void testIosInspection() throws IOException {
     Configuration c = parseConfig("ios-inspection");
 
     String zone1Name = "z1";
@@ -1776,7 +1774,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosInterface() throws IOException {
+  void testIosInterface() throws IOException {
     Configuration c = parseConfig("ios-interface");
     assertThat(c, hasInterface("FiftyGigE1/0/0", hasBandwidth(50e9)));
     assertThat(c, hasInterface("FiftyGigE2/0/0", hasBandwidth(50e9)));
@@ -1794,7 +1792,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosInterfaceDelay() throws IOException {
+  void testIosInterfaceDelay() throws IOException {
     Configuration c = parseConfig("ios-interface-delay");
 
     // All delays in picoseconds. For table of values based on bandwidths see
@@ -1832,7 +1830,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosInterfaceSpeed() throws IOException {
+  void testIosInterfaceSpeed() throws IOException {
     Configuration c = parseConfig("ios-interface-speed");
 
     assertThat(
@@ -1863,7 +1861,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosInterfaceStandbyExtraction() {
+  void testIosInterfaceStandbyExtraction() {
     CiscoConfiguration vc =
         parseCiscoConfig("ios-interface-standby", ConfigurationFormat.CISCO_IOS);
     assertThat(
@@ -1931,7 +1929,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosInterfaceStandbyWarnings() throws IOException {
+  void testIosInterfaceStandbyWarnings() throws IOException {
     String hostname = "ios-interface-standby";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
 
@@ -1947,7 +1945,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosInterfaceStandby() throws IOException {
+  void testIosInterfaceStandby() throws IOException {
     Configuration c = parseConfig("ios-interface-standby");
     Interface i = c.getAllInterfaces().get("Ethernet0");
     int group = 4095;
@@ -2003,7 +2001,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosInterfaceVrrpExtraction() {
+  void testIosInterfaceVrrpExtraction() {
     CiscoConfiguration vc = parseCiscoConfig("ios-interface-vrrp", ConfigurationFormat.CISCO_IOS);
     assertThat(vc.getVrrpGroups(), hasKeys("Ethernet0"));
     Map<Integer, org.batfish.representation.cisco.VrrpGroup> groups =
@@ -2024,7 +2022,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosInterfaceVrrpConversion() throws IOException {
+  void testIosInterfaceVrrpConversion() throws IOException {
     Configuration c = parseConfig("ios-interface-vrrp");
     Interface i = c.getAllInterfaces().get("Ethernet0");
     assertThat(i.getVrrpGroups(), hasKeys(1, 2, 3, 4));
@@ -2038,7 +2036,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosHttpInspection() throws IOException {
+  void testIosHttpInspection() throws IOException {
     String hostname = "ios-http-inspection";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -2054,7 +2052,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosIpRouteVrf() throws IOException {
+  void testIosIpRouteVrf() throws IOException {
     String hostname = "ios-ip-route-vrf";
     String vrf = "management";
     Configuration c = parseConfig(hostname);
@@ -2076,14 +2074,14 @@ public final class CiscoGrammarTest {
 
   /** Tests that Cisco parser doesn't crash in conversion for incomplete ipsec profile. */
   @Test
-  public void testIosIpsecIncomplete() throws IOException {
+  void testIosIpsecIncomplete() throws IOException {
     // doesn't crash.
     parseConfig("ios-ipsec-gh-5849");
     parseConfig("ios-ipsec-ghe-5274");
   }
 
   @Test
-  public void testIosIsisConfigOnInterface() throws IOException {
+  void testIosIsisConfigOnInterface() throws IOException {
     String hostname = "ios-isis";
     Configuration c = parseConfig(hostname);
 
@@ -2096,7 +2094,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosKeyring() throws IOException {
+  void testIosKeyring() throws IOException {
     String hostname = "ios-keyrings";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -2110,7 +2108,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosNativeVlan() throws IOException {
+  void testIosNativeVlan() throws IOException {
     String hostname = "ios-native-vlan";
     Configuration c = parseConfig(hostname);
 
@@ -2120,7 +2118,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosNeighborDefaultOriginateRouteMapsAsGenerationPolicies() throws IOException {
+  void testIosNeighborDefaultOriginateRouteMapsAsGenerationPolicies() throws IOException {
     /*
                               Listener 2
                                   |
@@ -2195,7 +2193,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosRedistributeStaticDefaultWithDefaultOriginatePolicy() throws IOException {
+  void testIosRedistributeStaticDefaultWithDefaultOriginatePolicy() throws IOException {
     /*
        Listener 1 -- (Peer 1) Originator (Peer 2) -- Listener 2
 
@@ -2275,7 +2273,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosObjectGroupNetwork() throws IOException {
+  void testIosObjectGroupNetwork() throws IOException {
     String hostname = "ios-object-group-network";
     String filename = "configs/" + hostname;
     Configuration c = parseConfig(hostname);
@@ -2323,7 +2321,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosObjectGroupProtocol() throws IOException {
+  void testIosObjectGroupProtocol() throws IOException {
     String hostname = "ios-object-group-protocol";
     String filename = "configs/" + hostname;
     Configuration c = parseConfig(hostname);
@@ -2410,7 +2408,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosAclPortGroup() throws IOException {
+  void testIosAclPortGroup() throws IOException {
     String hostname = "ios-acl-portgroup";
     String filename = "configs/" + hostname;
     Configuration c = parseConfig(hostname);
@@ -2451,7 +2449,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testObjectGroupIpPortExtraction() {
+  void testObjectGroupIpPortExtraction() {
     String hostname = "ios-object-group-ip-port";
     CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
 
@@ -2461,7 +2459,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosObjectGroupService() throws IOException {
+  void testIosObjectGroupService() throws IOException {
     String hostname = "ios-object-group-service";
     String filename = "configs/" + hostname;
     Configuration c = parseConfig(hostname);
@@ -2617,7 +2615,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosOspfDefaultOriginateAlways() throws IOException {
+  void testIosOspfDefaultOriginateAlways() throws IOException {
     /*   ________      ________      ________
         |   R1   |    |        |    |   R2   |
         | Area 0 |----|  ABR   |----| Area 1 |
@@ -2663,7 +2661,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosOspfDefaultOriginateNoRoute() throws IOException {
+  void testIosOspfDefaultOriginateNoRoute() throws IOException {
     /*   ________      ________      ________
         |   R1   |    |        |    |   R2   |
         | Area 0 |----|  ABR   |----| Area 1 |
@@ -2707,7 +2705,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosOspfDefaultOriginateStaticRoute() throws IOException {
+  void testIosOspfDefaultOriginateStaticRoute() throws IOException {
     /*   ________      ________      ________
         |   R1   |    |        |    |   R2   |
         | Area 0 |----|  ABR   |----| Area 1 |
@@ -2753,7 +2751,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosOspfDefaultOriginateLoop() throws IOException {
+  void testIosOspfDefaultOriginateLoop() throws IOException {
     /*
     Setup: 2-node network in OSPF area 0.
       - R1 has `default-information originate always` configured at the process level
@@ -2796,7 +2794,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosOspfDistributeListReference() throws IOException {
+  void testIosOspfDistributeListReference() throws IOException {
     String hostname = "ios-ospf-distribute-list";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -2812,7 +2810,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosEigrpDistributeList() {
+  void testIosEigrpDistributeList() {
     CiscoConfiguration c =
         parseCiscoConfig("ios-eigrp-distribute-list", ConfigurationFormat.CISCO_IOS);
 
@@ -2825,7 +2823,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosEigrpDistributeListConversion() throws IOException {
+  void testIosEigrpDistributeListConversion() throws IOException {
     Configuration c = parseConfig("ios-eigrp-distribute-list");
 
     String distListPolicyName = "~EIGRP_EXPORT_POLICY_default_1_GigabitEthernet0/0~";
@@ -2910,14 +2908,14 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosEigrpMarkForRouting() throws IOException {
+  void testIosEigrpMarkForRouting() throws IOException {
     Configuration c = parseConfig("ios-eigrp-distribute-list");
 
     assertThat(c.getRouteFilterLists(), hasKey("2"));
   }
 
   @Test
-  public void testIosEigrpDistributeListRefsAndWarnings() throws IOException {
+  void testIosEigrpDistributeListRefsAndWarnings() throws IOException {
     String hostname = "ios-eigrp-distribute-list-refs-and-warnings";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
 
@@ -2960,7 +2958,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosEigrpDistributeListWithPrefixListExtraction() {
+  void testIosEigrpDistributeListWithPrefixListExtraction() {
     String hostname = "ios-eigrp-distribute-list-prefix-list";
     CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
     EigrpProcess proc = vc.getDefaultVrf().getEigrpProcesses().get(1L);
@@ -2982,7 +2980,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosEigrpDistributeListWithPrefixListConversion() throws IOException {
+  void testIosEigrpDistributeListWithPrefixListConversion() throws IOException {
     String hostname = "ios-eigrp-distribute-list-prefix-list";
     Configuration c = parseConfig(hostname);
     Map<String, RoutingPolicy> policies = c.getRoutingPolicies();
@@ -3082,7 +3080,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosEigrpDistributeListWithRouteMapExtraction() {
+  void testIosEigrpDistributeListWithRouteMapExtraction() {
     String hostname = "ios-eigrp-distribute-list-routemap";
     CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
     EigrpProcess proc = vc.getDefaultVrf().getEigrpProcesses().get(1L);
@@ -3103,7 +3101,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosEigrpDistributeListWithRouteMapConversion() throws IOException {
+  void testIosEigrpDistributeListWithRouteMapConversion() throws IOException {
     String hostname = "ios-eigrp-distribute-list-routemap";
     Configuration c = parseConfig(hostname);
     Map<String, RoutingPolicy> policies = c.getRoutingPolicies();
@@ -3203,7 +3201,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosEigrpNeighborConfigs() throws IOException {
+  void testIosEigrpNeighborConfigs() throws IOException {
     Configuration c = parseConfig("ios-eigrp-classic");
 
     assertThat(
@@ -3243,7 +3241,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosEigrpStub() throws IOException {
+  void testIosEigrpStub() throws IOException {
     String hostname = "ios-eigrp-stub";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
 
@@ -3260,7 +3258,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosOspfDistributeList() {
+  void testIosOspfDistributeList() {
     CiscoConfiguration c = parseCiscoConfig("iosOspfDistributeList", ConfigurationFormat.CISCO_IOS);
     DistributeList globalInPrefix =
         new DistributeList("block_5", DistributeListFilterType.PREFIX_LIST);
@@ -3319,7 +3317,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosOspfDistributeListPrefixList() throws IOException {
+  void testIosOspfDistributeListPrefixList() throws IOException {
     Configuration c = parseConfig("iosOspfDistributeListPrefixList");
     String distListPolicyName0 = "~OSPF_DIST_LIST_default_1_GigabitEthernet0/0~";
     String distListPolicyName1 = "~OSPF_DIST_LIST_default_1_GigabitEthernet1/0~";
@@ -3385,7 +3383,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosOspfDistributeListPrefixListInterface() throws IOException {
+  void testIosOspfDistributeListPrefixListInterface() throws IOException {
     Configuration c = parseConfig("iosOspfDistributeListPrefixListInterface");
     String distListPolicyName = "~OSPF_DIST_LIST_default_1_GigabitEthernet0/0~";
 
@@ -3431,7 +3429,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosOspfDistributeListPrefixListGlobal() throws IOException {
+  void testIosOspfDistributeListPrefixListGlobal() throws IOException {
     Configuration c = parseConfig("iosOspfDistributeListPrefixListGlobal");
     String distListPoicyName = "~OSPF_DIST_LIST_default_1_GigabitEthernet0/0~";
 
@@ -3476,7 +3474,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosOspfNetwork() throws IOException {
+  void testIosOspfNetwork() throws IOException {
     Configuration c = parseConfig("ios-interface-ospf-network");
 
     /*
@@ -3493,7 +3491,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosOrphanInterfaceOspfSettings() throws IOException {
+  void testIosOrphanInterfaceOspfSettings() throws IOException {
     Configuration c = parseConfig("ios-orphan-interface-ospf-settings");
 
     // Confirm interface associated with an OSPF area has expected OSPF properties
@@ -3513,7 +3511,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosOspfReferenceBandwidth() throws IOException {
+  void testIosOspfReferenceBandwidth() throws IOException {
     Configuration manual = parseConfig("iosOspfCost");
     assertThat(
         manual.getDefaultVrf().getOspfProcesses().get("1").getReferenceBandwidth(), equalTo(10e6d));
@@ -3525,7 +3523,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosOspfCostLoopback() throws IOException {
+  void testIosOspfCostLoopback() throws IOException {
     Configuration c = parseConfig("ios-ospf-cost-loopback");
 
     assertThat(c.getAllInterfaces().get("Loopback61").getOspfSettings(), not(nullValue()));
@@ -3533,7 +3531,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosOspfStubSettings() throws IOException {
+  void testIosOspfStubSettings() throws IOException {
     Configuration c = parseConfig("ios-ospf-stub-settings");
 
     // Check correct stub types are assigned
@@ -3573,7 +3571,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosBgpDistributeList() throws IOException {
+  void testIosBgpDistributeList() throws IOException {
     /*
          r1 -- advertiser -- r2
     The advertiser redistributes static routes 1.2.3.4 and 5.6.7.8 into BGP, but has outbound
@@ -3613,7 +3611,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosBgpPrefixList() throws IOException {
+  void testIosBgpPrefixList() throws IOException {
     String hostname = "ios-prefix-list";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -3668,7 +3666,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosRouteMap() throws IOException {
+  void testIosRouteMap() throws IOException {
     String hostname = "ios-route-map";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -3700,7 +3698,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosRouteMapContinue() throws IOException {
+  void testIosRouteMapContinue() throws IOException {
     String hostname = "ios-route-map-continue";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -3724,7 +3722,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosRouteMapLocalPreference() throws IOException {
+  void testIosRouteMapLocalPreference() throws IOException {
     String hostname = "ios-route-map-set-local-preference";
     Configuration c = parseConfig(hostname);
     RoutingPolicy setWeightPolicy = c.getRoutingPolicies().get("SET_LOCAL_PREFERENCE");
@@ -3743,7 +3741,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosRouteMapSetTag() throws IOException {
+  void testIosRouteMapSetTag() throws IOException {
     String hostname = "ios-route-map-set-tag";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     RoutingPolicy setTagPolicy =
@@ -3767,7 +3765,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosRouteMapSetWeight() throws IOException {
+  void testIosRouteMapSetWeight() throws IOException {
     // Config contains a route-map SET_WEIGHT with one line, "set weight 20"
     String hostname = "ios-route-map-set-weight";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -3792,7 +3790,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosSnmpCommunityString() throws IOException {
+  void testIosSnmpCommunityString() throws IOException {
     String hostname = "ios-snmp-community-string";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -3812,7 +3810,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosClassMapInspect() throws IOException {
+  void testIosClassMapInspect() throws IOException {
     String hostname = "ios-class-map-inspect";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -3833,7 +3831,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosPolicyMapInspect() throws IOException {
+  void testIosPolicyMapInspect() throws IOException {
     String hostname = "ios-policy-map-inspect";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -3862,7 +3860,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosProxyArp() throws IOException {
+  void testIosProxyArp() throws IOException {
     Configuration proxyArpOmitted = parseConfig("iosProxyArp");
     assertThat(proxyArpOmitted, hasInterfaces(hasEntry(equalTo("Ethernet0/0"), isProxyArp())));
     assertThat(proxyArpOmitted, hasInterfaces(hasEntry(equalTo("Ethernet0/1"), isProxyArp())));
@@ -3872,7 +3870,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosTrack() throws IOException {
+  void testIosTrack() throws IOException {
     String hostname = "ios-track";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -3890,7 +3888,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosTrackList() throws IOException {
+  void testIosTrackList() throws IOException {
     String hostname = "ios-track-list";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -3902,7 +3900,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosVrfdAddressFamilyExportMap() throws IOException {
+  void testIosVrfdAddressFamilyExportMap() throws IOException {
     String hostname = "ios-vrfd-address-family-export-map";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
 
@@ -3924,7 +3922,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosVrfDefinition() {
+  void testIosVrfDefinition() {
     CiscoConfiguration vc = parseCiscoConfig("ios-vrf-definition", ConfigurationFormat.CISCO_IOS);
     {
       org.batfish.representation.cisco.Vrf vrf = vc.getVrfs().get("vrf1");
@@ -3965,7 +3963,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosZoneSecurity() throws IOException {
+  void testIosZoneSecurity() throws IOException {
     String hostname = "ios-zone-security";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -3998,7 +3996,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testOspfSummaryRouteMetric() throws IOException {
+  void testOspfSummaryRouteMetric() throws IOException {
     Configuration manual = parseConfig("iosOspfCost");
 
     assertThat(
@@ -4027,7 +4025,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosXePolicyMapClassDefault() throws IOException {
+  void testIosXePolicyMapClassDefault() throws IOException {
     Configuration c = parseConfig("ios-xe-policy-map-class-default");
 
     String dropPolicyMapAclName = computeInspectPolicyMapAclName("pdrop");
@@ -4042,7 +4040,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosXePolicyMapInspectClassInspectActions() throws IOException {
+  void testIosXePolicyMapInspectClassInspectActions() throws IOException {
     Configuration c = parseConfig("ios-xe-policy-map-inspect-class-inspect-actions");
 
     String policyMapName = "pm";
@@ -4095,7 +4093,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosXeEigrpToBgpRedistExtraction() throws IOException {
+  void testIosXeEigrpToBgpRedistExtraction() throws IOException {
     String hostname = "ios-xe-eigrp-to-bgp";
     String redistRmName = "redist_eigrp";
     CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
@@ -4117,7 +4115,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosXeEigrpToBgpRedistConversion() throws IOException {
+  void testIosXeEigrpToBgpRedistConversion() throws IOException {
     // BGP redistributes EIGRP with route-map redist_eigrp, which permits 5.5.5.0/24
     Configuration c = parseConfig("ios-xe-eigrp-to-bgp");
     RoutingPolicy bgpRedistPolicy =
@@ -4253,7 +4251,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosXeZoneDefaultBehavior() throws IOException {
+  void testIosXeZoneDefaultBehavior() throws IOException {
     Configuration c = parseConfig("ios-xe-zone-default-behavior");
 
     /* Ethernet1 and Ethernet2 are in zone z12 */
@@ -4285,7 +4283,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testBgpProcnum() throws IOException {
+  void testBgpProcnum() throws IOException {
     for (String hostname : ImmutableList.of("ios-bgp-procnum-dotted", "ios-bgp-procnum-long")) {
       Configuration c = parseConfig(hostname);
       assertThat(
@@ -4301,14 +4299,14 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testBgpMultipleRouters() throws IOException {
+  void testBgpMultipleRouters() throws IOException {
     parseConfig("ios-bgp-multiple-routers");
     // Don't crash.
   }
 
   /** Tests that we can append more BGP config at the bottom of a file. */
   @Test
-  public void testBgpReentrantVrf() {
+  void testBgpReentrantVrf() {
     CiscoConfiguration c = parseCiscoConfig("ios-bgp-reentrant-vrf", ConfigurationFormat.CISCO_IOS);
     // Simple test that default VRF was parsed
     org.batfish.representation.cisco.BgpProcess defBgp = c.getDefaultVrf().getBgpProcess();
@@ -4322,7 +4320,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testBgpNeighborRefs() throws IOException {
+  void testBgpNeighborRefs() throws IOException {
     String hostname = "ios-bgp-neighbor";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -4356,13 +4354,13 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testBgpUndeclaredPeer() throws IOException {
+  void testBgpUndeclaredPeer() throws IOException {
     parseConfig("ios-bgp-undeclared-peer");
     // Don't crash.
   }
 
   @Test
-  public void testBgpOriginationSpace() throws IOException {
+  void testBgpOriginationSpace() throws IOException {
     Configuration c = parseConfig("ios-bgp-origination-space");
 
     assertThat(
@@ -4374,7 +4372,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIpCommunityListExpandedConversion() throws IOException {
+  void testIpCommunityListExpandedConversion() throws IOException {
     String hostname = "ios-ip-community-list-expanded";
     Configuration c = parseConfig(hostname);
     CommunityContext ctx = CommunityContext.builder().build();
@@ -4430,7 +4428,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIpCommunityListExpandedExtraction() {
+  void testIpCommunityListExpandedExtraction() {
     String hostname = "ios-ip-community-list-expanded";
     CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
 
@@ -4457,7 +4455,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIpCommunityListStandardConversion() throws IOException {
+  void testIpCommunityListStandardConversion() throws IOException {
     String hostname = "ios-ip-community-list-standard";
     Configuration c = parseConfig(hostname);
     CommunityContext ctx = CommunityContext.builder().build();
@@ -4538,7 +4536,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIpCommunityListStandardExtraction() {
+  void testIpCommunityListStandardExtraction() {
     String hostname = "ios-ip-community-list-standard";
     CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
 
@@ -4582,7 +4580,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testToIpsecPolicies() throws IOException {
+  void testToIpsecPolicies() throws IOException {
     Configuration c = parseConfig("ios-crypto-map");
     // tests for IPSec phase 2 policies conversion
     assertThat(
@@ -4620,13 +4618,13 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testCryptoMapPfsDhGroupParsing() {
+  void testCryptoMapPfsDhGroupParsing() {
     // don't crash
     parseCiscoConfig("ios-crypto-map-pfs-dh-group", ConfigurationFormat.CISCO_IOS);
   }
 
   @Test
-  public void testCryptoMapsAndTunnelsToIpsecPeerConfigs() throws IOException {
+  void testCryptoMapsAndTunnelsToIpsecPeerConfigs() throws IOException {
     Configuration c = parseConfig("ios-crypto-map");
 
     Matcher<IpAccessList> policyAclMatcher =
@@ -4729,7 +4727,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testTunnelMode() {
+  void testTunnelMode() {
     CiscoConfiguration c = parseCiscoConfig("ios-tunnel-mode", ConfigurationFormat.CISCO_IOS);
 
     assertThat(
@@ -4741,7 +4739,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testGreTunnelConversion() throws IOException {
+  void testGreTunnelConversion() throws IOException {
     Configuration c = parseConfig("ios-tunnel-mode");
 
     Builder builder = TunnelConfiguration.builder().setSourceAddress(Ip.parse("2.3.4.6"));
@@ -4755,13 +4753,13 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testHumanName() throws IOException {
+  void testHumanName() throws IOException {
     Configuration c = parseConfig("ios-humanname");
     assertThat(c.getHumanName(), equalTo("IOS-HUMANNAME"));
   }
 
   @Test
-  public void testInvalidCryptoMapDef() throws IOException {
+  void testInvalidCryptoMapDef() throws IOException {
     String hostname = "ios-crypto-map";
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -4778,7 +4776,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIsakmpKeyIos() throws IOException {
+  void testIsakmpKeyIos() throws IOException {
     Configuration c = parseConfig("ios-crypto");
 
     assertThat(
@@ -4812,7 +4810,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIsakmpPolicyIos() throws IOException {
+  void testIsakmpPolicyIos() throws IOException {
     Configuration c = parseConfig("ios-crypto");
     // test for IKE phase1 proposals
     assertThat(
@@ -4847,7 +4845,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIsakmpProfile() throws IOException {
+  void testIsakmpProfile() throws IOException {
     Configuration c = parseConfig("ios-crypto");
     // test for IKE phase 1 policy
     assertThat(
@@ -4880,7 +4878,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testCiscoCryptoRsa() throws IOException {
+  void testCiscoCryptoRsa() throws IOException {
     Configuration c = parseConfig("ios-crypto-rsa");
 
     assertThat(
@@ -4898,7 +4896,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testCiscoCryptoRsaReferrers() throws IOException {
+  void testCiscoCryptoRsaReferrers() throws IOException {
     String hostname = "ios-crypto-rsa";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
 
@@ -4909,7 +4907,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testInterfaceNames() throws IOException {
+  void testInterfaceNames() throws IOException {
     String e00 = "Ethernet0/0";
 
     Configuration c = parseConfig("interface-names");
@@ -4921,13 +4919,13 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testInterfaceParsing() throws IOException {
+  void testInterfaceParsing() throws IOException {
     Configuration c = parseConfig("interface-parsing");
     assertThat(c, hasInterface("Vlan75", hasDescription("Made it to the end of Vlan75")));
   }
 
   @Test
-  public void testIosOspfPassive() throws IOException {
+  void testIosOspfPassive() throws IOException {
     String testrigName = "ios-ospf-passive";
     String host1name = "ios-ospf-passive1";
     String host2name = "ios-ospf-passive2";
@@ -4957,7 +4955,7 @@ public final class CiscoGrammarTest {
 
   /** Check that OSPF is enabled even when interfaces are after the router OSPF stanza. */
   @Test
-  public void testOspfInterfaceAfterOspf() throws IOException {
+  void testOspfInterfaceAfterOspf() throws IOException {
     Configuration c = parseConfig("ios-ospf-interface-after-ospf");
     String iface1Name = "Ethernet1";
     Map<String, Interface> ifaces = c.getAllInterfaces();
@@ -4965,7 +4963,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testOspfProcessInference() throws IOException {
+  void testOspfProcessInference() throws IOException {
     Configuration c = parseConfig("ios-ospf-process-inference");
     String iface1Name = "Ethernet1";
     String iface2Name = "Ethernet2";
@@ -4983,7 +4981,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosOspfPrefixPriority() throws IOException {
+  void testIosOspfPrefixPriority() throws IOException {
     String hostname = "ios-ospf-prefix-priority";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
@@ -4992,7 +4990,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testTransformsetToIpsecphase2Proposal() throws IOException {
+  void testTransformsetToIpsecphase2Proposal() throws IOException {
     Configuration c = parseConfig("ios-crypto-transform-set");
     assertThat(
         c,
@@ -5069,7 +5067,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIpsecTopology() throws IOException {
+  void testIpsecTopology() throws IOException {
     String testrigName = "ios-crypto-ipsec";
     List<String> configurationNames = ImmutableList.of("r1", "r2", "r3");
 
@@ -5103,7 +5101,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testOspfMaxMetric() throws IOException {
+  void testOspfMaxMetric() throws IOException {
     String testrigName = "ospf-max-metric";
     String iosMaxMetricName = "ios-max-metric";
     String iosMaxMetricCustomName = "ios-max-metric-custom";
@@ -5150,7 +5148,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testOspfNoRedistribution() throws IOException {
+  void testOspfNoRedistribution() throws IOException {
     /*   ________      ________      ________
         |   R1   |    |        |    |   R2   |
         | Area 0 |----|  ABR   |----| Area 1 |
@@ -5235,7 +5233,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testOspfNetworkTypes() throws IOException {
+  void testOspfNetworkTypes() throws IOException {
     String testrigName = "ospf-network-types";
     String iosOspfPointToPoint = "ios-ospf-network-types";
     List<String> configurationNames = ImmutableList.of(iosOspfPointToPoint);
@@ -5273,7 +5271,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testCiscoOspfNetworkTypes() {
+  void testCiscoOspfNetworkTypes() {
     CiscoConfiguration config =
         parseCiscoConfig("ospf-network-types", ConfigurationFormat.CISCO_IOS);
 
@@ -5299,7 +5297,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testCiscoOspfIntervals() {
+  void testCiscoOspfIntervals() {
     CiscoConfiguration config = parseCiscoConfig("ospf-intervals", ConfigurationFormat.CISCO_IOS);
 
     String eth0 = "Ethernet0/0";
@@ -5326,7 +5324,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testParsingRecovery() throws IOException {
+  void testParsingRecovery() throws IOException {
     String testrigName = "parsing-recovery";
     String hostname = "ios-recovery";
     List<String> configurationNames = ImmutableList.of(hostname);
@@ -5362,7 +5360,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testParsingRecovery1141() throws IOException {
+  void testParsingRecovery1141() throws IOException {
     // Test for https://github.com/batfish/batfish/issues/1141
     String testrigName = "parsing-recovery";
     String hostname = "ios-recovery-1141";
@@ -5382,7 +5380,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testShutdownOspfInterface() throws IOException {
+  void testShutdownOspfInterface() throws IOException {
     Configuration c = parseConfig("ios-shutdown-ospf-interface");
 
     String eth0 = "Ethernet0/0";
@@ -5398,7 +5396,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testParsingRecoveryNoInfiniteLoopDuringAdaptivePredictionAtEof() throws IOException {
+  void testParsingRecoveryNoInfiniteLoopDuringAdaptivePredictionAtEof() throws IOException {
     String testrigName = "parsing-recovery";
     String hostname = "ios-blankish-file";
     List<String> configurationNames = ImmutableList.of(hostname);
@@ -5417,7 +5415,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testParsingUnrecognizedInterfaceName() throws IOException {
+  void testParsingUnrecognizedInterfaceName() throws IOException {
     String testrigName = "parsing-recovery";
     String hostname = "ios-bad-interface-name";
     List<String> configurationNames = ImmutableList.of(hostname);
@@ -5453,7 +5451,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testPrefixListSeq() {
+  void testPrefixListSeq() {
     CiscoConfiguration c = parseCiscoConfig("prefix-list-seq", ConfigurationFormat.CISCO_IOS);
     assertThat(
         c.getPrefixLists(), hasKeys("NOSEQ", "NOSEQ_THEN_SEQ", "SEQ_NO_SEQ", "OUT_OF_ORDER"));
@@ -5498,7 +5496,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testPrefixListNameParsing() throws IOException {
+  void testPrefixListNameParsing() throws IOException {
     String hostname = "prefix-list-name-parsing";
     String filename = "configs/" + hostname;
     String prefixListName = "SET_COMMUNITY_65535:200";
@@ -5514,7 +5512,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testRfc1583Compatible() throws IOException {
+  void testRfc1583Compatible() throws IOException {
     String[] configurationNames =
         new String[] {"rfc1583Compatible", "rfc1583NoCompatible", "rfc1583Unconfigured"};
     Map<String, Configuration> configurations = parseTextConfigs(configurationNames);
@@ -5530,7 +5528,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosDynamicNatExtraction() throws IOException {
+  void testIosDynamicNatExtraction() throws IOException {
     CiscoConfiguration c = parseCiscoConfig("ios-nat-dynamic", ConfigurationFormat.CISCO_IOS);
     assertThat(c.getCiscoIosNats(), hasSize(6));
     List<CiscoIosNat> nats = c.getCiscoIosNats();
@@ -5597,7 +5595,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosDynamicNatConversion() throws IOException {
+  void testIosDynamicNatConversion() throws IOException {
     Configuration c = parseConfig("ios-nat-dynamic");
     String insideIntf = "Ethernet1";
     String outsideIntf = "Ethernet2";
@@ -5688,7 +5686,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosDynamicNatRouteMapsExtraction() throws IOException {
+  void testIosDynamicNatRouteMapsExtraction() throws IOException {
     CiscoConfiguration c =
         parseCiscoConfig("ios-nat-dynamic-route-maps", ConfigurationFormat.CISCO_IOS);
     assertThat(c.getCiscoIosNats(), hasSize(6));
@@ -5753,7 +5751,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosDynamicNatRouteMapsConversion() throws IOException {
+  void testIosDynamicNatRouteMapsConversion() throws IOException {
     Configuration c = parseConfig("ios-nat-dynamic-route-maps");
     String insideIntf = "Ethernet1";
     String outsideIntf0 = "Ethernet2/0";
@@ -5859,7 +5857,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosStaticNat() throws IOException {
+  void testIosStaticNat() throws IOException {
     Configuration c = parseConfig("ios-nat-static");
     String insideIntf = "Ethernet1";
     String outsideIntf = "Ethernet2";
@@ -5978,7 +5976,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosMixedNat() throws IOException {
+  void testIosMixedNat() throws IOException {
     Configuration c = parseConfig("ios-nat-mixed");
     String insideIntf = "Ethernet1";
     String outsideIntf = "Ethernet2";
@@ -6005,7 +6003,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosNatAddRoute() throws IOException {
+  void testIosNatAddRoute() throws IOException {
     String hostname = "ios-nat-add-route";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
@@ -6039,7 +6037,7 @@ public final class CiscoGrammarTest {
 
   /** Tests for the syntactic variants we parse and that we link references. */
   @Test
-  public void testIosNatParsedVariants() throws IOException {
+  void testIosNatParsedVariants() throws IOException {
     String hostname = "ios-nat-parsed-variants";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -6056,7 +6054,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosBgpShowRunAll() throws IOException {
+  void testIosBgpShowRunAll() throws IOException {
     Configuration c = parseConfig("ios_bgp_show_run_all");
     assertThat(c.getVrfs(), hasKeys("default", "VRF2", "VRF3", "VRF4"));
     assertThat(c.getDefaultVrf().getBgpProcess(), hasRouterId(Ip.parse("1.1.1.1")));
@@ -6066,7 +6064,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosInterfaceShowRunAll() throws IOException {
+  void testIosInterfaceShowRunAll() throws IOException {
     Configuration c = parseConfig("ios_interface_show_run_all");
     assertThat(
         c.getAllInterfaces(),
@@ -6087,7 +6085,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosVrfdShowRunAll() {
+  void testIosVrfdShowRunAll() {
     CiscoConfiguration c = parseCiscoConfig("ios_vrfd_show_run_all", ConfigurationFormat.CISCO_IOS);
     assertThat(c.getVrfs(), hasKeys("default", "VRF2"));
     assertThat(
@@ -6096,7 +6094,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosSwitchportMode() throws IOException {
+  void testIosSwitchportMode() throws IOException {
     Configuration c = parseConfig("ios_switchport_mode");
 
     Interface e0 = c.getAllInterfaces().get("Ethernet0/0");
@@ -6137,7 +6135,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testPortchannelSubinterfaceIsUp() throws IOException {
+  void testPortchannelSubinterfaceIsUp() throws IOException {
     Configuration config = parseConfig("ios-portchannel-subinterface");
     double eth1Bandwidth = 1E7;
     assertThat(config, hasInterface("Ethernet1", hasBandwidth(eth1Bandwidth)));
@@ -6153,7 +6151,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosAdvertiseInactive() throws IOException {
+  void testIosAdvertiseInactive() throws IOException {
     Configuration config = parseConfig("ios-advertise-inactive");
     assertTrue(
         config
@@ -6167,7 +6165,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosSuppressInactive() throws IOException {
+  void testIosSuppressInactive() throws IOException {
     // "bgp suppress-inactive" disables the default advertise-inactive behavior.
     Configuration config = parseConfig("ios-suppress-inactive");
     assertFalse(
@@ -6182,7 +6180,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testTunnelTopologyNoReachability() throws IOException {
+  void testTunnelTopologyNoReachability() throws IOException {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
@@ -6207,7 +6205,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testTunnelTopologyWithReachability() throws IOException {
+  void testTunnelTopologyWithReachability() throws IOException {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
@@ -6237,7 +6235,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testRenterBgpStanza() throws IOException {
+  void testRenterBgpStanza() throws IOException {
     Configuration c = parseConfig("ios-bgp-reenter-process");
     assertThat(
         c, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(Ip.parse("2.2.2.3"), hasRemoteAs(3L)))));
@@ -6246,7 +6244,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testRouteMapMatchAcl() throws IOException {
+  void testRouteMapMatchAcl() throws IOException {
     Configuration c = parseConfig("ios-route-map-match-acl");
     Bgpv4Route.Builder builder =
         Bgpv4Route.testBuilder()
@@ -6269,52 +6267,52 @@ public final class CiscoGrammarTest {
             "ACL_DENY", allOf(permits(prefix11), RouteFilterListMatchers.rejects(prefix10))));
 
     assertTrue(
-        "Route 10/8 permitted",
         c.getRoutingPolicies()
             .get("rm_standard_permit_permit")
-            .process(route10, Bgpv4Route.testBuilder(), Direction.OUT));
+            .process(route10, Bgpv4Route.testBuilder(), Direction.OUT),
+        "Route 10/8 permitted");
     assertFalse(
-        "Route 11/8 denied",
         c.getRoutingPolicies()
             .get("rm_standard_permit_permit")
-            .process(route11, Bgpv4Route.testBuilder(), Direction.OUT));
+            .process(route11, Bgpv4Route.testBuilder(), Direction.OUT),
+        "Route 11/8 denied");
 
     assertFalse(
-        "Route 10/8 denied",
         c.getRoutingPolicies()
             .get("rm_standard_deny_permit")
-            .process(route10, Bgpv4Route.testBuilder(), Direction.OUT));
+            .process(route10, Bgpv4Route.testBuilder(), Direction.OUT),
+        "Route 10/8 denied");
     assertFalse(
-        "Route 11/8 denied",
         c.getRoutingPolicies()
             .get("rm_standard_permit_permit")
-            .process(route11, Bgpv4Route.testBuilder(), Direction.OUT));
+            .process(route11, Bgpv4Route.testBuilder(), Direction.OUT),
+        "Route 11/8 denied");
 
     assertFalse(
-        "Route 10/8 denied",
         c.getRoutingPolicies()
             .get("rm_standard_permit_deny")
-            .process(route10, Bgpv4Route.testBuilder(), Direction.OUT));
+            .process(route10, Bgpv4Route.testBuilder(), Direction.OUT),
+        "Route 10/8 denied");
     assertFalse(
-        "Route 11/8 denied",
         c.getRoutingPolicies()
             .get("rm_standard_permit_permit")
-            .process(route11, Bgpv4Route.testBuilder(), Direction.OUT));
+            .process(route11, Bgpv4Route.testBuilder(), Direction.OUT),
+        "Route 11/8 denied");
 
     assertFalse(
-        "Route 10/8 denied",
         c.getRoutingPolicies()
             .get("rm_standard_deny_deny")
-            .process(route10, Bgpv4Route.testBuilder(), Direction.OUT));
+            .process(route10, Bgpv4Route.testBuilder(), Direction.OUT),
+        "Route 10/8 denied");
     assertFalse(
-        "Route 11/8 denied",
         c.getRoutingPolicies()
             .get("rm_standard_permit_permit")
-            .process(route11, Bgpv4Route.testBuilder(), Direction.OUT));
+            .process(route11, Bgpv4Route.testBuilder(), Direction.OUT),
+        "Route 11/8 denied");
   }
 
   @Test
-  public void testRouteMapMatchInterface() throws IOException {
+  void testRouteMapMatchInterface() throws IOException {
     String hostname = "ios-route-map-match-interface";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
 
@@ -6337,7 +6335,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testRouteMapUndefinedAcl() throws IOException {
+  void testRouteMapUndefinedAcl() throws IOException {
     Configuration c = parseConfig("ios-route-map-undefined-acl");
     Bgpv4Route.Builder builder =
         Bgpv4Route.testBuilder()
@@ -6351,36 +6349,36 @@ public final class CiscoGrammarTest {
     Bgpv4Route route11 = builder.setNetwork(prefix11).build();
 
     assertTrue(
-        "All (single) ACLs are undefined -> the match is ignored",
         c.getRoutingPolicies()
             .get("rm_single_undefined")
-            .process(route10, Bgpv4Route.testBuilder(), Direction.OUT));
+            .process(route10, Bgpv4Route.testBuilder(), Direction.OUT),
+        "All (single) ACLs are undefined -> the match is ignored");
     assertTrue(
-        "All (single) ACLs are undefined -> the match is ignored",
         c.getRoutingPolicies()
             .get("rm_all_undefined")
-            .process(route10, Bgpv4Route.testBuilder(), Direction.OUT));
+            .process(route10, Bgpv4Route.testBuilder(), Direction.OUT),
+        "All (single) ACLs are undefined -> the match is ignored");
 
     assertTrue(
-        "Some undefined, some defined -> only defined matter",
         c.getRoutingPolicies()
             .get("rm_mixed_defined_undefined")
-            .process(route10, Bgpv4Route.testBuilder(), Direction.OUT));
+            .process(route10, Bgpv4Route.testBuilder(), Direction.OUT),
+        "Some undefined, some defined -> only defined matter");
 
     assertTrue(
-        "Route 10/8 permitted by first defined ACL",
         c.getRoutingPolicies()
             .get("rm_multiple_defined")
-            .process(route10, Bgpv4Route.testBuilder(), Direction.OUT));
+            .process(route10, Bgpv4Route.testBuilder(), Direction.OUT),
+        "Route 10/8 permitted by first defined ACL");
     assertTrue(
-        "Route 11/8 permitted by second defined ACL",
         c.getRoutingPolicies()
             .get("rm_multiple_defined")
-            .process(route11, Bgpv4Route.testBuilder(), Direction.OUT));
+            .process(route11, Bgpv4Route.testBuilder(), Direction.OUT),
+        "Route 11/8 permitted by second defined ACL");
   }
 
   @Test
-  public void testSetMetricEigrp() throws IOException {
+  void testSetMetricEigrp() throws IOException {
     Configuration c = parseConfig("ios-route-map-set-metric-eigrp");
 
     // get the real statements past the traceable wrapper
@@ -6397,7 +6395,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testEigrpOverTunnels() throws IOException {
+  void testEigrpOverTunnels() throws IOException {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
@@ -6415,7 +6413,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testReenterInterfaceStanza() throws IOException {
+  void testReenterInterfaceStanza() throws IOException {
     Configuration c = parseConfig("ios-interface-reenter");
     assertThat(c, hasInterface("FastEthernet0/0", hasMtu(2000)));
     assertThat(c, hasInterface("FastEthernet0/0", hasAddress("1.1.1.1/31")));
@@ -6424,14 +6422,14 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testInterfaceUnshut() throws IOException {
+  void testInterfaceUnshut() throws IOException {
     Configuration c = parseConfig("ios-interface-unshut");
     assertThat(c, hasInterface("Ethernet0", isActive(true)));
     assertThat(c, hasInterface("Ethernet1", isActive(false)));
   }
 
   @Test
-  public void testIosEigrpAclUsedForRouting() throws IOException {
+  void testIosEigrpAclUsedForRouting() throws IOException {
     Configuration c = parseConfig("ios-eigrp-match-acl");
     assertThat(c, hasRouteFilterList("ACL", anything()));
     assertTrue(
@@ -6450,7 +6448,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosSession() throws IOException {
+  void testIosSession() throws IOException {
     Configuration c = parseConfig("ios-session");
     Interface inside1 = c.getAllInterfaces().get("Ethernet1/1");
     Interface inside2 = c.getAllInterfaces().get("Ethernet1/2");
@@ -6479,14 +6477,14 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testVasiInterface() throws IOException {
+  void testVasiInterface() throws IOException {
     Configuration c = parseConfig("iosxe-vasi-interface");
     assertThat(c, hasInterface("vasileft1", hasAddress("1.1.1.2/31")));
     assertThat(c, hasInterface("vasiright1", hasAddress("1.1.1.3/31")));
   }
 
   @Test
-  public void testBgpRedistributeOspfExtraction() {
+  void testBgpRedistributeOspfExtraction() {
     {
       String hostname = "ios-bgp-redistribute-ospf";
       CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
@@ -6537,7 +6535,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testEigrpShutdownExtraction() {
+  void testEigrpShutdownExtraction() {
     CiscoConfiguration vc = parseCiscoConfig("ios-eigrp-shutdown", ConfigurationFormat.CISCO_IOS);
     Map<Long, EigrpProcess> procs = vc.getDefaultVrf().getEigrpProcesses();
     assertThat(procs.get(1L).getShutdown(), nullValue());
@@ -6546,7 +6544,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testEigrpShutdownConversion() throws IOException {
+  void testEigrpShutdownConversion() throws IOException {
     Configuration c = parseConfig("ios-eigrp-shutdown");
     Map<Long, org.batfish.datamodel.eigrp.EigrpProcess> procs =
         c.getDefaultVrf().getEigrpProcesses();
@@ -6554,7 +6552,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testEigrpRouterIdExtraction() {
+  void testEigrpRouterIdExtraction() {
     CiscoConfiguration vc =
         parseCiscoConfig("ios-eigrp-classic-routerid", ConfigurationFormat.CISCO_IOS);
     Map<Long, EigrpProcess> procs = vc.getDefaultVrf().getEigrpProcesses();
@@ -6563,7 +6561,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosServicePolicyInner() throws IOException {
+  void testIosServicePolicyInner() throws IOException {
     String hostname = "ios-service-policy-inner";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
 
@@ -6575,7 +6573,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosVrfLeakingConversion() throws IOException {
+  void testIosVrfLeakingConversion() throws IOException {
     String hostname = "ios-vrf-leaking";
     Configuration c = parseConfig(hostname);
     BgpVrfLeakConfig.Builder builder =
@@ -6621,7 +6619,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosVrfLeakingRoutes() throws IOException {
+  void testIosVrfLeakingRoutes() throws IOException {
     String hostname = "ios-vrf-leaking";
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -6685,7 +6683,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testNatMalformedNatPool() throws IOException {
+  void testNatMalformedNatPool() throws IOException {
     String hostname = "ios-nat-malformed-pool";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -6698,7 +6696,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosRouteMapSetExtcommunityRtExtraction() {
+  void testIosRouteMapSetExtcommunityRtExtraction() {
     String hostname = "ios-route-map-set-extcommunity-rt";
     CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
     assertThat(vc.getRouteMaps(), hasKeys("rm1", "rm2"));
@@ -6737,7 +6735,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosRouteMapSetExtcommunityRtConversion() throws IOException {
+  void testIosRouteMapSetExtcommunityRtConversion() throws IOException {
     String hostname = "ios-route-map-set-extcommunity-rt";
     Configuration c = parseConfig(hostname);
     Bgpv4Route input =
@@ -6788,7 +6786,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testResolutionPolicyFiltering() throws IOException {
+  void testResolutionPolicyFiltering() throws IOException {
     String hostname = "resolution_policy";
     Configuration c = parseConfig(hostname);
     assertThat(c.getRoutingPolicies(), hasKey(RESOLUTION_POLICY_NAME));
@@ -6809,7 +6807,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testResolutionPolicyRibRoutes() throws IOException {
+  void testResolutionPolicyRibRoutes() throws IOException {
     String hostname = "resolution_policy";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     batfish.loadConfigurations(batfish.getSnapshot());
@@ -6828,7 +6826,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testOspfDefaultInterfaceCost() throws IOException {
+  void testOspfDefaultInterfaceCost() throws IOException {
     Configuration c = parseConfig("ospf_default_interface_cost");
     String ifaceGigEName = "GigabitEthernet1";
     String ifaceVlan1Name = "Vlan1";
@@ -6843,7 +6841,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testAggregateAddressExtraction() {
+  void testAggregateAddressExtraction() {
     String hostname = "ios-aggregate-address";
     CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
     Map<Prefix, BgpAggregateIpv4Network> aggs =
@@ -6920,7 +6918,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testAggregateAddressConversion() throws IOException {
+  void testAggregateAddressConversion() throws IOException {
     String hostname = "ios-aggregate-address";
     Configuration c = parseConfig(hostname);
 
@@ -7011,7 +7009,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testAggregateAddressReferences() throws IOException {
+  void testAggregateAddressReferences() throws IOException {
     String hostname = "ios-aggregate-address";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -7031,7 +7029,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testBgpAggregateWithLocalSuppressedRoutes() throws IOException {
+  void testBgpAggregateWithLocalSuppressedRoutes() throws IOException {
     /*
      * Config has static routes:
      * - 1.1.1.0/24
@@ -7135,7 +7133,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testBgpAggregateWithLearnedSuppressedRoutes() throws IOException {
+  void testBgpAggregateWithLearnedSuppressedRoutes() throws IOException {
     /*
      * Snapshot contains c1, c2, and c3. c1 redistributes static routes 1.1.1.0/16 and 2.2.2.0/16
      * into BGP and advertises them to c2. c2 has aggregates 1.1.0.0/16 (not summary-only) and
@@ -7226,7 +7224,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testTrackIpSlaExtraction() {
+  void testTrackIpSlaExtraction() {
     String hostname = "ios-track-ip-sla";
     CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
 
@@ -7322,7 +7320,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIpSlaConversion() throws IOException {
+  void testIpSlaConversion() throws IOException {
     String hostname = "ios-track-ip-sla";
     Configuration c = parseConfig(hostname);
 
@@ -7392,7 +7390,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testRouteMapSetAsPathReplace() throws IOException {
+  void testRouteMapSetAsPathReplace() throws IOException {
     Configuration c = parseConfig("route-map-set-as-path-replace");
     long localAs = 100;
     BgpSessionProperties ebgpSession =
@@ -7453,7 +7451,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testCryptoVrfExtraction() {
+  void testCryptoVrfExtraction() {
     // GH 8104
     CiscoConfiguration vc = parseCiscoConfig("crypto-vrf", ConfigurationFormat.CISCO_IOS);
 
@@ -7467,7 +7465,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testBgpPeerSessionInheritance() throws IOException {
+  void testBgpPeerSessionInheritance() throws IOException {
     String hostname = "ios-bgp-peer-session-inheritance";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -7492,7 +7490,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testDownSwitchVirtualInterface() throws IOException {
+  void testDownSwitchVirtualInterface() throws IOException {
     String hostname = "ios_svi";
 
     CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
@@ -7514,12 +7512,12 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosInterfaceCts() {
+  void testIosInterfaceCts() {
     parseCiscoConfig("ios-interface-cts", ConfigurationFormat.CISCO_IOS);
   }
 
   @Test
-  public void testIosDeviceTrackingExtraction() {
+  void testIosDeviceTrackingExtraction() {
     String hostname = "ios-device-tracking";
     CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
 
@@ -7566,7 +7564,7 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosDeviceTracking() throws IOException {
+  void testIosDeviceTracking() throws IOException {
     String hostname = "ios-device-tracking";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);

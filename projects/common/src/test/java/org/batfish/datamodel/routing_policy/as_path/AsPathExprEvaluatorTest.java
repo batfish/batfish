@@ -5,13 +5,13 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableMap;
 import org.batfish.datamodel.AsPath;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link AsPathExprEvaluator}. */
-public final class AsPathExprEvaluatorTest {
+final class AsPathExprEvaluatorTest {
 
   @Test
-  public void testAsPathExprReference() {
+  void testAsPathExprReference() {
     String name = "expr1";
     AsPathExpr target = InputAsPath.instance();
     AsPathExprReference reference = AsPathExprReference.of(name);
@@ -28,7 +28,7 @@ public final class AsPathExprEvaluatorTest {
   }
 
   @Test
-  public void testDedupedAsPath() {
+  void testDedupedAsPath() {
     AsPath asPath = AsPath.ofSingletonAsSets(1L, 1L, 2L, 3L, 2L, 2L, 4L);
     assertThat(
         DedupedAsPath.of(InputAsPath.instance())
@@ -42,7 +42,7 @@ public final class AsPathExprEvaluatorTest {
   }
 
   @Test
-  public void testInputAsPath() {
+  void testInputAsPath() {
     AsPath asPath = AsPath.ofSingletonAsSets(1L);
     assertThat(
         InputAsPath.instance().accept(AsPathExprEvaluator.instance(), context(asPath)),

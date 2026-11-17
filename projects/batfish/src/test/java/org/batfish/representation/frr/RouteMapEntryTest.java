@@ -12,11 +12,11 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.representation.frr.RouteMapMatchSourceProtocol.Protocol;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class RouteMapEntryTest {
+class RouteMapEntryTest {
   @Test
-  public void testGetMatches_Interface() {
+  void testGetMatches_Interface() {
     RouteMapEntry entry = new RouteMapEntry(10, LineAction.DENY);
     entry.setMatchInterface(new RouteMapMatchInterface(ImmutableSet.of("interface")));
 
@@ -27,7 +27,7 @@ public class RouteMapEntryTest {
   }
 
   @Test
-  public void testGetMatches_Community() {
+  void testGetMatches_Community() {
     RouteMapEntry entry = new RouteMapEntry(10, LineAction.DENY);
     entry.setMatchCommunity(new RouteMapMatchCommunity(ImmutableSet.of("community")));
 
@@ -38,7 +38,7 @@ public class RouteMapEntryTest {
   }
 
   @Test
-  public void testGetMatches_PrefixLen() {
+  void testGetMatches_PrefixLen() {
     RouteMapEntry entry = new RouteMapEntry(10, LineAction.DENY);
     entry.setMatchIpAddressPrefixLen(new RouteMapMatchIpAddressPrefixLen(3));
 
@@ -49,7 +49,7 @@ public class RouteMapEntryTest {
   }
 
   @Test
-  public void testGetMatches_PrefixList() {
+  void testGetMatches_PrefixList() {
     RouteMapEntry entry = new RouteMapEntry(10, LineAction.DENY);
     entry.setMatchIpAddressPrefixList(
         new RouteMapMatchIpAddressPrefixList(ImmutableSet.of("prefix-list")));
@@ -61,7 +61,7 @@ public class RouteMapEntryTest {
   }
 
   @Test
-  public void testGetMatches_SourceProtocol() {
+  void testGetMatches_SourceProtocol() {
     RouteMapEntry entry = new RouteMapEntry(10, LineAction.DENY);
     entry.setMatchSourceProtocol(new RouteMapMatchSourceProtocol(Protocol.EIGRP));
 
@@ -72,7 +72,7 @@ public class RouteMapEntryTest {
   }
 
   @Test
-  public void testGetMatches_Tag() {
+  void testGetMatches_Tag() {
     RouteMapEntry entry = new RouteMapEntry(10, LineAction.DENY);
     entry.setMatchTag(new RouteMapMatchTag(5L));
 
@@ -83,7 +83,7 @@ public class RouteMapEntryTest {
   }
 
   @Test
-  public void testGetSets_Metric() {
+  void testGetSets_Metric() {
     RouteMapEntry entry = new RouteMapEntry(10, LineAction.DENY);
     entry.setSetMetric(new RouteMapSetMetric(new LiteralLong(100)));
 
@@ -93,7 +93,7 @@ public class RouteMapEntryTest {
   }
 
   @Test
-  public void testGetSets_MetricType() {
+  void testGetSets_MetricType() {
     RouteMapEntry entry = new RouteMapEntry(10, LineAction.DENY);
     entry.setSetMetricType(new RouteMapSetMetricType(RouteMapMetricType.TYPE_1));
 
@@ -103,7 +103,7 @@ public class RouteMapEntryTest {
   }
 
   @Test
-  public void testGetSets_NextHop() {
+  void testGetSets_NextHop() {
     RouteMapEntry entry = new RouteMapEntry(10, LineAction.DENY);
     entry.setSetIpNextHop(new RouteMapSetIpNextHopLiteral(Ip.parse("10.0.0.1")));
 
@@ -113,7 +113,7 @@ public class RouteMapEntryTest {
   }
 
   @Test
-  public void testGetSets_Community() {
+  void testGetSets_Community() {
     RouteMapEntry entry = new RouteMapEntry(10, LineAction.DENY);
     entry.setSetCommunity(
         new RouteMapSetCommunity(ImmutableSet.of(StandardCommunity.of(60000, 10)), false));
@@ -124,7 +124,7 @@ public class RouteMapEntryTest {
   }
 
   @Test
-  public void testGetSets_Origin() {
+  void testGetSets_Origin() {
     RouteMapEntry entry = new RouteMapEntry(10, LineAction.DENY);
     entry.setSetOrigin(new RouteMapSetOrigin(OriginType.IGP));
 

@@ -24,12 +24,12 @@ import java.util.Map;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link SourcesReferencedByIpAccessLists} */
-public class SourcesReferencedByIpAccessListsTest {
+class SourcesReferencedByIpAccessListsTest {
   @Test
-  public void testExprs() {
+  void testExprs() {
     Map<String, IpAccessList> namedAcls = ImmutableMap.of();
 
     assertThat(referencedSources(namedAcls, TRUE), empty());
@@ -54,7 +54,7 @@ public class SourcesReferencedByIpAccessListsTest {
   }
 
   @Test
-  public void testAcl() {
+  void testAcl() {
     IpAccessList.Builder aclBuilder = IpAccessList.builder().setName("foo");
     IpAccessList acl = aclBuilder.setLines(ImmutableList.of(ExprAclLine.ACCEPT_ALL)).build();
     Map<String, IpAccessList> namedAcls = ImmutableMap.of();
@@ -72,7 +72,7 @@ public class SourcesReferencedByIpAccessListsTest {
   }
 
   @Test
-  public void testDeniedByAcl() {
+  void testDeniedByAcl() {
     IpAccessList acl =
         IpAccessList.builder()
             .setName("foo")
@@ -85,7 +85,7 @@ public class SourcesReferencedByIpAccessListsTest {
   }
 
   @Test
-  public void testPermittedByAcl() {
+  void testPermittedByAcl() {
     IpAccessList.Builder aclBuilder = IpAccessList.builder().setName("foo");
     IpAccessList acl =
         aclBuilder
@@ -98,7 +98,7 @@ public class SourcesReferencedByIpAccessListsTest {
   }
 
   @Test
-  public void testReferencedSourcesForMultipleAcls() {
+  void testReferencedSourcesForMultipleAcls() {
     IpAccessList.Builder aclBuilder = IpAccessList.builder();
     IpAccessList acl1 =
         aclBuilder

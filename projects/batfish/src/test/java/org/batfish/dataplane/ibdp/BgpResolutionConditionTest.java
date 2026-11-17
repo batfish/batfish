@@ -11,6 +11,7 @@ import static org.batfish.dataplane.ibdp.TestUtils.assertRoute;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 import java.util.SortedMap;
@@ -41,12 +42,11 @@ import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Test of BGP resolution condition on main RIB LPM routes for BGPv4 route next hop IP. */
-public final class BgpResolutionConditionTest {
+final class BgpResolutionConditionTest {
 
   private static final long AS = 1L;
 
@@ -247,7 +247,7 @@ public final class BgpResolutionConditionTest {
   }
 
   @Test
-  public void testResolutionRestriction() throws IOException {
+  void testResolutionRestriction() throws IOException {
     Batfish batfish = BatfishTestUtils.getBatfish(network(true), _folder);
     batfish.computeDataPlane(batfish.getSnapshot());
     IncrementalDataPlane dataplane =
@@ -265,7 +265,7 @@ public final class BgpResolutionConditionTest {
   }
 
   @Test
-  public void testNoResolutionRestriction() throws IOException {
+  void testNoResolutionRestriction() throws IOException {
     Batfish batfish = BatfishTestUtils.getBatfish(network(false), _folder);
     batfish.computeDataPlane(batfish.getSnapshot());
     IncrementalDataPlane dataplane =
@@ -282,5 +282,5 @@ public final class BgpResolutionConditionTest {
     assertRoute(routes, IBGP, R2, DEPENDENT_ROUTE2_NETWORK, 0, DEPENDENT_ROUTE2_NEXT_HOP_IP);
   }
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 }

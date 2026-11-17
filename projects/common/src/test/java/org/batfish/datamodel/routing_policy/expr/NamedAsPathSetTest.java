@@ -2,8 +2,8 @@ package org.batfish.datamodel.routing_policy.expr;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -21,12 +21,12 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.routing_policy.Environment;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class NamedAsPathSetTest {
+class NamedAsPathSetTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new NamedAsPathSet("A"), new NamedAsPathSet("A"))
         .addEqualityGroup(new NamedAsPathSet("B"))
@@ -34,14 +34,14 @@ public class NamedAsPathSetTest {
   }
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     NamedAsPathSet expr = new NamedAsPathSet("A");
     assertThat(expr, equalTo(BatfishObjectMapper.clone(expr, AsPathSetExpr.class)));
     assertThat(expr, equalTo(SerializationUtils.clone(expr)));
   }
 
   @Test
-  public void testEvaluate() {
+  void testEvaluate() {
     // Create two AsPathAccessLists, one that permits only the empty AsPath, and one that permits
     // only the AsPath containing ASN 500.
     AsPathAccessList emptyAsPath =
@@ -72,10 +72,10 @@ public class NamedAsPathSetTest {
             .build();
     Environment env = Environment.builder(c).setOriginalRoute(r).build();
     assertTrue(
-        "Empty AS Path regex matches connected route",
-        new NamedAsPathSet(emptyAsPath.getName()).matches(env));
+        new NamedAsPathSet(emptyAsPath.getName()).matches(env),
+        "Empty AS Path regex matches connected route");
     assertFalse(
-        "AS Path of 500 does not match connected route",
-        new NamedAsPathSet(singleAsPath.getName()).matches(env));
+        new NamedAsPathSet(singleAsPath.getName()).matches(env),
+        "AS Path of 500 does not match connected route");
   }
 }

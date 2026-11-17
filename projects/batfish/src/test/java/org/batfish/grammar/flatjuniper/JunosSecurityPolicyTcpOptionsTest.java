@@ -8,24 +8,24 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.representation.juniper.FwTerm;
 import org.batfish.representation.juniper.SecurityPolicyTcpOptions;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosSecurityPolicyTcpOptionsTest {
+final class JunosSecurityPolicyTcpOptionsTest {
 
   private static final String HOSTNAME = "security-policy-tcp-options";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testExtractionAndWarnings() throws IOException {
+  void testExtractionAndWarnings() throws IOException {
     Batfish batfish = getBatfish(_folder, HOSTNAME);
     FwTerm term =
         getVendorConfiguration(batfish, HOSTNAME)

@@ -7,10 +7,11 @@ import static org.batfish.representation.aws.AwsConfigurationTestUtils.testSetup
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testTrace;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.batfish.common.plugin.IBatfish;
@@ -23,10 +24,9 @@ import org.batfish.specifier.NoNodesNodeSpecifier;
 import org.batfish.specifier.NodeSpecifier;
 import org.batfish.specifier.NullLocationSpecifier;
 import org.batfish.specifier.SpecifierFactories;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * E2e tests of load balancing behavior. The snapshot was created using the terraform definition
@@ -40,7 +40,7 @@ import org.junit.rules.TemporaryFolder;
  * <p>The snapshot also has some elements such as an Internet gateway that are useful for testing on
  * AWS but not relevant here.
  */
-public class AwsConfigurationLoadBalancerTest {
+class AwsConfigurationLoadBalancerTest {
 
   private static final String TESTCONFIGS_DIR = "org/batfish/representation/aws/test-load-balancer";
 
@@ -80,10 +80,10 @@ public class AwsConfigurationLoadBalancerTest {
 
   private static IBatfish _batfish;
 
-  @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public static File _folder;
 
-  @BeforeClass
-  public static void setup() throws IOException {
+  @BeforeAll
+  static void setup() throws IOException {
     _batfish = testSetup(TESTCONFIGS_DIR, fileNames, _folder);
   }
 
@@ -118,7 +118,7 @@ public class AwsConfigurationLoadBalancerTest {
 
   /** The client sends a packet to the load balancer on the listened port. Test both directions. */
   @Test
-  public void testClientToLbTrace() {
+  void testClientToLbTrace() {
     // traces could have gone to either server, but because of deterministic processing of
     // transformations server2 is hit. reachability test below tests that server1 can also be hit.
     Ip nlb1Ip = getInterfaceIp(_nodeLoadBalancer1, _nlb1Iface, _batfish);
@@ -168,14 +168,14 @@ public class AwsConfigurationLoadBalancerTest {
   }
 
   @Test
-  public void testClientToServerReachability() {
+  void testClientToServerReachability() {
     testReachability(_instanceClient, _instanceS1);
     testReachability(_instanceClient, _instanceS2);
   }
 
   /** The client sends a packet to the load balancer on a non-listened port. */
   @Test
-  public void testClientToLb_nonListenedPort() {
+  void testClientToLb_nonListenedPort() {
     Ip nlb1Ip = getInterfaceIp(_nodeLoadBalancer1, _nlb1Iface, _batfish);
     Ip nlb2Ip = getInterfaceIp(_nodeLoadBalancer2, _nlb2Iface, _batfish);
     testTrace(

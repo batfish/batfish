@@ -12,7 +12,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcPort;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.Collections;
@@ -20,17 +20,13 @@ import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.datamodel.Flow.Builder;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link PacketHeaderConstraintsUtil} */
-public class PacketHeaderConstraintsUtilTest {
-
-  @Rule public ExpectedException thrown = ExpectedException.none();
+class PacketHeaderConstraintsUtilTest {
 
   @Test
-  public void testToAclLineMatchExprConversion() {
+  void testToAclLineMatchExprConversion() {
     PacketHeaderConstraints phc =
         PacketHeaderConstraints.builder()
             .setSrcPorts(
@@ -59,7 +55,7 @@ public class PacketHeaderConstraintsUtilTest {
   }
 
   @Test
-  public void testToBDDConversion() {
+  void testToBDDConversion() {
     BDDPacket packet = new BDDPacket();
     assertThat(
         PacketHeaderConstraintsUtil.toBDD(
@@ -72,7 +68,7 @@ public class PacketHeaderConstraintsUtilTest {
 
   /** Known bug with current conversion from PacketHeaderConstraints to HeaderSpace. */
   @Test
-  public void testApplications() {
+  void testApplications() {
     BDDPacket packet = new BDDPacket();
     BDD ssh = packet.getIpProtocol().value(IpProtocol.TCP).and(packet.getDstPort().value(22));
     BDD dns = packet.getIpProtocol().value(IpProtocol.UDP).and(packet.getDstPort().value(53));
@@ -89,7 +85,7 @@ public class PacketHeaderConstraintsUtilTest {
    * is ICMP.
    */
   @Test
-  public void testDefaultToIcmpPing() {
+  void testDefaultToIcmpPing() {
     PacketHeaderConstraints phc =
         PacketHeaderConstraints.builder().setIpProtocols(ImmutableSet.of(IpProtocol.ICMP)).build();
     Builder builder =
@@ -99,7 +95,7 @@ public class PacketHeaderConstraintsUtilTest {
   }
 
   @Test
-  public void testToAclLineMatchExpr() {
+  void testToAclLineMatchExpr() {
     PacketHeaderConstraints phc =
         PacketHeaderConstraints.builder()
             .setIpProtocols(ImmutableSet.of(IpProtocol.TCP))

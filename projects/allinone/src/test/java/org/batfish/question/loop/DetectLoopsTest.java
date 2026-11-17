@@ -3,6 +3,7 @@ package org.batfish.question.loop;
 import static org.batfish.datamodel.matchers.RowsMatchers.hasSize;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 import java.util.SortedMap;
@@ -13,12 +14,11 @@ import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.hamcrest.Matchers;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public class DetectLoopsTest {
-  @Rule public TemporaryFolder _tempFolder = new TemporaryFolder();
+class DetectLoopsTest {
+  @TempDir public File _tempFolder;
 
   Batfish _batfish;
 
@@ -29,7 +29,7 @@ public class DetectLoopsTest {
   }
 
   @Test
-  public void testNoLoops() throws IOException {
+  void testNoLoops() throws IOException {
     initNetwork(false);
     DetectLoopsAnswerer answerer =
         new DetectLoopsAnswerer(new DetectLoopsQuestion(TracePruner.DEFAULT_MAX_TRACES), _batfish);
@@ -38,7 +38,7 @@ public class DetectLoopsTest {
   }
 
   @Test
-  public void testLoops() throws IOException {
+  void testLoops() throws IOException {
     initNetwork(true);
     Set<Flow> flows = _batfish.bddLoopDetection(_batfish.getSnapshot());
     assertThat(flows, Matchers.hasSize(2));
