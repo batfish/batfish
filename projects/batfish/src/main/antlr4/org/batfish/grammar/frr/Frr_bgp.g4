@@ -176,9 +176,13 @@ rbaf_ipv6_unicast
 
 rbafi6_inner
 :
-  rbafi6_import
+  rbafi6_aggregate_address_null
+| rbafi6_import
 | rbafi6_maximum_paths
-| rbafi6_null_tail
+| rbafi6_neighbor_null
+| rbafi6_network_null
+| rbafi6_no_null
+| rbafi6_redistribute_null
 ;
 
 rbafi6_maximum_paths
@@ -191,17 +195,11 @@ rbafi6_import
   IMPORT VRF (vrf_name | ROUTE_MAP route_map_name) NEWLINE
 ;
 
-rbafi6_null_tail
-:
-  (
-     // there are likely others but haven't seen examples yet, so leaving for later
-     AGGREGATE_ADDRESS
-     | NEIGHBOR
-     | NETWORK
-     | NO
-     | REDISTRIBUTE
-  ) null_rest_of_line
-;
+rbafi6_aggregate_address_null: AGGREGATE_ADDRESS null_rest_of_line;
+rbafi6_neighbor_null: NEIGHBOR null_rest_of_line;
+rbafi6_network_null: NETWORK null_rest_of_line;
+rbafi6_no_null: NO null_rest_of_line;
+rbafi6_redistribute_null: REDISTRIBUTE null_rest_of_line;
 
 
 rbaf_l2vpn_evpn
