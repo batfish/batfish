@@ -6,45 +6,35 @@ options {
    tokenVocab = CiscoLexer;
 }
 
-call_home_null
-:
-   NO?
-   (
-      ALERT_GROUP
-      | CONTACT
-      | CONTACT_EMAIL_ADDR
-      | CONTACT_NAME
-      | CONTRACT_ID
-      | CUSTOMER_ID
-      | MAIL_SERVER
-      | PHONE_NUMBER
-      | SENDER
-      | SERVICE
-      | SITE_ID
-      | SOURCE_INTERFACE
-      | SOURCE_IP_ADDRESS
-      | STREET_ADDRESS
-      | VRF
-   ) null_rest_of_line
-;
+call_home_alert_group_null: NO? ALERT_GROUP null_rest_of_line;
+call_home_contact_null: NO? CONTACT null_rest_of_line;
+call_home_contact_email_addr_null: NO? CONTACT_EMAIL_ADDR null_rest_of_line;
+call_home_contact_name_null: NO? CONTACT_NAME null_rest_of_line;
+call_home_contract_id_null: NO? CONTRACT_ID null_rest_of_line;
+call_home_customer_id_null: NO? CUSTOMER_ID null_rest_of_line;
+call_home_mail_server_null: NO? MAIL_SERVER null_rest_of_line;
+call_home_phone_number_null: NO? PHONE_NUMBER null_rest_of_line;
+call_home_sender_null: NO? SENDER null_rest_of_line;
+call_home_service_null: NO? SERVICE null_rest_of_line;
+call_home_site_id_null: NO? SITE_ID null_rest_of_line;
+call_home_source_interface_null: NO? SOURCE_INTERFACE null_rest_of_line;
+call_home_source_ip_address_null: NO? SOURCE_IP_ADDRESS null_rest_of_line;
+call_home_street_address_null: NO? STREET_ADDRESS null_rest_of_line;
+call_home_vrf_null: NO? VRF null_rest_of_line;
 
 call_home_profile
 :
    PROFILE null_rest_of_line
    (
-      call_home_profile_null
+      call_home_profile_active_null
+      | call_home_profile_destination_null
+      | call_home_profile_subscribe_to_alert_group_null
    )*
 ;
 
-call_home_profile_null
-:
-   NO?
-   (
-      ACTIVE
-      | DESTINATION
-      | SUBSCRIBE_TO_ALERT_GROUP
-   ) null_rest_of_line
-;
+call_home_profile_active_null: NO? ACTIVE null_rest_of_line;
+call_home_profile_destination_null: NO? DESTINATION null_rest_of_line;
+call_home_profile_subscribe_to_alert_group_null: NO? SUBSCRIBE_TO_ALERT_GROUP null_rest_of_line;
 
 callhome_destination_profile
 :
@@ -99,18 +89,13 @@ callhome_diagnostic_signature
 :
    DIAGNOSTIC_SIGNATURE NEWLINE
    (
-      callhome_diagnostic_signature_null
+      callhome_diagnostic_signature_active_null
+      | callhome_diagnostic_signature_profile_null
    )*
 ;
 
-callhome_diagnostic_signature_null
-:
-   NO?
-   (
-      ACTIVE
-      | PROFILE
-   ) null_rest_of_line
-;
+callhome_diagnostic_signature_active_null: NO? ACTIVE null_rest_of_line;
+callhome_diagnostic_signature_profile_null: NO? PROFILE null_rest_of_line;
 
 callhome_email_contact
 :
@@ -122,31 +107,10 @@ callhome_enable
    ENABLE NEWLINE
 ;
 
-callhome_null
-:
-   NO?
-   (
-      DATA_PRIVACY
-      | DUPLICATE_MESSAGE
-      |
-      (
-         NO
-         (
-            DESTINATION_PROFILE
-            | ENABLE
-            | TRANSPORT
-         )
-      )
-      | PERIODIC_INVENTORY
-      |
-      (
-         TRANSPORT
-         (
-            HTTP
-         )
-      )
-   ) null_rest_of_line
-;
+callhome_data_privacy_null: NO? DATA_PRIVACY null_rest_of_line;
+callhome_duplicate_message_null: NO? DUPLICATE_MESSAGE null_rest_of_line;
+callhome_no_null: NO ( DESTINATION_PROFILE | ENABLE | TRANSPORT ) null_rest_of_line;
+callhome_periodic_inventory_null: NO? PERIODIC_INVENTORY null_rest_of_line;
 
 callhome_phone_contact
 :
@@ -168,8 +132,11 @@ callhome_transport
    TRANSPORT
    (
       callhome_transport_email
+      | callhome_transport_http_null
    )
 ;
+
+callhome_transport_http_null: HTTP null_rest_of_line;
 
 callhome_transport_email
 :
@@ -214,8 +181,22 @@ s_call_home
 :
    NO? CALL_HOME null_rest_of_line
    (
-      call_home_null
+      call_home_alert_group_null
+      | call_home_contact_email_addr_null
+      | call_home_contact_name_null
+      | call_home_contact_null
+      | call_home_contract_id_null
+      | call_home_customer_id_null
+      | call_home_mail_server_null
+      | call_home_phone_number_null
       | call_home_profile
+      | call_home_sender_null
+      | call_home_service_null
+      | call_home_site_id_null
+      | call_home_source_interface_null
+      | call_home_source_ip_address_null
+      | call_home_street_address_null
+      | call_home_vrf_null
    )*
 ;
 
@@ -223,11 +204,14 @@ s_callhome
 :
    CALLHOME NEWLINE
    (
-      callhome_email_contact
+      callhome_data_privacy_null
+      | callhome_duplicate_message_null
+      | callhome_email_contact
       | callhome_destination_profile
       | callhome_diagnostic_signature
       | callhome_enable
-      | callhome_null
+      | callhome_no_null
+      | callhome_periodic_inventory_null
       | callhome_phone_contact
       | callhome_streetaddress
       | callhome_switch_priority

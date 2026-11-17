@@ -34,19 +34,15 @@ logging_archive
 :
    ARCHIVE null_rest_of_line
    (
-      logging_archive_null
+      logging_archive_archive_length_null
+      | logging_archive_device_null
+      | logging_archive_frequency_null
    )*
 ;
 
-logging_archive_null
-:
-   NO?
-   (
-      ARCHIVE_LENGTH
-      | DEVICE
-      | FREQUENCY
-   ) null_rest_of_line
-;
+logging_archive_archive_length_null: NO? ARCHIVE_LENGTH null_rest_of_line;
+logging_archive_device_null: NO? DEVICE null_rest_of_line;
+logging_archive_frequency_null: NO? FREQUENCY null_rest_of_line;
 
 logging_buffered
 :
@@ -401,19 +397,15 @@ logging_suppress
 :
    SUPPRESS null_rest_of_line
    (
-      logging_suppress_null
+      logging_suppress_alarm_null
+      | logging_suppress_all_alarms_null
+      | logging_suppress_all_of_router_null
    )*
 ;
 
-logging_suppress_null
-:
-   NO?
-   (
-      ALARM
-      | ALL_ALARMS
-      | ALL_OF_ROUTER
-   ) null_rest_of_line
-;
+logging_suppress_alarm_null: NO? ALARM null_rest_of_line;
+logging_suppress_all_alarms_null: NO? ALL_ALARMS null_rest_of_line;
+logging_suppress_all_of_router_null: NO? ALL_OF_ROUTER null_rest_of_line;
 
 logging_trap
 :

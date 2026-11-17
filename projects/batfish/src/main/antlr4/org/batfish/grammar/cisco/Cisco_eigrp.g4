@@ -97,21 +97,20 @@ re_eigrp_stub
 :
    STUB
    (
-      rees_leak_map
-      | rees_null
+      rees_connected_null
+      | rees_leak_map
+      | rees_receive_only_null
+      | rees_redistributed_null
+      | rees_static_null
+      | rees_summary_null
    )* NEWLINE
 ;
 
-rees_null
-:
-   (
-      RECEIVE_ONLY
-      | CONNECTED
-      | STATIC
-      | SUMMARY
-      | REDISTRIBUTED
-   )
-;
+rees_receive_only_null: RECEIVE_ONLY;
+rees_connected_null: CONNECTED;
+rees_static_null: STATIC;
+rees_summary_null: SUMMARY;
+rees_redistributed_null: REDISTRIBUTED;
 
 rees_leak_map
 :
@@ -253,40 +252,58 @@ reaf_interface_default
    )?
 ;
 
-reaf_interface_null
-:
-   NO?
-   (
-      ADD_PATHS
-      | AUTHENTICATION
-      | BANDWIDTH_PERCENT
-      | BFD
-      | DAMPENING_CHANGE
-      | DAMPENING_INTERVAL
-      | HELLO_INTERVAL
-      | HOLD_TIME
-      | NEXT_HOP_SELF
-      | SHUTDOWN
-      | SPLIT_HORIZON
-      | SUMMARY_ADDRESS
-   ) null_rest_of_line
-;
+reaf_interface_add_paths_null: NO? ADD_PATHS null_rest_of_line;
+reaf_interface_authentication_null: NO? AUTHENTICATION null_rest_of_line;
+reaf_interface_bandwidth_percent_null: NO? BANDWIDTH_PERCENT null_rest_of_line;
+reaf_interface_bfd_null: NO? BFD null_rest_of_line;
+reaf_interface_dampening_change_null: NO? DAMPENING_CHANGE null_rest_of_line;
+reaf_interface_dampening_interval_null: NO? DAMPENING_INTERVAL null_rest_of_line;
+reaf_interface_hello_interval_null: NO? HELLO_INTERVAL null_rest_of_line;
+reaf_interface_hold_time_null: NO? HOLD_TIME null_rest_of_line;
+reaf_interface_next_hop_self_null: NO? NEXT_HOP_SELF null_rest_of_line;
+reaf_interface_shutdown_null: NO? SHUTDOWN null_rest_of_line;
+reaf_interface_split_horizon_null: NO? SPLIT_HORIZON null_rest_of_line;
+reaf_interface_summary_address_null: NO? SUMMARY_ADDRESS null_rest_of_line;
 
 reaf_interface_tail
 :
-   reaf_interface_null
+   reaf_interface_add_paths_null
+   | reaf_interface_authentication_null
+   | reaf_interface_bandwidth_percent_null
+   | reaf_interface_bfd_null
+   | reaf_interface_dampening_change_null
+   | reaf_interface_dampening_interval_null
+   | reaf_interface_hello_interval_null
+   | reaf_interface_hold_time_null
+   | reaf_interface_next_hop_self_null
+   | reaf_interface_shutdown_null
+   | reaf_interface_split_horizon_null
+   | reaf_interface_summary_address_null
    | reafi_passive_interface
 ;
 
 reaf_topology_tail
 :
-   re_default_metric
+   re_auto_summary_null
+   | re_cts_null
+   | re_default_information_null
+   | re_default_metric
+   | re_distance_null
+   | re_distribute_list_null
    | re_eigrp_default_route_tag_null
    | re_eigrp_event_log_size_null
    | re_eigrp_log_neighbor_changes_null
    | re_eigrp_log_neighbor_warnings_null
+   | re_fast_reroute_null
+   | re_maximum_paths_null
+   | re_metric_null
+   | re_offset_list_null
    | re_redistribute
-   | reaf_topology_null
+   | re_snmp_null
+   | re_summary_metric_null
+   | re_timers_null
+   | re_traffic_share_null
+   | re_variance_null
 ;
 
 reaf_topology
@@ -300,26 +317,20 @@ reaf_topology
    )?
 ;
 
-reaf_topology_null
-:
-   NO?
-   (
-      AUTO_SUMMARY
-      | CTS
-      | DEFAULT_INFORMATION
-      | DISTANCE
-      | DISTRIBUTE_LIST
-      | FAST_REROUTE
-      | MAXIMUM_PATHS
-      | (METRIC MAXIMUM_HOPS)
-      | OFFSET_LIST
-      | SNMP
-      | SUMMARY_METRIC
-      | TIMERS
-      | TRAFFIC_SHARE
-      | VARIANCE
-   ) null_rest_of_line
-;
+re_auto_summary_null: NO? AUTO_SUMMARY null_rest_of_line;
+re_cts_null: NO? CTS null_rest_of_line;
+re_default_information_null: NO? DEFAULT_INFORMATION null_rest_of_line;
+re_distance_null: NO? DISTANCE null_rest_of_line;
+re_distribute_list_null: NO? DISTRIBUTE_LIST null_rest_of_line;
+re_fast_reroute_null: NO? FAST_REROUTE null_rest_of_line;
+re_maximum_paths_null: NO? MAXIMUM_PATHS null_rest_of_line;
+re_metric_null: NO? METRIC MAXIMUM_HOPS null_rest_of_line;
+re_offset_list_null: NO? OFFSET_LIST null_rest_of_line;
+re_snmp_null: NO? SNMP null_rest_of_line;
+re_summary_metric_null: NO? SUMMARY_METRIC null_rest_of_line;
+re_timers_null: NO? TIMERS null_rest_of_line;
+re_traffic_share_null: NO? TRAFFIC_SHARE null_rest_of_line;
+re_variance_null: NO? VARIANCE null_rest_of_line;
 
 reafi_passive_interface
 :
@@ -340,22 +351,16 @@ re_autonomous_system
    NO? AUTONOMOUS_SYSTEM asnum = dec NEWLINE
 ;
 
-rec_address_family_null
-:
-   NO?
-   (
-      AUTO_SUMMARY
-      | BFD
-      | DEFAULT_INFORMATION
-      | MAXIMUM_PATHS
-      | MAXIMUM_PREFIX
-      | NSF
-      | OFFSET_LIST
-      | TIMERS
-      | TRAFFIC_SHARE
-      | VARIANCE
-   ) null_rest_of_line
-;
+rec_address_family_auto_summary_null: NO? AUTO_SUMMARY null_rest_of_line;
+rec_address_family_bfd_null: NO? BFD null_rest_of_line;
+rec_address_family_default_information_null: NO? DEFAULT_INFORMATION null_rest_of_line;
+rec_address_family_maximum_paths_null: NO? MAXIMUM_PATHS null_rest_of_line;
+rec_address_family_maximum_prefix_null: NO? MAXIMUM_PREFIX null_rest_of_line;
+rec_address_family_nsf_null: NO? NSF null_rest_of_line;
+rec_address_family_offset_list_null: NO? OFFSET_LIST null_rest_of_line;
+rec_address_family_timers_null: NO? TIMERS null_rest_of_line;
+rec_address_family_traffic_share_null: NO? TRAFFIC_SHARE null_rest_of_line;
+rec_address_family_variance_null: NO? VARIANCE null_rest_of_line;
 
 rec_address_family_tail
 :
@@ -368,7 +373,16 @@ rec_address_family_tail
    | re_passive_interface
    | re_redistribute
    | re_shutdown
-   | rec_address_family_null
+   | rec_address_family_auto_summary_null
+   | rec_address_family_bfd_null
+   | rec_address_family_default_information_null
+   | rec_address_family_maximum_paths_null
+   | rec_address_family_maximum_prefix_null
+   | rec_address_family_nsf_null
+   | rec_address_family_offset_list_null
+   | rec_address_family_timers_null
+   | rec_address_family_traffic_share_null
+   | rec_address_family_variance_null
    | rec_metric
 ;
 
@@ -535,19 +549,13 @@ ren_address_family
    ren_address_family_tail* address_family_footer
 ;
 
-ren_address_family_null
-:
-   NO?
-   (
-      MAXIMUM_PREFIX
-      | (METRIC RIB_SCALE)
-      | NEIGHBOR
-      | NSF
-      | REMOTE_NEIGHBORS
-      | SHUTDOWN
-      | TIMERS
-   ) null_rest_of_line
-;
+ren_address_family_maximum_prefix_null: NO? MAXIMUM_PREFIX null_rest_of_line;
+ren_address_family_metric_null: NO? METRIC RIB_SCALE null_rest_of_line;
+ren_address_family_neighbor_null: NO? NEIGHBOR null_rest_of_line;
+ren_address_family_nsf_null: NO? NSF null_rest_of_line;
+ren_address_family_remote_neighbors_null: NO? REMOTE_NEIGHBORS null_rest_of_line;
+ren_address_family_shutdown_null: NO? SHUTDOWN null_rest_of_line;
+ren_address_family_timers_null: NO? TIMERS null_rest_of_line;
 
 ren_address_family_tail
 :
@@ -559,7 +567,13 @@ ren_address_family_tail
    | reaf_interface_default
    | reaf_interface
    | reaf_topology
-   | ren_address_family_null
+   | ren_address_family_maximum_prefix_null
+   | ren_address_family_metric_null
+   | ren_address_family_neighbor_null
+   | ren_address_family_nsf_null
+   | ren_address_family_remote_neighbors_null
+   | ren_address_family_shutdown_null
+   | ren_address_family_timers_null
    | ren_metric_weights
 ;
 
@@ -603,9 +617,13 @@ ren_service_family_tail
    re_eigrp
    | ren_metric_weights
    | ren_service_family_null
+   | resf_eigrp_null
    | resf_interface_default
    | resf_interface
-   | resf_null
+   | resf_neighbor_null
+   | resf_remote_neighbors_null
+   | resf_shutdown_null
+   | resf_timers_null
    | resf_topology
 ;
 
@@ -632,37 +650,32 @@ resf_interface_default
    )?
 ;
 
-resf_interface_null
-:
-   NO?
-   (
-      AUTHENTICATION
-      | BANDWIDTH_PERCENT
-      | DAMPENING_CHANGE
-      | DAMPENING_INTERVAL
-      | HELLO_INTERVAL
-      | HOLD_TIME
-      | SHUTDOWN
-      | SPLIT_HORIZON
-   ) null_rest_of_line
-;
+resf_interface_authentication_null: NO? AUTHENTICATION null_rest_of_line;
+resf_interface_bandwidth_percent_null: NO? BANDWIDTH_PERCENT null_rest_of_line;
+resf_interface_dampening_change_null: NO? DAMPENING_CHANGE null_rest_of_line;
+resf_interface_dampening_interval_null: NO? DAMPENING_INTERVAL null_rest_of_line;
+resf_interface_hello_interval_null: NO? HELLO_INTERVAL null_rest_of_line;
+resf_interface_hold_time_null: NO? HOLD_TIME null_rest_of_line;
+resf_interface_shutdown_null: NO? SHUTDOWN null_rest_of_line;
+resf_interface_split_horizon_null: NO? SPLIT_HORIZON null_rest_of_line;
 
 resf_interface_tail
 :
-   resf_interface_null
+   resf_interface_authentication_null
+   | resf_interface_bandwidth_percent_null
+   | resf_interface_dampening_change_null
+   | resf_interface_dampening_interval_null
+   | resf_interface_hello_interval_null
+   | resf_interface_hold_time_null
+   | resf_interface_shutdown_null
+   | resf_interface_split_horizon_null
 ;
 
-resf_null
-:
-   NO?
-   (
-      EIGRP
-      | NEIGHBOR
-      | REMOTE_NEIGHBORS
-      | SHUTDOWN
-      | TIMERS
-   ) null_rest_of_line
-;
+resf_eigrp_null: NO? EIGRP null_rest_of_line;
+resf_neighbor_null: NO? NEIGHBOR null_rest_of_line;
+resf_remote_neighbors_null: NO? REMOTE_NEIGHBORS null_rest_of_line;
+resf_shutdown_null: NO? SHUTDOWN null_rest_of_line;
+resf_timers_null: NO? TIMERS null_rest_of_line;
 
 resf_topology_tail
 :

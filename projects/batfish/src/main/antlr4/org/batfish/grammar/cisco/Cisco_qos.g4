@@ -684,9 +684,25 @@ pm_class
       | name = variable_permissive
    ) NEWLINE
    (
-      pmc_null
+      pmc_bandwidth_null
+      | pmc_congestion_control_null
+      | pmc_dbl_null
+      | pmc_drop_null
+      | pmc_fair_queue_null
+      | pmc_inspect_null
+      | pmc_mtu_null
+      | pmc_pass_null
+      | pmc_pause_null
       | pmc_police
+      | pmc_priority_null
+      | pmc_queue_buffers_null
+      | pmc_queue_limit_null
+      | pmc_random_detect_null
       | pmc_service_policy
+      | pmc_set_null
+      | pmc_shape_null
+      | pmc_trust_null
+      | pmc_user_statistics_null
    )*
 ;
 
@@ -779,52 +795,46 @@ pm_iosict_pass
    PASS NEWLINE
 ;
 
-pm_null
-:
-   NO?
-   (
-      CIR
-      | DESCRIPTION
-   ) null_rest_of_line
-;
+pm_cir_null: NO? CIR null_rest_of_line;
+pm_description_null: NO? DESCRIPTION null_rest_of_line;
 
 pm_parameters
 :
    PARAMETERS NEWLINE
    (
-      pmp_null
+      pmp_id_mismatch_null
+      | pmp_id_randomization_null
+      | pmp_message_length_null
+      | pmp_protocol_violation_null
+      | pmp_tcp_inspection_null
    )*
 ;
 
-pmc_null
-:
-   NO?
-   (
-      BANDWIDTH
-      | CONGESTION_CONTROL
-      | DBL
-      | DROP
-      | FAIR_QUEUE
-      | INSPECT
-      | MTU
-      | PASS
-      | PAUSE
-      | PRIORITY
-      | QUEUE_BUFFERS
-      | QUEUE_LIMIT
-      | RANDOM_DETECT
-      | SET
-      | SHAPE
-      | TRUST
-      | USER_STATISTICS
-   ) null_rest_of_line
-;
+pmc_bandwidth_null: NO? BANDWIDTH null_rest_of_line;
+pmc_congestion_control_null: NO? CONGESTION_CONTROL null_rest_of_line;
+pmc_dbl_null: NO? DBL null_rest_of_line;
+pmc_drop_null: NO? DROP null_rest_of_line;
+pmc_fair_queue_null: NO? FAIR_QUEUE null_rest_of_line;
+pmc_inspect_null: NO? INSPECT null_rest_of_line;
+pmc_mtu_null: NO? MTU null_rest_of_line;
+pmc_pass_null: NO? PASS null_rest_of_line;
+pmc_pause_null: NO? PAUSE null_rest_of_line;
+pmc_priority_null: NO? PRIORITY null_rest_of_line;
+pmc_queue_buffers_null: NO? QUEUE_BUFFERS null_rest_of_line;
+pmc_queue_limit_null: NO? QUEUE_LIMIT null_rest_of_line;
+pmc_random_detect_null: NO? RANDOM_DETECT null_rest_of_line;
+pmc_set_null: NO? SET null_rest_of_line;
+pmc_shape_null: NO? SHAPE null_rest_of_line;
+pmc_trust_null: NO? TRUST null_rest_of_line;
+pmc_user_statistics_null: NO? USER_STATISTICS null_rest_of_line;
 
 pmc_police
 :
    POLICE null_rest_of_line
    (
-      pmcp_null
+      pmcp_conform_action_null
+      | pmcp_exceed_action_null
+      | pmcp_violate_action_null
    )*
 ;
 
@@ -833,38 +843,20 @@ pmc_service_policy
    SERVICE_POLICY name = variable NEWLINE
 ;
 
-pmcp_null
-:
-   NO?
-   (
-      CONFORM_ACTION
-      | EXCEED_ACTION
-      | VIOLATE_ACTION
-   ) null_rest_of_line
-;
+pmcp_conform_action_null: NO? CONFORM_ACTION null_rest_of_line;
+pmcp_exceed_action_null: NO? EXCEED_ACTION null_rest_of_line;
+pmcp_violate_action_null: NO? VIOLATE_ACTION null_rest_of_line;
 
-pmp_null
-:
-   NO?
-   (
-      ID_MISMATCH
-      | ID_RANDOMIZATION
-      | MESSAGE_LENGTH
-      | PROTOCOL_VIOLATION
-      | TCP_INSPECTION
-   ) null_rest_of_line
-;
+pmp_id_mismatch_null: NO? ID_MISMATCH null_rest_of_line;
+pmp_id_randomization_null: NO? ID_RANDOMIZATION null_rest_of_line;
+pmp_message_length_null: NO? MESSAGE_LENGTH null_rest_of_line;
+pmp_protocol_violation_null: NO? PROTOCOL_VIOLATION null_rest_of_line;
+pmp_tcp_inspection_null: NO? TCP_INSPECTION null_rest_of_line;
 
-qm_null
-:
-   NO?
-   (
-      DSCP
-      | DSCP_VALUE
-      | PCP
-      | PCP_VALUE
-   ) null_rest_of_line
-;
+qm_dscp_null: NO? DSCP null_rest_of_line;
+qm_dscp_value_null: NO? DSCP_VALUE null_rest_of_line;
+qm_pcp_null: NO? PCP null_rest_of_line;
+qm_pcp_value_null: NO? PCP_VALUE null_rest_of_line;
 
 s_class_map
 :
@@ -948,10 +940,11 @@ s_policy_map
       )
    ) NEWLINE
    (
-      pm_class
+      pm_cir_null
+      | pm_class
+      | pm_description_null
       | pm_end_policy_map
       | pm_event
-      | pm_null
       | pm_parameters
    )*
 ;
@@ -965,7 +958,10 @@ s_qos_mapping
 :
    QOS_MAPPING NEWLINE
    (
-      qm_null
+      qm_dscp_null
+      | qm_dscp_value_null
+      | qm_pcp_null
+      | qm_pcp_value_null
    )*
 ;
 
@@ -987,7 +983,9 @@ s_table_map
 :
    TABLE_MAP name = variable NEWLINE
    (
-      table_map_null
+      table_map_default_null
+      | table_map_from_null
+      | table_map_map_null
    )*
 ;
 
@@ -1030,15 +1028,9 @@ st_voice_vlan
    VOICE VLAN NEWLINE
 ;
 
-table_map_null
-:
-   NO?
-   (
-      DEFAULT
-      | FROM
-      | MAP
-   ) null_rest_of_line
-;
+table_map_default_null: NO? DEFAULT null_rest_of_line;
+table_map_from_null: NO? FROM null_rest_of_line;
+table_map_map_null: NO? MAP null_rest_of_line;
 
 variable_policy_map_header
 :

@@ -200,6 +200,7 @@ if_ip
     | if_ip_split_horizon
     | if_ip_summary_address
     | if_ip_tcp
+    | if_ip_traffic_export_null
     | if_ip_verify
     | if_ip_vrf_autoclassify
     | if_ip_vrf_receive
@@ -514,6 +515,8 @@ if_ip_tcp_header_compression
    HEADER_COMPRESSION ( PASSIVE | IETF_FORMAT )? NEWLINE
 ;
 
+if_ip_traffic_export_null: TRAFFIC_EXPORT null_rest_of_line;
+
 if_ip_verify
 :
    VERIFY UNICAST
@@ -693,6 +696,7 @@ if_no_ip
     if_no_ip_address
     | if_no_ip_dhcp
     | if_no_ip_flowspec
+    | if_no_ip_traffic_export_null
   )
 ;
 
@@ -754,6 +758,8 @@ if_no_ip_flowspec
 :
   FLOWSPEC NEWLINE
 ;
+
+if_no_ip_traffic_export_null: TRAFFIC_EXPORT null_rest_of_line;
 
 if_no_mka
 :
@@ -1123,35 +1129,29 @@ if_null_inner
    ) ~NEWLINE* NEWLINE  // do not change to null_rest_of_line
 ;
 
-if_null_single
-:
-  NO?
-  (
-    BCMC_OPTIMIZATION
-    | DOT1X
-    | IP TRAFFIC_EXPORT
-    | JUMBO
-    | LINKDEBOUNCE
-    | MAB
-    | PHY
-    | REDUNDANCY
-    |
-    (
-      SPEED NONEGOTIATE
-    )
-    | SWITCHPORT CAPTURE
-    | SUPPRESS_ARP
-    | TRIMODE
-    | TRUSTED
-  ) ~NEWLINE* NEWLINE // do not change to null_rest_of_line
-
-;
+// do not change to null_rest_of_line
+if_bcmc_optimization_null: NO? BCMC_OPTIMIZATION ~NEWLINE* NEWLINE;
+if_dot1x_null: NO? DOT1X ~NEWLINE* NEWLINE;
+if_jumbo_null: NO? JUMBO ~NEWLINE* NEWLINE;
+if_linkdebounce_null: NO? LINKDEBOUNCE ~NEWLINE* NEWLINE;
+if_mab_null: NO? MAB ~NEWLINE* NEWLINE;
+if_phy_null: NO? PHY ~NEWLINE* NEWLINE;
+if_redundancy_null: NO? REDUNDANCY ~NEWLINE* NEWLINE;
+if_speed_null: NO? SPEED NONEGOTIATE ~NEWLINE* NEWLINE;
+if_suppress_arp_null: NO? SUPPRESS_ARP ~NEWLINE* NEWLINE;
+if_switchport_null: NO? SWITCHPORT CAPTURE ~NEWLINE* NEWLINE;
+if_trimode_null: NO? TRIMODE ~NEWLINE* NEWLINE;
+if_trusted_null: NO? TRUSTED ~NEWLINE* NEWLINE;
 
 if_port_security
 :
    PORT SECURITY NEWLINE
    (
-      if_port_security_null
+      if_port_security_age_null
+      | if_port_security_enable_null
+      | if_port_security_maximum_null
+      | if_port_security_secure_mac_address_null
+      | if_port_security_violation_null
    )*
 ;
 
@@ -1162,18 +1162,16 @@ if_private_vlan
 
 if_pvc
 :
-  PVC null_rest_of_line pvc_null*
+  PVC null_rest_of_line (
+     pvc_dialer_null
+     | pvc_encapsulation_null
+     | pvc_protocol_null
+  )*
 ;
 
-pvc_null
-:
-  NO?
-  (
-    DIALER
-    | ENCAPSULATION
-    | PROTOCOL
-  ) null_rest_of_line
-;
+pvc_dialer_null: NO? DIALER null_rest_of_line;
+pvc_encapsulation_null: NO? ENCAPSULATION null_rest_of_line;
+pvc_protocol_null: NO? PROTOCOL null_rest_of_line;
 
 if_routing_dynamic
 :
@@ -1362,17 +1360,11 @@ if_st_portfast
    )* NEWLINE
 ;
 
-if_port_security_null
-:
-   NO?
-   (
-      AGE
-      | ENABLE
-      | MAXIMUM
-      | SECURE_MAC_ADDRESS
-      | VIOLATION
-   ) null_rest_of_line
-;
+if_port_security_age_null: NO? AGE null_rest_of_line;
+if_port_security_enable_null: NO? ENABLE null_rest_of_line;
+if_port_security_maximum_null: NO? MAXIMUM null_rest_of_line;
+if_port_security_secure_mac_address_null: NO? SECURE_MAC_ADDRESS null_rest_of_line;
+if_port_security_violation_null: NO? VIOLATION null_rest_of_line;
 
 if_service_policy
 :
@@ -2053,6 +2045,17 @@ if_inner
    | if_zone_member
    // do not rearrange items below
  
-   | if_null_single
+   | if_bcmc_optimization_null
+   | if_dot1x_null
+   | if_jumbo_null
+   | if_linkdebounce_null
+   | if_mab_null
+   | if_phy_null
+   | if_redundancy_null
+   | if_speed_null
+   | if_suppress_arp_null
+   | if_switchport_null
+   | if_trimode_null
+   | if_trusted_null
    | if_null_block
 ;
