@@ -455,10 +455,10 @@ s_no
 :
   NO
   (
-    no_ip
+    no_feature_null
+    | no_ip
+    | no_ntp_null
     | no_system
-    // no_null should come last
-    | no_null
   )
 ;
 
@@ -582,14 +582,8 @@ no_ip_tftp_null
    TFTP null_rest_of_line
 ;
 
-no_null
-:
-  (
-    FEATURE
-    | IP
-    | NTP
-  ) null_rest_of_line
-;
+no_feature_null: FEATURE null_rest_of_line;
+no_ntp_null: NTP null_rest_of_line;
 
 no_system
 :

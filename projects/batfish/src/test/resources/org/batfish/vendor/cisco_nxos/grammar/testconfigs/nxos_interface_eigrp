@@ -42,3 +42,9 @@ interface Ethernet1/4
   vrf member VRF
   ip address 192.0.3.4/24
   ip router eigrp 3
+!
+interface Ethernet1/5
+  ip address 192.0.3.5/24
+  ip router eigrp EIGRP2
+  ip passive-interface eigrp EIGRP2
+  no ip passive-interface eigrp EIGRP2
