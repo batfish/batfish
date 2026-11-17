@@ -744,6 +744,47 @@ mplslsp_random  // DON'T DO THIS
 
 This naming convention helps distinguish between rules that are meant to be extracted (non-null rules) and rules that are only meant for parsing but not extraction (null rules). It also maintains a clear hierarchy in the grammar structure.
 
+##### No catch-all `_null` rules
+
+Each `_null` leaf rule should match a single keyword. Do not write one `_null` rule that matches several unrelated keywords. A rule that does this advances more than one token at a time (see [Single Token Advancement](parser_rule_conventions.md#single-token-advancement-a-critical-principle)), hides which commands are supported, and has to be split as soon as any one of them needs extraction. Likewise, do not add a fallback `_null` rule that accepts any subcommand a sibling rule does not recognize; unrecognized lines should produce parse warnings.
+
+```
+// Incorrect: catch-all _null rule
+s_system
+:
+   SYSTEM
+   (
+      sys_host_name
+      | sys_null
+   )
+;
+
+sys_null
+:
+   (
+      CONTACT
+      | LOCATION
+      | TIME_ZONE
+   ) null_rest_of_line
+;
+
+// Correct: one _null leaf per keyword
+s_system
+:
+   SYSTEM
+   (
+      sys_contact_null
+      | sys_host_name
+      | sys_location_null
+      | sys_time_zone_null
+   )
+;
+
+sys_contact_null: CONTACT null_rest_of_line;
+sys_location_null: LOCATION null_rest_of_line;
+sys_time_zone_null: TIME_ZONE null_rest_of_line;
+```
+
 ##### Implementation Decision Guide for Protocol Commands
 
 When implementing a new command or syntax in Batfish, you must determine whether it should be extracted to the data model or implemented as a null rule. This decision is critical for maintaining accurate network behavior modeling while avoiding unnecessary complexity.
