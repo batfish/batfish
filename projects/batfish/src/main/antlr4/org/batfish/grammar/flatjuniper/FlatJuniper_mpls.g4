@@ -73,19 +73,21 @@ mpls_no_propagate_ttl
 // https://apps.juniper.net/feature-explorer/feature/3866
 mpls_label_space
 :
-   LABEL_SPACE mpls_label_space_option_null
+   LABEL_SPACE
+   (
+      mplsls_dynamic_end_label_null
+      | mplsls_dynamic_start_label_null
+      | mplsls_label_limit_null
+      | mplsls_static_end_label_null
+      | mplsls_static_start_label_null
+   )
 ;
 
-mpls_label_space_option_null
-:
-   (
-      DYNAMIC_END_LABEL
-      | DYNAMIC_START_LABEL
-      | LABEL_LIMIT
-      | STATIC_END_LABEL
-      | STATIC_START_LABEL
-   ) dec
-;
+mplsls_dynamic_end_label_null: DYNAMIC_END_LABEL dec;
+mplsls_dynamic_start_label_null: DYNAMIC_START_LABEL dec;
+mplsls_label_limit_null: LABEL_LIMIT dec;
+mplsls_static_end_label_null: STATIC_END_LABEL dec;
+mplsls_static_start_label_null: STATIC_START_LABEL dec;
 
 mpls_admin_groups
 :
