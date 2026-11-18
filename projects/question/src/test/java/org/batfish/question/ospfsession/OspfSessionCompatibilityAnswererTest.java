@@ -42,11 +42,11 @@ import org.batfish.datamodel.ospf.OspfNeighborConfigId;
 import org.batfish.datamodel.ospf.OspfSessionStatus;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link OspfSessionCompatibilityAnswerer} */
-public class OspfSessionCompatibilityAnswererTest {
+class OspfSessionCompatibilityAnswererTest {
 
   private Map<String, Configuration> _configurations;
   private CandidateOspfTopology _ospfTopology;
@@ -87,8 +87,8 @@ public class OspfSessionCompatibilityAnswererTest {
     return configuration;
   }
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     NetworkFactory nf = new NetworkFactory();
     _configurations =
         ImmutableMap.of(
@@ -136,7 +136,7 @@ public class OspfSessionCompatibilityAnswererTest {
   }
 
   @Test
-  public void testGetRows() {
+  void testGetRows() {
     Multiset<Row> rows =
         getRows(
             _configurations,
@@ -193,7 +193,7 @@ public class OspfSessionCompatibilityAnswererTest {
   }
 
   @Test
-  public void testGetRowsWithFilter() {
+  void testGetRowsWithFilter() {
     Multiset<Row> rowsWithNodesFilter =
         getRows(
             _configurations,
@@ -217,7 +217,7 @@ public class OspfSessionCompatibilityAnswererTest {
   }
 
   @Test
-  public void testGetRowsWithFilterStatus() {
+  void testGetRowsWithFilterStatus() {
     Multiset<Row> rowsWithStatusFilter =
         getRows(
             _configurations,
@@ -232,7 +232,7 @@ public class OspfSessionCompatibilityAnswererTest {
   }
 
   @Test
-  public void testMetaData() {
+  void testMetaData() {
     List<ColumnMetadata> metas =
         OspfSessionCompatibilityAnswerer.createTableMetadata().getColumnMetadata();
 

@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.notNullValue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
@@ -18,14 +19,13 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Test of Juniper conditional BGP export */
-public final class JuniperConditionTest {
+final class JuniperConditionTest {
   @Test
-  public void testConditionalExport() throws IOException {
+  void testConditionalExport() throws IOException {
     // Topology:
     // s1 -- c -- s21 -- s22
     //       |
@@ -79,6 +79,6 @@ public final class JuniperConditionTest {
             hasPrefix(Prefix.strict("3.0.0.1/32"))));
   }
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
   private static final String SNAPSHOTS_PREFIX = "org/batfish/grammar/juniper/testrigs/";
 }

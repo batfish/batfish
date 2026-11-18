@@ -10,21 +10,21 @@ import java.nio.file.Paths;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.main.Driver.RunMode;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link org.batfish.config.Settings} */
-public class SettingsTest {
+class SettingsTest {
 
   /** Test default dataplane engine is ibdp */
   @Test
-  public void testDefaultDPEngine() {
+  void testDefaultDPEngine() {
     Settings settings = new Settings(new String[] {});
     assertThat(settings.getDataPlaneEngineName(), equalTo("ibdp"));
   }
 
   /** Test that settings copy is deep */
   @Test
-  public void testCopy() {
+  void testCopy() {
     Settings origSettings = new Settings(new String[] {});
     origSettings.setDataplaneEngineName("NewValue");
 
@@ -43,13 +43,13 @@ public class SettingsTest {
 
   /** Test that parsing of runmode is case insensitive */
   @Test
-  public void testRunModeCaseInsensitive() {
+  void testRunModeCaseInsensitive() {
     Settings settings = new Settings(new String[] {"-runmode=workservice"});
     assertThat(settings.getRunMode(), equalTo(RunMode.WORKSERVICE));
   }
 
   @Test
-  public void testLogfileWithDeltaTestrig() {
+  void testLogfileWithDeltaTestrig() {
     // Only main testrig
     Settings settings =
         new Settings(new String[] {"-storagebase=/path", "-container=foo", "-testrig=main"});
@@ -97,7 +97,7 @@ public class SettingsTest {
   }
 
   @Test
-  public void testDebugSettings() {
+  void testDebugSettings() {
     Settings settings = new Settings(new String[] {"-debugflags=blah"});
     assertThat(settings.getDebugFlags(), equalTo(ImmutableList.of("blah")));
   }

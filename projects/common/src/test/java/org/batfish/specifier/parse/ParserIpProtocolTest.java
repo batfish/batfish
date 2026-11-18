@@ -3,6 +3,7 @@ package org.batfish.specifier.parse;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.Arrays;
@@ -14,17 +15,13 @@ import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.Grammar;
 import org.batfish.specifier.parse.Anchor.Type;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link Parser} producing {@link IpProtocolAstNode}. */
-public class ParserIpProtocolTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class ParserIpProtocolTest {
 
   @Test
-  public void testCompletionEmpty() {
+  void testCompletionEmpty() {
     String query = "";
 
     Set<ParsedAutoCompleteSuggestion> suggestions =
@@ -55,7 +52,7 @@ public class ParserIpProtocolTest {
   }
 
   @Test
-  public void testCompletionPartialName() {
+  void testCompletionPartialName() {
     String query = "TC";
 
     Set<ParsedAutoCompleteSuggestion> suggestions =
@@ -78,7 +75,7 @@ public class ParserIpProtocolTest {
   }
 
   @Test
-  public void testCompletionNumber() {
+  void testCompletionNumber() {
     String query = "25";
 
     Set<ParsedAutoCompleteSuggestion> suggestions =
@@ -100,7 +97,7 @@ public class ParserIpProtocolTest {
   }
 
   @Test
-  public void testParseIpProtocol() {
+  void testParseIpProtocol() {
     String query = "tcp";
     IpProtocolIpProtocolAstNode expectedAst = new IpProtocolIpProtocolAstNode(query);
 
@@ -112,7 +109,7 @@ public class ParserIpProtocolTest {
   }
 
   @Test
-  public void testParseIpProtocolMatchSuperStrings() {
+  void testParseIpProtocolMatchSuperStrings() {
     String query = IpProtocol.ANY_0_HOP_PROTOCOL.toString();
     IpProtocolIpProtocolAstNode expectedAst = new IpProtocolIpProtocolAstNode(query);
 
@@ -124,21 +121,23 @@ public class ParserIpProtocolTest {
   }
 
   @Test
-  public void testParseIpProtocolBadName() {
+  void testParseIpProtocolBadName() {
     String query = "faux";
-    _thrown.expect(IllegalArgumentException.class);
-    SpecifierAstBuilder.getAst(Grammar.IP_PROTOCOL_SPECIFIER, query);
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> SpecifierAstBuilder.getAst(Grammar.IP_PROTOCOL_SPECIFIER, query));
   }
 
   @Test
-  public void testParseIpProtocolBadNumber() {
+  void testParseIpProtocolBadNumber() {
     String query = "2555";
-    _thrown.expect(IllegalArgumentException.class);
-    SpecifierAstBuilder.getAst(Grammar.IP_PROTOCOL_SPECIFIER, query);
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> SpecifierAstBuilder.getAst(Grammar.IP_PROTOCOL_SPECIFIER, query));
   }
 
   @Test
-  public void testParseNotIpProtocol() {
+  void testParseNotIpProtocol() {
     IpProtocolAstNode expectedAst = new NotIpProtocolAstNode("tcp");
 
     assertThat(
@@ -152,7 +151,7 @@ public class ParserIpProtocolTest {
   }
 
   @Test
-  public void testParseFilterUnion() {
+  void testParseFilterUnion() {
     UnionIpProtocolAstNode expectedNode =
         new UnionIpProtocolAstNode(
             new IpProtocolIpProtocolAstNode("tcp"), new IpProtocolIpProtocolAstNode("23"));
@@ -166,7 +165,7 @@ public class ParserIpProtocolTest {
 
   /** When the query is 'qq', we should match ALL superstrings, including xqq and qqx */
   @Test
-  public void testAutoCompleteAllSuperstrings() {
+  void testAutoCompleteAllSuperstrings() {
     String query = "is";
     ParsedAutoComplete pac =
         new ParsedAutoComplete(

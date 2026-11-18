@@ -9,12 +9,12 @@ import com.google.common.collect.ImmutableSortedMap;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IpAccessList;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class NameFilterSpecifierTest {
+class NameFilterSpecifierTest {
 
   @Test
-  public void testResolve() {
+  void testResolve() {
 
     Configuration node1 = new Configuration("node1", ConfigurationFormat.CISCO_IOS);
     Configuration node2 = new Configuration("node2", ConfigurationFormat.CISCO_IOS);

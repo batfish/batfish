@@ -8,11 +8,11 @@ import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.EnterInputIfaceStep.EnterInputIfaceStepDetail;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class EnterInputIfaceStepTest {
+class EnterInputIfaceStepTest {
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     EnterInputIfaceStep step =
         EnterInputIfaceStep.builder()
             .setAction(StepAction.RECEIVED)
@@ -33,7 +33,7 @@ public class EnterInputIfaceStepTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new Object())
         .addEqualityGroup(

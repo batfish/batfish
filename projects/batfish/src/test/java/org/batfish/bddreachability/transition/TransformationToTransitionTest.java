@@ -12,7 +12,7 @@ import static org.batfish.datamodel.transformation.TransformationStep.shiftDesti
 import static org.batfish.datamodel.transformation.TransformationStep.shiftSourceIp;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableMap;
 import net.sf.javabdd.BDD;
@@ -27,11 +27,11 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.transformation.Transformation;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link TransformationToTransition}. */
-public class TransformationToTransitionTest {
+class TransformationToTransitionTest {
   private BDDPacket _pkt;
   private IpSpaceToBDD _dstIpSpaceToBdd;
   private IpSpaceToBDD _srcIpSpaceToBdd;
@@ -40,8 +40,8 @@ public class TransformationToTransitionTest {
   private BDD _zero;
   BDD _portTransformationProtocols;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _pkt = new BDDPacket();
     _one = _pkt.getFactory().one();
     _zero = _pkt.getFactory().zero();
@@ -57,7 +57,7 @@ public class TransformationToTransitionTest {
   }
 
   @Test
-  public void testShiftIpAddressIntoSubnet() {
+  void testShiftIpAddressIntoSubnet() {
     Prefix shiftIntoPrefix = Prefix.parse("5.5.0.0/16");
     Transformation transformation = always().apply(shiftDestinationIp(shiftIntoPrefix)).build();
     Transition transition = _toTransition.toTransition(transformation);
@@ -93,7 +93,7 @@ public class TransformationToTransitionTest {
   }
 
   @Test
-  public void testShiftIpAddressIntoSubnet2() {
+  void testShiftIpAddressIntoSubnet2() {
     Prefix shiftIntoPrefix = Prefix.parse("5.5.0.32/27");
     Transformation transformation = always().apply(shiftDestinationIp(shiftIntoPrefix)).build();
     Transition transition = _toTransition.toTransition(transformation);
@@ -128,7 +128,7 @@ public class TransformationToTransitionTest {
   }
 
   @Test
-  public void testShiftIpAddressIntoSubnetMax() {
+  void testShiftIpAddressIntoSubnetMax() {
     Prefix shiftIntoPrefix = Prefix.parse("5.5.0.32/32");
     Transformation transformation = always().apply(shiftDestinationIp(shiftIntoPrefix)).build();
     Transition transition = _toTransition.toTransition(transformation);
@@ -160,7 +160,7 @@ public class TransformationToTransitionTest {
   }
 
   @Test
-  public void testGuardAndTransformSameField() {
+  void testGuardAndTransformSameField() {
     Prefix guardPrefix = Prefix.parse("1.0.0.0/8");
     Prefix shiftIntoPrefix = Prefix.parse("5.5.0.0/16");
     Transformation transformation =
@@ -202,7 +202,7 @@ public class TransformationToTransitionTest {
   }
 
   @Test
-  public void testGuardAndTransformDifferentFields() {
+  void testGuardAndTransformDifferentFields() {
     Prefix guardPrefix = Prefix.parse("1.0.0.0/8");
     Prefix shiftIntoPrefix = Prefix.parse("5.5.0.0/16");
     Transformation transformation =
@@ -244,7 +244,7 @@ public class TransformationToTransitionTest {
   }
 
   @Test
-  public void testAssignFromPool() {
+  void testAssignFromPool() {
     Ip poolStart = Ip.parse("1.1.1.5");
     Ip poolEnd = Ip.parse("1.1.1.13");
     Transformation transformation = always().apply(assignSourceIp(poolStart, poolEnd)).build();
@@ -279,7 +279,7 @@ public class TransformationToTransitionTest {
   }
 
   @Test
-  public void testMultipleSteps() {
+  void testMultipleSteps() {
     Ip dstPoolIp = Ip.parse("1.1.1.1");
     Ip srcPoolIp = Ip.parse("2.2.2.2");
 
@@ -297,7 +297,7 @@ public class TransformationToTransitionTest {
   }
 
   @Test
-  public void testMultipleTransformations() {
+  void testMultipleTransformations() {
     Ip matchDstIp = Ip.parse("1.1.1.1");
     Ip matchSrcIp = Ip.parse("2.2.2.2");
     Ip truePoolIp = Ip.parse("3.3.3.3");
@@ -338,7 +338,7 @@ public class TransformationToTransitionTest {
   }
 
   @Test
-  public void testAssignFromPatPool() {
+  void testAssignFromPatPool() {
     int poolStart = 2000;
     int poolEnd = 3000;
     Transformation transformation = always().apply(assignSourcePort(poolStart, poolEnd)).build();
@@ -381,7 +381,7 @@ public class TransformationToTransitionTest {
   }
 
   @Test
-  public void testAssignFromPoolBothIpAndPort() {
+  void testAssignFromPoolBothIpAndPort() {
     int poolPort = 2000;
     Ip poolIp = Ip.parse("1.1.1.1");
     Transformation transformation =
@@ -415,7 +415,7 @@ public class TransformationToTransitionTest {
 
   /** Test that src NAT and dst NAT steps simplify to a single Transform. */
   @Test
-  public void testAssignFromPoolBothIps_simplification() {
+  void testAssignFromPoolBothIps_simplification() {
     Ip srcPoolIp = Ip.parse("1.1.1.1");
     Ip dstPoolIp = Ip.parse("2.2.2.2");
 
@@ -451,7 +451,7 @@ public class TransformationToTransitionTest {
    * protocols with ports and one protocols without ports.
    */
   @Test
-  public void testAssignFromPoolBothIpAndPort_simplification() {
+  void testAssignFromPoolBothIpAndPort_simplification() {
     int poolPort = 2000;
     Ip poolIp = Ip.parse("1.1.1.1");
 
@@ -490,7 +490,7 @@ public class TransformationToTransitionTest {
   }
 
   @Test
-  public void testReturnFlowTransition() {
+  void testReturnFlowTransition() {
     IpAccessListToBddImpl aclToBdd =
         new IpAccessListToBddImpl(
             _pkt, BDDSourceManager.empty(_pkt), ImmutableMap.of(), ImmutableMap.of());

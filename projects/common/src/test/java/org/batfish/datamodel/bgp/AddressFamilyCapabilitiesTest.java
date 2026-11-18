@@ -9,13 +9,13 @@ import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities.Builder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link AddressFamilyCapabilities} */
-public class AddressFamilyCapabilitiesTest {
+class AddressFamilyCapabilitiesTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     Builder builder = builder();
     AddressFamilyCapabilities afs = builder.build();
     new EqualsTester()
@@ -34,7 +34,7 @@ public class AddressFamilyCapabilitiesTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     AddressFamilyCapabilities afs =
         builder()
             .setAdditionalPathsReceive(true)
@@ -51,7 +51,7 @@ public class AddressFamilyCapabilitiesTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     AddressFamilyCapabilities afs =
         builder()
             .setAdditionalPathsReceive(true)

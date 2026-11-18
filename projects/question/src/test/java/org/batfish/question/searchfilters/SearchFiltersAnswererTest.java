@@ -13,10 +13,10 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.NetworkFactory;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link SearchFiltersAnswerer}. */
-public class SearchFiltersAnswererTest {
+class SearchFiltersAnswererTest {
   private static final IpAccessList ACL1 =
       IpAccessList.builder()
           .setName("acl1")
@@ -33,7 +33,7 @@ public class SearchFiltersAnswererTest {
           .build();
 
   @Test
-  public void testGetSpecifiedAcls_includeAll() {
+  void testGetSpecifiedAcls_includeAll() {
     Configuration c = createConfigWithAcls(ACL1, ACL2);
     IBatfish bf = new MockBatfish(c);
     SearchFiltersQuestion question = SearchFiltersQuestion.builder().build();
@@ -44,7 +44,7 @@ public class SearchFiltersAnswererTest {
   }
 
   @Test
-  public void testGetSpecifiedAcls_onlyAcl1() {
+  void testGetSpecifiedAcls_onlyAcl1() {
     Configuration c = createConfigWithAcls(ACL1, ACL2);
     IBatfish bf = new MockBatfish(c);
     SearchFiltersQuestion question =
@@ -59,7 +59,7 @@ public class SearchFiltersAnswererTest {
   }
 
   @Test
-  public void testGetSpecifiedAcls_noHostnameMatch() {
+  void testGetSpecifiedAcls_noHostnameMatch() {
     Configuration c = createConfigWithAcls(ACL1);
     IBatfish bf = new MockBatfish(c);
     SearchFiltersQuestion question =
@@ -69,7 +69,7 @@ public class SearchFiltersAnswererTest {
   }
 
   @Test
-  public void testGetSpecifiedAcls_noFilterMatch() {
+  void testGetSpecifiedAcls_noFilterMatch() {
     Configuration c = createConfigWithAcls(ACL1);
     IBatfish bf = new MockBatfish(c);
     SearchFiltersQuestion question =

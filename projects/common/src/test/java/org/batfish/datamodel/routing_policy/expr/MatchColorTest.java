@@ -13,10 +13,10 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.routing_policy.Environment;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link MatchColor}. */
-public final class MatchColorTest {
+final class MatchColorTest {
   private static final Configuration C =
       new NetworkFactory()
           .configurationBuilder()
@@ -34,13 +34,13 @@ public final class MatchColorTest {
   }
 
   @Test
-  public void testBgpRoute() {
+  void testBgpRoute() {
     assertThat(matches(Environment.builder(C).setOriginalRoute(bgp(7L))), equalTo(true));
     assertThat(matches(Environment.builder(C).setOriginalRoute(bgp(8L))), equalTo(false));
   }
 
   @Test
-  public void testBgpOutputAttributes() {
+  void testBgpOutputAttributes() {
     Bgpv4Route route = bgp(8L);
     assertThat(
         matches(
@@ -52,7 +52,7 @@ public final class MatchColorTest {
   }
 
   @Test
-  public void testStaticRouteHasZero() {
+  void testStaticRouteHasZero() {
     StaticRoute route = StaticRoute.testBuilder().setNetwork(Prefix.parse("10.0.0.0/8")).build();
     assertThat(
         new MatchColor(0L)
@@ -62,7 +62,7 @@ public final class MatchColorTest {
   }
 
   @Test
-  public void testOtherRouteHasZero() {
+  void testOtherRouteHasZero() {
     ConnectedRoute route = new ConnectedRoute(Prefix.parse("10.0.0.0/8"), "eth0");
     assertThat(
         new MatchColor(0L)
@@ -72,7 +72,7 @@ public final class MatchColorTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new MatchColor(7L), new MatchColor(7L))
         .addEqualityGroup(new MatchColor(8L))
@@ -80,7 +80,7 @@ public final class MatchColorTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     MatchColor m = new MatchColor(4294967295L);
     assertThat(BatfishObjectMapper.clone(m, BooleanExpr.class), equalTo(m));
   }

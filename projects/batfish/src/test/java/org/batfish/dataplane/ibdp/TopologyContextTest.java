@@ -41,13 +41,13 @@ import org.batfish.datamodel.ospf.OspfSessionProperties;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.vxlan.VxlanNode;
 import org.batfish.datamodel.vxlan.VxlanTopology;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link TopologyContext}. */
-public final class TopologyContextTest {
+final class TopologyContextTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     TopologyContext.Builder builder = TopologyContext.builder();
     TopologyContext base = builder.build();
     MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
@@ -112,7 +112,7 @@ public final class TopologyContextTest {
   }
 
   @Test
-  public void testToBuilder() {
+  void testToBuilder() {
     TopologyContext.Builder builder = TopologyContext.builder();
     MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
         ValueGraphBuilder.directed().build();

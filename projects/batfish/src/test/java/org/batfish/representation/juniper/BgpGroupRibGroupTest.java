@@ -3,12 +3,12 @@ package org.batfish.representation.juniper;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class BgpGroupRibGroupTest {
+final class BgpGroupRibGroupTest {
 
   @Test
-  public void testCascadeInheritance() {
+  void testCascadeInheritance() {
     BgpGroup parent = new BgpGroup();
     parent.setRibGroup("IPV4-RIBS");
     parent.setRibGroup6("IPV6-RIBS");

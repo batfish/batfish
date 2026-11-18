@@ -16,11 +16,11 @@ import org.batfish.datamodel.routing_policy.expr.LiteralAdministrativeCost;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.representation.juniper.PsThenPreference.Operator;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class PsThenPreferenceTest {
+class PsThenPreferenceTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(5L)
         .addEqualityGroup(
@@ -45,7 +45,7 @@ public class PsThenPreferenceTest {
   }
 
   @Test
-  public void testConversion() {
+  void testConversion() {
     assertThat(
         getStatements(new PsThenPreference(1, Operator.SET)),
         contains(new SetAdministrativeCost(new LiteralAdministrativeCost(1))));

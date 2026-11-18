@@ -15,11 +15,11 @@ import org.batfish.coordinator.authorizer.Authorizer;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.test.TestProperties;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link ApiKeyAuthenticationFilter}. */
-public class ApiKeyAuthenticationFilterTest extends JerseyTest {
+class ApiKeyAuthenticationFilterTest extends JerseyTest {
 
   @Path("/test")
   public static class TestService {
@@ -45,8 +45,8 @@ public class ApiKeyAuthenticationFilterTest extends JerseyTest {
     }
   }
 
-  @Before
-  public void initAuthorizer() {
+  @BeforeEach
+  void initAuthorizer() {
     Main.setAuthorizer(new TestAuthorizer());
   }
 
@@ -57,7 +57,7 @@ public class ApiKeyAuthenticationFilterTest extends JerseyTest {
   }
 
   @Test
-  public void testEmptyApiKey() {
+  void testEmptyApiKey() {
     try (Response response =
         target("/test").request().header(HTTP_HEADER_BATFISH_APIKEY, "").get()) {
       assertThat(response.getStatus(), equalTo(UNAUTHORIZED.getStatusCode()));
@@ -68,14 +68,14 @@ public class ApiKeyAuthenticationFilterTest extends JerseyTest {
   }
 
   @Test
-  public void testDefaultKeyWhenApiKeyIsMissing() {
+  void testDefaultKeyWhenApiKeyIsMissing() {
     try (Response response = target("/test").request().get()) {
       assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     }
   }
 
   @Test
-  public void testUnauthorizedApiKey() {
+  void testUnauthorizedApiKey() {
     try (Response response =
         target("/test").request().header(HTTP_HEADER_BATFISH_APIKEY, "100").get()) {
       assertThat(response.getStatus(), equalTo(UNAUTHORIZED.getStatusCode()));
@@ -85,7 +85,7 @@ public class ApiKeyAuthenticationFilterTest extends JerseyTest {
   }
 
   @Test
-  public void testValidApiKey() {
+  void testValidApiKey() {
     try (Response response =
         target("/test")
             .request()

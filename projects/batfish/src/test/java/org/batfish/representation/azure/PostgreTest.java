@@ -2,8 +2,8 @@ package org.batfish.representation.azure;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.io.IOException;
@@ -15,12 +15,12 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class PostgreTest {
+class PostgreTest {
 
   @Test
-  public void testDeserialization() throws IOException {
+  void testDeserialization() throws IOException {
     String text = readResource("org/batfish/representation/azure/PostgreTest.json", UTF_8);
     JsonNode node = BatfishObjectMapper.mapper().readTree(text);
 
@@ -42,7 +42,7 @@ public class PostgreTest {
   }
 
   @Test
-  public void testToConfigurationNode() {
+  void testToConfigurationNode() {
     Region rgp = new Region("test");
     ConvertedConfiguration convertedConfiguration = new ConvertedConfiguration();
 

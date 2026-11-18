@@ -12,19 +12,19 @@ import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.transformation.Noop;
 import org.batfish.datamodel.transformation.Transformation;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link F5NatUtil} */
 @ParametersAreNonnullByDefault
-public final class F5NatUtilTest {
+final class F5NatUtilTest {
 
   @Test
-  public void testOrElseChainEmpty() {
+  void testOrElseChainEmpty() {
     assertThat(orElseChain(ImmutableList.of()), nullValue());
   }
 
   @Test
-  public void testOrElseChainMultiple() {
+  void testOrElseChainMultiple() {
     Collection<SimpleTransformation> transformations =
         ImmutableList.of(
             new SimpleTransformation(FalseExpr.INSTANCE, Noop.NOOP_DEST_NAT),
@@ -48,7 +48,7 @@ public final class F5NatUtilTest {
   }
 
   @Test
-  public void testOrElseChainSingleton() {
+  void testOrElseChainSingleton() {
     SimpleTransformation t1 = new SimpleTransformation(TrueExpr.INSTANCE, Noop.NOOP_DEST_NAT);
     assertThat(
         orElseChain(ImmutableList.of(t1)),

@@ -9,12 +9,12 @@ import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.representation.aws.Route.State;
 import org.batfish.representation.aws.Route.TargetType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class RouteTest {
+class RouteTest {
 
   @Test
-  public void testDeserializationRoutePrefixListId() throws IOException {
+  void testDeserializationRoutePrefixListId() throws IOException {
     String text = readResource("org/batfish/representation/aws/RoutePrefixListId.json", UTF_8);
 
     assertThat(

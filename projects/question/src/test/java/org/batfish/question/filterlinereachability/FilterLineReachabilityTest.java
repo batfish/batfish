@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Multiset;
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -54,23 +55,22 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** End-to-end tests of {@link FilterLineReachabilityQuestion}. */
-public class FilterLineReachabilityTest {
+class FilterLineReachabilityTest {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private Configuration _c1;
   private Configuration _c2;
 
   private IpAccessList.Builder _aclb;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -89,7 +89,7 @@ public class FilterLineReachabilityTest {
   }
 
   @Test
-  public void testWithIcmpType() {
+  void testWithIcmpType() {
     // First line accepts IP 1.2.3.4
     // Second line accepts same but only ICMP of type 8
     List<AclLine> lines =
@@ -122,7 +122,7 @@ public class FilterLineReachabilityTest {
   }
 
   @Test
-  public void testIpWildcards() {
+  void testIpWildcards() {
     // First line accepts src IPs 1.2.3.4/30
     // Second line accepts src IPs 1.2.3.4/32
     List<AclLine> lines =
@@ -161,7 +161,7 @@ public class FilterLineReachabilityTest {
   }
 
   @Test
-  public void testCycleAppearsOnce() {
+  void testCycleAppearsOnce() {
     // acl1 permits anything acl2 permits... twice
     // acl2 permits anything acl1 permits... twice
     _aclb
@@ -197,7 +197,7 @@ public class FilterLineReachabilityTest {
   }
 
   @Test
-  public void testCircularReferences() {
+  void testCircularReferences() {
     // acl0 permits anything acl1 permits
     // acl1 permits anything acl2 permits, plus 1 other line to avoid acl3's line being unmatchable
     // acl2 permits anything acl0 permits
@@ -251,7 +251,7 @@ public class FilterLineReachabilityTest {
   }
 
   @Test
-  public void testUndefinedReference() {
+  void testUndefinedReference() {
 
     ExprAclLine aclLine =
         ExprAclLine.accepting().setMatchCondition(new PermittedByAcl("???")).build();
@@ -274,7 +274,7 @@ public class FilterLineReachabilityTest {
   }
 
   @Test
-  public void testIndirection() {
+  void testIndirection() {
     /*
      Referenced ACL contains 1 line: Permit 1.0.0.0/24
      Main ACL contains 2 lines:
@@ -323,7 +323,7 @@ public class FilterLineReachabilityTest {
   }
 
   @Test
-  public void testMultipleCoveringLines() {
+  void testMultipleCoveringLines() {
     List<AclLine> aclLines =
         ImmutableList.of(
             acceptingHeaderSpace(
@@ -361,7 +361,7 @@ public class FilterLineReachabilityTest {
   }
 
   @Test
-  public void testIndependentlyUnmatchableLines() {
+  void testIndependentlyUnmatchableLines() {
     /*
     Construct ACL with lines:
     0. Reject 1.0.0.0/24 (unblocked)
@@ -418,7 +418,7 @@ public class FilterLineReachabilityTest {
   }
 
   @Test
-  public void testOriginalAclNotMutated() {
+  void testOriginalAclNotMutated() {
     // ACL that references an undefined ACL and an IpSpace; check line unchanged in original version
     IpAccessList acl =
         _aclb
@@ -456,7 +456,7 @@ public class FilterLineReachabilityTest {
   }
 
   @Test
-  public void testWithSrcInterfaceReference() {
+  void testWithSrcInterfaceReference() {
     List<AclLine> aclLines =
         ImmutableList.of(
             ExprAclLine.accepting()

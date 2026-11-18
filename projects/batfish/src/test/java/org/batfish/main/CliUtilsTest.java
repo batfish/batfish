@@ -3,8 +3,10 @@ package org.batfish.main;
 import static org.batfish.main.CliUtils.readAllFiles;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anEmptyMap;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,21 +15,18 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.batfish.common.BatfishLogger;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Test of {@link CliUtils}. */
-public final class CliUtilsTest {
+final class CliUtilsTest {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+  @TempDir public File _folder;
   private static final BatfishLogger LOGGER = new BatfishLogger(BatfishLogger.LEVELSTR_INFO, false);
 
   @Test
-  public void testReadNestedPath() throws IOException {
-    Path nestedFolder = _folder.newFolder("nestedDirectory").toPath();
+  void testReadNestedPath() throws IOException {
+    Path nestedFolder = newFolder(_folder, "nestedDirectory").toPath();
     Set<Path> expected = new HashSet<>();
     expected.add(nestedFolder.resolve("b-test.cfg"));
     expected.add(nestedFolder.resolve("d-test.cfg"));
@@ -43,8 +42,8 @@ public final class CliUtilsTest {
   }
 
   @Test
-  public void testReadStartWithDotFile() throws IOException {
-    Path startWithDot = _folder.newFolder("startWithDot").toPath();
+  void testReadStartWithDotFile() throws IOException {
+    Path startWithDot = newFolder(_folder, "startWithDot").toPath();
     File file = startWithDot.resolve(".cfg").toFile();
     file.getParentFile().mkdir();
     assertThat(file.createNewFile(), is(true));
@@ -53,8 +52,8 @@ public final class CliUtilsTest {
   }
 
   @Test
-  public void testReadUnNestedPath() throws IOException {
-    Path unNestedFolder = _folder.newFolder("unNestedDirectory").toPath();
+  void testReadUnNestedPath() throws IOException {
+    Path unNestedFolder = newFolder(_folder, "unNestedDirectory").toPath();
     Set<Path> expected = new HashSet<>();
     expected.add(unNestedFolder.resolve("test1.cfg"));
     expected.add(unNestedFolder.resolve("test2.cfg"));
@@ -68,17 +67,25 @@ public final class CliUtilsTest {
   }
 
   @Test
-  public void testReadThrowsExceptionWithSpecificType() throws IOException {
-    Path nonExistPath = _folder.getRoot().toPath().resolve("nonExistent");
-    _thrown.expect(IOException.class);
-    _thrown.expectMessage(nonExistPath.toString());
-    readAllFiles(nonExistPath, LOGGER);
+  void testReadThrowsExceptionWithSpecificType() {
+    Path nonExistPath = _folder.toPath().resolve("nonExistent");
+    Throwable exception = assertThrows(IOException.class, () -> readAllFiles(nonExistPath, LOGGER));
+    assertThat(exception.getMessage(), containsString(nonExistPath.toString()));
   }
 
   @Test
-  public void testNoFileUnderPath() throws IOException {
-    Path emptyFolder = _folder.newFolder("emptyFolder").toPath();
+  void testNoFileUnderPath() throws IOException {
+    Path emptyFolder = newFolder(_folder, "emptyFolder").toPath();
     Map<Path, String> result = readAllFiles(emptyFolder, LOGGER);
     assertThat(result, anEmptyMap());
+  }
+
+  private static File newFolder(File root, String... subDirs) throws IOException {
+    String subFolder = String.join("/", subDirs);
+    File result = new File(root, subFolder);
+    if (!result.mkdirs()) {
+      throw new IOException("Couldn't create folders " + root);
+    }
+    return result;
   }
 }

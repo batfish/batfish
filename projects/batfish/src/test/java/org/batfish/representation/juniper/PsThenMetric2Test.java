@@ -11,11 +11,11 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.representation.juniper.PsThenMetric2.Operator;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class PsThenMetric2Test {
+class PsThenMetric2Test {
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(5L)
         .addEqualityGroup(new PsThenMetric2(1, Operator.SET), new PsThenMetric2(1, Operator.SET))
@@ -39,7 +39,7 @@ public class PsThenMetric2Test {
   }
 
   @Test
-  public void testConversion() {
+  void testConversion() {
     // No VI model support for metric2 yet
     // applyTo() is a no-op with TODO comment
     assertThat(getStatements(new PsThenMetric2(1, Operator.SET)), empty());

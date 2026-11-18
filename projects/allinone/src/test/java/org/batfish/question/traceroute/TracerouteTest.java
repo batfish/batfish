@@ -18,13 +18,14 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import java.io.File;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
@@ -58,29 +59,26 @@ import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** End-to-end tests of {@link TracerouteQuestion}. */
-public class TracerouteTest {
+class TracerouteTest {
   private static final String NODE1 = "node1";
   private static final String NODE2 = "node2";
   private static final String TESTRIGS_PREFIX = "org/batfish/allinone/testrigs/";
   private static final String TESTRIG_NAME = "specifiers-reachability";
   private static final List<String> TESTRIG_NODE_NAMES = ImmutableList.of(NODE1, NODE2);
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
-  @Rule public ExpectedException thrown = ExpectedException.none();
+  @TempDir public File _folder;
 
   private static final String ALL = ".*";
 
   private Batfish _batfish;
 
-  @Before
-  public void setup() throws IOException {
+  @BeforeEach
+  void setup() throws IOException {
     _batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
@@ -120,7 +118,7 @@ public class TracerouteTest {
   }
 
   @Test
-  public void testIgnoreFilters() throws IOException {
+  void testIgnoreFilters() throws IOException {
     SortedMap<String, Configuration> configs = aclNetwork();
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
     batfish.computeDataPlane(batfish.getSnapshot());
@@ -167,7 +165,7 @@ public class TracerouteTest {
    *
    */
   @Test
-  public void testDeliveredToSubnet1() throws IOException {
+  void testDeliveredToSubnet1() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -252,7 +250,7 @@ public class TracerouteTest {
    *
    */
   @Test
-  public void testDeliveredToSubnet2() throws IOException {
+  void testDeliveredToSubnet2() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -414,7 +412,7 @@ public class TracerouteTest {
   }
 
   @Test
-  public void testDeliveredToSubnetVSStaticRoute1() throws IOException {
+  void testDeliveredToSubnetVSStaticRoute1() throws IOException {
     TableAnswerElement answer = testDeliveredToSubnetVSStaticRoute("24");
     assertThat(answer.getRows().getData(), hasSize(1));
 
@@ -432,7 +430,7 @@ public class TracerouteTest {
   }
 
   @Test
-  public void testDeliveredToSubnetVSStaticRoute2() throws IOException {
+  void testDeliveredToSubnetVSStaticRoute2() throws IOException {
     TableAnswerElement answer = testDeliveredToSubnetVSStaticRoute("26");
     assertThat(answer.getRows().getData(), hasSize(1));
 
@@ -555,7 +553,7 @@ public class TracerouteTest {
    * If mask > 24: DELIVERD_TO_SUBNET (to R1)
    */
   @Test
-  public void testDispositionMultiInterfaces() throws IOException {
+  void testDispositionMultiInterfaces() throws IOException {
     TableAnswerElement answer = testDispositionMultiInterfaces("25");
     assertThat(answer.getRows().getData(), hasSize(2));
 
@@ -697,7 +695,7 @@ public class TracerouteTest {
   }
 
   @Test
-  public void testDispositionMultipleRouters1() throws IOException {
+  void testDispositionMultipleRouters1() throws IOException {
     TableAnswerElement answer = testDispositionMultipleRouters("24");
     assertThat(answer.getRows().getData(), hasSize(1));
 
@@ -725,7 +723,7 @@ public class TracerouteTest {
   }
 
   @Test
-  public void testDispositionMultipleRouters2() throws IOException {
+  void testDispositionMultipleRouters2() throws IOException {
     TableAnswerElement answer = testDispositionMultipleRouters("25");
     assertThat(answer.getRows().getData(), hasSize(1));
 
@@ -767,7 +765,7 @@ public class TracerouteTest {
   }
 
   @Test
-  public void testMaxTraces_default() throws IOException {
+  void testMaxTraces_default() throws IOException {
     Batfish batfish = maxTracesBatfish();
 
     TracerouteQuestion question =
@@ -789,7 +787,7 @@ public class TracerouteTest {
   }
 
   @Test
-  public void testMaxTraces_limited() throws IOException {
+  void testMaxTraces_limited() throws IOException {
     Batfish batfish = maxTracesBatfish();
     TracerouteQuestion question =
         new TracerouteQuestion(
@@ -815,7 +813,7 @@ public class TracerouteTest {
    *  owned by any device, so this is EXITS_NETWORK.
    */
   @Test
-  public void testInsufficientInfoVsExitsNetwork1() throws IOException {
+  void testInsufficientInfoVsExitsNetwork1() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -876,7 +874,7 @@ public class TracerouteTest {
    *  owned by a device, so this is INSUFFICIENT_INFO.
    */
   @Test
-  public void testInsufficientInfoVsExitsNetwork2() throws IOException {
+  void testInsufficientInfoVsExitsNetwork2() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -945,7 +943,7 @@ public class TracerouteTest {
   }
 
   @Test
-  public void testNatTable() throws IOException {
+  void testNatTable() throws IOException {
     String hostname = "ios-nat-table";
     String inside = "FastEthernet0/0";
 

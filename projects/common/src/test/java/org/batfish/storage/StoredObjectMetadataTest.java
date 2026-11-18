@@ -1,12 +1,12 @@
 package org.batfish.storage;
 
 import com.google.common.testing.EqualsTester;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class StoredObjectMetadataTest {
+class StoredObjectMetadataTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     String key = "some key";
     long size = 15;
     StoredObjectMetadata metadata1 = new StoredObjectMetadata(key, size);

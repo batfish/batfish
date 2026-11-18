@@ -6,12 +6,12 @@ import static org.hamcrest.Matchers.equalTo;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.eigrp.EigrpMetricVersion;
 import org.batfish.datamodel.eigrp.WideMetric;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class EigrpInternalRouteTest {
+class EigrpInternalRouteTest {
 
   @Test
-  public void testToBuilder() {
+  void testToBuilder() {
     EigrpInternalRoute r =
         EigrpInternalRoute.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))

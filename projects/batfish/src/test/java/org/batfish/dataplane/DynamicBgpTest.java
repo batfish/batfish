@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.graph.ValueGraph;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.batfish.common.NetworkSnapshot;
@@ -20,18 +21,17 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public class DynamicBgpTest {
+class DynamicBgpTest {
   private static final String TESTRIGS_PREFIX = "org/batfish/dataplane/testrigs/";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   /** Test correct handling of dynamic BGP sessions */
   @Test
-  public void testDynamicBgp() throws IOException {
+  void testDynamicBgp() throws IOException {
     String testrigName = "bgp-dynamic-session";
     List<String> configurationNames = ImmutableList.of("r1", "r2", "r3", "r4");
 
@@ -69,7 +69,7 @@ public class DynamicBgpTest {
   }
 
   @Test
-  public void testDynamicBgpWithoutUpdateSource() throws IOException {
+  void testDynamicBgpWithoutUpdateSource() throws IOException {
     String testrigName = "bgp-dynamic-session-no-update-source";
     List<String> configurationNames = ImmutableList.of("r1", "r2", "r3", "r4");
 
@@ -100,7 +100,7 @@ public class DynamicBgpTest {
 
   /** Test BGP session establishment if dynamic sessions have been misconfigured. */
   @Test
-  public void testDynamicBgpMisconfigured() throws IOException {
+  void testDynamicBgpMisconfigured() throws IOException {
     String testrigName = "bgp-dynamic-session-misconfigured";
     List<String> configurationNames = ImmutableList.of("r1", "r2", "r3", "r4");
 

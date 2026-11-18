@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import java.io.File;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
@@ -44,16 +45,15 @@ import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.packet_policy.Return;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** End-to-end-ish tests of traceroute with policy-based routing */
-public class TraceroutePolicyBasedRoutingTest {
+class TraceroutePolicyBasedRoutingTest {
 
   private static final String PACKET_POLICY_NAME = "packetPolicy";
   private static final String SOURCE_LOCATION_STR = "@enter(c1[ingressInterface])";
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private static final Ip INGRESS_IFACE_IP = Ip.parse("1.1.1.1");
   private static final Ip IFACE1_IP = Ip.parse("2.2.2.1");
@@ -145,7 +145,7 @@ public class TraceroutePolicyBasedRoutingTest {
   }
 
   @Test
-  public void testWithNoPolicy() throws IOException {
+  void testWithNoPolicy() throws IOException {
     /*
      Construct TCP flow to 9.9.9.9, but don't set up PBR. Flow should take V1's static route out i1.
     */
@@ -171,7 +171,7 @@ public class TraceroutePolicyBasedRoutingTest {
   }
 
   @Test
-  public void testMatchesPolicyIf() throws IOException {
+  void testMatchesPolicyIf() throws IOException {
     /*
      Construct TCP flow to 9.9.9.9. This should match the first PBR rule, resulting in a FIB lookup
      in V2, so it should take V2's static route out i2.
@@ -198,7 +198,7 @@ public class TraceroutePolicyBasedRoutingTest {
   }
 
   @Test
-  public void testMatchesPolicyIfThenDropDrop() throws IOException {
+  void testMatchesPolicyIfThenDropDrop() throws IOException {
     /*
      Construct UDP flow to 9.9.9.9. This should match the second PBR rule and get dropped.
     */
@@ -223,7 +223,7 @@ public class TraceroutePolicyBasedRoutingTest {
   }
 
   @Test
-  public void testDoesNotMatchPolicyIf() throws IOException {
+  void testDoesNotMatchPolicyIf() throws IOException {
     /*
      Construct ICMP flow to 9.9.9.9. This shouldn't match either PBR rule, so should take the
      policy's default action of FIB lookup in V1. Should take V1's static route out i1.
@@ -250,7 +250,7 @@ public class TraceroutePolicyBasedRoutingTest {
   }
 
   @Test
-  public void testMatchesPolicyIf_destinedForFirstVrf() throws IOException {
+  void testMatchesPolicyIf_destinedForFirstVrf() throws IOException {
     /*
      Construct TCP flow to an IP owned by V1. This should match the first PBR rule, then get
      accepted into V1.
@@ -277,7 +277,7 @@ public class TraceroutePolicyBasedRoutingTest {
   }
 
   @Test
-  public void testMatchesPolicyIfThenDrop_destinedForFirstVrf() throws IOException {
+  void testMatchesPolicyIfThenDrop_destinedForFirstVrf() throws IOException {
     /*
      Construct UDP flow to an IP owned by V1. This should match the second PBR rule and get dropped.
     */
@@ -302,7 +302,7 @@ public class TraceroutePolicyBasedRoutingTest {
   }
 
   @Test
-  public void testDoesNotMatchPolicy_destinedForFirstVrf() throws IOException {
+  void testDoesNotMatchPolicy_destinedForFirstVrf() throws IOException {
     /*
      Construct ICMP flow to an IP owned by V1. This shouldn't match either PBR rule, but since the
      policy's default action is not DROP, it should still be accepted into V1.
@@ -329,7 +329,7 @@ public class TraceroutePolicyBasedRoutingTest {
   }
 
   @Test
-  public void testMatchesPolicyIf_destinedForSecondVrf() throws IOException {
+  void testMatchesPolicyIf_destinedForSecondVrf() throws IOException {
     /*
      Construct TCP flow to an IP owned by V2. This should match the first PBR rule, then should be
      forwarded according to V2's FIB, resulting in NEIGHBOR_UNREACHABLE. There should never be an

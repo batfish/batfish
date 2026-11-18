@@ -7,11 +7,11 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class RibTreeTest {
+final class RibTreeTest {
   @Test
-  public void testRemoveRouteGetDelta() {
+  void testRemoveRouteGetDelta() {
     StaticRoute.Builder srb =
         StaticRoute.testBuilder()
             .setNetwork(Prefix.parse("1.0.0.0/8"))

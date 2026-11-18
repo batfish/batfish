@@ -3,12 +3,12 @@ package org.batfish.datamodel.ospf;
 import com.google.common.testing.EqualsTester;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpLink;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link OspfSessionProperties} */
-public class OspfSessionPropertiesTest {
+class OspfSessionPropertiesTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     IpLink l1 = new IpLink(Ip.parse("1.1.1.2"), Ip.parse("1.1.1.3"));
     IpLink l2 = new IpLink(Ip.parse("1.1.1.3"), Ip.parse("1.1.1.4"));
     new EqualsTester()

@@ -4,24 +4,24 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link PrefixTracerQuestion} */
-public class PrefixTracerQuestionTest {
+class PrefixTracerQuestionTest {
   @Test
-  public void testConstructorHasDefaultNodeSpecifier() {
+  void testConstructorHasDefaultNodeSpecifier() {
     PrefixTracerQuestion ptq = new PrefixTracerQuestion();
     assertThat(ptq.getNodes(), nullValue());
   }
 
   @Test
-  public void testConstructorDefaultHasNullPrefix() {
+  void testConstructorDefaultHasNullPrefix() {
     PrefixTracerQuestion ptq = new PrefixTracerQuestion();
     assertThat(ptq.getPrefix(), nullValue());
   }
 
   @Test
-  public void testRequiredDataplane() {
+  void testRequiredDataplane() {
     PrefixTracerQuestion ptq = new PrefixTracerQuestion();
     assertThat(ptq.getDataPlane(), equalTo(true));
   }

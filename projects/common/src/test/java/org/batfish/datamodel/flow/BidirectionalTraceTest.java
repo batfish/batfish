@@ -11,10 +11,10 @@ import org.batfish.datamodel.flow.InboundStep.InboundStepDetail;
 import org.batfish.datamodel.flow.OriginateStep.OriginateStepDetail;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.transformation.Transformation;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link BidirectionalTrace}. */
-public final class BidirectionalTraceTest {
+final class BidirectionalTraceTest {
   private static Trace trace(String hostname) {
     return new Trace(
         FlowDisposition.ACCEPTED,
@@ -30,7 +30,7 @@ public final class BidirectionalTraceTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     Flow f1 =
         Flow.builder()
             .setIngressNode("n1")

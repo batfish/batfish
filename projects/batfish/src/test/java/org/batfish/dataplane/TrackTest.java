@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.hasItem;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 import org.batfish.datamodel.AbstractRoute;
@@ -19,16 +20,15 @@ import org.batfish.datamodel.Topology;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** End-to-end test of dataplane-dependent static route tracking on NX-OS devices. */
-public class TrackTest {
+class TrackTest {
   private static final String SNAPSHOT_FOLDER = "org/batfish/dataplane/testrigs/track";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private Batfish _batfish;
 
@@ -49,8 +49,8 @@ public class TrackTest {
    *   - 10.0.5.0/24, which tracks missing route 10.3.0.1/24 from shutdown interface Ethernet1/3
    *   - 10.0.6.0/24, which tracks shutdown interface Ethernet1/3
    */
-  @Before
-  public void setup() throws IOException {
+  @BeforeEach
+  void setup() throws IOException {
     String r1Filename = "r1";
     String r2Filename = "r2";
     _batfish =
@@ -64,7 +64,7 @@ public class TrackTest {
   }
 
   @Test
-  public void testRoutes() {
+  void testRoutes() {
     DataPlane dp = _batfish.loadDataPlane(_batfish.getSnapshot());
 
     // test main RIB routes
@@ -81,7 +81,7 @@ public class TrackTest {
   }
 
   @Test
-  public void testTopology() {
+  void testTopology() {
     Topology topology = _batfish.getTopologyProvider().getLayer3Topology(_batfish.getSnapshot());
 
     assertThat(topology.getEdges(), hasItem(Edge.of("r1", "Vlan2", "r2", "GigabitEthernet0/0")));

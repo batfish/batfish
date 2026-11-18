@@ -1,6 +1,6 @@
 package org.batfish.minesweeper.collectors;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -42,11 +42,11 @@ import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LongComparison;
 import org.batfish.minesweeper.utils.Tuple;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link CommunityMatchExprCollector}. */
-public class CommunityMatchExprCollectorTest {
+class CommunityMatchExprCollectorTest {
 
   private static final String HOSTNAME = "hostname";
   private static final String COMM_LST_1 = "comm1";
@@ -59,8 +59,8 @@ public class CommunityMatchExprCollectorTest {
 
   private Configuration _config;
 
-  @Before
-  public void setup() throws IOException {
+  @BeforeEach
+  void setup() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder()
@@ -83,7 +83,7 @@ public class CommunityMatchExprCollectorTest {
   }
 
   @Test
-  public void testVisitCommunityAcl() {
+  void testVisitCommunityAcl() {
     CommunityAcl cacl =
         new CommunityAcl(
             ImmutableList.of(
@@ -98,7 +98,7 @@ public class CommunityMatchExprCollectorTest {
   }
 
   @Test
-  public void testVisitCommunityIn() {
+  void testVisitCommunityIn() {
     CommunityIn ci = new CommunityIn(new LiteralCommunitySet(CommunitySet.of(COMM1, COMM2)));
 
     Set<String> result = _collector.visitCommunityIn(ci, new Tuple<>(new HashSet<>(), _config));
@@ -107,7 +107,7 @@ public class CommunityMatchExprCollectorTest {
   }
 
   @Test
-  public void testVisitCommunityIs() {
+  void testVisitCommunityIs() {
     CommunityIs ci = new CommunityIs(COMM1);
 
     Set<String> result = _collector.visitCommunityIs(ci, new Tuple<>(new HashSet<>(), _config));
@@ -116,7 +116,7 @@ public class CommunityMatchExprCollectorTest {
   }
 
   @Test
-  public void testVisitCommunityMatchAll() {
+  void testVisitCommunityMatchAll() {
     CommunityMatchAll cma =
         new CommunityMatchAll(
             ImmutableList.of(
@@ -131,7 +131,7 @@ public class CommunityMatchExprCollectorTest {
   }
 
   @Test
-  public void testVisitCommunityMatchAny() {
+  void testVisitCommunityMatchAny() {
     CommunityMatchAny cma =
         new CommunityMatchAny(
             ImmutableList.of(
@@ -146,7 +146,7 @@ public class CommunityMatchExprCollectorTest {
   }
 
   @Test
-  public void testVisitCommunityMatchExprReference() {
+  void testVisitCommunityMatchExprReference() {
     CommunityMatchExprReference cmer = new CommunityMatchExprReference(COMM_LST_1);
 
     Set<String> result =
@@ -156,7 +156,7 @@ public class CommunityMatchExprCollectorTest {
   }
 
   @Test
-  public void testVisitCommunityMatchRegex() {
+  void testVisitCommunityMatchRegex() {
     CommunityMatchRegex cmr = new CommunityMatchRegex(ColonSeparatedRendering.instance(), "^20:");
 
     Set<String> result =
@@ -166,7 +166,7 @@ public class CommunityMatchExprCollectorTest {
   }
 
   @Test
-  public void testVisitCommunityNot() {
+  void testVisitCommunityNot() {
     CommunityNot cn = new CommunityNot(new CommunityMatchExprReference(COMM_LST_2));
 
     Set<String> result = _collector.visitCommunityNot(cn, new Tuple<>(new HashSet<>(), _config));
@@ -175,7 +175,7 @@ public class CommunityMatchExprCollectorTest {
   }
 
   @Test
-  public void testVisitExtendedCommunityGlobalAdministratorHighMatch() {
+  void testVisitExtendedCommunityGlobalAdministratorHighMatch() {
     ExtendedCommunityGlobalAdministratorHighMatch ec =
         new ExtendedCommunityGlobalAdministratorHighMatch(
             new IntComparison(IntComparator.EQ, new LiteralInt(3)));
@@ -186,7 +186,7 @@ public class CommunityMatchExprCollectorTest {
   }
 
   @Test
-  public void testVisitExtendedCommunityGlobalAdministratorLowMatch() {
+  void testVisitExtendedCommunityGlobalAdministratorLowMatch() {
     ExtendedCommunityGlobalAdministratorLowMatch ec =
         new ExtendedCommunityGlobalAdministratorLowMatch(
             new IntComparison(IntComparator.EQ, new LiteralInt(3)));
@@ -197,7 +197,7 @@ public class CommunityMatchExprCollectorTest {
   }
 
   @Test
-  public void testVisitExtendedCommunityGlobalAdministratorMatch() {
+  void testVisitExtendedCommunityGlobalAdministratorMatch() {
     ExtendedCommunityGlobalAdministratorMatch ec =
         new ExtendedCommunityGlobalAdministratorMatch(
             new LongComparison(IntComparator.EQ, new LiteralLong(3L)));
@@ -208,7 +208,7 @@ public class CommunityMatchExprCollectorTest {
   }
 
   @Test
-  public void testVisitExtendedCommunityLocalAdministratorMatch() {
+  void testVisitExtendedCommunityLocalAdministratorMatch() {
     ExtendedCommunityLocalAdministratorMatch ec =
         new ExtendedCommunityLocalAdministratorMatch(
             new LongComparison(IntComparator.EQ, new LiteralLong(3L)));
@@ -219,7 +219,7 @@ public class CommunityMatchExprCollectorTest {
   }
 
   @Test
-  public void testVisitRouteTargetExtendedCommunities() {
+  void testVisitRouteTargetExtendedCommunities() {
     RouteTargetExtendedCommunities ec = RouteTargetExtendedCommunities.instance();
     Set<String> result =
         _collector.visitRouteTargetExtendedCommunities(ec, new Tuple<>(new HashSet<>(), _config));
@@ -227,7 +227,7 @@ public class CommunityMatchExprCollectorTest {
   }
 
   @Test
-  public void testVisitSiteOfOriginExtendedCommunities() {
+  void testVisitSiteOfOriginExtendedCommunities() {
     SiteOfOriginExtendedCommunities ec = SiteOfOriginExtendedCommunities.instance();
     Set<String> result =
         _collector.visitSiteOfOriginExtendedCommunities(ec, new Tuple<>(new HashSet<>(), _config));
@@ -235,7 +235,7 @@ public class CommunityMatchExprCollectorTest {
   }
 
   @Test
-  public void testVisitStandardCommunityHighMatch() {
+  void testVisitStandardCommunityHighMatch() {
     StandardCommunityHighMatch schm =
         new StandardCommunityHighMatch(new IntComparison(IntComparator.EQ, new LiteralInt(20)));
 
@@ -246,7 +246,7 @@ public class CommunityMatchExprCollectorTest {
   }
 
   @Test
-  public void testVisitStandardCommunityHighMatchUnsupported() {
+  void testVisitStandardCommunityHighMatchUnsupported() {
     StandardCommunityHighMatch schm =
         new StandardCommunityHighMatch(new IntComparison(IntComparator.LT, new LiteralInt(20)));
 
@@ -257,7 +257,7 @@ public class CommunityMatchExprCollectorTest {
   }
 
   @Test
-  public void testVisitStandardCommunityLowMatch() {
+  void testVisitStandardCommunityLowMatch() {
     StandardCommunityLowMatch sclm =
         new StandardCommunityLowMatch(new IntComparison(IntComparator.EQ, new LiteralInt(30)));
 
@@ -268,7 +268,7 @@ public class CommunityMatchExprCollectorTest {
   }
 
   @Test
-  public void testVisitStandardCommunityLowMatchUnsupported() {
+  void testVisitStandardCommunityLowMatchUnsupported() {
     StandardCommunityLowMatch sclm =
         new StandardCommunityLowMatch(new IntComparison(IntComparator.LT, new LiteralInt(30)));
 
@@ -279,7 +279,7 @@ public class CommunityMatchExprCollectorTest {
   }
 
   @Test
-  public void testVisitVpnDistinguisherExtendedCommunities() {
+  void testVisitVpnDistinguisherExtendedCommunities() {
     VpnDistinguisherExtendedCommunities ec = VpnDistinguisherExtendedCommunities.instance();
     Set<String> result =
         _collector.visitVpnDistinguisherExtendedCommunities(

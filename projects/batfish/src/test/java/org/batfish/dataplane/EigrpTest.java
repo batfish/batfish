@@ -11,6 +11,7 @@ import static org.hamcrest.Matchers.hasItem;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Table;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
@@ -25,16 +26,15 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public class EigrpTest {
+class EigrpTest {
   private static final String SNAPSHOT_PREFIX = "org/batfish/dataplane/ibdp/";
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testRoutePresence() throws IOException {
+  void testRoutePresence() throws IOException {
     String testrigName = "ios-eigrp";
     List<String> configurationNames =
         ImmutableList.of(

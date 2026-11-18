@@ -1,15 +1,15 @@
 package org.batfish.vendor;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link VendorStructureId}. */
-public final class VendorStructureIdTest {
+final class VendorStructureIdTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new VendorStructureId("f1", "t1", "n1"), new VendorStructureId("f1", "t1", "n1"))
@@ -20,7 +20,7 @@ public final class VendorStructureIdTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     VendorStructureId vendorStructureId = new VendorStructureId("f", "t", "n");
     assertEquals(
         vendorStructureId, BatfishObjectMapper.clone(vendorStructureId, VendorStructureId.class));

@@ -85,10 +85,10 @@ import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -96,6 +96,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -196,18 +197,17 @@ import org.batfish.vendor.a10.representation.VrrpACommon;
 import org.batfish.vendor.a10.representation.VrrpAFailOverPolicyTemplate;
 import org.batfish.vendor.a10.representation.VrrpAVrid;
 import org.batfish.vendor.a10.representation.VrrpaVridBladeParameters;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * Tests of VS model extraction and VS model-to-VI model conversion for {@link A10Configuration}s.
  */
 @ParametersAreNonnullByDefault
-public class A10GrammarTest {
+class A10GrammarTest {
   private static final String TESTCONFIGS_PREFIX = "org/batfish/vendor/a10/grammar/testconfigs/";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private static @Nonnull A10Configuration parseVendorConfig(String hostname) {
     String src = readResource(TESTCONFIGS_PREFIX + hostname, UTF_8);
@@ -258,7 +258,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testExtractVersion() {
+  void testExtractVersion() {
     {
       // Corresponds to ACOS v2
       String hostname = "acos_v2";
@@ -284,7 +284,7 @@ public class A10GrammarTest {
    * and parsed.
    */
   @Test
-  public void testNewlines() {
+  void testNewlines() {
     String hostname = "newlines";
     A10Configuration c = parseVendorConfig(hostname);
     assertThat(c, notNullValue());
@@ -293,7 +293,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testHostnameExtraction() {
+  void testHostnameExtraction() {
     String hostname = "hostname";
     A10Configuration c = parseVendorConfig(hostname);
     assertThat(c, notNullValue());
@@ -302,13 +302,13 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testHumanName() throws IOException {
+  void testHumanName() throws IOException {
     Configuration c = parseConfig("hostname");
     assertThat(c.getHumanName(), equalTo("HOSTNAME"));
   }
 
   @Test
-  public void testHostnameConversion() {
+  void testHostnameConversion() {
     String hostname = "hostname";
     Configuration c = parseConfig(hostname);
     assertThat(c, notNullValue());
@@ -317,7 +317,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testHostnameAfterRba() {
+  void testHostnameAfterRba() {
     String hostname = "hostname_after_rba";
     A10Configuration c = parseVendorConfig(hostname);
     assertThat(c, notNullValue());
@@ -326,7 +326,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testRbaHostname() {
+  void testRbaHostname() {
     String hostname = "rba_hostname";
     A10Configuration c = parseVendorConfig(hostname);
     assertThat(c, notNullValue());
@@ -335,7 +335,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testHealthMonitor() {
+  void testHealthMonitor() {
     String hostname = "health_monitor";
     A10Configuration c = parseVendorConfig(hostname);
     assertThat(
@@ -345,14 +345,14 @@ public class A10GrammarTest {
 
   /** ACOS v2 style syntax */
   @Test
-  public void testHealthMonitorAcos2() {
+  void testHealthMonitorAcos2() {
     String hostname = "health_monitor_acos2";
     A10Configuration c = parseVendorConfig(hostname);
     assertThat(c.getHealthMonitors().keySet(), containsInAnyOrder("HM1"));
   }
 
   @Test
-  public void testHealthMonitorReference() throws IOException {
+  void testHealthMonitorReference() throws IOException {
     String hostname = "health_monitor_reference";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -367,7 +367,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testStaticRouteAcos2Conversion() {
+  void testStaticRouteAcos2Conversion() {
     String hostname = "static_route_acos2";
     Configuration c = parseConfig(hostname);
     assertThat(
@@ -382,7 +382,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testStaticRouteExtraction() {
+  void testStaticRouteExtraction() {
     String hostname = "static_route";
     A10Configuration c = parseVendorConfig(hostname);
     Prefix prefix1 = Prefix.parse("10.100.0.0/16");
@@ -420,7 +420,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testStaticRouteDeleteExtraction() {
+  void testStaticRouteDeleteExtraction() {
     String hostname = "static_route_delete";
     A10Configuration c = parseVendorConfig(hostname);
     Prefix prefix = Prefix.parse("10.100.0.0/16");
@@ -439,7 +439,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testStaticRouteDeleteWarn() throws IOException {
+  void testStaticRouteDeleteWarn() throws IOException {
     String filename = "static_route_delete";
     Batfish batfish = getBatfishForConfigurationNames(filename);
     Warnings warnings =
@@ -459,7 +459,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testStaticRouteConversion() {
+  void testStaticRouteConversion() {
     Configuration c = parseConfig("static_route_convert");
     Prefix prefix1 = Prefix.parse("10.100.0.0/16");
     Prefix prefix2 = Prefix.parse("10.101.0.0/16");
@@ -489,7 +489,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testVlanExtraction() {
+  void testVlanExtraction() {
     String hostname = "vlan";
     A10Configuration c = parseVendorConfig(hostname);
 
@@ -542,7 +542,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testVlanConversion() {
+  void testVlanConversion() {
     String hostname = "vlan_convert";
     Configuration c = parseConfig(hostname);
 
@@ -585,7 +585,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testTrunkVlanConversion() {
+  void testTrunkVlanConversion() {
     String hostname = "trunk_vlan_convert";
     Configuration c = parseConfig(hostname);
 
@@ -621,7 +621,7 @@ public class A10GrammarTest {
 
   /** Testing ACOS v2 trunk VLAN conversion */
   @Test
-  public void testTrunkVlanAcos2Conversion() {
+  void testTrunkVlanAcos2Conversion() {
     String hostname = "trunk_acos2_convert";
     Configuration c = parseConfig(hostname);
 
@@ -650,7 +650,7 @@ public class A10GrammarTest {
 
   /** Testing ACOS v2 VLAN syntax */
   @Test
-  public void testVlanAcos2Extraction() {
+  void testVlanAcos2Extraction() {
     String hostname = "vlan_acos2";
     A10Configuration c = parseVendorConfig(hostname);
 
@@ -678,7 +678,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testVlanWarn() throws IOException {
+  void testVlanWarn() throws IOException {
     String filename = "vlan_warn";
     Batfish batfish = getBatfishForConfigurationNames(filename);
     Warnings warnings =
@@ -712,7 +712,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testInterfaceRefs() throws IOException {
+  void testInterfaceRefs() throws IOException {
     String hostname = "interface_refs";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -763,7 +763,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testInterfacesExtraction() {
+  void testInterfacesExtraction() {
     String hostname = "interfaces";
     A10Configuration c = parseVendorConfig(hostname);
 
@@ -815,7 +815,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testInterfaceWarn() throws IOException {
+  void testInterfaceWarn() throws IOException {
     String filename = "interface_warn";
     Batfish batfish = getBatfishForConfigurationNames(filename);
     Warnings warnings =
@@ -836,7 +836,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testInterfaceConversion() {
+  void testInterfaceConversion() {
     String hostname = "interfaces";
     Configuration c = parseConfig(hostname);
 
@@ -898,7 +898,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testTrunkExtraction() {
+  void testTrunkExtraction() {
     String hostname = "trunk";
     A10Configuration c = parseVendorConfig(hostname);
 
@@ -946,7 +946,7 @@ public class A10GrammarTest {
 
   /** Testing ACOS v2 syntax */
   @Test
-  public void testTrunkAcos2Extraction() {
+  void testTrunkAcos2Extraction() {
     String hostname = "trunk_acos2";
     A10Configuration c = parseVendorConfig(hostname);
 
@@ -987,7 +987,7 @@ public class A10GrammarTest {
 
   /** Testing ACOS v2 trunk datamodel conversion */
   @Test
-  public void testTrunkAcos2Conversion() {
+  void testTrunkAcos2Conversion() {
     String hostname = "trunk_acos2";
     Configuration c = parseConfig(hostname);
 
@@ -1067,7 +1067,7 @@ public class A10GrammarTest {
 
   /** Testing ACOS v2 trunk conversion warnings */
   @Test
-  public void testTrunkAcos2ConversionWarn() throws IOException {
+  void testTrunkAcos2ConversionWarn() throws IOException {
     String hostname = "trunk_acos2_convert_warn";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Warnings warnings =
@@ -1088,7 +1088,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testTrunkWarn() throws IOException {
+  void testTrunkWarn() throws IOException {
     String filename = "trunk_warn";
     Batfish batfish = getBatfishForConfigurationNames(filename);
 
@@ -1117,7 +1117,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testTrunkConversionWarn() throws IOException {
+  void testTrunkConversionWarn() throws IOException {
     String hostname = "trunk_convert_warn";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Warnings warnings =
@@ -1137,7 +1137,7 @@ public class A10GrammarTest {
 
   /** Testing ACOS v2 syntax */
   @Test
-  public void testTrunkAcos2Warn() throws IOException {
+  void testTrunkAcos2Warn() throws IOException {
     String filename = "trunk_acos2_warn";
     Batfish batfish = getBatfishForConfigurationNames(filename);
 
@@ -1160,7 +1160,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testTrunkConversion() {
+  void testTrunkConversion() {
     String hostname = "trunk_convert";
     Configuration c = parseConfig(hostname);
 
@@ -1203,7 +1203,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testVirtualServerIpv6() throws IOException {
+  void testVirtualServerIpv6() throws IOException {
     String hostname = "virtual_server_ipv6";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -1243,7 +1243,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testVirtualServerExtraction() {
+  void testVirtualServerExtraction() {
     String hostname = "virtual_server";
     A10Configuration c = parseVendorConfig(hostname);
 
@@ -1352,7 +1352,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testVirtualServerWarn() throws IOException {
+  void testVirtualServerWarn() throws IOException {
     String filename = "virtual_server_warn";
     Batfish batfish = getBatfishForConfigurationNames(filename);
 
@@ -1382,7 +1382,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testNatPoolExtraction() {
+  void testNatPoolExtraction() {
     String hostname = "nat_pool";
     A10Configuration c = parseVendorConfig(hostname);
 
@@ -1412,7 +1412,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testNatPoolReference() throws IOException {
+  void testNatPoolReference() throws IOException {
     String hostname = "nat_pool_ref";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -1427,7 +1427,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testNatPoolAcos2Extraction() {
+  void testNatPoolAcos2Extraction() {
     String hostname = "nat_pool_acos2";
     A10Configuration c = parseVendorConfig(hostname);
 
@@ -1446,7 +1446,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testNatPoolWarn() throws IOException {
+  void testNatPoolWarn() throws IOException {
     String filename = "nat_pool_warn";
     Batfish batfish = getBatfishForConfigurationNames(filename);
 
@@ -1474,7 +1474,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testVrrpAExtraction() {
+  void testVrrpAExtraction() {
     String hostname = "vrrp-a";
     A10Configuration c = parseVendorConfig(hostname);
 
@@ -1515,7 +1515,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testVrrpAEnabledConversion() {
+  void testVrrpAEnabledConversion() {
     String hostname = "vrrp-a-enabled";
     Configuration c = parseConfig(hostname);
 
@@ -1578,7 +1578,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testVrrpADisabledConversion() {
+  void testVrrpADisabledConversion() {
     String hostname = "vrrp-a-disabled";
     Configuration c = parseConfig(hostname);
 
@@ -1633,7 +1633,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testVrrpAReferences() throws IOException {
+  void testVrrpAReferences() throws IOException {
     String hostname = "vrrp-a";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -1664,14 +1664,14 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testVrrpAAcos2Parsing() {
+  void testVrrpAAcos2Parsing() {
     // TODO: extraction
     String hostname = "vrrp-a_acos2";
     assertNotNull(parseVendorConfig(hostname));
   }
 
   @Test
-  public void testVrrpAWarn() throws IOException {
+  void testVrrpAWarn() throws IOException {
     String filename = "vrrp-a_warn";
     Batfish batfish = getBatfishForConfigurationNames(filename);
     Warnings warnings =
@@ -1701,14 +1701,14 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testServerV2Parsing() {
+  void testServerV2Parsing() {
     A10Configuration c = parseVendorConfig("server-v2");
     assertThat(c.getServers(), hasKeys("M1", "M2", "M3", "M4", "SERVER2"));
     assertThat(c.getServers().get("SERVER2").getHealthCheckDisable(), equalTo(true));
   }
 
   @Test
-  public void testServerExtraction() {
+  void testServerExtraction() {
     String hostname = "server";
     A10Configuration c = parseVendorConfig(hostname);
 
@@ -1780,7 +1780,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testServerWarn() throws IOException {
+  void testServerWarn() throws IOException {
     String filename = "server_warn";
     Batfish batfish = getBatfishForConfigurationNames(filename);
 
@@ -1813,7 +1813,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testServiceGroupExtraction() {
+  void testServiceGroupExtraction() {
     String hostname = "service_group";
     A10Configuration c = parseVendorConfig(hostname);
 
@@ -1873,7 +1873,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testServiceGroupAcos2Extraction() {
+  void testServiceGroupAcos2Extraction() {
     String hostname = "service_group_acos2";
     A10Configuration c = parseVendorConfig(hostname);
 
@@ -1912,7 +1912,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testServiceGroupWarn() throws IOException {
+  void testServiceGroupWarn() throws IOException {
     String filename = "service_group_warn";
     Batfish batfish = getBatfishForConfigurationNames(filename);
 
@@ -1944,7 +1944,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testTemplatePort() throws IOException {
+  void testTemplatePort() throws IOException {
     A10Configuration c = parseVendorConfig("slb_template_port");
     assertThat(c.getServiceGroups(), hasKeys("SG"));
     assertThat(c.getServiceGroups().get("SG").getTemplatePort(), equalTo("CONN_LIMIT"));
@@ -1955,7 +1955,7 @@ public class A10GrammarTest {
    * occurs elsewhere.
    */
   @Test
-  public void testVirtualServerConversion() throws IOException {
+  void testVirtualServerConversion() throws IOException {
     Configuration c = parseConfig("virtual_server_convert");
     Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
     NetworkSnapshot snapshot = batfish.getSnapshot();
@@ -2054,7 +2054,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testBgpExtraction() {
+  void testBgpExtraction() {
     String hostname = "bgp";
     A10Configuration c = parseVendorConfig(hostname);
     BgpProcess bgp = c.getBgpProcess();
@@ -2099,7 +2099,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testBgpConversion() {
+  void testBgpConversion() {
     String hostname = "bgp";
     Configuration c = parseConfig(hostname);
     Ip peerIp = Ip.parse("10.10.10.100");
@@ -2119,7 +2119,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testBgpWarn() throws IOException {
+  void testBgpWarn() throws IOException {
     String hostname = "bgp_warn";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
 
@@ -2155,7 +2155,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testKernelRoutes() {
+  void testKernelRoutes() {
     Configuration c = parseConfig("kernel_routes");
     assertThat(
         c.getDefaultVrf().getKernelRoutes(),
@@ -2193,7 +2193,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testKernelRoutesProxyArp() throws IOException {
+  void testKernelRoutesProxyArp() throws IOException {
     String hostname = "kernel_routes";
     Configuration c = parseConfig(hostname);
 
@@ -2225,7 +2225,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testHaAcos2Extraction() {
+  void testHaAcos2Extraction() {
     A10Configuration vc = parseVendorConfig("ha_acos2");
 
     Ha ha = vc.getHa();
@@ -2253,7 +2253,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testHaAcos2Conversion() {
+  void testHaAcos2Conversion() {
     String hostname = "ha_acos2";
     Configuration c = parseConfig(hostname);
 
@@ -2341,7 +2341,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testAccessListExtraction() {
+  void testAccessListExtraction() {
     A10Configuration vc = parseVendorConfig("access_list");
     Map<String, AccessList> acls = vc.getAccessLists();
     assertThat(acls, hasKeys("100", "ACL1"));
@@ -2412,7 +2412,7 @@ public class A10GrammarTest {
    * comprehensive conversion tests are covered elsewhere.
    */
   @Test
-  public void testAccessListConversion() throws IOException {
+  void testAccessListConversion() throws IOException {
     String hostname = "access_list_convert";
     Configuration c = parseConfig(hostname);
     Batfish batfish = getBatfish(ImmutableSortedMap.of(hostname, c), _folder);
@@ -2513,7 +2513,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testAccessListWarn() throws IOException {
+  void testAccessListWarn() throws IOException {
     String filename = "access_list_warn";
     Batfish batfish = getBatfishForConfigurationNames(filename);
     Warnings warnings =
@@ -2536,7 +2536,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testAccessListReferences() throws IOException {
+  void testAccessListReferences() throws IOException {
     String hostname = "access_list_ref";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -2553,7 +2553,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testServerReferences() throws IOException {
+  void testServerReferences() throws IOException {
     String hostname = "server_ref";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -2568,7 +2568,7 @@ public class A10GrammarTest {
   }
 
   @Test
-  public void testServiceGroupReferences() throws IOException {
+  void testServiceGroupReferences() throws IOException {
     String hostname = "service_group_ref";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);

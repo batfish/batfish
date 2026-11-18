@@ -4,15 +4,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.testing.EqualsTester;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link org.batfish.datamodel.TcpFlags} */
-@RunWith(JUnit4.class)
-public class TcpFlagsTest {
+class TcpFlagsTest {
   @Test
-  public void testEquality() {
+  void testEquality() {
     new EqualsTester()
         .addEqualityGroup(
             TcpFlags.builder().setAck(true).setRst(true).build(),
@@ -24,7 +21,7 @@ public class TcpFlagsTest {
   }
 
   @Test
-  public void testBuilderDefaults() {
+  void testBuilderDefaults() {
     TcpFlags flags = TcpFlags.builder().build();
     assertThat(flags.getAck(), equalTo(false));
     assertThat(flags.getCwr(), equalTo(false));

@@ -8,7 +8,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -21,13 +21,13 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class CiscoConfigurationTest {
+class CiscoConfigurationTest {
 
   /** Test that trace hints are added during conversion */
   @Test
-  public void testToRoutingPolicy_trace() {
+  void testToRoutingPolicy_trace() {
     CiscoConfiguration cc = new CiscoConfiguration();
     cc.setFilename("file");
     Configuration c =
@@ -56,7 +56,7 @@ public class CiscoConfigurationTest {
 
   /** Test that trace hints are added during conversion */
   @Test
-  public void testToRoutingPolicies_trace() {
+  void testToRoutingPolicies_trace() {
     CiscoConfiguration cc = new CiscoConfiguration();
     cc.setFilename("file");
     Configuration c =
@@ -86,7 +86,7 @@ public class CiscoConfigurationTest {
   }
 
   @Test
-  public void testToTacacsServers() {
+  void testToTacacsServers() {
     LdapServerGroup ldapServerGroup = new LdapServerGroup("ldap");
     ldapServerGroup.addServer("2.2.2.2");
 

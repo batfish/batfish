@@ -1,16 +1,16 @@
 package org.batfish.vendor.sonic.representation;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class VlanTest {
+class VlanTest {
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     Vlan obj =
         Vlan.builder()
             .setDhcpServers(ImmutableList.of("a"))
@@ -22,7 +22,7 @@ public class VlanTest {
 
   @SuppressWarnings("UnstableApiUsage")
   @Test
-  public void testEquals() {
+  void testEquals() {
     Vlan.Builder builder = Vlan.builder();
     new EqualsTester()
         .addEqualityGroup(builder.build(), builder.build())

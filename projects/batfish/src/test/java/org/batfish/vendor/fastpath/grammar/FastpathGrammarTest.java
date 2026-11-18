@@ -21,6 +21,7 @@ import static org.hamcrest.Matchers.nullValue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -62,17 +63,16 @@ import org.batfish.vendor.fastpath.representation.TaskPermission;
 import org.batfish.vendor.fastpath.representation.Taskgroup;
 import org.batfish.vendor.fastpath.representation.UserAccount;
 import org.batfish.vendor.fastpath.representation.Usergroup;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 @ParametersAreNonnullByDefault
-public final class FastpathGrammarTest {
+final class FastpathGrammarTest {
 
   private static final String TESTCONFIGS_PREFIX =
       "org/batfish/vendor/fastpath/grammar/testconfigs/";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private @Nonnull Batfish getBatfishForConfigurationNames(String... configurationNames)
       throws IOException {
@@ -121,13 +121,13 @@ public final class FastpathGrammarTest {
   }
 
   @Test
-  public void testTacacsParsesWithoutWarnings() {
+  void testTacacsParsesWithoutWarnings() {
     FastpathConfiguration c = parseVendorConfig("fastpath_tacacs");
     assertThat(c.getWarnings().getParseWarnings(), empty());
   }
 
   @Test
-  public void testTacacs() throws IOException {
+  void testTacacs() throws IOException {
     Configuration c = parseConfig("fastpath_tacacs");
     assertThat(
         c.getTacacsServers(),
@@ -136,7 +136,7 @@ public final class FastpathGrammarTest {
   }
 
   @Test
-  public void testTacacsExtraction() {
+  void testTacacsExtraction() {
     Tacacs tacacs = parseVendorConfig("fastpath_tacacs").getTacacs();
     assertThat(
         tacacs.getServers().keySet(),
@@ -177,7 +177,7 @@ public final class FastpathGrammarTest {
   }
 
   @Test
-  public void testTacacsSourceInterfaceForms() {
+  void testTacacsSourceInterfaceForms() {
     // Covers the source-interface forms in toInterfaceName that aren't covered by tacacs testconfig
     // The source-interface is single-valued, so each form is parsed as its own snippet
     assertThat(
@@ -196,13 +196,13 @@ public final class FastpathGrammarTest {
   }
 
   @Test
-  public void testAaaParsesWithoutWarnings() {
+  void testAaaParsesWithoutWarnings() {
     FastpathConfiguration c = parseVendorConfig("fastpath_aaa");
     assertThat(c.getWarnings().getParseWarnings(), empty());
   }
 
   @Test
-  public void testAaaExtraction() {
+  void testAaaExtraction() {
     Aaa aaa = parseVendorConfig("fastpath_aaa").getAaa();
 
     Authentication login = aaa.getAuthentication().get(AuthenticationType.LOGIN).get("user-authen");
@@ -244,7 +244,7 @@ public final class FastpathGrammarTest {
   }
 
   @Test
-  public void testAaaListNameFormsExtraction() {
+  void testAaaListNameFormsExtraction() {
     // The list name may be the `default` keyword, a quoted string, or a bare word. `default` is
     // recorded as the literal name "default".
     Aaa aaa = parseVendorConfig("fastpath_aaa").getAaa();
@@ -285,7 +285,7 @@ public final class FastpathGrammarTest {
   }
 
   @Test
-  public void testAaaListRedefinitionReplaces() {
+  void testAaaListRedefinitionReplaces() {
     // Re-issuing the command for the same type and list name replaces the record type and the
     // method list; it does not append to it.
     Aaa aaa =
@@ -308,7 +308,7 @@ public final class FastpathGrammarTest {
   }
 
   @Test
-  public void testAaaAuthenticationDot1xExtraction() {
+  void testAaaAuthenticationDot1xExtraction() {
     Aaa aaa = parseVendorConfig("fastpath_aaa").getAaa();
     Authentication dot1x = aaa.getAuthentication().get(AuthenticationType.DOT1X).get("default");
     assertThat(dot1x.getType(), equalTo(AuthenticationType.DOT1X));
@@ -327,7 +327,7 @@ public final class FastpathGrammarTest {
   }
 
   @Test
-  public void testAaaIasUserBlockIsSilent() {
+  void testAaaIasUserBlockIsSilent() {
     FastpathConfiguration c =
         parseVendorConfigText(
             """
@@ -343,7 +343,7 @@ public final class FastpathGrammarTest {
   }
 
   @Test
-  public void testCompleteConfigAaaExtraction() throws IOException {
+  void testCompleteConfigAaaExtraction() throws IOException {
     // AAA has no vendor-independent representation yet, so pin the two method lists in
     // fastpath_complete_config on the vendor model.
     String hostname = "fastpath_complete_config";
@@ -361,13 +361,13 @@ public final class FastpathGrammarTest {
   }
 
   @Test
-  public void testUsersTasksParseWithoutWarnings() {
+  void testUsersTasksParseWithoutWarnings() {
     FastpathConfiguration c = parseVendorConfig("fastpath_users_tasks");
     assertThat(c.getWarnings().getParseWarnings(), empty());
   }
 
   @Test
-  public void testUsernameExtraction() {
+  void testUsernameExtraction() {
     FastpathConfiguration c = parseVendorConfig("fastpath_users_tasks");
     Map<String, UserAccount> users = c.getUsers();
     assertThat(
@@ -416,7 +416,7 @@ public final class FastpathGrammarTest {
   }
 
   @Test
-  public void testTaskgroupExtraction() {
+  void testTaskgroupExtraction() {
     FastpathConfiguration c = parseVendorConfig("fastpath_users_tasks");
     Map<String, Taskgroup> taskgroups = c.getTaskgroups();
     assertThat(taskgroups.keySet(), equalTo(ImmutableSet.of("builder", "admin", "ops")));
@@ -444,7 +444,7 @@ public final class FastpathGrammarTest {
   }
 
   @Test
-  public void testUsergroupExtraction() {
+  void testUsergroupExtraction() {
     FastpathConfiguration c = parseVendorConfig("fastpath_users_tasks");
     Map<String, Usergroup> usergroups = c.getUsergroups();
     assertThat(usergroups.keySet(), equalTo(ImmutableSet.of("builder", "admin", "ops")));
@@ -454,7 +454,7 @@ public final class FastpathGrammarTest {
   }
 
   @Test
-  public void testPasswordPolicyExtraction() {
+  void testPasswordPolicyExtraction() {
     FastpathConfiguration c = parseVendorConfig("fastpath_passwords");
     PasswordPolicy p = c.getPasswordPolicy();
     assertThat(p.getLockOut(), equalTo(3));
@@ -473,27 +473,27 @@ public final class FastpathGrammarTest {
   }
 
   @Test
-  public void testHostnameExtraction() {
+  void testHostnameExtraction() {
     FastpathConfiguration c = parseVendorConfig("fastpath_hostname");
     assertThat(c.getHostname(), equalTo("fastpath_hostname"));
   }
 
   @Test
-  public void testSetPromptExtraction() {
+  void testSetPromptExtraction() {
     // Legacy Quanta variant.
     FastpathConfiguration c = parseVendorConfig("fastpath_set_prompt");
     assertThat(c.getHostname(), equalTo("fastpath_set_prompt"));
   }
 
   @Test
-  public void testBannerIsIgnored() {
+  void testBannerIsIgnored() {
     // The `!System ...` header banner is a comment block and must not break parsing.
     FastpathConfiguration c = parseVendorConfig("fastpath_banner");
     assertThat(c.getHostname(), equalTo("fastpath_banner"));
   }
 
   @Test
-  public void testToVendorIndependentConfiguration() {
+  void testToVendorIndependentConfiguration() {
     FastpathConfiguration vc = parseVendorConfig("fastpath_hostname");
     vc.setVendor(FASTPATH);
     List<Configuration> configs = vc.toVendorIndependentConfigurations();
@@ -503,7 +503,7 @@ public final class FastpathGrammarTest {
   }
 
   @Test
-  public void testHostnameEndToEnd() throws IOException {
+  void testHostnameEndToEnd() throws IOException {
     // Exercises the full pipeline: format detection -> parse -> convert. The config's banner is
     // what routes it to FASTPATH, so this also guards the detector/parser-job wiring.
     Configuration c = parseConfig("fastpath_hostname");
@@ -512,7 +512,7 @@ public final class FastpathGrammarTest {
   }
 
   @Test
-  public void testDns() throws IOException {
+  void testDns() throws IOException {
     Configuration c = parseConfig("fastpath_dns");
     assertThat(c.getDnsServers(), equalTo(ImmutableSet.of("1.1.1.1", "1.1.1.2")));
     assertThat(c.getDomainName(), equalTo("example.com"));
@@ -520,7 +520,7 @@ public final class FastpathGrammarTest {
   }
 
   @Test
-  public void testDnsExtraction() {
+  void testDnsExtraction() {
     Dns dns = parseVendorConfig("fastpath_dns").getDns();
     assertThat(dns.getDomainName(), equalTo("example.com"));
     assertThat(dns.getServers(), equalTo(ImmutableSet.of("1.1.1.1", "1.1.1.2")));
@@ -529,13 +529,13 @@ public final class FastpathGrammarTest {
   }
 
   @Test
-  public void testDnsNullCommandsAreSilent() {
+  void testDnsNullCommandsAreSilent() {
     FastpathConfiguration c = parseVendorConfig("fastpath_dns");
     assertThat(c.getWarnings().getParseWarnings(), empty());
   }
 
   @Test
-  public void testDnsLookup() {
+  void testDnsLookup() {
     // Tri-state: unconfigured -> null (device default is enabled); explicit `ip domain lookup` ->
     // TRUE; explicit `no ip domain lookup` -> FALSE.
     assertThat(
@@ -552,7 +552,7 @@ public final class FastpathGrammarTest {
   }
 
   @Test
-  public void testUnquotedValuesTolerated() {
+  void testUnquotedValuesTolerated() {
     // FastPath's CLI accepts unquoted domain/host values (show running-config renders them
     // quoted); both forms must parse and extract identically.
     assertThat(
@@ -572,14 +572,14 @@ public final class FastpathGrammarTest {
   }
 
   @Test
-  public void testSntp() throws IOException {
+  void testSntp() throws IOException {
     Configuration c = parseConfig("fastpath_sntp");
     assertThat(c.getNtpServers(), equalTo(ImmutableSet.of("100.104.96.2", "100.104.98.2")));
     assertThat(c.getNtpSourceInterface(), equalTo("serviceport"));
   }
 
   @Test
-  public void testSntpExtraction() {
+  void testSntpExtraction() {
     Sntp sntp = parseVendorConfig("fastpath_sntp").getSntp();
     assertThat(sntp.getServers(), equalTo(ImmutableSet.of("100.104.96.2", "100.104.98.2")));
     assertThat(sntp.getClientMode(), equalTo(Sntp.ClientMode.UNICAST));
@@ -588,13 +588,13 @@ public final class FastpathGrammarTest {
   }
 
   @Test
-  public void testSntpNullCommandsAreSilent() {
+  void testSntpNullCommandsAreSilent() {
     FastpathConfiguration c = parseVendorConfig("fastpath_sntp");
     assertThat(c.getWarnings().getParseWarnings(), empty());
   }
 
   @Test
-  public void testSntpClientPortOutOfRangeWarns() {
+  void testSntpClientPortOutOfRangeWarns() {
     FastpathConfiguration c =
         parseVendorConfigText("sntp client port 0\n", "sntp_client_port_invalid");
     assertThat(
@@ -604,7 +604,7 @@ public final class FastpathGrammarTest {
   }
 
   @Test
-  public void testSntpServerStatusLeakageTolerated() {
+  void testSntpServerStatusLeakageTolerated() {
     // Some software versions leak operational `sntp server status is ...` show-output into the
     // config between real server lines. It must be tolerated silently (parsed into a _null rule).
     FastpathConfiguration c =
@@ -615,7 +615,7 @@ public final class FastpathGrammarTest {
   }
 
   @Test
-  public void testLoggingExtraction() {
+  void testLoggingExtraction() {
     Logging logging = parseVendorConfig("fastpath_logging").getLogging();
 
     Map<String, LoggingServer> servers = logging.getServers();
@@ -659,13 +659,13 @@ public final class FastpathGrammarTest {
   }
 
   @Test
-  public void testLoggingNullCommandsAreSilent() {
+  void testLoggingNullCommandsAreSilent() {
     FastpathConfiguration c = parseVendorConfig("fastpath_logging");
     assertThat(c.getWarnings().getParseWarnings(), empty());
   }
 
   @Test
-  public void testNoLoggingConsole() {
+  void testNoLoggingConsole() {
     assertThat(
         parseVendorConfigText("no logging console\n", "no_logging_console")
             .getLogging()
@@ -674,7 +674,7 @@ public final class FastpathGrammarTest {
   }
 
   @Test
-  public void testLoggingSourceInterfaceForms() {
+  void testLoggingSourceInterfaceForms() {
     // Cover the source-interface forms in toInterfaceName. loopback ("loopback 0") is exercised by
     // testLoggingExtraction; here we cover slot/port (incl. multi-slash), tunnel, and vlan. Because
     // the source-interface is a single-valued field, each form is parsed as its own snippet.
@@ -688,7 +688,7 @@ public final class FastpathGrammarTest {
   }
 
   @Test
-  public void testInvalidLoggingValuesWarn() {
+  void testInvalidLoggingValuesWarn() {
     FastpathConfiguration c = parseVendorConfig("fastpath_logging_invalid");
     assertThat(
         c.getWarnings().getParseWarnings(),
@@ -699,7 +699,7 @@ public final class FastpathGrammarTest {
   }
 
   @Test
-  public void testLoggingServersEndToEnd() throws IOException {
+  void testLoggingServersEndToEnd() throws IOException {
     Configuration c = parseConfig("fastpath_logging");
     assertThat(
         c.getLoggingServers(),
@@ -722,7 +722,7 @@ public final class FastpathGrammarTest {
   }
 
   @Test
-  public void testFastPathConfig() throws IOException {
+  void testFastPathConfig() throws IOException {
     // A real FastPath config: the modeled DNS/NTP/Syslog surface must extract and
     // convert onto the VI configuration end-to-end, even surrounded by not-yet-modeled L2/L3,
     // routing, ACL, AAA, and DHCP lines.
@@ -746,7 +746,7 @@ public final class FastpathGrammarTest {
   }
 
   @Test
-  public void testUnrecognizedLinesArePartiallyRecognized() throws IOException {
+  void testUnrecognizedLinesArePartiallyRecognized() throws IOException {
     // Not-yet-modeled lines must not fail the whole parse: the config parses to
     // PARTIALLY_UNRECOGNIZED and the supported lines are still modeled.
     String hostname = "fastpath_complete_config";

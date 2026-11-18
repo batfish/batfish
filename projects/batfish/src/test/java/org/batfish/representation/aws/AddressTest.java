@@ -6,13 +6,13 @@ import static org.hamcrest.Matchers.equalTo;
 import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link Address} */
-public class AddressTest {
+class AddressTest {
 
   @Test
-  public void testConstructor() throws IOException {
+  void testConstructor() throws IOException {
     String text =
         "{\"AllocationId\": \"eipalloc-c0da79fd\", \"Domain\": \"vpc\", \"PublicIp\":"
             + " \"34.214.188.89\"}";

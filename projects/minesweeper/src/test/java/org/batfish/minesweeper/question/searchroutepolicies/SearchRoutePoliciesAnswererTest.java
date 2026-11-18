@@ -20,7 +20,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.BoundType;
 import com.google.common.collect.ImmutableList;
@@ -127,11 +127,11 @@ import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link SearchRoutePoliciesAnswerer}. */
-public class SearchRoutePoliciesAnswererTest {
+class SearchRoutePoliciesAnswererTest {
   private static final String HOSTNAME = "hostname";
   private static final String POLICY_NAME = "policy";
   private static final String AS_PATH_1 = "asPath1";
@@ -173,8 +173,8 @@ public class SearchRoutePoliciesAnswererTest {
     }
   }
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder()
@@ -212,7 +212,7 @@ public class SearchRoutePoliciesAnswererTest {
 
   /** Test that we handle potential nulls in question parameters */
   @Test
-  public void testConstructorWithNullsInQuestion() {
+  void testConstructorWithNullsInQuestion() {
     SearchRoutePoliciesAnswerer answerer =
         new SearchRoutePoliciesAnswerer(
             new SearchRoutePoliciesQuestion(
@@ -229,7 +229,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testPermitAll() {
+  void testPermitAll() {
     RoutingPolicy policy =
         _policyBuilder.addStatement(new StaticStatement(Statements.ExitAccept)).build();
 
@@ -274,7 +274,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testPermitAllOut() {
+  void testPermitAllOut() {
     RoutingPolicy policy =
         _policyBuilder.addStatement(new StaticStatement(Statements.ExitAccept)).build();
 
@@ -326,7 +326,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testInputAPrefix() {
+  void testInputAPrefix() {
     RoutingPolicy policy =
         _policyBuilder.addStatement(new StaticStatement(Statements.ExitAccept)).build();
 
@@ -371,7 +371,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testOutputAPrefix() {
+  void testOutputAPrefix() {
     RoutingPolicy policy =
         _policyBuilder.addStatement(new StaticStatement(Statements.ExitAccept)).build();
 
@@ -416,7 +416,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testDenyNone() {
+  void testDenyNone() {
     RoutingPolicy policy =
         _policyBuilder.addStatement(new StaticStatement(Statements.ExitAccept)).build();
 
@@ -437,7 +437,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testMatchRegexCommunity() {
+  void testMatchRegexCommunity() {
     _policyBuilder.addStatement(
         new If(
             matchCommunityRegex("^2[0-9]:30$"),
@@ -487,7 +487,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testMatchGeneralRegexCommunity() {
+  void testMatchGeneralRegexCommunity() {
     _policyBuilder.addStatement(
         new If(
             matchCommunityRegex("^.*$"),
@@ -534,7 +534,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testCommunityConstraints() {
+  void testCommunityConstraints() {
     RoutingPolicy policy =
         _policyBuilder.addStatement(new StaticStatement(Statements.ExitAccept)).build();
 
@@ -585,7 +585,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testNamedCommunityConstraints() {
+  void testNamedCommunityConstraints() {
 
     Configuration baseConfig = _batfish.loadConfigurations(_batfish.getSnapshot()).get(HOSTNAME);
     baseConfig.setCommunityMatchExprs(
@@ -651,7 +651,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testMixedCommunityConstraints() {
+  void testMixedCommunityConstraints() {
 
     Configuration baseConfig = _batfish.loadConfigurations(_batfish.getSnapshot()).get(HOSTNAME);
     baseConfig.setCommunityMatchExprs(
@@ -712,7 +712,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testNegatedNamedCommunityConstraints() {
+  void testNegatedNamedCommunityConstraints() {
 
     Configuration baseConfig = _batfish.loadConfigurations(_batfish.getSnapshot()).get(HOSTNAME);
     baseConfig.setCommunityMatchExprs(
@@ -778,7 +778,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testUnsolvableCommunityConstraint() {
+  void testUnsolvableCommunityConstraint() {
     _policyBuilder.setStatements(
         ImmutableList.of(
             new SetCommunities(
@@ -808,7 +808,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testDeleteSetCommunityConstraint() {
+  void testDeleteSetCommunityConstraint() {
     _policyBuilder.setStatements(
         ImmutableList.of(
             new SetCommunities(
@@ -873,7 +873,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testSetAdministrativeCost() {
+  void testSetAdministrativeCost() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(new SetAdministrativeCost(new LiteralAdministrativeCost(8)))
@@ -961,7 +961,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testSetLocalAttributes() {
+  void testSetLocalAttributes() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(new SetTag2(new LiteralLong(5)))
@@ -990,7 +990,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testMatchLocalAttributes() {
+  void testMatchLocalAttributes() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -1018,7 +1018,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testSetExtendedCommunity() {
+  void testSetExtendedCommunity() {
     _policyBuilder.setStatements(
         ImmutableList.of(
             new SetCommunities(
@@ -1080,7 +1080,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testMatchExtendedCommunity() {
+  void testMatchExtendedCommunity() {
     _policyBuilder.addStatement(
         new If(
             new MatchCommunities(
@@ -1141,7 +1141,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testNoOutputCommunities() {
+  void testNoOutputCommunities() {
     _policyBuilder.setStatements(
         ImmutableList.of(
             new SetCommunities(
@@ -1169,7 +1169,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testAsSetsMatchingRanges() {
+  void testAsSetsMatchingRanges() {
     AsSetsMatchingRanges asExpr =
         AsSetsMatchingRanges.of(true, true, ImmutableList.of(Range.closed(10L, 15L)));
     _policyBuilder.addStatement(
@@ -1218,7 +1218,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testAsSetsMatchingRanges2() {
+  void testAsSetsMatchingRanges2() {
     AsSetsMatchingRanges asExpr =
         AsSetsMatchingRanges.of(
             true, true, ImmutableList.of(Range.closed(3123456789L, 4123456789L)));
@@ -1268,7 +1268,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testMatchNamedAsPath() {
+  void testMatchNamedAsPath() {
     _policyBuilder.addStatement(
         new If(
             new LegacyMatchAsPath(new NamedAsPathSet(AS_PATH_1)),
@@ -1315,7 +1315,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testIncompatibleAsPathMatches() {
+  void testIncompatibleAsPathMatches() {
     _policyBuilder.addStatement(
         new If(
             new LegacyMatchAsPath(new NamedAsPathSet(AS_PATH_1)),
@@ -1342,7 +1342,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testConstraintLocalPref() {
+  void testConstraintLocalPref() {
     _policyBuilder.addStatement(new StaticStatement(Statements.ExitAccept));
     RoutingPolicy policy = _policyBuilder.build();
 
@@ -1385,7 +1385,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testAsPathConstraints() {
+  void testAsPathConstraints() {
     _policyBuilder.addStatement(new StaticStatement(Statements.ExitAccept));
     RoutingPolicy policy = _policyBuilder.build();
 
@@ -1433,7 +1433,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testAsPathOutConstraints() {
+  void testAsPathOutConstraints() {
     _policyBuilder.addStatement(new StaticStatement(Statements.ExitAccept));
     RoutingPolicy policy = _policyBuilder.build();
 
@@ -1481,7 +1481,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testNegatedAsPathConstraints() {
+  void testNegatedAsPathConstraints() {
     _policyBuilder.addStatement(new StaticStatement(Statements.ExitAccept));
     RoutingPolicy policy = _policyBuilder.build();
 
@@ -1532,7 +1532,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testNegatedAsPathOutConstraints() {
+  void testNegatedAsPathOutConstraints() {
     _policyBuilder.addStatement(new StaticStatement(Statements.ExitAccept));
     RoutingPolicy policy = _policyBuilder.build();
 
@@ -1583,7 +1583,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testSolvableConstraints() {
+  void testSolvableConstraints() {
     _policyBuilder.addStatement(
         new If(
             matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/32:16-32"))),
@@ -1632,7 +1632,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testPrefixUnion() {
+  void testPrefixUnion() {
     _policyBuilder.addStatement(
         new If(
             matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/32:16-32"))),
@@ -1684,7 +1684,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testComplementPrefixes() {
+  void testComplementPrefixes() {
     _policyBuilder.addStatement(
         new If(
             matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/32:31-32"))),
@@ -1736,7 +1736,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testSolvableConstraintsDeny() {
+  void testSolvableConstraintsDeny() {
     _policyBuilder.addStatement(
         new If(
             matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/8:16-32"))),
@@ -1783,7 +1783,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testUnsolvableConstraints() {
+  void testUnsolvableConstraints() {
     _policyBuilder.addStatement(
         new If(
             matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/8:16-31"))),
@@ -1810,7 +1810,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testUnsolvableOutConstraints() {
+  void testUnsolvableOutConstraints() {
     _policyBuilder.addStatement(
         new If(
             matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/8:16-31"))),
@@ -1837,7 +1837,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testPermitARoute() {
+  void testPermitARoute() {
     RoutingPolicy policy =
         _policyBuilder.addStatement(new StaticStatement(Statements.ExitAccept)).build();
 
@@ -1897,7 +1897,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testSetLocalPref() {
+  void testSetLocalPref() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(new SetLocalPreference(new LiteralLong(3)))
@@ -1961,7 +1961,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testPrependAsPath() {
+  void testPrependAsPath() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -2022,7 +2022,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testPrependAsPathDeny() {
+  void testPrependAsPathDeny() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -2068,7 +2068,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testPrependAsPathWithOutConstraints() {
+  void testPrependAsPathWithOutConstraints() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -2135,7 +2135,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testPrependAsPathWithUnsatisfiableConstraints() {
+  void testPrependAsPathWithUnsatisfiableConstraints() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -2164,7 +2164,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testSetWeight() {
+  void testSetWeight() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(new SetWeight(new LiteralInt(3)))
@@ -2224,7 +2224,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testSetMetricIncr() {
+  void testSetMetricIncr() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(new SetMetric(new IncrementMetric(100)))
@@ -2285,7 +2285,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testSetMetricIncrOverflow() {
+  void testSetMetricIncrOverflow() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(new SetMetric(new IncrementMetric(100L)))
@@ -2347,7 +2347,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testComplementCommunities() {
+  void testComplementCommunities() {
     _policyBuilder.addStatement(
         new If(
             matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/8:16-32"))),
@@ -2404,7 +2404,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testTwoVersionsOfACommunity() {
+  void testTwoVersionsOfACommunity() {
     String regex = "^2[0-9]:30$";
     _policyBuilder.addStatement(
         new If(
@@ -2433,7 +2433,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testNextHopOutConstraints() {
+  void testNextHopOutConstraints() {
     RoutingPolicy policy =
         _policyBuilder.addStatement(new StaticStatement(Statements.ExitAccept)).build();
 
@@ -2495,7 +2495,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testSetNextHopOutputConstraints() {
+  void testSetNextHopOutputConstraints() {
     Ip ip = Ip.parse("1.1.1.1");
     RoutingPolicy policy =
         _policyBuilder
@@ -2547,7 +2547,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testDiscardNextHopOutputConstraints() {
+  void testDiscardNextHopOutputConstraints() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(new SetNextHop(DiscardNextHop.INSTANCE))
@@ -2570,7 +2570,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testDiscardNextHopNoConstraints() {
+  void testDiscardNextHopNoConstraints() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(new SetNextHop(DiscardNextHop.INSTANCE))
@@ -2621,7 +2621,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testDiscardThenSetNextHopOutConstraints() {
+  void testDiscardThenSetNextHopOutConstraints() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(new SetNextHop(DiscardNextHop.INSTANCE))
@@ -2673,7 +2673,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testUnreachableSetNextHop() {
+  void testUnreachableSetNextHop() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(new SetNextHop(DiscardNextHop.INSTANCE))
@@ -2725,7 +2725,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testSelfNextHop() {
+  void testSelfNextHop() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(new SetNextHop(SelfNextHop.getInstance()))
@@ -2777,7 +2777,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testSelfNextHopConstraints() {
+  void testSelfNextHopConstraints() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(new SetNextHop(SelfNextHop.getInstance()))
@@ -2829,7 +2829,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testBgpPeerAddressNextHop() {
+  void testBgpPeerAddressNextHop() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(new SetNextHop(BgpPeerAddressNextHop.getInstance()))
@@ -2882,7 +2882,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testOriginConstraints() {
+  void testOriginConstraints() {
     RoutingPolicy policy =
         _policyBuilder.addStatement(new StaticStatement(Statements.ExitAccept)).build();
 
@@ -2925,7 +2925,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testUnsatOriginConstraints() {
+  void testUnsatOriginConstraints() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE, null)))
@@ -2951,7 +2951,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testToClosedRange() {
+  void testToClosedRange() {
     Range<Long> r1 = toClosedRange(Range.closed(5L, 10L));
     Range<Long> r2 = toClosedRange(Range.closedOpen(5L, 11L));
     Range<Long> r3 = toClosedRange(Range.openClosed(4L, 10L));
@@ -2979,7 +2979,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testMatchProtocol() {
+  void testMatchProtocol() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -3028,7 +3028,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testMatchClusterListLength() {
+  void testMatchClusterListLength() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -3078,7 +3078,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testMatchSourceVrf() {
+  void testMatchSourceVrf() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -3127,7 +3127,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testMatchSourceVrfDeny() {
+  void testMatchSourceVrfDeny() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -3174,7 +3174,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testMatchSourceVrfAtMostOne() {
+  void testMatchSourceVrfAtMostOne() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -3202,7 +3202,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testMatchInterface() {
+  void testMatchInterface() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -3250,7 +3250,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testMatchInterfaceDeny() {
+  void testMatchInterfaceDeny() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -3296,7 +3296,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testMatchInterfaceAtMostOne() {
+  void testMatchInterfaceAtMostOne() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -3326,7 +3326,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testTrackSucceeded() {
+  void testTrackSucceeded() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -3375,7 +3375,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testTrackSucceededDeny() {
+  void testTrackSucceededDeny() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -3422,7 +3422,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testTrackSucceededNone() {
+  void testTrackSucceededNone() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -3452,7 +3452,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testUnsupportedStatement() {
+  void testUnsupportedStatement() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(new ExcludeAsPath(new LiteralAsList(ImmutableList.of())))
@@ -3500,7 +3500,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testUnsupportedIfStatement() {
+  void testUnsupportedIfStatement() {
     _policyBuilder
         .addStatement(
             new If(
@@ -3555,7 +3555,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testUnsupportedStatementAvoid() {
+  void testUnsupportedStatementAvoid() {
     _policyBuilder
         .addStatement(
             new If(
@@ -3610,7 +3610,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testUnsupportedStatementDeny() {
+  void testUnsupportedStatementDeny() {
     _policyBuilder.addStatement(
         new If(
             matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/32:8-16"))),
@@ -3661,7 +3661,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testMatchStaticRoute() {
+  void testMatchStaticRoute() {
     _policyBuilder.addStatement(
         new If(
             new MatchProtocol(RoutingProtocol.STATIC),
@@ -3688,7 +3688,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testPermitPerPathNonOverlap() {
+  void testPermitPerPathNonOverlap() {
     String regex1 = "^2[0-9]:30$";
     String regex2 = "^2[0-9]:40$";
     _policyBuilder.addStatement(
@@ -3761,7 +3761,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testPermitPerPath() {
+  void testPermitPerPath() {
     _policyBuilder.addStatement(
         new If(
             matchPrefixSet(ImmutableList.of(PrefixRange.fromPrefix(Prefix.parse("1.0.0.0/32")))),
@@ -3828,7 +3828,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testDenyPerPath() {
+  void testDenyPerPath() {
     _policyBuilder.addStatement(
         new If(
             matchPrefixSet(ImmutableList.of(PrefixRange.fromPrefix(Prefix.parse("1.0.0.0/32")))),
@@ -3892,7 +3892,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testLessPreferredPrefixesModel() {
+  void testLessPreferredPrefixesModel() {
     RoutingPolicy policy =
         _policyBuilder.addStatement(new StaticStatement(Statements.ExitAccept)).build();
 
@@ -3938,7 +3938,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testLessPreferredPrefixesExactModel() {
+  void testLessPreferredPrefixesExactModel() {
     RoutingPolicy policy =
         _policyBuilder.addStatement(new StaticStatement(Statements.ExitAccept)).build();
 

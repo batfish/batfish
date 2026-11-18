@@ -1,12 +1,12 @@
 package org.batfish.datamodel;
 
 import com.google.common.testing.EqualsTester;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class IpsecPeerConfigIdTest {
+class IpsecPeerConfigIdTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new IpsecPeerConfigId("peer1", "host1"), new IpsecPeerConfigId("peer1", "host1"))

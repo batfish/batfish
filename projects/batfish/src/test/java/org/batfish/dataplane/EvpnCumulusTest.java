@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.hasItem;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Table;
+import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 import org.batfish.datamodel.DataPlane;
@@ -16,18 +17,17 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** End-to-end-ish test of EVPN Type 3 routes on cumulus devices */
-public class EvpnCumulusTest {
+class EvpnCumulusTest {
   private static final String SNAPSHOT_FOLDER = "org/batfish/dataplane/testrigs/evpn-l2-vnis";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testRoutePresence() throws IOException {
+  void testRoutePresence() throws IOException {
     final String leaf1 = "leaf1";
     final String leaf2 = "leaf2";
     final String spine = "spine";

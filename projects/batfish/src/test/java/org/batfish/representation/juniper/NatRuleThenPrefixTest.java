@@ -4,6 +4,7 @@ import static org.batfish.datamodel.transformation.IpField.DESTINATION;
 import static org.batfish.datamodel.transformation.IpField.SOURCE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.testing.EqualsTester;
 import java.util.List;
@@ -12,12 +13,12 @@ import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.transformation.ShiftIpAddressIntoSubnet;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.representation.juniper.Nat.Type;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class NatRuleThenPrefixTest {
+class NatRuleThenPrefixTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     Prefix prefix1 = Prefix.parse("1.1.1.1/24");
     Prefix prefix2 = Prefix.parse("2.1.1.1/24");
     NatRuleThenPrefix thenPrefix1 = new NatRuleThenPrefix(prefix1, DESTINATION);
@@ -30,7 +31,7 @@ public class NatRuleThenPrefixTest {
   }
 
   @Test
-  public void testToTransformationSteps() {
+  void testToTransformationSteps() {
     Prefix prefix1 = Prefix.parse("1.1.1.1/24");
     NatRuleThenPrefix thenPrefix1 = new NatRuleThenPrefix(prefix1, DESTINATION);
     List<TransformationStep> steps =
@@ -49,17 +50,25 @@ public class NatRuleThenPrefixTest {
         contains(new ShiftIpAddressIntoSubnet(TransformationType.STATIC_NAT, SOURCE, prefix1)));
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void testToTransformationStepsNotStaticNat() {
-    Prefix prefix1 = Prefix.parse("1.1.1.1/24");
-    NatRuleThenPrefix thenPrefix1 = new NatRuleThenPrefix(prefix1, DESTINATION);
-    thenPrefix1.toTransformationSteps(new Nat(Type.SOURCE), null, null, null);
+  @Test
+  void testToTransformationStepsNotStaticNat() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> {
+          Prefix prefix1 = Prefix.parse("1.1.1.1/24");
+          NatRuleThenPrefix thenPrefix1 = new NatRuleThenPrefix(prefix1, DESTINATION);
+          thenPrefix1.toTransformationSteps(new Nat(Type.SOURCE), null, null, null);
+        });
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void testToTransformationStepsNotStaticNat2() {
-    Prefix prefix1 = Prefix.parse("1.1.1.1/24");
-    NatRuleThenPrefix thenPrefix1 = new NatRuleThenPrefix(prefix1, DESTINATION);
-    thenPrefix1.toTransformationSteps(new Nat(Type.DESTINATION), null, null, null);
+  @Test
+  void testToTransformationStepsNotStaticNat2() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> {
+          Prefix prefix1 = Prefix.parse("1.1.1.1/24");
+          NatRuleThenPrefix thenPrefix1 = new NatRuleThenPrefix(prefix1, DESTINATION);
+          thenPrefix1.toTransformationSteps(new Nat(Type.DESTINATION), null, null, null);
+        });
   }
 }

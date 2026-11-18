@@ -15,6 +15,7 @@ import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Table;
+import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Arrays;
@@ -29,14 +30,13 @@ import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests of VRF leaking on IOS-XR. */
-public final class XrVrfLeakingTest {
+final class XrVrfLeakingTest {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private Batfish getBatfishForConfigurationNames(String... configurationNames) {
     String[] names =
@@ -49,7 +49,7 @@ public final class XrVrfLeakingTest {
   }
 
   @Test
-  public void testVrfLeaking() {
+  void testVrfLeaking() {
     String hostname = "xr-vrf-leaking";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     batfish.computeDataPlane(batfish.getSnapshot());

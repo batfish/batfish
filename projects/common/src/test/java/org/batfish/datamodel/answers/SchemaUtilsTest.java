@@ -1,28 +1,26 @@
 package org.batfish.datamodel.answers;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.pojo.Node;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-public class SchemaUtilsTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class SchemaUtilsTest {
 
   private static JsonNode toJson(Object object) {
     return BatfishObjectMapper.mapper().valueToTree(object);
   }
 
   @Test
-  public void convertTypeCorrect() {
+  void convertTypeCorrect() {
     assertThat(SchemaUtils.convertType(toJson(2), Schema.INTEGER), equalTo(2));
     assertThat(
         SchemaUtils.convertType(toJson(ImmutableList.of(1, 2)), Schema.list(Schema.INTEGER)),
@@ -35,14 +33,16 @@ public class SchemaUtilsTest {
   }
 
   @Test
-  public void convertTypeClassCastException() {
-    _thrown.expect(ClassCastException.class);
-    _thrown.expectMessage("Cannot recover");
-    SchemaUtils.convertType(toJson(ImmutableList.of(1)), Schema.INTEGER);
+  void convertTypeClassCastException() {
+    Throwable exception =
+        assertThrows(
+            ClassCastException.class,
+            () -> SchemaUtils.convertType(toJson(ImmutableList.of(1)), Schema.INTEGER));
+    assertThat(exception.getMessage(), containsString("Cannot recover"));
   }
 
   @Test
-  public void testIsValidObject_Node() {
+  void testIsValidObject_Node() {
     assertFalse(SchemaUtils.isValidObject("nodeName", Schema.NODE));
     assertTrue(SchemaUtils.isValidObject(new Node("node"), Schema.NODE));
   }

@@ -5,13 +5,13 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link VrrpGroup} */
-public class VrrpGroupTest {
+class VrrpGroupTest {
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     VrrpGroup obj =
         VrrpGroup.builder()
             .setPreempt(true)
@@ -23,7 +23,7 @@ public class VrrpGroupTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     VrrpGroup.Builder builder = VrrpGroup.builder();
     VrrpGroup obj = builder.build();
     new EqualsTester()

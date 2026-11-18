@@ -3,6 +3,7 @@ package org.batfish.dataplane.rib;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.sameInstance;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.testing.EqualsTester;
 import org.batfish.datamodel.ConnectedRoute;
@@ -10,17 +11,13 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link RouteAdvertisement} */
-public class RouteAdvertisementTest {
-
-  @Rule public ExpectedException thrown = ExpectedException.none();
+class RouteAdvertisementTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     ConnectedRoute cr1 = new ConnectedRoute(Prefix.parse("1.1.1.0/24"), "Ethernet0");
     ConnectedRoute cr2 = new ConnectedRoute(Prefix.parse("1.1.2.0/24"), "Ethernet0");
 
@@ -34,7 +31,7 @@ public class RouteAdvertisementTest {
   }
 
   @Test
-  public void testToBuilder() {
+  void testToBuilder() {
     RouteAdvertisement<StaticRoute> ra =
         RouteAdvertisement.<StaticRoute>builder()
             .setRoute(
@@ -50,7 +47,7 @@ public class RouteAdvertisementTest {
   }
 
   @Test
-  public void testIsWithdrawn() {
+  void testIsWithdrawn() {
     RouteAdvertisement.Builder<StaticRoute> raBuilder =
         RouteAdvertisement.<StaticRoute>builder()
             .setRoute(
@@ -69,13 +66,14 @@ public class RouteAdvertisementTest {
   }
 
   @Test
-  public void testThrowsOnNullRoute() {
-    thrown.expect(IllegalArgumentException.class);
-    RouteAdvertisement.<StaticRoute>builder().setReason(Reason.ADD).build();
+  void testThrowsOnNullRoute() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> RouteAdvertisement.<StaticRoute>builder().setReason(Reason.ADD).build());
   }
 
   @Test
-  public void testAdding() {
+  void testAdding() {
     StaticRoute route =
         StaticRoute.testBuilder()
             .setAdministrativeCost(1)
@@ -88,7 +86,7 @@ public class RouteAdvertisementTest {
   }
 
   @Test
-  public void testReplacing() {
+  void testReplacing() {
     StaticRoute route =
         StaticRoute.testBuilder()
             .setAdministrativeCost(1)
@@ -101,7 +99,7 @@ public class RouteAdvertisementTest {
   }
 
   @Test
-  public void testWithdrawing() {
+  void testWithdrawing() {
     StaticRoute route =
         StaticRoute.testBuilder()
             .setAdministrativeCost(1)
@@ -114,7 +112,7 @@ public class RouteAdvertisementTest {
   }
 
   @Test
-  public void sanitizeForExport() {
+  void sanitizeForExport() {
     StaticRoute route =
         StaticRoute.testBuilder()
             .setAdministrativeCost(1)

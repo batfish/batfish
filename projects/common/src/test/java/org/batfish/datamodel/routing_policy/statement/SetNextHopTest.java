@@ -15,15 +15,15 @@ import org.batfish.datamodel.OspfExternalRoute;
 import org.batfish.datamodel.OspfExternalType1Route;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.expr.IpNextHop;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link SetNextHop} */
-public class SetNextHopTest {
+class SetNextHopTest {
   private Configuration _c;
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
     _c =
         new NetworkFactory()
             .configurationBuilder()
@@ -33,7 +33,7 @@ public class SetNextHopTest {
   }
 
   @Test
-  public void testNonBgpRoute() {
+  void testNonBgpRoute() {
     SetNextHop expr = new SetNextHop(new IpNextHop(Collections.singletonList(Ip.ZERO)));
     OspfExternalRoute.Builder builder = OspfExternalType1Route.builder();
     expr.execute(Environment.builder(_c).setOutputRoute(builder).build());
@@ -41,7 +41,7 @@ public class SetNextHopTest {
   }
 
   @Test
-  public void testBgpRoute() {
+  void testBgpRoute() {
     Ip ip = Ip.parse("1.1.1.1");
     SetNextHop expr = new SetNextHop(new IpNextHop(Collections.singletonList(ip)));
     Bgpv4Route.Builder builder = Bgpv4Route.testBuilder();
@@ -50,7 +50,7 @@ public class SetNextHopTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     SetNextHop expr = new SetNextHop(new IpNextHop(Collections.singletonList(Ip.ZERO)));
     new EqualsTester()
         .addEqualityGroup(

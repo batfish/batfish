@@ -8,18 +8,18 @@ import java.util.List;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.Statement;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class RouteMapSetWeightTest {
+class RouteMapSetWeightTest {
 
   @Test
-  public void testGetWeight() {
+  void testGetWeight() {
     RouteMapSetWeight set = new RouteMapSetWeight(10);
     assertThat(set.getWeight(), equalTo(10));
   }
 
   @Test
-  public void testToStatements() {
+  void testToStatements() {
     RouteMapSetWeight set = new RouteMapSetWeight(10);
     List<Statement> result =
         set.toStatements(null, null, null).collect(ImmutableList.toImmutableList());

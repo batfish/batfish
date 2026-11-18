@@ -3,11 +3,13 @@ package org.batfish.datamodel;
 import static org.batfish.datamodel.LongSpace.EMPTY;
 import static org.batfish.datamodel.LongSpace.builder;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -20,49 +22,42 @@ import java.util.NoSuchElementException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.LongSpace.Builder;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link LongSpace}. */
-@RunWith(JUnit4.class)
-public final class LongSpaceTest {
+final class LongSpaceTest {
 
   private static final LongSpace LONGSPACE1 = LongSpace.of(Range.closed(1L, 100000L));
 
   private LongSpace.Builder _b;
 
-  @Rule public ExpectedException _expected = ExpectedException.none();
-
   @Test
-  public void emptyInstanceIsEmpty() {
-    assertTrue("Empty instance is empty", EMPTY.isEmpty());
+  void emptyInstanceIsEmpty() {
+    assertTrue(EMPTY.isEmpty(), "Empty instance is empty");
   }
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _b = LongSpace.builder();
   }
 
   @Test
-  public void testClosedRangeCreation() {
+  void testClosedRangeCreation() {
     LongSpace space = _b.including(Range.closed(1L, 10L)).build();
     for (long i = 1L; i <= 10L; i++) {
-      assertTrue("Closed ranges are inclusive", space.contains(i));
+      assertTrue(space.contains(i), "Closed ranges are inclusive");
     }
-    assertFalse("No members outside of range", space.contains(11L));
-    assertFalse("No members outside of range", space.contains(0L));
+    assertFalse(space.contains(11L), "No members outside of range");
+    assertFalse(space.contains(0L), "No members outside of range");
   }
 
   @Test
-  public void testComplement() {
+  void testComplement() {
     Range<Long> numbers = Range.closed(0L, 10000L);
     LongSpace allNumbers = LongSpace.of(numbers);
     LongSpace notAllNumbers = allNumbers.complement(numbers);
-    assertTrue("Complement of full space is empty", notAllNumbers.isEmpty());
+    assertTrue(notAllNumbers.isEmpty(), "Complement of full space is empty");
     assertThat("Complement of empty is everything", EMPTY.complement(numbers), equalTo(allNumbers));
 
     // Non-empty complement
@@ -79,26 +74,30 @@ public final class LongSpaceTest {
   }
 
   @Test
-  public void testComplementRejectsSmaller() {
-    _expected.expect(IllegalArgumentException.class);
-    _expected.expectMessage(
-        "Cannot take the complement of space 10-100 within a smaller bounds [5..5].");
-    LongSpace.of(Range.closed(10L, 100L)).complement(Range.singleton(5L));
+  void testComplementRejectsSmaller() {
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> LongSpace.of(Range.closed(10L, 100L)).complement(Range.singleton(5L)));
+    assertThat(
+        exception.getMessage(),
+        containsString(
+            "Cannot take the complement of space 10-100 within a smaller bounds [5..5]."));
   }
 
   @Test
-  public void testConversionToBuilder() {
+  void testConversionToBuilder() {
     LongSpace space = _b.including(LONGSPACE1).excluding(Range.closed(22L, 22L)).build();
     Builder newBuilder = space.toBuilder();
     newBuilder.including(Range.closed(-10L, -5L));
     newBuilder.excluding(Range.closed(53L, 53L));
     LongSpace newSpace = newBuilder.build();
-    assertTrue("Has newly added value", newSpace.contains(-7L));
-    assertFalse("Does not have newly excluded value", newSpace.contains(53L));
+    assertTrue(newSpace.contains(-7L), "Has newly added value");
+    assertFalse(newSpace.contains(53L), "Does not have newly excluded value");
   }
 
   @Test
-  public void testConversionToRanges() {
+  void testConversionToRanges() {
     assertThat(LongSpace.of(1L).getRanges(), equalTo(ImmutableSet.of(Range.closedOpen(1L, 2L))));
     assertThat(
         LONGSPACE1.getRanges(),
@@ -107,7 +106,7 @@ public final class LongSpaceTest {
   }
 
   @Test
-  public void testCreationFromLongs() {
+  void testCreationFromLongs() {
     assertThat(
         LongSpace.builder().including(3L).including(4L).build(),
         equalTo(LongSpace.of(Range.closed(3L, 4L))));
@@ -118,7 +117,7 @@ public final class LongSpaceTest {
   }
 
   @Test
-  public void testCreationFromString() {
+  void testCreationFromString() {
     assertThat(
         LongSpace.create("10"),
         equalTo(LongSpace.builder().including(Range.closed(10L, 10L)).build()));
@@ -152,60 +151,57 @@ public final class LongSpaceTest {
   }
 
   @Test
-  public void testCreationFromStringInvalidEmpty() {
-    assertTrue("empty string, empty space", LongSpace.create("").isEmpty());
+  void testCreationFromStringInvalidEmpty() {
+    assertTrue(LongSpace.create("").isEmpty(), "empty string, empty space");
   }
 
   @Test
-  public void testCreationFromStringInvalidEmptyList() {
-    _expected.expect(IllegalArgumentException.class);
-    LongSpace.create(",");
+  void testCreationFromStringInvalidEmptyList() {
+    assertThrows(IllegalArgumentException.class, () -> LongSpace.create(","));
   }
 
   @Test
-  public void testCreationFromStringInvalidListWithNegativeValues() {
-    _expected.expect(IllegalArgumentException.class);
-    // read: [-2..-1]
-    LongSpace.create("-2--1");
+  void testCreationFromStringInvalidListWithNegativeValues() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            // read: [-2..-1]
+            LongSpace.create("-2--1"));
   }
 
   @Test
-  public void testCreationFromStringInvalidNegative() {
-    _expected.expect(IllegalArgumentException.class);
-    LongSpace.create("-1");
+  void testCreationFromStringInvalidNegative() {
+    assertThrows(IllegalArgumentException.class, () -> LongSpace.create("-1"));
   }
 
   @Test
-  public void testCreationFromStringInvalidNotWord() {
-    _expected.expect(IllegalArgumentException.class);
-    LongSpace.create("!a");
+  void testCreationFromStringInvalidNotWord() {
+    assertThrows(IllegalArgumentException.class, () -> LongSpace.create("!a"));
   }
 
   @Test
-  public void testCreationFromStringInvalidRange() {
-    _expected.expect(IllegalArgumentException.class);
-    LongSpace.create("54-!54");
+  void testCreationFromStringInvalidRange() {
+    assertThrows(IllegalArgumentException.class, () -> LongSpace.create("54-!54"));
   }
 
   @Test
-  public void testCreationFromStringInvalidWord() {
-    _expected.expect(IllegalArgumentException.class);
-    LongSpace.create("a");
+  void testCreationFromStringInvalidWord() {
+    assertThrows(IllegalArgumentException.class, () -> LongSpace.create("a"));
   }
 
   @Test
-  public void testCreationFromStringNull() {
+  void testCreationFromStringNull() {
     assertThat(LongSpace.create(null), equalTo(EMPTY));
     assertThat(LongSpace.Builder.create(null).build(), equalTo(EMPTY));
   }
 
   @Test
-  public void testCreationFromSubRange() {
+  void testCreationFromSubRange() {
     assertThat(LongSpace.of(Range.closed(3L, 4L)), equalTo(LongSpace.create("3-4")));
   }
 
   @Test
-  public void testDifference() {
+  void testDifference() {
     LongSpace s1 = LongSpace.builder().including(Range.closed(1L, 10L)).build();
     LongSpace s2 = LongSpace.builder().including(Range.closed(5L, 15L)).build();
     LongSpace expected = LongSpace.builder().including(Range.closed(1L, 4L)).build();
@@ -221,20 +217,20 @@ public final class LongSpaceTest {
   }
 
   @Test
-  public void testEnumerate() {
+  void testEnumerate() {
     LongSpace space = _b.including(Range.closedOpen(1L, 5L)).build();
     assertThat(space.enumerate(), equalTo(ImmutableSortedSet.of(1L, 2L, 3L, 4L)));
   }
 
   @Test
-  public void testEnumerateWithExclusions() {
+  void testEnumerateWithExclusions() {
     LongSpace space =
         _b.including(Range.closedOpen(1L, 5L)).excluding(Range.closed(2L, 3L)).build();
     assertThat(space.enumerate(), equalTo(ImmutableSortedSet.of(1L, 4L)));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             builder().including(Range.closed(1L, 10L)).build(),
@@ -244,80 +240,76 @@ public final class LongSpaceTest {
   }
 
   @Test
-  public void testExcludeWithoutInclude() {
+  void testExcludeWithoutInclude() {
     LongSpace space = _b.excluding(Range.closed(1L, 10L)).build();
-    assertTrue("No inclusions means empty space", space.isEmpty());
-    assertTrue("No inclusions means contiguous space", space.isContiguous());
+    assertTrue(space.isEmpty(), "No inclusions means empty space");
+    assertTrue(space.isContiguous(), "No inclusions means contiguous space");
   }
 
   @Test
-  public void testExclusionAndContains() {
+  void testExclusionAndContains() {
     LongSpace space =
         _b.including(Range.closed(0L, 10L))
             .excluding(Range.closed(1L, 2L))
             .excluding(Range.closed(5L, 6L))
             .build();
 
-    assertFalse("Space not empty", space.isEmpty());
-    assertFalse("Space not contiguous", space.isContiguous());
-    assertFalse("Space does not contain excluded values", space.contains(1L));
-    assertFalse("Space does not contain excluded values", space.contains(2L));
-    assertFalse("Space does not contain excluded values", space.contains(5L));
-    assertFalse("Space does not contain excluded values", space.contains(6L));
+    assertFalse(space.isEmpty(), "Space not empty");
+    assertFalse(space.isContiguous(), "Space not contiguous");
+    assertFalse(space.contains(1L), "Space does not contain excluded values");
+    assertFalse(space.contains(2L), "Space does not contain excluded values");
+    assertFalse(space.contains(5L), "Space does not contain excluded values");
+    assertFalse(space.contains(6L), "Space does not contain excluded values");
     assertFalse(
-        "Space does not contain excluded values",
-        space.contains(builder().including(Range.closed(1L, 2L)).build()));
+        space.contains(builder().including(Range.closed(1L, 2L)).build()),
+        "Space does not contain excluded values");
     assertTrue(
-        "Space contains child space",
-        space.contains(LongSpace.builder().including(Range.closed(7L, 10L)).build()));
+        space.contains(LongSpace.builder().including(Range.closed(7L, 10L)).build()),
+        "Space contains child space");
     assertFalse(
-        "Space does not contain partially overlapping spaces",
-        space.contains(builder().including(Range.closed(0L, 1L)).build()));
+        space.contains(builder().including(Range.closed(0L, 1L)).build()),
+        "Space does not contain partially overlapping spaces");
   }
 
   @Test
-  public void testIgnoreEmptySubrange() {
+  void testIgnoreEmptySubrange() {
     LongSpace space = _b.including(Range.open(0L, 1L)).build();
-    assertTrue("Empty space means empty space", space.isEmpty());
+    assertTrue(space.isEmpty(), "Empty space means empty space");
   }
 
   @Test
-  public void testInfRangesNotAllowedExcludingLower() {
-    _expected.expect(IllegalArgumentException.class);
-    _b.excluding(Range.atMost(10L));
+  void testInfRangesNotAllowedExcludingLower() {
+    assertThrows(IllegalArgumentException.class, () -> _b.excluding(Range.atMost(10L)));
   }
 
   @Test
-  public void testInfRangesNotAllowedExcludingUpper() {
-    _expected.expect(IllegalArgumentException.class);
-    _b.excluding(Range.atMost(10L));
+  void testInfRangesNotAllowedExcludingUpper() {
+    assertThrows(IllegalArgumentException.class, () -> _b.excluding(Range.atMost(10L)));
   }
 
   @Test
-  public void testInfRangesNotAllowedLower() {
-    _expected.expect(IllegalArgumentException.class);
-    _b.including(Range.atMost(1L));
+  void testInfRangesNotAllowedLower() {
+    assertThrows(IllegalArgumentException.class, () -> _b.including(Range.atMost(1L)));
   }
 
   @Test
-  public void testInfRangesNotAllowedUpper() {
-    _expected.expect(IllegalArgumentException.class);
-    _b.including(Range.atLeast(1L));
+  void testInfRangesNotAllowedUpper() {
+    assertThrows(IllegalArgumentException.class, () -> _b.including(Range.atLeast(1L)));
   }
 
   @Test
-  public void testIsSingleton() {
+  void testIsSingleton() {
     LongSpace s1 = LongSpace.builder().including(Range.closed(1L, 1L)).build();
     LongSpace s2 =
         LongSpace.builder().including(Range.closed(1L, 3L)).excluding(Range.closed(2L, 3L)).build();
     LongSpace twoValues = LongSpace.builder().including(Range.closed(1L, 2L)).build();
-    assertTrue("Must be singleton", s1.isSingleton());
-    assertTrue("Must be singleton", s2.isSingleton());
-    assertFalse("Must not be singleton", twoValues.isSingleton());
+    assertTrue(s1.isSingleton(), "Must be singleton");
+    assertTrue(s2.isSingleton(), "Must be singleton");
+    assertFalse(twoValues.isSingleton(), "Must not be singleton");
   }
 
   @Test
-  public void testIntersection() {
+  void testIntersection() {
     LongSpace space = _b.including(Range.closed(0L, 90L)).excluding(Range.closed(10L, 20L)).build();
     LongSpace space2 =
         LongSpace.builder()
@@ -331,49 +323,48 @@ public final class LongSpaceTest {
   }
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     assertThat(BatfishObjectMapper.clone(LONGSPACE1, LongSpace.class), equalTo(LONGSPACE1));
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     assertThat(SerializationUtils.clone(LONGSPACE1), equalTo(LONGSPACE1));
   }
 
   @Test
-  public void testRoundTripThroughBuilder() {
+  void testRoundTripThroughBuilder() {
     LongSpace space = _b.including(LONGSPACE1).excluding(Range.closed(22L, 22L)).build();
     assertThat(space.toBuilder().build(), equalTo(space));
   }
 
   @Test
-  public void testSerialization() throws IOException {
+  void testSerialization() throws IOException {
     String serialized = BatfishObjectMapper.writeString(LONGSPACE1);
     assertThat(
         BatfishObjectMapper.mapper().readValue(serialized, LongSpace.class), equalTo(LONGSPACE1));
   }
 
   @Test
-  public void testSingletonValue() {
+  void testSingletonValue() {
     LongSpace s1 = LongSpace.builder().including(Range.closed(1L, 1L)).build();
     LongSpace s2 =
         LongSpace.builder().including(Range.closed(1L, 3L)).excluding(Range.closed(2L, 3L)).build();
     LongSpace twoValues = LongSpace.builder().including(Range.closed(1L, 2L)).build();
     assertThat(s1.singletonValue(), equalTo(1L));
     assertThat(s2.singletonValue(), equalTo(1L));
-    _expected.expect(NoSuchElementException.class);
-    twoValues.singletonValue();
+    assertThrows(NoSuchElementException.class, () -> twoValues.singletonValue());
   }
 
   @Test
-  public void testStaticBuilderCreators() {
+  void testStaticBuilderCreators() {
     Builder b = Builder.create("10-20");
     assertThat(b, not(nullValue()));
     assertThat(b.build(), equalTo(LongSpace.of(Range.closed(10L, 20L))));
   }
 
   @Test
-  public void testStaticCreators() {
+  void testStaticCreators() {
     Range<Long> r1 = Range.closed(1L, 1L);
     Range<Long> r2 = Range.closed(4L, 5L);
     assertThat(
@@ -382,14 +373,14 @@ public final class LongSpaceTest {
   }
 
   @Test
-  public void testStream() {
+  void testStream() {
     LongSpace space = LongSpace.unionOf(Range.closed(1L, 5L), Range.closed(-3L, -1L));
     List<Long> streamed = space.stream().collect(ImmutableList.toImmutableList());
     assertThat(streamed, equalTo(ImmutableList.of(-3L, -2L, -1L, 1L, 2L, 3L, 4L, 5L)));
   }
 
   @Test
-  public void testSymmetricDifference() {
+  void testSymmetricDifference() {
     LongSpace s1 = LongSpace.builder().including(Range.closed(1L, 10L)).build();
     LongSpace s2 = LongSpace.builder().including(Range.closed(5L, 15L)).build();
     LongSpace expected =
@@ -409,7 +400,7 @@ public final class LongSpaceTest {
   }
 
   @Test
-  public void testToString() {
+  void testToString() {
     assertThat(
         LongSpace.builder().including(Range.closed(5L, 10L)).excluding(9L).build().toString(),
         equalTo("5-8,10"));
@@ -418,7 +409,7 @@ public final class LongSpaceTest {
   }
 
   @Test
-  public void testUnion() {
+  void testUnion() {
     LongSpace space = _b.including(Range.closed(0L, 90L)).excluding(Range.closed(10L, 20L)).build();
     LongSpace space2 =
         LongSpace.builder()

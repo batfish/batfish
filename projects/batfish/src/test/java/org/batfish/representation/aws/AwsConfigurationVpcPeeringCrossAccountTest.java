@@ -5,18 +5,18 @@ import static org.batfish.representation.aws.AwsConfigurationTestUtils.testSetup
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testTrace;
 
 import com.google.common.collect.ImmutableList;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NamedPort;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public class AwsConfigurationVpcPeeringCrossAccountTest {
+class AwsConfigurationVpcPeeringCrossAccountTest {
 
   private static final String TESTCONFIGS_DIR =
       "org/batfish/representation/aws/test-vpc-peering-multi-account";
@@ -51,18 +51,18 @@ public class AwsConfigurationVpcPeeringCrossAccountTest {
   private static Ip _instanceAIp = Ip.parse("10.1.1.100");
   private static Ip _instanceBIp = Ip.parse("10.2.1.252");
 
-  @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public static File _folder;
 
   private static IBatfish _batfish;
 
-  @BeforeClass
-  public static void setup() throws IOException {
+  @BeforeAll
+  static void setup() throws IOException {
     _batfish = testSetup(TESTCONFIGS_DIR, fileNames, _folder);
   }
 
   /** Test connectivity from A to B */
   @Test
-  public void testFromAtoB() {
+  void testFromAtoB() {
     testTrace(
         getTcpFlow(_instanceA, _instanceBIp, NamedPort.SSH.number(), _batfish),
         FlowDisposition.ACCEPTED,
@@ -72,7 +72,7 @@ public class AwsConfigurationVpcPeeringCrossAccountTest {
 
   /** Test connectivity from B to A */
   @Test
-  public void testFromBtoA() {
+  void testFromBtoA() {
     testTrace(
         getTcpFlow(_instanceB, _instanceAIp, NamedPort.SSH.number(), _batfish),
         FlowDisposition.ACCEPTED,

@@ -5,16 +5,13 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.testing.EqualsTester;
 import java.util.Optional;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link org.batfish.datamodel.SubRange} */
-@RunWith(JUnit4.class)
-public class SubRangeTest {
+class SubRangeTest {
 
   @Test
-  public void testClosedInterval() {
+  void testClosedInterval() {
     SubRange range = new SubRange(0, 100);
     for (int i = 0; i <= 100; i++) {
       assertThat(range.includes(i), equalTo(true));
@@ -22,7 +19,7 @@ public class SubRangeTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     SubRange group1Elem1 = new SubRange(0, 100);
     SubRange group1Elem2 = new SubRange(0, 100);
 
@@ -37,7 +34,7 @@ public class SubRangeTest {
   }
 
   @Test
-  public void testEmptyRange() {
+  void testEmptyRange() {
     SubRange range = new SubRange(3, 1);
     assertThat(range.isEmpty(), equalTo(true));
     assertThat(range.getStart(), equalTo(3));
@@ -48,7 +45,7 @@ public class SubRangeTest {
   }
 
   @Test
-  public void testContains() {
+  void testContains() {
     SubRange empty = new SubRange(2, 1);
     SubRange base = new SubRange(0, 10);
     SubRange singleton = SubRange.singleton(5);
@@ -67,7 +64,7 @@ public class SubRangeTest {
   }
 
   @Test
-  public void testIntersection() {
+  void testIntersection() {
     SubRange range0To20 = new SubRange(0, 20);
     SubRange range3To7 = new SubRange(3, 7);
     SubRange range5To7 = new SubRange(5, 7);
@@ -84,7 +81,7 @@ public class SubRangeTest {
   }
 
   @Test
-  public void isSingleValue() {
+  void isSingleValue() {
     SubRange empty = new SubRange(2, 1);
     SubRange base = new SubRange(0, 10);
     SubRange singleton = SubRange.singleton(5);

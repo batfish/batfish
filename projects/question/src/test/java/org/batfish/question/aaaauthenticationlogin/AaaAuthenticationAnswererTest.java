@@ -17,12 +17,12 @@ import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class AaaAuthenticationAnswererTest {
+class AaaAuthenticationAnswererTest {
 
   @Test
-  public void testGetRow() {
+  void testGetRow() {
     Line lineRequiresAuthentication = new Line("con0");
     lineRequiresAuthentication.setAaaAuthenticationLoginList(
         new AaaAuthenticationLoginList(
@@ -48,7 +48,7 @@ public class AaaAuthenticationAnswererTest {
   }
 
   @Test
-  public void testTableAnswerElementColumns() {
+  void testTableAnswerElementColumns() {
     AaaAuthenticationLoginQuestion question = new AaaAuthenticationLoginQuestion();
     TableAnswerElement tableAnswerElement = AaaAuthenticationLoginAnswerer.create(question);
 

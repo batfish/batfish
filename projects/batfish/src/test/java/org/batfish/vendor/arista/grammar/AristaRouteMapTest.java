@@ -12,9 +12,10 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
@@ -45,15 +46,14 @@ import org.batfish.main.BatfishTestUtils;
 import org.batfish.vendor.arista.representation.AristaConfiguration;
 import org.batfish.vendor.arista.representation.RouteMap;
 import org.batfish.vendor.arista.representation.RouteMapClause;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 @ParametersAreNonnullByDefault
-public class AristaRouteMapTest {
+class AristaRouteMapTest {
   private static final String TESTCONFIGS_PREFIX = "org/batfish/vendor/arista/grammar/testconfigs/";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private static @Nonnull AristaConfiguration parseVendorConfig(String hostname) {
     String src = readResource(TESTCONFIGS_PREFIX + hostname, UTF_8);
@@ -117,7 +117,7 @@ public class AristaRouteMapTest {
   }
 
   @Test
-  public void testRouteMap() {
+  void testRouteMap() {
     Configuration c = parseConfig("arista_route_map");
     final Ip origNextHopIp = Ip.parse("192.0.2.254");
     final Bgpv4Route baseBgpRoute =
@@ -139,7 +139,7 @@ public class AristaRouteMapTest {
   }
 
   @Test
-  public void testMisconfiguredRouteMapExtraction() {
+  void testMisconfiguredRouteMapExtraction() {
     AristaConfiguration c = parseVendorConfig("arista_route_map_misconfigured");
     RouteMap map = c.getRouteMaps().get("MAP");
     assertThat(map, notNullValue());
@@ -159,7 +159,7 @@ public class AristaRouteMapTest {
   }
 
   @Test
-  public void testMisconfiguredRouteMapConversion() {
+  void testMisconfiguredRouteMapConversion() {
     Configuration c = parseConfig("arista_route_map_misconfigured");
     final Bgpv4Route testRoute =
         Bgpv4Route.testBuilder()

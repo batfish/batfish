@@ -23,6 +23,7 @@ import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import org.batfish.datamodel.Ip;
@@ -31,16 +32,15 @@ import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** E2e test for {@link org.batfish.question.a10.A10VirtualServerConfigurationAnswerer} */
-public class A10VirtualServerConfigurationAnswererTest {
+class A10VirtualServerConfigurationAnswererTest {
 
   private static final String TESTCONFIGS_PREFIX = "org/batfish/allinone/testconfigs/";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private Batfish getBatfishForConfigurationNames(String... configurationNames) throws IOException {
     String[] names =
@@ -49,7 +49,7 @@ public class A10VirtualServerConfigurationAnswererTest {
   }
 
   @Test
-  public void testAnswer() throws IOException {
+  void testAnswer() throws IOException {
     String hostname1 = "a10_virtual_server_configuration";
 
     Batfish batfish = getBatfishForConfigurationNames(hostname1);
@@ -124,7 +124,7 @@ public class A10VirtualServerConfigurationAnswererTest {
   }
 
   @Test
-  public void testAnswer_virtualServerIpFiltering() throws IOException {
+  void testAnswer_virtualServerIpFiltering() throws IOException {
     String hostname1 = "a10_virtual_server_configuration";
 
     Batfish batfish = getBatfishForConfigurationNames(hostname1);

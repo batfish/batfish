@@ -2,20 +2,20 @@ package org.batfish.datamodel.tracking;
 
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
 import static org.batfish.datamodel.tracking.TrackMethods.interfaceActive;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.TestInterface;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link PreDataPlaneTrackMethodEvaluator} */
-public class PreDataPlaneTrackMethodEvaluatorTest {
+class PreDataPlaneTrackMethodEvaluatorTest {
   @Test
-  public void testVisitTrackInterface() {
+  void testVisitTrackInterface() {
     Configuration c =
         Configuration.builder().setHostname("c").setConfigurationFormat(CISCO_IOS).build();
     // i1: active
@@ -48,7 +48,7 @@ public class PreDataPlaneTrackMethodEvaluatorTest {
   }
 
   @Test
-  public void testVisitNegatedTrackMethod() {
+  void testVisitNegatedTrackMethod() {
     Configuration c =
         Configuration.builder().setHostname("c").setConfigurationFormat(CISCO_IOS).build();
     TrackMethod base = TrackTrue.instance();
@@ -58,7 +58,7 @@ public class PreDataPlaneTrackMethodEvaluatorTest {
   }
 
   @Test
-  public void testVisitTrackAll() {
+  void testVisitTrackAll() {
     Configuration c =
         Configuration.builder().setHostname("c").setConfigurationFormat(CISCO_IOS).build();
     PreDataPlaneTrackMethodEvaluator evaluator = new PreDataPlaneTrackMethodEvaluator(c);
@@ -81,7 +81,7 @@ public class PreDataPlaneTrackMethodEvaluatorTest {
   }
 
   @Test
-  public void testVisitTrackMethodReference() {
+  void testVisitTrackMethodReference() {
     Configuration c =
         Configuration.builder().setHostname("c").setConfigurationFormat(CISCO_IOS).build();
     TrackMethod base = TrackTrue.instance();
@@ -92,7 +92,7 @@ public class PreDataPlaneTrackMethodEvaluatorTest {
   }
 
   @Test
-  public void testVisitTrackTrue() {
+  void testVisitTrackTrue() {
     Configuration c =
         Configuration.builder().setHostname("c").setConfigurationFormat(CISCO_IOS).build();
     PreDataPlaneTrackMethodEvaluator evaluator = new PreDataPlaneTrackMethodEvaluator(c);

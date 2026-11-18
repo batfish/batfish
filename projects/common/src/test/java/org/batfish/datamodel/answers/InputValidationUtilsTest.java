@@ -7,7 +7,7 @@ import static org.batfish.datamodel.answers.InputValidationUtils.validateSourceL
 import static org.batfish.specifier.parse.InternetLocationAstNode.INTERNET_LOCATION;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -27,10 +27,10 @@ import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.Grammar;
 import org.batfish.specifier.InterfaceLocation;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link org.batfish.datamodel.answers.InputValidationUtils} */
-public class InputValidationUtilsTest {
+class InputValidationUtilsTest {
 
   private static final CompletionMetadata emptyCompletionMetadata =
       CompletionMetadata.builder().build();
@@ -53,7 +53,7 @@ public class InputValidationUtilsTest {
   }
 
   @Test
-  public void testBgpPeerPropertySpec() {
+  void testBgpPeerPropertySpec() {
     // good case
     assertThat(
         validateQuery(BgpPeerPropertySpecifier.LOCAL_IP, Type.BGP_PEER_PROPERTY_SPEC),
@@ -70,7 +70,7 @@ public class InputValidationUtilsTest {
   }
 
   @Test
-  public void testBgpProcessPropertySpec() {
+  void testBgpProcessPropertySpec() {
     // good case
     assertThat(
         validateQuery(BgpProcessPropertySpecifier.TIE_BREAKER, Type.BGP_PROCESS_PROPERTY_SPEC),
@@ -87,7 +87,7 @@ public class InputValidationUtilsTest {
   }
 
   @Test
-  public void testInterfacePropertySpec() {
+  void testInterfacePropertySpec() {
     // good case
     assertThat(
         validateQuery(InterfacePropertySpecifier.DESCRIPTION, Type.INTERFACE_PROPERTY_SPEC),
@@ -104,7 +104,7 @@ public class InputValidationUtilsTest {
   }
 
   @Test
-  public void testIpAddressBad() {
+  void testIpAddressBad() {
     String query = "1.1.1.345";
 
     IllegalArgumentException exception = getException(query, Ip::parse);
@@ -115,7 +115,7 @@ public class InputValidationUtilsTest {
   }
 
   @Test
-  public void testIpAddressGood() {
+  void testIpAddressGood() {
     String query = "1.1.1.3";
     assertThat(
         validateQuery(query, Type.IP_SPACE_SPEC),
@@ -123,7 +123,7 @@ public class InputValidationUtilsTest {
   }
 
   @Test
-  public void testNodePropertySpec() {
+  void testNodePropertySpec() {
     // good case
     assertThat(
         validateQuery(NodePropertySpecifier.NTP_SERVERS, Type.NODE_PROPERTY_SPEC),
@@ -140,14 +140,14 @@ public class InputValidationUtilsTest {
   }
 
   @Test
-  public void testValidateIpValid() {
+  void testValidateIpValid() {
     InputValidationNotes notes = validateIp("1.1.1.1");
     assertThat(
         notes, equalTo(new InputValidationNotes(Validity.VALID, Ip.parse("1.1.1.1").toString())));
   }
 
   @Test
-  public void testValidateIpInvalid() {
+  void testValidateIpInvalid() {
     InputValidationNotes notes = validateIp("1.1.1.1111");
     assertThat(
         notes,
@@ -157,7 +157,7 @@ public class InputValidationUtilsTest {
   }
 
   @Test
-  public void testValidatePrefixValid() {
+  void testValidatePrefixValid() {
     InputValidationNotes notes = validatePrefix("1.1.1.1/23");
     assertThat(
         notes,
@@ -165,7 +165,7 @@ public class InputValidationUtilsTest {
   }
 
   @Test
-  public void testValidatePrefixInvalid() {
+  void testValidatePrefixInvalid() {
     InputValidationNotes notes = validatePrefix("1.1.1.1111/23");
     assertThat(
         notes,
@@ -175,7 +175,7 @@ public class InputValidationUtilsTest {
   }
 
   @Test
-  public void testValidateSourceLocation() {
+  void testValidateSourceLocation() {
     CompletionMetadata metadata =
         CompletionMetadata.builder()
             .setNodes(ImmutableSet.of(INTERNET_LOCATION.getNodeName(), "node", "trnode"))
@@ -225,7 +225,7 @@ public class InputValidationUtilsTest {
   }
 
   @Test
-  public void testSingleApplicationSpec() {
+  void testSingleApplicationSpec() {
     // fully matched named application
     assertEquals(Validity.VALID, validateQuery("DNS", Type.SINGLE_APPLICATION_SPEC).getValidity());
 
@@ -262,7 +262,7 @@ public class InputValidationUtilsTest {
   }
 
   @Test
-  public void testNodeName() {
+  void testNodeName() {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder().setNodes(ImmutableSet.of("n1")).build();
 

@@ -47,10 +47,10 @@ import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.datamodel.table.Row;
 import org.batfish.question.traceroute.BidirectionalTracerouteAnswerer.Key;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link BidirectionalTracerouteAnswerer}. */
-public final class BidirectionalTracerouteAnswererTest {
+final class BidirectionalTracerouteAnswererTest {
   private static final Flow FORWARD_FLOW =
       Flow.builder()
           .setDstIp(Ip.parse("1.1.1.1"))
@@ -69,7 +69,7 @@ public final class BidirectionalTracerouteAnswererTest {
       new SessionMatchExpr(IpProtocol.HOPOPT, Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"), null, null);
 
   @Test
-  public void testKeyEquals() {
+  void testKeyEquals() {
     Flow flow1 = Flow.builder().setIngressNode("ingressNode").setDstIp(Ip.ZERO).build();
     Flow flow2 = Flow.builder().setIngressNode("ingressNode").setDstIp(Ip.MAX).build();
     SessionMatchExpr dummySessionMatch =
@@ -87,7 +87,7 @@ public final class BidirectionalTracerouteAnswererTest {
   }
 
   @Test
-  public void testKey() {
+  void testKey() {
     Flow flow1 = Flow.builder().setIngressNode("ingressNode").setDstIp(Ip.ZERO).build();
     Flow flow2 = Flow.builder().setIngressNode("ingressNode").setDstIp(Ip.MAX).build();
     SessionMatchExpr dummySessionMatch =
@@ -111,7 +111,7 @@ public final class BidirectionalTracerouteAnswererTest {
   }
 
   @Test
-  public void testNoReverseFlow() {
+  void testNoReverseFlow() {
     Trace forwardTrace = new Trace(NO_ROUTE, ImmutableList.of());
     TraceAndReverseFlow traceAndReverseFlow =
         new TraceAndReverseFlow(forwardTrace, null, ImmutableSet.of());
@@ -129,7 +129,7 @@ public final class BidirectionalTracerouteAnswererTest {
   }
 
   @Test
-  public void testReverseFlow() {
+  void testReverseFlow() {
     Trace forwardTrace = new Trace(ACCEPTED, ImmutableList.of());
     TraceAndReverseFlow forwardTarf =
         new TraceAndReverseFlow(forwardTrace, REVERSE_FLOW, ImmutableSet.of());
@@ -156,7 +156,7 @@ public final class BidirectionalTracerouteAnswererTest {
   }
 
   @Test
-  public void testMultipath() {
+  void testMultipath() {
     Trace forwardTrace1 = new Trace(ACCEPTED, ImmutableList.of());
     Trace forwardTrace2 = new Trace(DENIED_IN, ImmutableList.of());
     Trace forwardTrace3 = new Trace(DELIVERED_TO_SUBNET, ImmutableList.of());
@@ -199,7 +199,7 @@ public final class BidirectionalTracerouteAnswererTest {
   }
 
   @Test
-  public void testSession() {
+  void testSession() {
     Trace forwardTrace = new Trace(ACCEPTED, ImmutableList.of());
     Trace reverseTrace = new Trace(NEIGHBOR_UNREACHABLE, ImmutableList.of());
     FirewallSessionTraceInfo session =
@@ -227,7 +227,7 @@ public final class BidirectionalTracerouteAnswererTest {
 
   /** Make sure we don't mix traces and sessions. */
   @Test
-  public void testSessions() {
+  void testSessions() {
     Trace sessionForwardTrace = new Trace(ACCEPTED, ImmutableList.of());
     Trace noSessionForwardTrace = new Trace(DELIVERED_TO_SUBNET, ImmutableList.of());
     FirewallSessionTraceInfo session =
@@ -274,7 +274,7 @@ public final class BidirectionalTracerouteAnswererTest {
   }
 
   @Test
-  public void testGroupTraces() {
+  void testGroupTraces() {
     Trace t1 = new Trace(ACCEPTED, ImmutableList.of());
     Trace t2 = new Trace(EXITS_NETWORK, ImmutableList.of());
     Trace t3 = new Trace(NEIGHBOR_UNREACHABLE, ImmutableList.of());
@@ -360,7 +360,7 @@ public final class BidirectionalTracerouteAnswererTest {
   }
 
   @Test
-  public void testToRow() {
+  void testToRow() {
     Trace t1 = new Trace(ACCEPTED, ImmutableList.of());
     Trace t2 = new Trace(EXITS_NETWORK, ImmutableList.of());
 

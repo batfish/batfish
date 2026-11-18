@@ -6,25 +6,25 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link AsPathMatchExprReference}. */
-public final class AsPathMatchExprReferenceTest {
+final class AsPathMatchExprReferenceTest {
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     AsPathMatchExprReference obj = AsPathMatchExprReference.of("a");
     assertThat(SerializationUtils.clone(obj), equalTo(obj));
   }
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     AsPathMatchExprReference obj = AsPathMatchExprReference.of("a");
     assertThat(BatfishObjectMapper.clone(obj, AsPathMatchExprReference.class), equalTo(obj));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     AsPathMatchExprReference obj = AsPathMatchExprReference.of("a");
     new EqualsTester()
         .addEqualityGroup(AsPathMatchExprReference.of("a"), obj)

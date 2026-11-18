@@ -12,13 +12,13 @@ import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Prefix;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link VpcPeeringConnection} */
-public class PrefixListTest {
+class PrefixListTest {
 
   @Test
-  public void testDeserialization() throws IOException {
+  void testDeserialization() throws IOException {
     String text = readResource("org/batfish/representation/aws/PrefixListTest.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
@@ -40,7 +40,7 @@ public class PrefixListTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     Prefix prefix = Prefix.parse("1.1.1.1/32");
     new EqualsTester()
         .addEqualityGroup(

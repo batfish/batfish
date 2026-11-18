@@ -5,13 +5,13 @@ import static org.hamcrest.Matchers.equalTo;
 
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.questions.BgpPeerPropertySpecifier;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link BgpPeerConfigurationQuestion} */
-public class BgpPeerConfigurationQuestionTest {
+class BgpPeerConfigurationQuestionTest {
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     BgpPeerConfigurationQuestion q =
         new BgpPeerConfigurationQuestion("nodes", BgpPeerPropertySpecifier.LOCAL_IP);
     assertThat(BatfishObjectMapper.clone(q, BgpPeerConfigurationQuestion.class), equalTo(q));

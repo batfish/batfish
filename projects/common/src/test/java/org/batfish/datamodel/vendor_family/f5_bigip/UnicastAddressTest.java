@@ -1,17 +1,17 @@
 package org.batfish.datamodel.vendor_family.f5_bigip;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link UnicastAddress}. */
-public final class UnicastAddressTest {
+final class UnicastAddressTest {
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _builder =
         UnicastAddress.builder()
             .setEffectiveIp(ManagementIp.instance())
@@ -23,7 +23,7 @@ public final class UnicastAddressTest {
   private UnicastAddress.Builder _builder;
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     UnicastAddress obj = _builder.build();
     new EqualsTester()
         .addEqualityGroup(obj, obj, _builder.build())
@@ -36,7 +36,7 @@ public final class UnicastAddressTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     UnicastAddress obj = _builder.build();
     assertEquals(obj, SerializationUtils.clone(obj));
   }

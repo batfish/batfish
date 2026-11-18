@@ -5,18 +5,18 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link ErrorAstNode}. */
-public final class ErrorAstNodeTest {
+final class ErrorAstNodeTest {
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     assertThat(SerializationUtils.clone(ErrorAstNode.instance()), equalTo(ErrorAstNode.instance()));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(ErrorAstNode.instance(), ErrorAstNode.instance())
         .testEquals();

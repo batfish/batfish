@@ -22,30 +22,30 @@ import org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker;
 import org.batfish.datamodel.bgp.NextHopIpTieBreaker;
 import org.batfish.dataplane.rib.RibDelta.Builder;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link RibDelta} */
-public class RibDeltaTest {
+class RibDeltaTest {
 
   private static final int PREFIX_LENGTH = 24;
   private RibDelta.Builder<AbstractRoute> _builder;
   private static final Ip _nextHopIp = Ip.parse("42.42.42.42");
 
-  @Before
-  public void setupNewBuilder() {
+  @BeforeEach
+  void setupNewBuilder() {
     _builder = RibDelta.builder();
   }
 
   /** Check that empty {@link Builder} produces a null delta */
   @Test
-  public void testBuildEmptyDelta() {
+  void testBuildEmptyDelta() {
     RibDelta<AbstractRoute> delta = _builder.build();
     assertThat(delta, equalTo(RibDelta.empty()));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     Prefix p1 = Prefix.parse("1.1.1.0/24");
     Prefix p2 = Prefix.parse("2.2.2.0/24");
     StaticRoute sr1 =
@@ -83,7 +83,7 @@ public class RibDeltaTest {
 
   /** Check {@link Builder} route addition and that duplicate adds get squashed */
   @Test
-  public void testBuilderAddRoute() {
+  void testBuilderAddRoute() {
     StaticRoute route1 =
         StaticRoute.testBuilder()
             .setNetwork(Prefix.create(Ip.parse("1.1.1.0"), PREFIX_LENGTH))
@@ -124,7 +124,7 @@ public class RibDeltaTest {
 
   /** Check duplicate removes get squashed */
   @Test
-  public void testBuilderRemoveRoute() {
+  void testBuilderRemoveRoute() {
     StaticRoute route1 =
         StaticRoute.testBuilder()
             .setNetwork(Prefix.create(Ip.parse("1.1.1.0"), PREFIX_LENGTH))
@@ -165,7 +165,7 @@ public class RibDeltaTest {
 
   /** Test that deltas are chained correctly using the {@link RibDelta.Builder#from} function */
   @Test
-  public void testChainDeltas() {
+  void testChainDeltas() {
     Bgpv4Rib rib =
         new Bgpv4Rib(
             null,
@@ -224,7 +224,7 @@ public class RibDeltaTest {
 
   /** Test that the routes are exact route matches are removed from the RIB by default */
   @Test
-  public void testImportRibExactRemoval() {
+  void testImportRibExactRemoval() {
     Bgpv4Rib rib =
         new Bgpv4Rib(
             null,

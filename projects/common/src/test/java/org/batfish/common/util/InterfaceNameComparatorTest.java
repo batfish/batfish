@@ -13,18 +13,18 @@ import com.google.common.collect.ImmutableList;
 import java.util.Comparator;
 import java.util.List;
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class InterfaceNameComparatorTest {
+class InterfaceNameComparatorTest {
   @Test
-  public void testSplit() {
+  void testSplit() {
     assertThat(split("Ethernet1"), contains("Ethernet", "1"));
     assertThat(split("Ethernet10/30"), contains("Ethernet", "10", "/", "30"));
     assertThat(split("10/30"), contains("", "10", "/", "30"));
   }
 
   @Test
-  public void testStringVsNum() {
+  void testStringVsNum() {
     assertThat(compareStringVsNum("a", "A"), equalTo(0));
     assertThat(compareStringVsNum("a", "b"), lessThan(0));
     assertThat(compareStringVsNum("b", "a"), greaterThan(0));
@@ -36,7 +36,7 @@ public class InterfaceNameComparatorTest {
   }
 
   @Test
-  public void testOrder() {
+  void testOrder() {
     Comparator<String> comp = InterfaceNameComparator.instance();
     List<String> input =
         ImmutableList.of(
@@ -67,7 +67,7 @@ public class InterfaceNameComparatorTest {
   }
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     InterfaceNameComparator comp = InterfaceNameComparator.instance();
     assertThat(SerializationUtils.clone(comp), sameInstance(comp));
   }

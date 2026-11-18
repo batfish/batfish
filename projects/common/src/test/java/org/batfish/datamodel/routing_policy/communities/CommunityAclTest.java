@@ -8,25 +8,25 @@ import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.LineAction;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link CommunityAcl}. */
-public final class CommunityAclTest {
+final class CommunityAclTest {
 
   private static final CommunityAcl ACL = new CommunityAcl(ImmutableList.of());
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     assertThat(BatfishObjectMapper.clone(ACL, CommunityAcl.class), equalTo(ACL));
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     assertThat(SerializationUtils.clone(ACL), equalTo(ACL));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(ACL, ACL, new CommunityAcl(ImmutableList.of()))
         .addEqualityGroup(

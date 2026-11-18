@@ -72,11 +72,11 @@ import org.batfish.minesweeper.bdd.TransferReturn;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link TransferBDDValidationAnswerer}. */
-public class TransferBDDValidationAnswererTest {
+class TransferBDDValidationAnswererTest {
 
   private static final String HOSTNAME = "hostname";
   private static final String POLICY_NAME = "policy";
@@ -119,8 +119,8 @@ public class TransferBDDValidationAnswererTest {
     }
   }
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     setup(ConfigurationFormat.CISCO_IOS);
   }
 
@@ -164,7 +164,7 @@ public class TransferBDDValidationAnswererTest {
   }
 
   @Test
-  public void testEndToEndQuestion() {
+  void testEndToEndQuestion() {
     _policyBuilder.addStatement(Statements.ExitAccept.toStaticStatement()).build();
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
@@ -177,7 +177,7 @@ public class TransferBDDValidationAnswererTest {
   }
 
   @Test
-  public void testConsistent() {
+  void testConsistent() {
     RoutingPolicy policy =
         _policyBuilder.addStatement(Statements.ExitAccept.toStaticStatement()).build();
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
@@ -190,7 +190,7 @@ public class TransferBDDValidationAnswererTest {
   }
 
   @Test
-  public void testWrongAction() {
+  void testWrongAction() {
     RoutingPolicy policy =
         _policyBuilder.addStatement(Statements.ExitAccept.toStaticStatement()).build();
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
@@ -218,7 +218,7 @@ public class TransferBDDValidationAnswererTest {
   }
 
   @Test
-  public void testWrongOutputRoute() {
+  void testWrongOutputRoute() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(new SetLocalPreference(new LiteralLong(200)))
@@ -256,7 +256,7 @@ public class TransferBDDValidationAnswererTest {
   }
 
   @Test
-  public void testUnsupported() {
+  void testUnsupported() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(new SetLocalPreference(new LiteralLong(200)))
@@ -280,7 +280,7 @@ public class TransferBDDValidationAnswererTest {
   }
 
   @Test
-  public void testTooManyCommunities() {
+  void testTooManyCommunities() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -314,7 +314,7 @@ public class TransferBDDValidationAnswererTest {
   }
 
   @Test
-  public void testManyNegatedCommunities() {
+  void testManyNegatedCommunities() {
     RoutingPolicy policy =
         _policyBuilder.addStatement(Statements.ExitAccept.toStaticStatement()).build();
     Set<CommunityVar> cvars =

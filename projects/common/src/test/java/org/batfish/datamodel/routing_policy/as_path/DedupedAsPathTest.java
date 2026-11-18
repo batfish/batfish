@@ -6,25 +6,25 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link DedupedAsPath}. */
-public final class DedupedAsPathTest {
+final class DedupedAsPathTest {
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     DedupedAsPath obj = DedupedAsPath.of(InputAsPath.instance());
     assertThat(SerializationUtils.clone(obj), equalTo(obj));
   }
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     DedupedAsPath obj = DedupedAsPath.of(InputAsPath.instance());
     assertThat(BatfishObjectMapper.clone(obj, DedupedAsPath.class), equalTo(obj));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     DedupedAsPath obj = DedupedAsPath.of(InputAsPath.instance());
     new EqualsTester()
         .addEqualityGroup(obj, DedupedAsPath.of(InputAsPath.instance()))

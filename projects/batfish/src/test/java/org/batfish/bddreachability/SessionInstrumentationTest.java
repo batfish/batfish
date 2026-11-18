@@ -17,6 +17,7 @@ import static org.hamcrest.Matchers.not;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -49,16 +50,14 @@ import org.batfish.symbolic.state.OriginateVrf;
 import org.batfish.symbolic.state.PostInVrfSession;
 import org.batfish.symbolic.state.PreInInterface;
 import org.hamcrest.Matcher;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests for {@link SessionInstrumentation}. */
-public final class SessionInstrumentationTest {
+final class SessionInstrumentationTest {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private static final String LAST_HOP_VAR_NAME = "lastHop";
 
@@ -84,8 +83,6 @@ public final class SessionInstrumentationTest {
   private final BDD _one = _pkt.getFactory().one();
   private final BDD _zero = _pkt.getFactory().zero();
 
-  @Rule public ExpectedException _exception = ExpectedException.none();
-
   private BDDSourceManager _fwSrcMgr;
   private BDDSourceManager _source1SrcMgr;
   private Map<String, BDDSourceManager> _srcMgrs;
@@ -103,8 +100,8 @@ public final class SessionInstrumentationTest {
 
   private BDD _permitTcpBdd;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     NetworkFactory nf = new NetworkFactory();
 
     Configuration.Builder cb =
@@ -219,7 +216,7 @@ public final class SessionInstrumentationTest {
   }
 
   @Test
-  public void testNodeAcceptEdges() {
+  void testNodeAcceptEdges() {
     BDD sessionHeaders = _pkt.getDstIp().value(10L);
     BDD srcFwI1 = _fwSrcMgr.getSourceInterfaceBDD(FW_I1);
     BDD validSrc = _fwSrcMgr.isValidValue();
@@ -283,7 +280,7 @@ public final class SessionInstrumentationTest {
   }
 
   @Test
-  public void testFibLookupSessionEdges() {
+  void testFibLookupSessionEdges() {
     BDD sessionHeaders = _pkt.getDstIp().value(10L);
     BDDFirewallSessionTraceInfo sessionInfo =
         new BDDFirewallSessionTraceInfo(
@@ -301,7 +298,7 @@ public final class SessionInstrumentationTest {
   }
 
   @Test
-  public void testFibLookupSessionEdges_transformation() {
+  void testFibLookupSessionEdges_transformation() {
     BDD sessionHeaders = _pkt.getDstIp().value(10L);
     BDD poolBdd = _pkt.getSrcIp().value(10L);
     Transition nat = Transitions.eraseAndSet(_pkt.getSrcIp(), poolBdd);
@@ -323,7 +320,7 @@ public final class SessionInstrumentationTest {
   }
 
   @Test
-  public void testFibLookupSessionEdges_inboundSession() {
+  void testFibLookupSessionEdges_inboundSession() {
     BDD sessionHeaders = _pkt.getDstIp().value(10L);
     BDDFirewallSessionTraceInfo sessionInfo =
         new BDDFirewallSessionTraceInfo(
@@ -351,7 +348,7 @@ public final class SessionInstrumentationTest {
   }
 
   @Test
-  public void testFibLookupSessionEdges_inboundSessionWithTransformation() {
+  void testFibLookupSessionEdges_inboundSessionWithTransformation() {
     BDD sessionHeaders = _pkt.getDstIp().value(10L);
     BDD poolBdd = _pkt.getSrcIp().value(10L);
     Transition nat = Transitions.eraseAndSet(_pkt.getSrcIp(), poolBdd);
@@ -382,7 +379,7 @@ public final class SessionInstrumentationTest {
   }
 
   @Test
-  public void testPreInInterfaceEdges() {
+  void testPreInInterfaceEdges() {
     BDD sessionHeaders = _pkt.getDstIp().value(10L);
     BDD srcFwI1 = _fwSrcMgr.getSourceInterfaceBDD(FW_I1);
     BDD validSrc = _fwSrcMgr.isValidValue();
@@ -486,7 +483,7 @@ public final class SessionInstrumentationTest {
   }
 
   @Test
-  public void testDeliveredToSubnetEdges() {
+  void testDeliveredToSubnetEdges() {
     BDD sessionHeaders = _pkt.getDstIp().value(10L);
     BDD srcFwI1 = _fwSrcMgr.getSourceInterfaceBDD(FW_I1);
     BDD lastHop1 = _lastHopMgr.getLastHopOutgoingInterfaceBdd(SOURCE1, SOURCE1_IFACE, FW, FW_I1);
@@ -570,7 +567,7 @@ public final class SessionInstrumentationTest {
   }
 
   @Test
-  public void testDropAclInEdges() {
+  void testDropAclInEdges() {
     BDD sessionHeaders = _pkt.getDstIp().value(10L);
     BDD srcFwI1 = _fwSrcMgr.getSourceInterfaceBDD(FW_I1);
     BDD validSrc = _fwSrcMgr.isValidValue();
@@ -599,7 +596,7 @@ public final class SessionInstrumentationTest {
   }
 
   @Test
-  public void testDropAclOutEdges() {
+  void testDropAclOutEdges() {
     BDD sessionHeaders = _pkt.getDstIp().value(10L);
     BDD srcFwI1 = _fwSrcMgr.getSourceInterfaceBDD(FW_I1);
     BDD validSrc = _fwSrcMgr.isValidValue();

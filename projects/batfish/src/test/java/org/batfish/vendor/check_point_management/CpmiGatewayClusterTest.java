@@ -2,7 +2,7 @@ package org.batfish.vendor.check_point_management;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
@@ -10,13 +10,13 @@ import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link CpmiGatewayCluster}. */
-public final class CpmiGatewayClusterTest {
+final class CpmiGatewayClusterTest {
 
   @Test
-  public void testJacksonDeserialization() throws JsonProcessingException {
+  void testJacksonDeserialization() throws JsonProcessingException {
     String input =
         "{"
             + "\"GARBAGE\":0,"
@@ -46,7 +46,7 @@ public final class CpmiGatewayClusterTest {
   }
 
   @Test
-  public void testJacksonDeserialization_noOptionalFields() throws JsonProcessingException {
+  void testJacksonDeserialization_noOptionalFields() throws JsonProcessingException {
     // missing members, ipv4-address, interfaces
     String input =
         "{"
@@ -74,7 +74,7 @@ public final class CpmiGatewayClusterTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     CpmiGatewayCluster obj =
         new CpmiGatewayCluster(
             ImmutableList.of(),
@@ -87,7 +87,7 @@ public final class CpmiGatewayClusterTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     CpmiGatewayCluster obj =
         new CpmiGatewayCluster(
             ImmutableList.of(),

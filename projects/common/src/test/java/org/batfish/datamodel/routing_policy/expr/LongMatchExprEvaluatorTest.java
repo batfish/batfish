@@ -1,15 +1,15 @@
 package org.batfish.datamodel.routing_policy.expr;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link LongMatchExprEvaluator}. */
-public final class LongMatchExprEvaluatorTest {
+final class LongMatchExprEvaluatorTest {
 
   @Test
-  public void testVisitLongComparison() {
+  void testVisitLongComparison() {
     assertTrue(
         new LongComparison(IntComparator.EQ, new LiteralLong(1L))
             .accept(LongMatchExprEvaluator.instance(), new LiteralLong(1L)));
@@ -19,7 +19,7 @@ public final class LongMatchExprEvaluatorTest {
   }
 
   @Test
-  public void testVisitLongMatchAll() {
+  void testVisitLongMatchAll() {
     // empty matches everything
     assertTrue(LongMatchAll.of().accept(LongMatchExprEvaluator.instance(), new LiteralLong(1)));
 

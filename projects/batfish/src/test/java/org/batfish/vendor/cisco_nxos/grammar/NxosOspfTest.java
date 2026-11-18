@@ -24,6 +24,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.sameInstance;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
@@ -43,19 +44,16 @@ import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.vendor.cisco_nxos.representation.CiscoNxosConfiguration;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests of the NX-OS parser dedicated to specifics of OSPF. */
 @ParametersAreNonnullByDefault
-public final class NxosOspfTest {
+final class NxosOspfTest {
 
   private static final String TESTCONFIGS_PREFIX = "org/batfish/vendor/cisco_nxos/grammar/ospf/";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+  @TempDir public File _folder;
 
   private @Nonnull Batfish getBatfishForConfigurationNames(String... configurationNames)
       throws IOException {
@@ -99,7 +97,7 @@ public final class NxosOspfTest {
   }
 
   @Test
-  public void testNxosOspfAreaParameters() throws IOException {
+  void testNxosOspfAreaParameters() throws IOException {
     Configuration c = parseConfig("nxos-ospf-area");
     String ifaceName = "Ethernet1";
     long areaNum = 1L;
@@ -114,7 +112,7 @@ public final class NxosOspfTest {
   }
 
   @Test
-  public void testNxosOspfNonDefaultVrf() throws IOException {
+  void testNxosOspfNonDefaultVrf() throws IOException {
     Configuration c = parseConfig("nxos-ospf-iface-in-vrf");
     String vrfName = "OTHER-VRF";
     String ifaceName = "Ethernet1";
@@ -133,19 +131,19 @@ public final class NxosOspfTest {
   }
 
   @Test
-  public void testOspfPassiveInInterface() throws IOException {
+  void testOspfPassiveInInterface() throws IOException {
     Configuration c = parseConfig("nxos-ospf-passive");
     assertThat(c, hasInterface("Ethernet2/1", allOf(isOspfPassive(), hasOspfAreaName(1L))));
   }
 
   @Test
-  public void testOspfAreaInInterface() throws IOException {
+  void testOspfAreaInInterface() throws IOException {
     Configuration c = parseConfig("nxos-ospf-passive");
     assertThat(c, hasInterface("Ethernet2/2", allOf(not(isOspfPassive()), hasOspfAreaName(3L))));
   }
 
   @Test
-  public void testDontCrashMultipleImplicitAs() throws IOException {
+  void testDontCrashMultipleImplicitAs() throws IOException {
     // Don't crash.
     parseVendorConfig("nxos_ospf_multiple_implicit");
     parseConfig("nxos_ospf_multiple_implicit");

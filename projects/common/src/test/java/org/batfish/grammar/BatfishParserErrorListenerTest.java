@@ -9,13 +9,13 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.grammar.recovery.NonRecoveryCombinedParser;
 import org.batfish.grammar.recovery.RecoveryExtractor;
 import org.batfish.grammar.recovery.RecoveryParser.RecoveryContext;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /* Test of {@link BatfishLexerErrorListener} */
-public final class BatfishParserErrorListenerTest {
+final class BatfishParserErrorListenerTest {
 
   @Test
-  public void testNonRecoveryParserErrorNode() {
+  void testNonRecoveryParserErrorNode() {
     String recoveryText = readResource("org/batfish/grammar/non_recovery_parser_error", UTF_8);
     GrammarSettings settings = MockGrammarSettings.builder().build();
     NonRecoveryCombinedParser cp = new NonRecoveryCombinedParser(recoveryText, settings);

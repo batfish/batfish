@@ -6,8 +6,10 @@ import static org.batfish.datamodel.routing_policy.as_path.AsPathStructuresVerif
 import static org.batfish.datamodel.routing_policy.as_path.AsPathStructuresVerifier.BOOLEAN_EXPR_VERIFIER;
 import static org.batfish.datamodel.routing_policy.as_path.AsPathStructuresVerifier.STATEMENT_VERIFIER;
 import static org.batfish.datamodel.routing_policy.as_path.AsPathStructuresVerifier.verify;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -87,17 +89,13 @@ import org.batfish.datamodel.routing_policy.statement.SetVarMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link AsPathStructuresVerifier}. */
-public final class AsPathStructuresVerifierTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+final class AsPathStructuresVerifierTest {
 
   @Test
-  public void testBooleanExprVerifierUnrelated() {
+  void testBooleanExprVerifierUnrelated() {
     // no exception should be thrown while verifying non-as-path-related structures
     AsPathStructuresVerifierContext ctx = AsPathStructuresVerifierContext.builder().build();
 
@@ -131,7 +129,7 @@ public final class AsPathStructuresVerifierTest {
   }
 
   @Test
-  public void testStatementVerifierUnrelated() {
+  void testStatementVerifierUnrelated() {
     // no exception should be thrown while verifying non-as-path-related structures
     AsPathStructuresVerifierContext ctx = AsPathStructuresVerifierContext.builder().build();
 
@@ -168,42 +166,41 @@ public final class AsPathStructuresVerifierTest {
   }
 
   @Test
-  public void testVerify() {
+  void testVerify() {
     Configuration c = new Configuration("c", ConfigurationFormat.CISCO_IOS);
     c.setAsPathMatchExprs(
         ImmutableMap.of("referenceToUndefined", AsPathMatchExprReference.of("undefined")));
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    verify(c);
+    Throwable exception = assertThrows(VendorConversionException.class, () -> verify(c));
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVerifyAsPathMatchExprs() {
+  void testVerifyAsPathMatchExprs() {
     Configuration c = new Configuration("c", ConfigurationFormat.CISCO_IOS);
     c.setAsPathMatchExprs(
         ImmutableMap.of("referenceToUndefined", AsPathMatchExprReference.of("undefined")));
     AsPathStructuresVerifier v = new AsPathStructuresVerifier(c);
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    v.verifyAsPathMatchExprs();
+    Throwable exception =
+        assertThrows(VendorConversionException.class, () -> v.verifyAsPathMatchExprs());
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVerifyAsPathExprs() {
+  void testVerifyAsPathExprs() {
     Configuration c = new Configuration("c", ConfigurationFormat.CISCO_IOS);
 
     c.setAsPathExprs(ImmutableMap.of("referenceToUndefined", AsPathExprReference.of("undefined")));
     AsPathStructuresVerifier v = new AsPathStructuresVerifier(c);
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    v.verifyAsPathExprs();
+    Throwable exception =
+        assertThrows(VendorConversionException.class, () -> v.verifyAsPathExprs());
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVerifyRoutingPolicies() {
+  void testVerifyRoutingPolicies() {
     Configuration c = new Configuration("c", ConfigurationFormat.CISCO_IOS);
     RoutingPolicy rp = new RoutingPolicy("rp", c);
     rp.setStatements(
@@ -216,23 +213,26 @@ public final class AsPathStructuresVerifierTest {
     c.setRoutingPolicies(ImmutableMap.of("rp", rp));
     AsPathStructuresVerifier v = new AsPathStructuresVerifier(c);
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    v.verifyRoutingPolicies();
+    Throwable exception =
+        assertThrows(VendorConversionException.class, () -> v.verifyRoutingPolicies());
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVisitAsPathMatchAny() {
+  void testVisitAsPathMatchAny() {
     AsPathStructuresVerifierContext ctx = AsPathStructuresVerifierContext.builder().build();
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    AsPathMatchAny.of(ImmutableList.of(AsPathMatchExprReference.of("undefined")))
-        .accept(AS_PATH_MATCH_EXPR_VERIFIER, ctx);
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () ->
+                AsPathMatchAny.of(ImmutableList.of(AsPathMatchExprReference.of("undefined")))
+                    .accept(AS_PATH_MATCH_EXPR_VERIFIER, ctx));
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVisitAsPathMatchExprReferenceDefined() {
+  void testVisitAsPathMatchExprReferenceDefined() {
     AsPathStructuresVerifierContext ctx =
         AsPathStructuresVerifierContext.builder()
             .setAsPathMatchExprs(ImmutableMap.of("defined", AsPathMatchAny.of(ImmutableList.of())))
@@ -242,29 +242,34 @@ public final class AsPathStructuresVerifierTest {
   }
 
   @Test
-  public void testVisitAsPathMatchExprReferenceUndefined() {
+  void testVisitAsPathMatchExprReferenceUndefined() {
     AsPathStructuresVerifierContext ctx = AsPathStructuresVerifierContext.builder().build();
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    AsPathMatchExprReference.of("undefined").accept(AS_PATH_MATCH_EXPR_VERIFIER, ctx);
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () ->
+                AsPathMatchExprReference.of("undefined").accept(AS_PATH_MATCH_EXPR_VERIFIER, ctx));
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVisitAsPathMatchExprReferenceCircular() {
+  void testVisitAsPathMatchExprReferenceCircular() {
     AsPathStructuresVerifierContext ctx =
         AsPathStructuresVerifierContext.builder()
             .setAsPathMatchExprs(
                 ImmutableMap.of("circular", AsPathMatchExprReference.of("circular")))
             .build();
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Circular reference"));
-    AsPathMatchExprReference.of("circular").accept(AS_PATH_MATCH_EXPR_VERIFIER, ctx);
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () -> AsPathMatchExprReference.of("circular").accept(AS_PATH_MATCH_EXPR_VERIFIER, ctx));
+    assertThat(exception.getMessage(), containsString("Circular reference"));
   }
 
   @Test
-  public void testVisitAsPathExprReferenceDefined() {
+  void testVisitAsPathExprReferenceDefined() {
     AsPathStructuresVerifierContext ctx =
         AsPathStructuresVerifierContext.builder()
             .setAsPathExprs(ImmutableMap.of("defined", InputAsPath.instance()))
@@ -274,76 +279,96 @@ public final class AsPathStructuresVerifierTest {
   }
 
   @Test
-  public void testVisitAsPathExprReferenceUndefined() {
+  void testVisitAsPathExprReferenceUndefined() {
     AsPathStructuresVerifierContext ctx = AsPathStructuresVerifierContext.builder().build();
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    AsPathExprReference.of("undefined").accept(AS_PATH_EXPR_VERIFIER, ctx);
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () -> AsPathExprReference.of("undefined").accept(AS_PATH_EXPR_VERIFIER, ctx));
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVisitAsPathExprReferenceCircular() {
+  void testVisitAsPathExprReferenceCircular() {
     AsPathStructuresVerifierContext ctx =
         AsPathStructuresVerifierContext.builder()
             .setAsPathExprs(ImmutableMap.of("circular", AsPathExprReference.of("circular")))
             .build();
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Circular reference"));
-    AsPathExprReference.of("circular").accept(AS_PATH_EXPR_VERIFIER, ctx);
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () -> AsPathExprReference.of("circular").accept(AS_PATH_EXPR_VERIFIER, ctx));
+    assertThat(exception.getMessage(), containsString("Circular reference"));
   }
 
   @Test
-  public void testVisitConjunction() {
+  void testVisitConjunction() {
     AsPathStructuresVerifierContext ctx = AsPathStructuresVerifierContext.builder().build();
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    new Conjunction(
-            ImmutableList.of(
-                MatchAsPath.of(InputAsPath.instance(), AsPathMatchExprReference.of("undefined"))))
-        .accept(BOOLEAN_EXPR_VERIFIER, ctx);
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () ->
+                new Conjunction(
+                        ImmutableList.of(
+                            MatchAsPath.of(
+                                InputAsPath.instance(), AsPathMatchExprReference.of("undefined"))))
+                    .accept(BOOLEAN_EXPR_VERIFIER, ctx));
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVisitConjunctionChain() {
+  void testVisitConjunctionChain() {
     AsPathStructuresVerifierContext ctx = AsPathStructuresVerifierContext.builder().build();
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    new ConjunctionChain(
-            ImmutableList.of(
-                MatchAsPath.of(InputAsPath.instance(), AsPathMatchExprReference.of("undefined"))))
-        .accept(BOOLEAN_EXPR_VERIFIER, ctx);
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () ->
+                new ConjunctionChain(
+                        ImmutableList.of(
+                            MatchAsPath.of(
+                                InputAsPath.instance(), AsPathMatchExprReference.of("undefined"))))
+                    .accept(BOOLEAN_EXPR_VERIFIER, ctx));
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVisitDisjunction() {
+  void testVisitDisjunction() {
     AsPathStructuresVerifierContext ctx = AsPathStructuresVerifierContext.builder().build();
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    new Disjunction(
-            ImmutableList.of(
-                MatchAsPath.of(InputAsPath.instance(), AsPathMatchExprReference.of("undefined"))))
-        .accept(BOOLEAN_EXPR_VERIFIER, ctx);
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () ->
+                new Disjunction(
+                        ImmutableList.of(
+                            MatchAsPath.of(
+                                InputAsPath.instance(), AsPathMatchExprReference.of("undefined"))))
+                    .accept(BOOLEAN_EXPR_VERIFIER, ctx));
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVisitFirstMatchChain() {
+  void testVisitFirstMatchChain() {
     AsPathStructuresVerifierContext ctx = AsPathStructuresVerifierContext.builder().build();
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    new FirstMatchChain(
-            ImmutableList.of(
-                MatchAsPath.of(InputAsPath.instance(), AsPathMatchExprReference.of("undefined"))))
-        .accept(BOOLEAN_EXPR_VERIFIER, ctx);
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () ->
+                new FirstMatchChain(
+                        ImmutableList.of(
+                            MatchAsPath.of(
+                                InputAsPath.instance(), AsPathMatchExprReference.of("undefined"))))
+                    .accept(BOOLEAN_EXPR_VERIFIER, ctx));
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVisitTrackSucceeded() {
+  void testVisitTrackSucceeded() {
     AsPathStructuresVerifierContext ctx = AsPathStructuresVerifierContext.builder().build();
 
     // In the future, RibExpr is anticipated to potentially include as-path.
@@ -351,115 +376,144 @@ public final class AsPathStructuresVerifierTest {
   }
 
   @Test
-  public void testVisitIfGuard() {
+  void testVisitIfGuard() {
     AsPathStructuresVerifierContext ctx = AsPathStructuresVerifierContext.builder().build();
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    new If(
-            MatchAsPath.of(InputAsPath.instance(), AsPathMatchExprReference.of("undefined")),
-            ImmutableList.of(),
-            ImmutableList.of())
-        .accept(STATEMENT_VERIFIER, ctx);
-  }
-
-  @Test
-  public void testVisitIfTrue() {
-    AsPathStructuresVerifierContext ctx = AsPathStructuresVerifierContext.builder().build();
-
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    new If(
-            BooleanExprs.TRUE,
-            ImmutableList.of(
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () ->
                 new If(
-                    MatchAsPath.of(
-                        AsPathExprReference.of("undefined"), AsPathMatchAny.of(ImmutableList.of())),
-                    ImmutableList.of(),
-                    ImmutableList.of())),
-            ImmutableList.of())
-        .accept(STATEMENT_VERIFIER, ctx);
+                        MatchAsPath.of(
+                            InputAsPath.instance(), AsPathMatchExprReference.of("undefined")),
+                        ImmutableList.of(),
+                        ImmutableList.of())
+                    .accept(STATEMENT_VERIFIER, ctx));
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVisitIfFalse() {
+  void testVisitIfTrue() {
     AsPathStructuresVerifierContext ctx = AsPathStructuresVerifierContext.builder().build();
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    new If(
-            BooleanExprs.TRUE,
-            ImmutableList.of(),
-            ImmutableList.of(
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () ->
                 new If(
-                    MatchAsPath.of(
-                        AsPathExprReference.of("undefined"), AsPathMatchAny.of(ImmutableList.of())),
-                    ImmutableList.of(),
-                    ImmutableList.of())))
-        .accept(STATEMENT_VERIFIER, ctx);
+                        BooleanExprs.TRUE,
+                        ImmutableList.of(
+                            new If(
+                                MatchAsPath.of(
+                                    AsPathExprReference.of("undefined"),
+                                    AsPathMatchAny.of(ImmutableList.of())),
+                                ImmutableList.of(),
+                                ImmutableList.of())),
+                        ImmutableList.of())
+                    .accept(STATEMENT_VERIFIER, ctx));
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVisitMatchAsPathAsPathExpr() {
+  void testVisitIfFalse() {
     AsPathStructuresVerifierContext ctx = AsPathStructuresVerifierContext.builder().build();
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    MatchAsPath.of(AsPathExprReference.of("undefined"), AsPathMatchAny.of(ImmutableList.of()))
-        .accept(BOOLEAN_EXPR_VERIFIER, ctx);
-  }
-
-  @Test
-  public void testVisitMatchAsPathAsPathMatchExpr() {
-    AsPathStructuresVerifierContext ctx = AsPathStructuresVerifierContext.builder().build();
-
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    MatchAsPath.of(InputAsPath.instance(), AsPathMatchExprReference.of("undefined"))
-        .accept(BOOLEAN_EXPR_VERIFIER, ctx);
-  }
-
-  @Test
-  public void testVisitNot() {
-    AsPathStructuresVerifierContext ctx = AsPathStructuresVerifierContext.builder().build();
-
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    new Not(MatchAsPath.of(InputAsPath.instance(), AsPathMatchExprReference.of("undefined")))
-        .accept(BOOLEAN_EXPR_VERIFIER, ctx);
-  }
-
-  @Test
-  public void testVisitTraceableStatement() {
-    AsPathStructuresVerifierContext ctx = AsPathStructuresVerifierContext.builder().build();
-
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    new TraceableStatement(
-            TraceElement.of("text"),
-            ImmutableList.of(
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () ->
                 new If(
-                    MatchAsPath.of(
-                        AsPathExprReference.of("undefined"), AsPathMatchAny.of(ImmutableList.of())),
-                    ImmutableList.of(),
-                    ImmutableList.of())))
-        .accept(STATEMENT_VERIFIER, ctx);
+                        BooleanExprs.TRUE,
+                        ImmutableList.of(),
+                        ImmutableList.of(
+                            new If(
+                                MatchAsPath.of(
+                                    AsPathExprReference.of("undefined"),
+                                    AsPathMatchAny.of(ImmutableList.of())),
+                                ImmutableList.of(),
+                                ImmutableList.of())))
+                    .accept(STATEMENT_VERIFIER, ctx));
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVisitWithEnvironmentExpr() {
+  void testVisitMatchAsPathAsPathExpr() {
+    AsPathStructuresVerifierContext ctx = AsPathStructuresVerifierContext.builder().build();
+
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () ->
+                MatchAsPath.of(
+                        AsPathExprReference.of("undefined"), AsPathMatchAny.of(ImmutableList.of()))
+                    .accept(BOOLEAN_EXPR_VERIFIER, ctx));
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
+  }
+
+  @Test
+  void testVisitMatchAsPathAsPathMatchExpr() {
+    AsPathStructuresVerifierContext ctx = AsPathStructuresVerifierContext.builder().build();
+
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () ->
+                MatchAsPath.of(InputAsPath.instance(), AsPathMatchExprReference.of("undefined"))
+                    .accept(BOOLEAN_EXPR_VERIFIER, ctx));
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
+  }
+
+  @Test
+  void testVisitNot() {
+    AsPathStructuresVerifierContext ctx = AsPathStructuresVerifierContext.builder().build();
+
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () ->
+                new Not(
+                        MatchAsPath.of(
+                            InputAsPath.instance(), AsPathMatchExprReference.of("undefined")))
+                    .accept(BOOLEAN_EXPR_VERIFIER, ctx));
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
+  }
+
+  @Test
+  void testVisitTraceableStatement() {
+    AsPathStructuresVerifierContext ctx = AsPathStructuresVerifierContext.builder().build();
+
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () ->
+                new TraceableStatement(
+                        TraceElement.of("text"),
+                        ImmutableList.of(
+                            new If(
+                                MatchAsPath.of(
+                                    AsPathExprReference.of("undefined"),
+                                    AsPathMatchAny.of(ImmutableList.of())),
+                                ImmutableList.of(),
+                                ImmutableList.of())))
+                    .accept(STATEMENT_VERIFIER, ctx));
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
+  }
+
+  @Test
+  void testVisitWithEnvironmentExpr() {
     AsPathStructuresVerifierContext ctx = AsPathStructuresVerifierContext.builder().build();
     WithEnvironmentExpr expr = new WithEnvironmentExpr();
     expr.setExpr(MatchAsPath.of(InputAsPath.instance(), AsPathMatchExprReference.of("undefined")));
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class, () -> expr.accept(BOOLEAN_EXPR_VERIFIER, ctx));
 
-    expr.accept(BOOLEAN_EXPR_VERIFIER, ctx);
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVisitWithEnvironmentPost() {
+  void testVisitWithEnvironmentPost() {
     AsPathStructuresVerifierContext ctx = AsPathStructuresVerifierContext.builder().build();
     WithEnvironmentExpr expr = new WithEnvironmentExpr();
     expr.setExpr(BooleanExprs.TRUE);
@@ -471,14 +525,15 @@ public final class AsPathStructuresVerifierTest {
                 ImmutableList.of(),
                 ImmutableList.of())));
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class, () -> expr.accept(BOOLEAN_EXPR_VERIFIER, ctx));
 
-    expr.accept(BOOLEAN_EXPR_VERIFIER, ctx);
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVisitWithEnvironmentPostTrue() {
+  void testVisitWithEnvironmentPostTrue() {
     AsPathStructuresVerifierContext ctx = AsPathStructuresVerifierContext.builder().build();
     WithEnvironmentExpr expr = new WithEnvironmentExpr();
     expr.setExpr(BooleanExprs.TRUE);
@@ -490,14 +545,15 @@ public final class AsPathStructuresVerifierTest {
                 ImmutableList.of(),
                 ImmutableList.of())));
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class, () -> expr.accept(BOOLEAN_EXPR_VERIFIER, ctx));
 
-    expr.accept(BOOLEAN_EXPR_VERIFIER, ctx);
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVisitWithEnvironmentPre() {
+  void testVisitWithEnvironmentPre() {
     AsPathStructuresVerifierContext ctx = AsPathStructuresVerifierContext.builder().build();
     WithEnvironmentExpr expr = new WithEnvironmentExpr();
     expr.setExpr(BooleanExprs.TRUE);
@@ -509,23 +565,28 @@ public final class AsPathStructuresVerifierTest {
                 ImmutableList.of(),
                 ImmutableList.of())));
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class, () -> expr.accept(BOOLEAN_EXPR_VERIFIER, ctx));
 
-    expr.accept(BOOLEAN_EXPR_VERIFIER, ctx);
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVisitDedupedAsPath() {
+  void testVisitDedupedAsPath() {
     AsPathStructuresVerifierContext ctx = AsPathStructuresVerifierContext.builder().build();
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    DedupedAsPath.of(AsPathExprReference.of("undefined")).accept(AS_PATH_EXPR_VERIFIER, ctx);
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () ->
+                DedupedAsPath.of(AsPathExprReference.of("undefined"))
+                    .accept(AS_PATH_EXPR_VERIFIER, ctx));
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testVisitLegacyMatchAsPathDefined() {
+  void testVisitLegacyMatchAsPathDefined() {
     AsPathStructuresVerifierContext ctx =
         AsPathStructuresVerifierContext.builder()
             .setAsPathAccessLists(ImmutableMap.of("defined", new AsPathAccessList("defined", null)))
@@ -536,16 +597,20 @@ public final class AsPathStructuresVerifierTest {
   }
 
   @Test
-  public void testVisitLegacyMatchAsPathUndefined() {
+  void testVisitLegacyMatchAsPathUndefined() {
     AsPathStructuresVerifierContext ctx = AsPathStructuresVerifierContext.builder().build();
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference to AsPathAccessList"));
-    new LegacyMatchAsPath(new NamedAsPathSet("undefined")).accept(BOOLEAN_EXPR_VERIFIER, ctx);
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () ->
+                new LegacyMatchAsPath(new NamedAsPathSet("undefined"))
+                    .accept(BOOLEAN_EXPR_VERIFIER, ctx));
+    assertThat(exception.getMessage(), containsString("Undefined reference to AsPathAccessList"));
   }
 
   @Test
-  public void testVisitNamedAsPathSetDefined() {
+  void testVisitNamedAsPathSetDefined() {
     AsPathStructuresVerifierContext ctx =
         AsPathStructuresVerifierContext.builder()
             .setAsPathAccessLists(ImmutableMap.of("defined", new AsPathAccessList("defined", null)))
@@ -555,11 +620,13 @@ public final class AsPathStructuresVerifierTest {
   }
 
   @Test
-  public void testVisitNamedAsPathSetUndefined() {
+  void testVisitNamedAsPathSetUndefined() {
     AsPathStructuresVerifierContext ctx = AsPathStructuresVerifierContext.builder().build();
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference to AsPathAccessList"));
-    AS_PATH_SET_EXPR_VERIFIER.accept(new NamedAsPathSet("undefined"), ctx);
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () -> AS_PATH_SET_EXPR_VERIFIER.accept(new NamedAsPathSet("undefined"), ctx));
+    assertThat(exception.getMessage(), containsString("Undefined reference to AsPathAccessList"));
   }
 }

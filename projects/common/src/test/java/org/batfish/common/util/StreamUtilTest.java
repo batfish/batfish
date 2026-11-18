@@ -10,14 +10,11 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-@RunWith(JUnit4.class)
-public class StreamUtilTest {
+class StreamUtilTest {
   @Test
-  public void testToListInRandomOrder() {
+  void testToListInRandomOrder() {
     int num = 10;
     Random r = new Random(5);
     List<Integer> ints = IntStream.range(0, num).boxed().collect(Collectors.toList());

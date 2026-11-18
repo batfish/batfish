@@ -17,13 +17,13 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.expr.IntComparison;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link AsPathContext}. */
-public final class AsPathContextTest {
+final class AsPathContextTest {
 
   @Test
-  public void testFromEnvironment() {
+  void testFromEnvironment() {
     Map<String, AsPathExpr> asPathExprs = ImmutableMap.of("ae", InputAsPath.instance());
     Map<String, AsPathMatchExpr> asPathMatchExprs =
         ImmutableMap.of("ame", HasAsPathLength.of(new IntComparison(EQ, new LiteralInt(1))));

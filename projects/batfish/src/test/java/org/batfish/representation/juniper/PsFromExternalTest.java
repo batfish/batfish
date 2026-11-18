@@ -11,11 +11,11 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class PsFromExternalTest {
+class PsFromExternalTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new PsFromExternal(OspfMetricType.E1), new PsFromExternal(OspfMetricType.E1))
@@ -25,7 +25,7 @@ public class PsFromExternalTest {
   }
 
   @Test
-  public void testToBooleanExpr() {
+  void testToBooleanExpr() {
     JuniperConfiguration jc = new JuniperConfiguration();
     Configuration c =
         Configuration.builder()
@@ -49,7 +49,7 @@ public class PsFromExternalTest {
   }
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     // Test serialization for E1 type
     PsFromExternal e1 = new PsFromExternal(OspfMetricType.E1);
     assertThat(SerializationUtils.clone(e1), equalTo(e1));

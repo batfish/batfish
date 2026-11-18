@@ -5,7 +5,7 @@ import static org.batfish.datamodel.vxlan.VniLayer.LAYER_3;
 import static org.batfish.datamodel.vxlan.VxlanTopology.EMPTY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.graph.EndpointPair;
@@ -14,10 +14,10 @@ import com.google.common.graph.MutableGraph;
 import com.google.common.testing.EqualsTester;
 import javax.annotation.Nonnull;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link VxlanTopology}. */
-public final class VxlanTopologyTest {
+final class VxlanTopologyTest {
 
   private static @Nonnull VxlanTopology nonTrivialTopology() {
     MutableGraph<VxlanNode> graph = GraphBuilder.undirected().allowsSelfLoops(false).build();
@@ -27,7 +27,7 @@ public final class VxlanTopologyTest {
   }
 
   @Test
-  public void testGetLayer2VniEdges() {
+  void testGetLayer2VniEdges() {
     assertThat(
         nonTrivialTopology().getLayer2VniEdges().collect(ImmutableSet.toImmutableSet()),
         contains(
@@ -36,7 +36,7 @@ public final class VxlanTopologyTest {
   }
 
   @Test
-  public void testGetLayer3VniEdges() {
+  void testGetLayer3VniEdges() {
     assertThat(
         nonTrivialTopology().getLayer3VniEdges().collect(ImmutableSet.toImmutableSet()),
         contains(
@@ -45,7 +45,7 @@ public final class VxlanTopologyTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new Object())
         .addEqualityGroup(
@@ -57,7 +57,7 @@ public final class VxlanTopologyTest {
   }
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     assertEquals(
         nonTrivialTopology(), BatfishObjectMapper.clone(nonTrivialTopology(), VxlanTopology.class));
   }

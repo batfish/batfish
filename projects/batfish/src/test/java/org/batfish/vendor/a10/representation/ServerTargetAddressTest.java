@@ -6,12 +6,12 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.datamodel.Ip;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link ServerTargetAddress} */
-public class ServerTargetAddressTest {
+class ServerTargetAddressTest {
   @Test
-  public void testEquality() {
+  void testEquality() {
     ServerTargetAddress obj = new ServerTargetAddress(Ip.ZERO);
     new EqualsTester()
         .addEqualityGroup(obj, new ServerTargetAddress(Ip.ZERO))
@@ -20,7 +20,7 @@ public class ServerTargetAddressTest {
   }
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     ServerTargetAddress obj = new ServerTargetAddress(Ip.ZERO);
     ServerTargetAddress clone = SerializationUtils.clone(obj);
     assertThat(obj, equalTo(clone));

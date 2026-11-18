@@ -9,29 +9,29 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IntComparison;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link ExtendedCommunityGlobalAdministratorLowMatch}. */
-public final class ExtendedCommunityGlobalAdministratorLowMatchTest {
+final class ExtendedCommunityGlobalAdministratorLowMatchTest {
 
   private static final ExtendedCommunityGlobalAdministratorLowMatch OBJ =
       new ExtendedCommunityGlobalAdministratorLowMatch(
           new IntComparison(IntComparator.EQ, new LiteralInt(1)));
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     assertThat(
         BatfishObjectMapper.clone(OBJ, ExtendedCommunityGlobalAdministratorLowMatch.class),
         equalTo(OBJ));
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     assertThat(SerializationUtils.clone(OBJ), equalTo(OBJ));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new Object())
         .addEqualityGroup(

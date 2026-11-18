@@ -13,8 +13,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
+import java.io.File;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -68,13 +69,12 @@ import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.VxlanNode;
 import org.batfish.datamodel.vxlan.VxlanTopology;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests of correct computation of fixed-point topologies */
 @ParametersAreNonnullByDefault
-public final class FixedPointTopologyTest {
+final class FixedPointTopologyTest {
 
   private static final String E1_NAME = "E1";
   private static final String E12_NAME = "E12";
@@ -108,7 +108,7 @@ public final class FixedPointTopologyTest {
         new Layer1Edge(S2_NAME, SWP2_NAME, H2_NAME, E2_NAME));
   }
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private Configuration _h1;
   private Configuration _h2;
@@ -183,7 +183,7 @@ public final class FixedPointTopologyTest {
   }
 
   @Test
-  public void testFixedPointVxlanTopology() {
+  void testFixedPointVxlanTopology() {
     Map<String, Configuration> configs = generateVxlanConfigs();
     IncrementalBdpEngine engine = new IncrementalBdpEngine(new IncrementalDataPlaneSettings());
     TopologyContext callerTopologyContext = getCallerTopologyContext(configs);
@@ -365,7 +365,7 @@ public final class FixedPointTopologyTest {
   }
 
   @Test
-  public void testFixedPointL3NoIpsecNegotiation() {
+  void testFixedPointL3NoIpsecNegotiation() {
     // setup network which block IPsec negotiation
     Map<String, Configuration> configurations =
         generateIpsecTunnelConfigurations(true, false, false);
@@ -396,7 +396,7 @@ public final class FixedPointTopologyTest {
   }
 
   @Test
-  public void testFixedPointL3NoIpsecTraffic() {
+  void testFixedPointL3NoIpsecTraffic() {
     // setup network which block IPsec traffic
     Map<String, Configuration> configurations =
         generateIpsecTunnelConfigurations(false, true, false);
@@ -426,7 +426,7 @@ public final class FixedPointTopologyTest {
   }
 
   @Test
-  public void testFixedPointL3WithIpsec() {
+  void testFixedPointL3WithIpsec() {
     // setup network which allows IPsec
     Map<String, Configuration> configurations =
         generateIpsecTunnelConfigurations(false, false, false);
@@ -471,7 +471,7 @@ public final class FixedPointTopologyTest {
   }
 
   @Test
-  public void testFixedPointL3NoIpsecTrafficCloud() {
+  void testFixedPointL3NoIpsecTrafficCloud() {
     // setup network which blocks IPsec traffic but is cloud based
     Map<String, Configuration> configurations =
         generateIpsecTunnelConfigurations(false, true, true);

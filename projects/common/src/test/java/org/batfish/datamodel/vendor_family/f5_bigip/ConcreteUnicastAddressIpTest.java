@@ -1,19 +1,19 @@
 package org.batfish.datamodel.vendor_family.f5_bigip;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.datamodel.Ip;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link ConcreteUnicastAddressIp}. */
-public final class ConcreteUnicastAddressIpTest {
+final class ConcreteUnicastAddressIpTest {
 
   private static final ConcreteUnicastAddressIp OBJ = new ConcreteUnicastAddressIp(Ip.ZERO);
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(OBJ, OBJ, new ConcreteUnicastAddressIp(Ip.ZERO))
         .addEqualityGroup(new Object())
@@ -22,7 +22,7 @@ public final class ConcreteUnicastAddressIpTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     assertEquals(OBJ, SerializationUtils.clone(OBJ));
   }
 }

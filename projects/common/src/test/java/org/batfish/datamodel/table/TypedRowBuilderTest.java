@@ -2,34 +2,32 @@ package org.batfish.datamodel.table;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.batfish.datamodel.answers.Schema;
 import org.hamcrest.Matchers;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-public class TypedRowBuilderTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class TypedRowBuilderTest {
 
   @Test
-  public void putBadColumn() {
+  void putBadColumn() {
     Row.TypedRowBuilder builder =
         Row.builder(ImmutableMap.of("col", new ColumnMetadata("col", Schema.INTEGER, "desc")));
 
     // we should not be able to put in a non-existent column
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("not present");
-    builder.put("badcol", 2);
+    Throwable exception =
+        assertThrows(IllegalArgumentException.class, () -> builder.put("badcol", 2));
+    assertThat(exception.getMessage(), containsString("not present"));
   }
 
   @Test
-  public void putBaseType() {
+  void putBaseType() {
     Row.TypedRowBuilder builder =
         Row.builder(ImmutableMap.of("col", new ColumnMetadata("col", Schema.INTEGER, "desc")));
 
@@ -37,13 +35,13 @@ public class TypedRowBuilderTest {
     Row row = builder.put("col", 2).build();
     assertThat(row.get("col", Schema.INTEGER), Matchers.equalTo(2));
 
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("Cannot convert");
-    builder.put("col", "string");
+    Throwable exception =
+        assertThrows(IllegalArgumentException.class, () -> builder.put("col", "string"));
+    assertThat(exception.getMessage(), containsString("Cannot convert"));
   }
 
   @Test
-  public void putListType() {
+  void putListType() {
     Row.TypedRowBuilder builder =
         Row.builder(
             ImmutableMap.of("col", new ColumnMetadata("col", Schema.list(Schema.INTEGER), "desc")));
@@ -52,13 +50,12 @@ public class TypedRowBuilderTest {
     Row row = builder.put("col", ImmutableList.of(2)).build();
     assertThat(row.get("col", Schema.list(Schema.INTEGER)), Matchers.equalTo(ImmutableList.of(2)));
 
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("Cannot convert");
-    builder.put("col", 2);
+    Throwable exception = assertThrows(IllegalArgumentException.class, () -> builder.put("col", 2));
+    assertThat(exception.getMessage(), containsString("Cannot convert"));
   }
 
   @Test
-  public void putNullValue() {
+  void putNullValue() {
     Row.TypedRowBuilder builder =
         Row.builder(ImmutableMap.of("col", new ColumnMetadata("col", Schema.INTEGER, "desc")));
 
@@ -68,7 +65,7 @@ public class TypedRowBuilderTest {
   }
 
   @Test
-  public void fillInEmptyColumnsOnBuild() {
+  void fillInEmptyColumnsOnBuild() {
     Row row =
         Row.builder(ImmutableMap.of("col", new ColumnMetadata("col", Schema.INTEGER, "desc")))
             .build();

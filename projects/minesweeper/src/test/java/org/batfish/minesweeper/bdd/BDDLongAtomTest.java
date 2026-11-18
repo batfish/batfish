@@ -3,7 +3,7 @@ package org.batfish.minesweeper.bdd;
 import static org.batfish.common.bdd.BDDMatchers.isOne;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
@@ -13,10 +13,10 @@ import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
 import net.sf.javabdd.JFactory;
 import org.batfish.common.bdd.BDDPacket;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link BDDLongAtom}. */
-public class BDDLongAtomTest {
+class BDDLongAtomTest {
 
   private static BDDFactory factory(int numVars) {
     BDDFactory factory = BDDPacket.defaultFactory(JFactory::init);
@@ -39,7 +39,7 @@ public class BDDLongAtomTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     BDDFactory factory = factory(5);
     BDDLongAtom base = BDDLongAtom.create(factory, 0, ImmutableList.of(5L));
     new EqualsTester()
@@ -58,7 +58,7 @@ public class BDDLongAtomTest {
 
   /** With no known values there are still two domain values: unset (0) and OTHER. */
   @Test
-  public void testEmpty() {
+  void testEmpty() {
     BDDLongAtom empty = atom();
 
     assertThat(empty.getNumBits(), equalTo(1));
@@ -68,14 +68,14 @@ public class BDDLongAtomTest {
   }
 
   @Test
-  public void testMinimumIsZero() {
+  void testMinimumIsZero() {
     BDDLongAtom atom = atom(5L, 7L);
 
     assertThat(atom.satAssignmentToLong(atom.getIsValidConstraint().satOne()), equalTo(0L));
   }
 
   @Test
-  public void testKnownValues() {
+  void testKnownValues() {
     BDDLongAtom atom = atom(5L, 7L);
 
     assertThat(atom.satAssignmentToLong(atom.value(5).satOne()), equalTo(5L));
@@ -83,7 +83,7 @@ public class BDDLongAtomTest {
   }
 
   @Test
-  public void testOtherIsSmallestUnknownPositiveValue() {
+  void testOtherIsSmallestUnknownPositiveValue() {
     List<Long> known = ImmutableList.of(1L, 2L, 4L);
     BDDLongAtom atom = atom(1L, 2L, 4L);
 
@@ -91,7 +91,7 @@ public class BDDLongAtomTest {
   }
 
   @Test
-  public void testOtherIsOneWhenOneIsNotKnown() {
+  void testOtherIsOneWhenOneIsNotKnown() {
     List<Long> known = ImmutableList.of(5L);
     BDDLongAtom atom = atom(5L);
 
@@ -99,7 +99,7 @@ public class BDDLongAtomTest {
   }
 
   @Test
-  public void testValidConstraintExcludesUnusedBitPatterns() {
+  void testValidConstraintExcludesUnusedBitPatterns() {
     // {0, 5, OTHER} in two bits leaves one bit pattern unused.
     BDDLongAtom atom = atom(5L);
 
@@ -111,7 +111,7 @@ public class BDDLongAtomTest {
   }
 
   @Test
-  public void testNumBitsFor() {
+  void testNumBitsFor() {
     assertThat(BDDLongAtom.numBitsFor(ImmutableList.of()), equalTo(1));
     assertThat(BDDLongAtom.numBitsFor(ImmutableList.of(1L, 2L)), equalTo(2));
     assertThat(BDDLongAtom.numBitsFor(ImmutableList.of(1L, 2L, 3L)), equalTo(3));
@@ -119,7 +119,7 @@ public class BDDLongAtomTest {
   }
 
   @Test
-  public void testSetValue() {
+  void testSetValue() {
     BDDLongAtom atom = atom(5L);
     atom.setValue(5);
 
@@ -127,43 +127,43 @@ public class BDDLongAtomTest {
   }
 
   @Test
-  public void testSetUnknownValueRejected() {
+  void testSetUnknownValueRejected() {
     BDDLongAtom atom = atom(5L);
 
     assertThrows(IllegalArgumentException.class, () -> atom.setValue(6));
   }
 
   @Test
-  public void testValueOfUnknownValueRejected() {
+  void testValueOfUnknownValueRejected() {
     BDDLongAtom atom = atom(5L);
 
     assertThrows(IllegalArgumentException.class, () -> atom.value(6));
   }
 
   @Test
-  public void testNegativeValueRejected() {
+  void testNegativeValueRejected() {
     BDDLongAtom atom = atom(5L);
 
     assertThrows(IllegalArgumentException.class, () -> atom.value(-1));
   }
 
   @Test
-  public void testCreateRejectsZero() {
+  void testCreateRejectsZero() {
     assertThrows(IllegalArgumentException.class, () -> atom(0L, 5L));
   }
 
   @Test
-  public void testCreateRejectsUnsortedValues() {
+  void testCreateRejectsUnsortedValues() {
     assertThrows(IllegalArgumentException.class, () -> atom(7L, 5L));
   }
 
   @Test
-  public void testCreateRejectsDuplicateValues() {
+  void testCreateRejectsDuplicateValues() {
     assertThrows(IllegalArgumentException.class, () -> atom(5L, 5L));
   }
 
   @Test
-  public void testCopyIsIndependent() {
+  void testCopyIsIndependent() {
     BDDLongAtom atom = atom(5L);
     BDDLongAtom copy = BDDLongAtom.copyOf(atom);
     copy.setValue(5);
@@ -172,7 +172,7 @@ public class BDDLongAtomTest {
   }
 
   @Test
-  public void testAllDifferences() {
+  void testAllDifferences() {
     BDDFactory factory = factory(5);
     BDDLongAtom alwaysFive = BDDLongAtom.create(factory, 0, ImmutableList.of(5L));
     alwaysFive.setValue(5);
@@ -183,7 +183,7 @@ public class BDDLongAtomTest {
   }
 
   @Test
-  public void testSupport() {
+  void testSupport() {
     BDDFactory factory = factory(5);
     BDDLongAtom alwaysFive = BDDLongAtom.create(factory, 0, ImmutableList.of(5L));
     alwaysFive.setValue(5);
@@ -194,7 +194,7 @@ public class BDDLongAtomTest {
   }
 
   @Test
-  public void testAugmentPairing() {
+  void testAugmentPairing() {
     BDDFactory factory = factory(10);
     // each has four values {0, 5, 7, OTHER}, so uses 2 BDD variables: 0-1 and 4-5 respectively
     BDDLongAtom x = BDDLongAtom.create(factory, 0, ImmutableList.of(5L, 7L));
@@ -209,7 +209,7 @@ public class BDDLongAtomTest {
   }
 
   @Test
-  public void testVeccompose() {
+  void testVeccompose() {
     BDDFactory factory = factory(10);
     BDDLongAtom x = BDDLongAtom.create(factory, 0, ImmutableList.of(5L, 7L));
     BDDLongAtom y = BDDLongAtom.create(factory, 4, ImmutableList.of(5L, 7L));

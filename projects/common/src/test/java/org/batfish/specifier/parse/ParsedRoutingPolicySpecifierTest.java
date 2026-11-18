@@ -1,7 +1,9 @@
 package org.batfish.specifier.parse;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -10,11 +12,9 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.specifier.MockSpecifierContext;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-public class ParsedRoutingPolicySpecifierTest {
+class ParsedRoutingPolicySpecifierTest {
 
   private static final String _nodeName = "node0";
   private static final MockSpecifierContext _ctxt;
@@ -43,7 +43,7 @@ public class ParsedRoutingPolicySpecifierTest {
   }
 
   @Test
-  public void testResolveDifference() {
+  void testResolveDifference() {
     assertThat(
         new ParsedRoutingPolicySpecifier(
                 new DifferenceRoutingPolicyAstNode(
@@ -61,7 +61,7 @@ public class ParsedRoutingPolicySpecifierTest {
   }
 
   @Test
-  public void testResolveIntersection() {
+  void testResolveIntersection() {
     assertThat(
         new ParsedRoutingPolicySpecifier(
                 new IntersectionRoutingPolicyAstNode(
@@ -79,7 +79,7 @@ public class ParsedRoutingPolicySpecifierTest {
   }
 
   @Test
-  public void testResolveName() {
+  void testResolveName() {
     assertThat(
         new ParsedRoutingPolicySpecifier(new NameRoutingPolicyAstNode("routingPolicy1"))
             .resolve(_nodeName, _ctxt),
@@ -87,7 +87,7 @@ public class ParsedRoutingPolicySpecifierTest {
   }
 
   @Test
-  public void testResolveNameRegex() {
+  void testResolveNameRegex() {
     assertThat(
         new ParsedRoutingPolicySpecifier(new NameRegexRoutingPolicyAstNode("routingPolicy.*2"))
             .resolve(_nodeName, _ctxt),
@@ -95,7 +95,7 @@ public class ParsedRoutingPolicySpecifierTest {
   }
 
   @Test
-  public void testResolveUnion() {
+  void testResolveUnion() {
     assertThat(
         new ParsedRoutingPolicySpecifier(
                 new UnionRoutingPolicyAstNode(
@@ -105,17 +105,16 @@ public class ParsedRoutingPolicySpecifierTest {
         equalTo(ImmutableSet.of(_routingPolicy1, _routingPolicy2)));
   }
 
-  @Rule public ExpectedException _thrown = ExpectedException.none();
-
   @Test
-  public void testParseBadInput() {
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("Error parsing");
-    ParsedRoutingPolicySpecifier.parse("@connected");
+  void testParseBadInput() {
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class, () -> ParsedRoutingPolicySpecifier.parse("@connected"));
+    assertThat(exception.getMessage(), containsString("Error parsing"));
   }
 
   @Test
-  public void testParseGoodInput() {
+  void testParseGoodInput() {
     assertThat(
         ParsedRoutingPolicySpecifier.parse("router0"),
         equalTo(new ParsedRoutingPolicySpecifier(new NameRoutingPolicyAstNode("router0"))));

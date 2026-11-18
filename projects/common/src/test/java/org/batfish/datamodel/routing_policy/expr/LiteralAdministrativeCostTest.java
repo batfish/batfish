@@ -3,6 +3,7 @@ package org.batfish.datamodel.routing_policy.expr;
 import static org.batfish.datamodel.AbstractRoute.MAX_ADMIN_DISTANCE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
@@ -13,11 +14,11 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class LiteralAdministrativeCostTest {
+class LiteralAdministrativeCostTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new LiteralAdministrativeCost(5), new LiteralAdministrativeCost(5))
         .addEqualityGroup(new LiteralAdministrativeCost(6))
@@ -25,14 +26,14 @@ public class LiteralAdministrativeCostTest {
   }
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     LiteralAdministrativeCost obj = new LiteralAdministrativeCost(123);
     assertThat(SerializationUtils.clone(obj), equalTo(obj));
     assertThat(BatfishObjectMapper.clone(obj, AdministrativeCostExpr.class), equalTo(obj));
   }
 
   @Test
-  public void testEvaluate() {
+  void testEvaluate() {
     Configuration c =
         Configuration.builder()
             .setHostname("c")
@@ -47,13 +48,21 @@ public class LiteralAdministrativeCostTest {
         equalTo(123L));
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void testConstructor_negative() {
-    new LiteralAdministrativeCost(-1);
+  @Test
+  void testConstructor_negative() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> {
+          new LiteralAdministrativeCost(-1);
+        });
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void testConstructor_tooLarge() {
-    new LiteralAdministrativeCost(MAX_ADMIN_DISTANCE + 1);
+  @Test
+  void testConstructor_tooLarge() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> {
+          new LiteralAdministrativeCost(MAX_ADMIN_DISTANCE + 1);
+        });
   }
 }

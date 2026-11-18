@@ -14,6 +14,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableSet;
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import org.batfish.datamodel.answers.Schema;
@@ -21,16 +22,15 @@ import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** End-to-end tests of {@link F5BigipVipConfigurationQuestion}. */
-public final class F5BigipVipConfigurationTest {
+final class F5BigipVipConfigurationTest {
 
   private static String TESTCONFIGS_PREFIX = "org/batfish/allinone/testconfigs/";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private Batfish getBatfishForConfigurationNames(String... configurationNames) throws IOException {
     String[] names =
@@ -39,7 +39,7 @@ public final class F5BigipVipConfigurationTest {
   }
 
   @Test
-  public void testAnswer() throws IOException {
+  void testAnswer() throws IOException {
     String hostname1 = "f5_bigip_vip_configuration";
 
     Batfish batfish = getBatfishForConfigurationNames(hostname1);

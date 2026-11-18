@@ -10,22 +10,22 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.main.Batfish;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosApplicationReservedNameTest {
+final class JunosApplicationReservedNameTest {
 
   private static final String CONFIG_NAME = "application-reserved-name";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testAnyInactivityTimeout() throws IOException {
+  void testAnyInactivityTimeout() throws IOException {
     Batfish batfish = getBatfish(_folder, CONFIG_NAME);
     assertThat(
         getVendorConfiguration(batfish, CONFIG_NAME).getMasterLogicalSystem().getApplications(),

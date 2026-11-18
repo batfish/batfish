@@ -4,8 +4,8 @@ import static org.batfish.question.bidirectionalreachability.BidirectionalReacha
 import static org.batfish.question.bidirectionalreachability.ReturnFlowType.FAILURE;
 import static org.batfish.question.bidirectionalreachability.ReturnFlowType.MULTIPATH_INCONSISTENT;
 import static org.batfish.question.bidirectionalreachability.ReturnFlowType.SUCCESS;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
@@ -14,15 +14,15 @@ import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.Location;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests of {@link org.batfish.question.bidirectionalreachability.BidirectionalReachabilityAnswerer}
  */
-public final class BidirectionalReachabilityAnswererTest {
+final class BidirectionalReachabilityAnswererTest {
 
   @Test
-  public void testGetAnswerBdds() {
+  void testGetAnswerBdds() {
     BDDPacket pkt = new BDDPacket();
     BDDInteger var = pkt.getDstIp();
     BDD bdd1 = var.value(1);

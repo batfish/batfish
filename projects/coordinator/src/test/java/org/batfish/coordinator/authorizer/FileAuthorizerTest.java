@@ -1,50 +1,57 @@
 package org.batfish.coordinator.authorizer;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.batfish.common.BatfishLogger;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests for {@link FileAuthorizer}. */
-@RunWith(JUnit4.class)
-public class FileAuthorizerTest {
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
-  @Rule public ExpectedException _exception = ExpectedException.none();
+class FileAuthorizerTest {
+  @TempDir public File _folder;
   private BatfishLogger _logger = new BatfishLogger("fatal", false);
 
   @Test
-  public void testUserMissing() throws Exception {
-    Path root = _folder.getRoot().toPath();
+  void testUserMissing() {
+    Path root = _folder.toPath();
 
-    _exception.expect(FileNotFoundException.class);
-    _exception.expectMessage("missing_users");
-    new FileAuthorizer(root.resolve("missing_users"), root.resolve("missing_perms"), _logger);
+    Throwable exception =
+        assertThrows(
+            FileNotFoundException.class,
+            () -> {
+              new FileAuthorizer(
+                  root.resolve("missing_users"), root.resolve("missing_perms"), _logger);
+            });
+    assertThat(exception.getMessage(), containsString("missing_users"));
   }
 
   @Test
-  public void testPermsMissing() throws Exception {
-    Path root = _folder.getRoot().toPath();
-    File users = _folder.newFile("present_users");
+  void testPermsMissing() throws Exception {
+    Path root = _folder.toPath();
+    File users = newFile(_folder, "present_users");
 
-    _exception.expect(FileNotFoundException.class);
-    _exception.expectMessage("missing_perms");
-    new FileAuthorizer(users.toPath(), root.resolve("missing_perms"), _logger);
+    Throwable exception =
+        assertThrows(
+            FileNotFoundException.class,
+            () -> {
+              new FileAuthorizer(users.toPath(), root.resolve("missing_perms"), _logger);
+            });
+    assertThat(exception.getMessage(), containsString("missing_perms"));
   }
 
   @Test
-  public void testEmptyAuthorizer() throws Exception {
-    Path users = _folder.newFile("users").toPath();
-    Path perms = _folder.newFile("perms").toPath();
+  void testEmptyAuthorizer() throws Exception {
+    Path users = newFile(_folder, "users").toPath();
+    Path perms = newFile(_folder, "perms").toPath();
     Files.write(users, "{\"users\": []}".getBytes());
     Files.write(perms, "{\"perms\": []}".getBytes());
 
@@ -55,9 +62,9 @@ public class FileAuthorizerTest {
   }
 
   @Test
-  public void testAuthorizerCorrectness() throws Exception {
-    Path users = _folder.newFile("users").toPath();
-    Path perms = _folder.newFile("perms").toPath();
+  void testAuthorizerCorrectness() throws Exception {
+    Path users = newFile(_folder, "users").toPath();
+    Path perms = newFile(_folder, "perms").toPath();
     Files.write(users, "{\"users\": []}".getBytes());
     Files.write(perms, "{\"perms\": [{\"apikey\": \"key\", \"container\": \"cont\"}]}".getBytes());
 
@@ -75,13 +82,13 @@ public class FileAuthorizerTest {
   }
 
   @Test
-  public void testAddingPermissions() throws Exception {
+  void testAddingPermissions() throws Exception {
     final String KEY = "key";
     final String KEY2 = "key2";
     final String CONT = "cont";
     final String CONT2 = "cont2";
-    Path users = _folder.newFile("users").toPath();
-    Path perms = _folder.newFile("perms").toPath();
+    Path users = newFile(_folder, "users").toPath();
+    Path perms = newFile(_folder, "perms").toPath();
     Files.write(users, "{\"users\": []}".getBytes());
     Files.write(perms, "{\"perms\": [{\"apikey\": \"key\", \"container\": \"cont\"}]}".getBytes());
 
@@ -120,9 +127,9 @@ public class FileAuthorizerTest {
   }
 
   @Test
-  public void testApiKeyValidity() throws Exception {
-    Path users = _folder.newFile("users").toPath();
-    Path perms = _folder.newFile("perms").toPath();
+  void testApiKeyValidity() throws Exception {
+    Path users = newFile(_folder, "users").toPath();
+    Path perms = newFile(_folder, "perms").toPath();
     Files.write(users, generateUsers("key1").getBytes());
     Files.write(perms, "{\"perms\": []}".getBytes());
 
@@ -136,5 +143,11 @@ public class FileAuthorizerTest {
     assertTrue(authorizer.isValidWorkApiKey("key2"));
     assertFalse(authorizer.isValidWorkApiKey("key3"));
     assertFalse(authorizer.isValidWorkApiKey("KEY1"));
+  }
+
+  private static File newFile(File parent, String child) throws IOException {
+    File result = new File(parent, child);
+    result.createNewFile();
+    return result;
   }
 }

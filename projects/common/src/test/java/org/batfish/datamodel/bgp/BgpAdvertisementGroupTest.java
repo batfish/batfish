@@ -12,12 +12,12 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class BgpAdvertisementGroupTest {
+final class BgpAdvertisementGroupTest {
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     BgpAdvertisementGroup bgpAdvertisementGroup =
         BgpAdvertisementGroup.builder()
             .setAsPath(AsPath.ofSingletonAsSets(2L))
@@ -38,7 +38,7 @@ public final class BgpAdvertisementGroupTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     BgpAdvertisementGroup bgpAdvertisementGroup =
         BgpAdvertisementGroup.builder()
             .setAsPath(AsPath.ofSingletonAsSets(2L))
@@ -61,7 +61,7 @@ public final class BgpAdvertisementGroupTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     BgpAdvertisementGroup.Builder builder =
         BgpAdvertisementGroup.builder()
             .setAsPath(AsPath.ofSingletonAsSets())

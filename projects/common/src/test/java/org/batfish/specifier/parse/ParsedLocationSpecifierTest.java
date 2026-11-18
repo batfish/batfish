@@ -4,8 +4,10 @@ import static org.batfish.specifier.Location.interfaceLinkLocation;
 import static org.batfish.specifier.Location.interfaceLocation;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -18,11 +20,9 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.MockSpecifierContext;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-public class ParsedLocationSpecifierTest {
+class ParsedLocationSpecifierTest {
 
   private static final String _node1 = "node1";
   private static final String _node2 = "node2";
@@ -52,7 +52,7 @@ public class ParsedLocationSpecifierTest {
   }
 
   @Test
-  public void testResolveDifference() {
+  void testResolveDifference() {
     assertThat(
         new ParsedLocationSpecifier(
                 new DifferenceLocationAstNode(
@@ -64,7 +64,7 @@ public class ParsedLocationSpecifierTest {
   }
 
   @Test
-  public void testResolveIntersection() {
+  void testResolveIntersection() {
     assertThat(
         new ParsedLocationSpecifier(
                 new IntersectionLocationAstNode(
@@ -76,7 +76,7 @@ public class ParsedLocationSpecifierTest {
   }
 
   @Test
-  public void testResolveInterface() {
+  void testResolveInterface() {
     assertThat(
         new ParsedLocationSpecifier(
                 InterfaceLocationAstNode.createFromInterface(new NameInterfaceAstNode(_iface1)))
@@ -87,7 +87,7 @@ public class ParsedLocationSpecifierTest {
   }
 
   @Test
-  public void testResolveNode() {
+  void testResolveNode() {
     assertThat(
         new ParsedLocationSpecifier(InterfaceLocationAstNode.createFromNode(_node1)).resolve(_ctxt),
         equalTo(
@@ -96,7 +96,7 @@ public class ParsedLocationSpecifierTest {
   }
 
   @Test
-  public void testResolveNodeInterface() {
+  void testResolveNodeInterface() {
     assertThat(
         new ParsedLocationSpecifier(
                 InterfaceLocationAstNode.createFromInterfaceWithNode(
@@ -106,7 +106,7 @@ public class ParsedLocationSpecifierTest {
   }
 
   @Test
-  public void testResolveUnion() {
+  void testResolveUnion() {
     assertThat(
         new ParsedLocationSpecifier(
                 new UnionLocationAstNode(
@@ -121,36 +121,35 @@ public class ParsedLocationSpecifierTest {
                 new InterfaceLocation(_node2, _iface1))));
   }
 
-  @Rule public ExpectedException _thrown = ExpectedException.none();
-
   @Test
-  public void testParseBadInput() {
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("Error parsing");
-    ParsedLocationSpecifier.parse("@connected");
+  void testParseBadInput() {
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class, () -> ParsedLocationSpecifier.parse("@connected"));
+    assertThat(exception.getMessage(), containsString("Error parsing"));
   }
 
   @Test
-  public void testParseGoodInput() {
+  void testParseGoodInput() {
     assertThat(
         ParsedLocationSpecifier.parse("node0"),
         equalTo(new ParsedLocationSpecifier(InterfaceLocationAstNode.createFromNode("node0"))));
   }
 
   @Test
-  public void testParseInternet() {
+  void testParseInternet() {
     assertThat(
         ParsedLocationSpecifier.parse("internet"),
         equalTo(new ParsedLocationSpecifier(InternetLocationAstNode.INSTANCE)));
   }
 
   @Test
-  public void testParseInternet_noInternet() {
+  void testParseInternet_noInternet() {
     assertThat(ParsedLocationSpecifier.parse("internet").resolve(_ctxt), empty());
   }
 
   @Test
-  public void testParseInternet_batfishInternet() {
+  void testParseInternet_batfishInternet() {
     NetworkFactory nf = new NetworkFactory();
 
     Configuration inet =
@@ -176,7 +175,7 @@ public class ParsedLocationSpecifierTest {
   }
 
   @Test
-  public void testParseInternet_nonBatfishInternet() {
+  void testParseInternet_nonBatfishInternet() {
     NetworkFactory nf = new NetworkFactory();
 
     Configuration inet =
@@ -196,7 +195,7 @@ public class ParsedLocationSpecifierTest {
   }
 
   @Test
-  public void testParseInternet_toIsp() {
+  void testParseInternet_toIsp() {
     NetworkFactory nf = new NetworkFactory();
 
     Configuration inet =

@@ -2,12 +2,12 @@ package org.batfish.common.util.isp;
 
 import com.google.common.testing.EqualsTester;
 import org.batfish.datamodel.Ip;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class IspBgpActivePeerTest {
+class IspBgpActivePeerTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     // test variation of fields unique to unnumbered peers -- the inherited fields are tested in the
     // parent class
     new EqualsTester()

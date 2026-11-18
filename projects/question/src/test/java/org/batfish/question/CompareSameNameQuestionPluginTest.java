@@ -13,12 +13,12 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.vendor.VendorStructureId;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class CompareSameNameQuestionPluginTest {
+class CompareSameNameQuestionPluginTest {
 
   @Test
-  public void testStripTracingHints() throws JsonProcessingException {
+  void testStripTracingHints() throws JsonProcessingException {
     TraceableStatement traceableStatement =
         new TraceableStatement(
             TraceElement.builder().add("text", new VendorStructureId("a", "b", "c")).build(),

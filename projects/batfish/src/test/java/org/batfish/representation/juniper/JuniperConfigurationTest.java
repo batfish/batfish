@@ -43,7 +43,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -92,10 +92,10 @@ import org.batfish.datamodel.vxlan.Layer3Vni;
 import org.batfish.datamodel.vxlan.Vni;
 import org.batfish.representation.juniper.OspfInterfaceSettings.OspfInterfaceType;
 import org.batfish.vendor.VendorStructureId;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link JuniperConfiguration} */
-public class JuniperConfigurationTest {
+class JuniperConfigurationTest {
 
   private static JuniperConfiguration createConfig() {
     JuniperConfiguration config = new JuniperConfiguration();
@@ -105,7 +105,7 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testFilterToIpAccessList_noTerm() {
+  void testFilterToIpAccessList_noTerm() {
     JuniperConfiguration config = createConfig();
     ConcreteFirewallFilter filter = new ConcreteFirewallFilter("filter", Family.INET);
     IpAccessList emptyAcl = config.filterToIpAccessList(filter);
@@ -115,7 +115,7 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testFilterToIpAccessList_hasTerm() {
+  void testFilterToIpAccessList_hasTerm() {
     JuniperConfiguration config = createConfig();
     ConcreteFirewallFilter filter = new ConcreteFirewallFilter("filter", Family.INET);
     FwTerm term = new FwTerm("term");
@@ -147,7 +147,7 @@ public class JuniperConfigurationTest {
 
   /** Validate vrf assigned to l3vni is the same as the l3interface on a vlan. */
   @Test
-  public void testL3VniVrf() {
+  void testL3VniVrf() {
     JuniperConfiguration config = createConfig();
     String iface1Name = "iface1";
     Vrf vrf = new Vrf("vrf");
@@ -173,7 +173,7 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testGetJuniperConnectedRouteMetadata() {
+  void testGetJuniperConnectedRouteMetadata() {
     ConnectedRouteMetadata normalAddr =
         getJuniperConnectedRouteMetadata(ConcreteInterfaceAddress.parse("1.2.3.4/24"));
     assertThat(normalAddr.getAdmin(), nullValue());
@@ -197,7 +197,7 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testSecurityPolicyToIpAccessList() {
+  void testSecurityPolicyToIpAccessList() {
     JuniperConfiguration config = createConfig();
     ConcreteFirewallFilter filter = new ConcreteFirewallFilter("filter", Family.INET);
     FwTerm term = new FwTerm("term");
@@ -240,7 +240,7 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testCompositeFirewallFilter() {
+  void testCompositeFirewallFilter() {
     JuniperConfiguration config = createConfig();
 
     ConcreteFirewallFilter concrete = new ConcreteFirewallFilter("F", Family.INET);
@@ -301,7 +301,7 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testProcessIsisInterfaceSettings() {
+  void testProcessIsisInterfaceSettings() {
     // Config with loopback and two other interfaces
     JuniperConfiguration config = createConfig();
     String loopbackName = "lo0.0";
@@ -385,7 +385,7 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testIsisCostFromInterfaceSettings() {
+  void testIsisCostFromInterfaceSettings() {
     // Reference bandwidth and interface IS-IS cost are both set. Test that interface IS-IS cost
     // takes precedence.
     JuniperConfiguration config = createConfig();
@@ -397,7 +397,7 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testIsisCostFromReferenceBandwidth() {
+  void testIsisCostFromReferenceBandwidth() {
     // Reference bandwidth is set and interface IS-IS cost is not. Test that reference bandwidth is
     // used to produce IS-IS cost.
     JuniperConfiguration config = createConfig();
@@ -409,7 +409,7 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testIsisCostFromSmallReferenceBandwidth() {
+  void testIsisCostFromSmallReferenceBandwidth() {
     // Interface IS-IS cost is not set. Reference bandwidth is set smaller than interface bandwidth.
     // IS-IS cost should be 1.
     JuniperConfiguration config = createConfig();
@@ -421,7 +421,7 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testDefaultIsisCost() {
+  void testDefaultIsisCost() {
     // Neither reference bandwidth nor interface IS-IS cost is set. Test that IS-IS cost is default.
     JuniperConfiguration config = createConfig();
     org.batfish.datamodel.Interface viIface = createInterface(config._c);
@@ -432,7 +432,7 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testIsisCostInterfaceBandwidth0() {
+  void testIsisCostInterfaceBandwidth0() {
     // Reference bandwidth is set, but IS-IS cost can't be calculated because interface bandwidth is
     // 0. IS-IS cost should be default value; conversion warning should be generated.
     JuniperConfiguration config = createConfig();
@@ -452,7 +452,7 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testRefBandwidthBasedIsisCostClipped() {
+  void testRefBandwidthBasedIsisCostClipped() {
     // Reference bandwidth = 10000, bandwidth = 10. IS-IS cost would be 1000 if wide-metrics-only
     // were set, but since it is not, cost should be clipped to 63.
     JuniperConfiguration config = createConfig();
@@ -471,7 +471,7 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testInterfaceSettingsBasedIsisCostClipped() {
+  void testInterfaceSettingsBasedIsisCostClipped() {
     // Interface IS-IS metric = 100, but wide-metrics-only is not set. Cost should be clipped to 63.
     JuniperConfiguration config = createConfig();
     org.batfish.datamodel.Interface viIface = createInterface(config._c);
@@ -489,7 +489,7 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testFromNatPacketLocationMatchExprs() {
+  void testFromNatPacketLocationMatchExprs() {
     JuniperConfiguration config = createConfig();
 
     Interface parent = new Interface("parent");
@@ -529,7 +529,7 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testBuildScreen() {
+  void testBuildScreen() {
     List<ScreenOption> screenOptionList =
         ImmutableList.of(
             IcmpLarge.INSTANCE,
@@ -566,7 +566,7 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testBuildScreensPerZone() {
+  void testBuildScreensPerZone() {
     JuniperConfiguration config = createConfig();
 
     List<ScreenOption> screenOptionList1 =
@@ -628,7 +628,7 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testBuildScreensPerInterface() {
+  void testBuildScreensPerInterface() {
     JuniperConfiguration config = createConfig();
     Interface iface = new Interface("iface");
 
@@ -664,7 +664,7 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testToRibId() {
+  void testToRibId() {
     String hostname = "host";
     assertThat(
         toRibId(hostname, "inet.0", null),
@@ -687,7 +687,7 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testToOspfDeadIntervalExplicit() {
+  void testToOspfDeadIntervalExplicit() {
     OspfInterfaceSettings ospfInterfaceSettings = new OspfInterfaceSettings(Ip.ZERO);
     ospfInterfaceSettings.setOspfDeadInterval(7);
     // Explicitly set dead interval should be preferred over inference
@@ -695,7 +695,7 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testToOspfDeadIntervalFromHello() {
+  void testToOspfDeadIntervalFromHello() {
     int helloInterval = 1;
     OspfInterfaceSettings ospfInterfaceSettings = new OspfInterfaceSettings(Ip.ZERO);
     ospfInterfaceSettings.setOspfHelloInterval(1);
@@ -706,7 +706,7 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testToOspfDeadIntervalFromType() {
+  void testToOspfDeadIntervalFromType() {
     OspfInterfaceSettings ospfInterfaceSettings = new OspfInterfaceSettings(Ip.ZERO);
     // Since the dead interval and hello interval are not set, it should be inferred from the
     // network type
@@ -717,7 +717,7 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testToOspfHelloIntervalExplicit() {
+  void testToOspfHelloIntervalExplicit() {
     OspfInterfaceSettings ospfInterfaceSettings = new OspfInterfaceSettings(Ip.ZERO);
     ospfInterfaceSettings.setOspfHelloInterval(7);
     // Explicitly set hello interval should be preferred over inference
@@ -725,7 +725,7 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testToOspfHelloIntervalFromType() {
+  void testToOspfHelloIntervalFromType() {
     OspfInterfaceSettings ospfInterfaceSettings = new OspfInterfaceSettings(Ip.ZERO);
     // Since the hello interval is not set, it should be inferred from the network type
     ospfInterfaceSettings.setOspfInterfaceType(OspfInterfaceType.P2P);
@@ -735,7 +735,7 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testBuildSecurityPolicyAcl_traceElement_fromHost() {
+  void testBuildSecurityPolicyAcl_traceElement_fromHost() {
     JuniperConfiguration config = createConfig();
     Zone zone = new Zone("toZone", null);
 
@@ -772,7 +772,7 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testBuildSecurityPolicyAcl_traceElement_fromZone() {
+  void testBuildSecurityPolicyAcl_traceElement_fromZone() {
     JuniperConfiguration config = createConfig();
     Zone zone = new Zone("toZone", null);
 
@@ -811,7 +811,7 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testFwTermToIpAccessList_traceElement() {
+  void testFwTermToIpAccessList_traceElement() {
     JuniperConfiguration config = createConfig();
     FwTerm term = new FwTerm("term");
     term.getThens().add(FwThenAccept.INSTANCE);
@@ -834,7 +834,7 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testFwTermToIpAccessList_nestedFilterWithConjunct() {
+  void testFwTermToIpAccessList_nestedFilterWithConjunct() {
     JuniperConfiguration config = createConfig();
     ConcreteFirewallFilter nested = new ConcreteFirewallFilter("nested", Family.INET);
     config.getMasterLogicalSystem().getFirewallFilters().put(nested.getName(), nested);
@@ -859,7 +859,7 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testFwTermToIpAccessList_undefinedAndWrongFamilyNestedFilters() {
+  void testFwTermToIpAccessList_undefinedAndWrongFamilyNestedFilters() {
     JuniperConfiguration config = createConfig();
     ConcreteFirewallFilter inet6 = new ConcreteFirewallFilter("inet6", Family.INET6);
     config.getMasterLogicalSystem().getFirewallFilters().put(inet6.getName(), inet6);
@@ -880,7 +880,7 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testMergeIpAccessListLines() {
+  void testMergeIpAccessListLines() {
     List<ExprAclLine> lines =
         ImmutableList.of(
             new ExprAclLine(
@@ -902,7 +902,7 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testRouterIdInference() {
+  void testRouterIdInference() {
     RoutingInstance ri = new RoutingInstance("RI");
     Ip routerId = Ip.parse("9.9.9.9");
     Ip loopBackIp1 = Ip.parse("1.1.1.2");
@@ -941,7 +941,7 @@ public class JuniperConfigurationTest {
 
   /** Check that vendor structure id is set when prefix list is converted to route filter list */
   @Test
-  public void testToRouterFilterList_prefixList_vendorStructureId() {
+  void testToRouterFilterList_prefixList_vendorStructureId() {
     PrefixList plist = new PrefixList("name");
     RouteFilterList rfl = toRouteFilterList(plist, "file");
     assertThat(
@@ -953,7 +953,7 @@ public class JuniperConfigurationTest {
 
   /** Check that tracing is properly added during routing policy conversion */
   @Test
-  public void toRoutingPolicy_trace() {
+  void toRoutingPolicy_trace() {
     JuniperConfiguration vsC = new JuniperConfiguration();
     vsC.setFilename("file");
 
@@ -996,7 +996,7 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testGetDefaultSourceAddress() {
+  void testGetDefaultSourceAddress() {
     {
       // neither lo0 nor primary exists
       assertThat(
@@ -1053,7 +1053,7 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testGetPrimaryInterface() {
+  void testGetPrimaryInterface() {
     {
       // prefer explicit primary
       Interface explicitPrimary = new Interface("xe-0/0/0.0");
@@ -1125,7 +1125,7 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testDefaultSourceAddress() {
+  void testDefaultSourceAddress() {
     ConcreteInterfaceAddress ignoredAddress = ConcreteInterfaceAddress.parse("127.0.0.1/32");
     ConcreteInterfaceAddress addr1 = ConcreteInterfaceAddress.parse("1.1.1.1/32");
     ConcreteInterfaceAddress addr2 = ConcreteInterfaceAddress.parse("2.2.2.2/32");
@@ -1162,7 +1162,7 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testConvertEvpnVrfLeaking_BothPolicies() {
+  void testConvertEvpnVrfLeaking_BothPolicies() {
     JuniperConfiguration config = createConfig();
     config._c.setVrfs(
         ImmutableMap.of(
@@ -1226,7 +1226,7 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testConvertEvpnVrfLeaking_SinglePolicy() {
+  void testConvertEvpnVrfLeaking_SinglePolicy() {
     JuniperConfiguration config = createConfig();
     config._c.setVrfs(
         ImmutableMap.of(
@@ -1266,7 +1266,7 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testConvertEvpnVrfLeaking_MissingRequiredConfig() {
+  void testConvertEvpnVrfLeaking_MissingRequiredConfig() {
     String riName = "tenant";
     Map<Consumer<RoutingInstance>, String> omissions = new LinkedHashMap<>();
     omissions.put(
@@ -1329,7 +1329,7 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testConvertEvpnVrfLeaking_MissingExportOrImportPolicy() {
+  void testConvertEvpnVrfLeaking_MissingExportOrImportPolicy() {
     String riName = "tenant";
     Map<Consumer<RoutingInstance>, String> omissions = new LinkedHashMap<>();
     omissions.put(

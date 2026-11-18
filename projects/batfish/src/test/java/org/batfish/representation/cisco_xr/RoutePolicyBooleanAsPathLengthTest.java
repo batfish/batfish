@@ -7,20 +7,20 @@ import com.google.common.testing.EqualsTester;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link RoutePolicyBooleanAsPathLength}. */
 @ParametersAreNonnullByDefault
-public final class RoutePolicyBooleanAsPathLengthTest {
+final class RoutePolicyBooleanAsPathLengthTest {
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     RoutePolicyBooleanAsPathLength obj =
         new RoutePolicyBooleanAsPathLength(IntComparator.GT, 1, false);
     assertThat(SerializationUtils.clone(obj), equalTo(obj));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     RoutePolicyBooleanAsPathLength obj =
         new RoutePolicyBooleanAsPathLength(IntComparator.GT, 1, false);
     new EqualsTester()

@@ -3,12 +3,12 @@ package org.batfish.representation.juniper;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class BgpGroupRemovePrivateTest {
+final class BgpGroupRemovePrivateTest {
 
   @Test
-  public void testCascadeInheritance() {
+  void testCascadeInheritance() {
     BgpGroup parent = new BgpGroup();
     parent.setRemovePrivate(true);
     parent.setRemovePrivateAll(true);

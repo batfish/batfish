@@ -11,16 +11,13 @@ import org.batfish.datamodel.EvpnType5Route.Builder;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link EvpnType5Route} */
-public class EvpnType5RouteTest {
-  @Rule public ExpectedException thrown = ExpectedException.none();
+class EvpnType5RouteTest {
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     EvpnType5Route er =
         EvpnType5Route.builder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
@@ -38,7 +35,7 @@ public class EvpnType5RouteTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     EvpnType5Route er =
         EvpnType5Route.builder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
@@ -56,7 +53,7 @@ public class EvpnType5RouteTest {
   }
 
   @Test
-  public void testToBuilder() {
+  void testToBuilder() {
     EvpnType5Route er =
         EvpnType5Route.builder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
@@ -74,7 +71,7 @@ public class EvpnType5RouteTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     Builder erb =
         EvpnType5Route.builder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))

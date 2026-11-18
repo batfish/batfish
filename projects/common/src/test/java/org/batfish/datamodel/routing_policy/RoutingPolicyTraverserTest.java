@@ -25,9 +25,9 @@ import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultTag;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetVarMetricType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class RoutingPolicyTraverserTest {
+final class RoutingPolicyTraverserTest {
 
   private static final class PeerAddressDetector
       extends RoutingPolicyTraverser<Boolean, Configuration> {
@@ -61,7 +61,7 @@ public final class RoutingPolicyTraverserTest {
   }
 
   @Test
-  public void testCalledPolicy() {
+  void testCalledPolicy() {
     Configuration configuration = configuration();
     RoutingPolicy called =
         RoutingPolicy.builder()
@@ -81,7 +81,7 @@ public final class RoutingPolicyTraverserTest {
   }
 
   @Test
-  public void testDefaultPolicy() {
+  void testDefaultPolicy() {
     Configuration configuration = configuration();
     RoutingPolicy defaultPolicy =
         RoutingPolicy.builder()
@@ -101,7 +101,7 @@ public final class RoutingPolicyTraverserTest {
   }
 
   @Test
-  public void testDefaultResult() {
+  void testDefaultResult() {
     Configuration configuration = configuration();
     RoutingPolicy policy =
         RoutingPolicy.builder()

@@ -3,19 +3,18 @@ package org.batfish.datamodel;
 import static org.batfish.datamodel.IpRange.range;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpSpaceToBDD;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link IpRange} */
 @ParametersAreNonnullByDefault
-public final class IpRangeTest {
+final class IpRangeTest {
 
   private static final IpSpaceToBDD _bddConverter = new IpSpaceToBDD(new BDDPacket().getDstIp());
   private static final BDDInteger _universeIpSpaceBdd = _bddConverter.getBDDInteger();
@@ -27,10 +26,8 @@ public final class IpRangeTest {
     assertThat(ipRange.accept(_bddConverter), equalTo(lowAndAbove.and(highAndBelow)));
   }
 
-  @Rule public ExpectedException _thrown = ExpectedException.none();
-
   @Test
-  public void testRange() {
+  void testRange() {
     testIpRange(Ip.ZERO, Ip.ZERO);
     testIpRange(Ip.ZERO, Ip.MAX);
     testIpRange(Ip.MAX, Ip.MAX);
@@ -42,8 +39,7 @@ public final class IpRangeTest {
   }
 
   @Test
-  public void testRangeInvalid() {
-    _thrown.expect(IllegalArgumentException.class);
-    range(Ip.MAX, Ip.ZERO);
+  void testRangeInvalid() {
+    assertThrows(IllegalArgumentException.class, () -> range(Ip.MAX, Ip.ZERO));
   }
 }

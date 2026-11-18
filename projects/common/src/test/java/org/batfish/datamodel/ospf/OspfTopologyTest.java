@@ -4,7 +4,7 @@ import static org.batfish.datamodel.ospf.OspfTopology.EMPTY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.graph.MutableValueGraph;
@@ -16,10 +16,10 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpLink;
 import org.batfish.datamodel.ospf.OspfTopology.EdgeId;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link OspfTopology} */
-public final class OspfTopologyTest {
+final class OspfTopologyTest {
 
   private static @Nonnull OspfTopology nonTrivialTopology() {
     MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> graph =
@@ -35,7 +35,7 @@ public final class OspfTopologyTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             EMPTY,
@@ -47,13 +47,13 @@ public final class OspfTopologyTest {
   }
 
   @Test
-  public void testEmptyTopology() {
+  void testEmptyTopology() {
     OspfTopology topo = EMPTY;
     assertThat(topo.getGraph().nodes(), empty());
   }
 
   @Test
-  public void testGetNeighborsNonExistentNode() {
+  void testGetNeighborsNonExistentNode() {
     OspfNeighborConfigId n =
         new OspfNeighborConfigId(
             "h1", "vrf1", "p", "i1", ConcreteInterfaceAddress.parse("192.0.2.0/31"));
@@ -61,7 +61,7 @@ public final class OspfTopologyTest {
   }
 
   @Test
-  public void testGetIncomingEdgesNonExistentNode() {
+  void testGetIncomingEdgesNonExistentNode() {
     OspfNeighborConfigId n =
         new OspfNeighborConfigId(
             "h1", "vrf1", "p", "i1", ConcreteInterfaceAddress.parse("192.0.2.0/31"));
@@ -69,7 +69,7 @@ public final class OspfTopologyTest {
   }
 
   @Test
-  public void testGetIncomingEdges() {
+  void testGetIncomingEdges() {
     // Setup: small topo with one edge
     OspfNeighborConfigId n =
         new OspfNeighborConfigId(
@@ -93,7 +93,7 @@ public final class OspfTopologyTest {
   }
 
   @Test
-  public void testEdgeIdEquals() {
+  void testEdgeIdEquals() {
     OspfNeighborConfigId n =
         new OspfNeighborConfigId(
             "h1", "vrf1", "p", "i1", ConcreteInterfaceAddress.parse("192.0.2.0/31"));
@@ -109,7 +109,7 @@ public final class OspfTopologyTest {
   }
 
   @Test
-  public void testEdgeIdReverse() {
+  void testEdgeIdReverse() {
     OspfNeighborConfigId n =
         new OspfNeighborConfigId(
             "h1", "vrf1", "p", "i1", ConcreteInterfaceAddress.parse("192.0.2.0/31"));
@@ -121,7 +121,7 @@ public final class OspfTopologyTest {
   }
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     assertEquals(
         nonTrivialTopology(), BatfishObjectMapper.clone(nonTrivialTopology(), OspfTopology.class));
   }

@@ -20,13 +20,13 @@ import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.question.initialization.IssueAggregation.ErrorDetailsTriplet;
 import org.batfish.question.initialization.IssueAggregation.ParseWarningTriplet;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link IssueAggregation}. */
-public class IssueAggregationTest {
+class IssueAggregationTest {
 
   @Test
-  public void testAggregateDuplicateErrors() {
+  void testAggregateDuplicateErrors() {
     ErrorDetails error = new ErrorDetails("message1");
     ErrorDetails errorDup = new ErrorDetails("message1");
     ErrorDetails errorUnique = new ErrorDetails("message2");
@@ -45,7 +45,7 @@ public class IssueAggregationTest {
   }
 
   @Test
-  public void testAggregateDuplicateErrorsDifferentLines() {
+  void testAggregateDuplicateErrorsDifferentLines() {
     ErrorDetails error =
         new ErrorDetails("message1", new ParseExceptionContext("line", 1234, "ctx"));
     ErrorDetails errorDupDifferentLine =
@@ -69,7 +69,7 @@ public class IssueAggregationTest {
   }
 
   @Test
-  public void testAggregateDuplicateParseWarnings() {
+  void testAggregateDuplicateParseWarnings() {
     Warnings f1Warnings = new Warnings();
     f1Warnings
         .getParseWarnings()
@@ -97,7 +97,7 @@ public class IssueAggregationTest {
   }
 
   @Test
-  public void testAggregateDuplicateWarnings() {
+  void testAggregateDuplicateWarnings() {
     Warnings f1Warnings = new Warnings();
     f1Warnings
         .getRedFlagWarnings()

@@ -2,18 +2,15 @@ package org.batfish.minesweeper.question.searchroutepolicies;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.testing.EqualsTester;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-public class RegexConstraintTest {
-
-  @Rule public ExpectedException _exception = ExpectedException.none();
+class RegexConstraintTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     String r1 = "foo";
     String r2 = "bar";
     new EqualsTester()
@@ -24,7 +21,7 @@ public class RegexConstraintTest {
   }
 
   @Test
-  public void testParse() {
+  void testParse() {
     RegexConstraint c1 = RegexConstraint.parse("30:40");
     RegexConstraint c2 = RegexConstraint.parse("!30:40");
     RegexConstraint c3 = RegexConstraint.parse("/^40:/");
@@ -45,20 +42,17 @@ public class RegexConstraintTest {
   }
 
   @Test
-  public void testDoNotParse1() {
-    _exception.expect(IllegalArgumentException.class);
-    RegexConstraint.parse("/^40:");
+  void testDoNotParse1() {
+    assertThrows(IllegalArgumentException.class, () -> RegexConstraint.parse("/^40:"));
   }
 
   @Test
-  public void testDoNotParse2() {
-    _exception.expect(IllegalArgumentException.class);
-    RegexConstraint.parse("^40:/");
+  void testDoNotParse2() {
+    assertThrows(IllegalArgumentException.class, () -> RegexConstraint.parse("^40:/"));
   }
 
   @Test
-  public void testDoNotParse3() {
-    _exception.expect(IllegalArgumentException.class);
-    RegexConstraint.parse("/");
+  void testDoNotParse3() {
+    assertThrows(IllegalArgumentException.class, () -> RegexConstraint.parse("/"));
   }
 }

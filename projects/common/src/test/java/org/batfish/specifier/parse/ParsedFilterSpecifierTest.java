@@ -1,7 +1,9 @@
 package org.batfish.specifier.parse;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -12,12 +14,10 @@ import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.specifier.MockSpecifierContext;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link ParsedFilterSpecifier} */
-public class ParsedFilterSpecifierTest {
+class ParsedFilterSpecifierTest {
 
   private static final String _node0Name = "node0";
   private static final String _node1Name = "node1";
@@ -74,7 +74,7 @@ public class ParsedFilterSpecifierTest {
   }
 
   @Test
-  public void testResolveDifference() {
+  void testResolveDifference() {
     assertThat(
         new ParsedFilterSpecifier(
                 new DifferenceFilterAstNode(
@@ -90,7 +90,7 @@ public class ParsedFilterSpecifierTest {
   }
 
   @Test
-  public void testResolveIntersection() {
+  void testResolveIntersection() {
     assertThat(
         new ParsedFilterSpecifier(
                 new IntersectionFilterAstNode(
@@ -106,14 +106,14 @@ public class ParsedFilterSpecifierTest {
   }
 
   @Test
-  public void testResolveName() {
+  void testResolveName() {
     assertThat(
         new ParsedFilterSpecifier(new NameFilterAstNode("filter1")).resolve(_node0Name, _ctxt),
         equalTo(ImmutableSet.of(_filter0_1)));
   }
 
   @Test
-  public void testResolveNameRegex() {
+  void testResolveNameRegex() {
     assertThat(
         new ParsedFilterSpecifier(new NameRegexFilterAstNode("filter.*1"))
             .resolve(_node0Name, _ctxt),
@@ -121,7 +121,7 @@ public class ParsedFilterSpecifierTest {
   }
 
   @Test
-  public void testResolveWithNode() {
+  void testResolveWithNode() {
     assertThat(
         new ParsedFilterSpecifier(
                 new FilterWithNodeFilterAstNode(
@@ -147,7 +147,7 @@ public class ParsedFilterSpecifierTest {
   }
 
   @Test
-  public void testResolveUnion() {
+  void testResolveUnion() {
     assertThat(
         new ParsedFilterSpecifier(
                 new UnionFilterAstNode(
@@ -156,17 +156,16 @@ public class ParsedFilterSpecifierTest {
         equalTo(ImmutableSet.of(_filter0_1, _filter0_2)));
   }
 
-  @Rule public ExpectedException _thrown = ExpectedException.none();
-
   @Test
-  public void testParseBadInput() {
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("Error parsing");
-    ParsedFilterSpecifier.parse("@connected");
+  void testParseBadInput() {
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class, () -> ParsedFilterSpecifier.parse("@connected"));
+    assertThat(exception.getMessage(), containsString("Error parsing"));
   }
 
   @Test
-  public void testParseGoodInput() {
+  void testParseGoodInput() {
     assertThat(
         ParsedFilterSpecifier.parse("filter0"),
         equalTo(new ParsedFilterSpecifier(new NameFilterAstNode("filter0"))));

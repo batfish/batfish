@@ -5,13 +5,13 @@ import static org.hamcrest.Matchers.equalTo;
 
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link InterfacePropertiesQuestion} */
-public class InterfacePropertiesQuestionTest {
+class InterfacePropertiesQuestionTest {
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     InterfacePropertiesQuestion q =
         new InterfacePropertiesQuestion(
             "nodes", "interfaces", InterfacePropertySpecifier.ACCESS_VLAN, false);

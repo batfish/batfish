@@ -3,7 +3,7 @@ package org.batfish.representation.juniper;
 import static org.batfish.representation.juniper.ApplicationSetMember.getTraceElementForUserApplication;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -16,10 +16,10 @@ import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.representation.juniper.BaseApplication.Term;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link FwFromApplicationOrApplicationSet} */
-public class FwFromApplicationOrApplicationSetTest {
+class FwFromApplicationOrApplicationSetTest {
   private static JuniperConfiguration jc = new JuniperConfiguration();
 
   static {
@@ -27,7 +27,7 @@ public class FwFromApplicationOrApplicationSetTest {
   }
 
   @Test
-  public void testApplyTo_application() {
+  void testApplyTo_application() {
     BaseApplication app = new BaseApplication("app", false);
     app.getTerms()
         .putAll(
@@ -63,7 +63,7 @@ public class FwFromApplicationOrApplicationSetTest {
   }
 
   @Test
-  public void testApplyTo_applicationSet() {
+  void testApplyTo_applicationSet() {
     ApplicationSet appSet = new ApplicationSet("appSet", false);
     appSet.setMembers(
         ImmutableList.of(new ApplicationReference("app1"), new ApplicationReference("app2")));
@@ -100,7 +100,7 @@ public class FwFromApplicationOrApplicationSetTest {
   }
 
   @Test
-  public void testToAclLineMatchExpr_application() {
+  void testToAclLineMatchExpr_application() {
     BaseApplication app = new BaseApplication("app", false);
     app.getTerms()
         .putAll(
@@ -124,7 +124,7 @@ public class FwFromApplicationOrApplicationSetTest {
   }
 
   @Test
-  public void testToAclLineMatchExpr_applicationSet() {
+  void testToAclLineMatchExpr_applicationSet() {
 
     ApplicationSet appSet = new ApplicationSet("appSet", false);
     appSet.setMembers(

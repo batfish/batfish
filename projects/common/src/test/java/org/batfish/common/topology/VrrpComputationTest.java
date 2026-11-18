@@ -16,19 +16,19 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests of VRRP computation in {@link org.batfish.common.topology.TopologyUtil} */
-public class VrrpComputationTest {
+class VrrpComputationTest {
 
   private NetworkFactory _nf;
   private Interface _i1;
   private Interface _i2;
   private final Ip _virtInterfaceAddr = Ip.parse("1.1.1.1");
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _nf = new NetworkFactory();
   }
 
@@ -90,7 +90,7 @@ public class VrrpComputationTest {
 
   /** Test that higher priority router wins */
   @Test
-  public void testVrrpPriority() {
+  void testVrrpPriority() {
     Map<String, Configuration> configs = setupVrrpTestCase(false);
 
     Map<Ip, Set<String>> owners = new TestIpOwners(configs).getNodeOwners(false);
@@ -103,7 +103,7 @@ public class VrrpComputationTest {
    * priority
    */
   @Test
-  public void testVrrpPriorityTieBreaking() {
+  void testVrrpPriorityTieBreaking() {
     Map<String, Configuration> configs = setupVrrpTestCase(true);
 
     Map<Ip, Set<String>> owners = new TestIpOwners(configs).getNodeOwners(false);
@@ -113,7 +113,7 @@ public class VrrpComputationTest {
   }
 
   @Test
-  public void testIpInterfaceOwnersWithVrrp() {
+  void testIpInterfaceOwnersWithVrrp() {
     Map<String, Configuration> configs = setupVrrpTestCase(true);
 
     Map<Ip, Map<String, Set<String>>> interfaceOwners =

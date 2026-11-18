@@ -1,14 +1,14 @@
 package org.batfish.datamodel;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link IpAccessList}. */
-public class IpAccessListTest {
+class IpAccessListTest {
   @Test
-  public void testToBuilder() {
+  void testToBuilder() {
     IpAccessList acl =
         IpAccessList.builder()
             .setName("name")

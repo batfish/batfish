@@ -22,14 +22,14 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform;
 import org.batfish.datamodel.vendor_family.cisco_nxos.NxosMajorVersion;
 import org.batfish.vendor.cisco_nxos.representation.CiscoNxosConfiguration;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link CiscoNxosPreprocessor}. */
 @ParametersAreNonnullByDefault
-public final class CiscoNxosPreprocessorTest {
+final class CiscoNxosPreprocessorTest {
 
   @Test
-  public void testInferMajorVersionFromImage() {
+  void testInferMajorVersionFromImage() {
     //// Nexus 3000
     // kickstart
     assertThat(
@@ -168,7 +168,7 @@ public final class CiscoNxosPreprocessorTest {
   }
 
   @Test
-  public void testInferMajorVersionFromVersion() {
+  void testInferMajorVersionFromVersion() {
     assertThat(inferMajorVersionFromVersion("5.0(3)N2(4.01)"), equalTo(NXOS5));
     assertThat(inferMajorVersionFromVersion("5.1(3)N1(1a)"), equalTo(NXOS5));
     assertThat(inferMajorVersionFromVersion("5.1(3)N2(1c)"), equalTo(NXOS5));
@@ -210,7 +210,7 @@ public final class CiscoNxosPreprocessorTest {
   }
 
   @Test
-  public void testInferMajorVersion() {
+  void testInferMajorVersion() {
     CiscoNxosConfiguration vc = new CiscoNxosConfiguration();
     assertThat(inferMajorVersion(vc), equalTo(NxosMajorVersion.UNKNOWN));
     vc.setBootKickstartSup2("bootflash:/titanium-d1-kickstart.7.3.0.D1.1.bin");
@@ -234,7 +234,7 @@ public final class CiscoNxosPreprocessorTest {
   }
 
   @Test
-  public void testInferPlatformFromImage() {
+  void testInferPlatformFromImage() {
     //// Nexus 3000
     // kickstart
     assertThat(
@@ -392,7 +392,7 @@ public final class CiscoNxosPreprocessorTest {
   }
 
   @Test
-  public void testInferPlatform() {
+  void testInferPlatform() {
     {
       CiscoNxosConfiguration vc = new CiscoNxosConfiguration();
       assertThat(inferPlatform(vc, NxosMajorVersion.UNKNOWN, 0, 0), equalTo(NexusPlatform.UNKNOWN));

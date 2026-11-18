@@ -7,26 +7,26 @@ import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link StandardCommunityHighLowExprs}. */
-public final class StandardCommunityHighLowExprsTest {
+final class StandardCommunityHighLowExprsTest {
 
   private static final StandardCommunityHighLowExprs OBJ =
       new StandardCommunityHighLowExprs(new LiteralInt(1), new LiteralInt(1));
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     assertThat(BatfishObjectMapper.clone(OBJ, StandardCommunityHighLowExprs.class), equalTo(OBJ));
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     assertThat(SerializationUtils.clone(OBJ), equalTo(OBJ));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new Object())
         .addEqualityGroup(

@@ -8,22 +8,20 @@ import static org.batfish.main.annotate.Annotate.main;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import org.batfish.common.BfConsts;
 import org.batfish.common.util.CommonUtil;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Test of {@link Annotate}. */
-public final class AnnotateTest {
+final class AnnotateTest {
 
   private static final String TESTCONFIGS_PREFIX = "org/batfish/main/annotate/testconfigs/";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+  @TempDir public File _folder;
 
   /**
    * Equivalent to calling {@link AnnotateTest#assertValidPair(String,String,String)} with {@code
@@ -38,7 +36,7 @@ public final class AnnotateTest {
    * prefix} is equal to the text of the resource {@code after} under {@code prefix}.
    */
   private void assertValidPair(String prefix, String before, String after) throws IOException {
-    Path root = _folder.getRoot().toPath();
+    Path root = _folder.toPath();
     Path inputDir = root.resolve("input");
     Path outputDir = root.resolve("output");
     Path inputFile = inputDir.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR).resolve("conf");
@@ -53,7 +51,7 @@ public final class AnnotateTest {
   }
 
   @Test
-  public void testHierarchical() throws IOException {
+  void testHierarchical() throws IOException {
     assertValidPair("annotate-hierarchical-before", "annotate-hierarchical-after");
   }
 
@@ -63,7 +61,7 @@ public final class AnnotateTest {
    * extraction {@link org.batfish.common.Warnings.ParseWarning}.
    */
   @Test
-  public void testSros() throws IOException {
+  void testSros() throws IOException {
     assertValidPair("annotate-sros-before", "annotate-sros-after");
   }
 
@@ -76,7 +74,7 @@ public final class AnnotateTest {
    * are not.
    */
   @Test
-  public void testSrosSilentlyIgnored() throws IOException {
+  void testSrosSilentlyIgnored() throws IOException {
     assertValidPair("annotate-sros-ignored-before", "annotate-sros-ignored-after");
   }
 
@@ -88,7 +86,7 @@ public final class AnnotateTest {
    * implementedRuleNames}, otherwise annotate fails the parse.
    */
   @Test
-  public void testFastpath() throws IOException {
+  void testFastpath() throws IOException {
     assertValidPair("annotate-fastpath-before", "annotate-fastpath-after");
   }
 
@@ -98,7 +96,7 @@ public final class AnnotateTest {
    */
   private void assertValidFileProcessing(String prefix, String before, String after)
       throws IOException {
-    Path root = _folder.getRoot().toPath();
+    Path root = _folder.toPath();
     Path inputFile = root.resolve("input_file");
     Path outputFile = root.resolve("output_file");
     writeFile(inputFile, readResource(String.format("%s%s", prefix, before), UTF_8));
@@ -110,7 +108,7 @@ public final class AnnotateTest {
   }
 
   @Test
-  public void testFileBasedProcessing() throws IOException {
+  void testFileBasedProcessing() throws IOException {
     assertValidFileProcessing(
         TESTCONFIGS_PREFIX, "annotate-hierarchical-before", "annotate-hierarchical-after");
   }

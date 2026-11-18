@@ -2,13 +2,13 @@ package org.batfish.representation.cumulus_nclu;
 
 import com.google.common.testing.EqualsTester;
 import org.batfish.datamodel.Ip;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link BgpNeighborSourceAddress} */
-public class BgpNeighborSourceAddressTest {
+class BgpNeighborSourceAddressTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     BgpNeighborSourceAddress bgpNeighborSourceAddress =
         new BgpNeighborSourceAddress(Ip.parse("1.1.1.1"));
 

@@ -7,17 +7,13 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.pojo.Aggregate.AggregateType;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link Aggregate}. */
-public class AggregateTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class AggregateTest {
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     Aggregate a = new Aggregate("someAgg", AggregateType.REGION);
     a.setContents(ImmutableSet.of("id1", "id2"));
 
@@ -25,7 +21,7 @@ public class AggregateTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     Aggregate emptyCloud = new Aggregate("cloud", AggregateType.CLOUD);
     Aggregate emptyCloudCloned = BatfishObjectMapper.clone(emptyCloud, Aggregate.class);
     Aggregate diffName = new Aggregate("cloud2", AggregateType.CLOUD);

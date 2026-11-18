@@ -19,10 +19,10 @@ import org.batfish.datamodel.routing_policy.statement.SetColor;
 import org.batfish.datamodel.routing_policy.statement.SetColor2;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.minesweeper.utils.Tuple;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link Color2Collector}. */
-public class Color2CollectorTest {
+class Color2CollectorTest {
 
   private static Set<Long> collect(Statement... statements) {
     Configuration config =
@@ -36,22 +36,22 @@ public class Color2CollectorTest {
   }
 
   @Test
-  public void testCollectsSetLiteral() {
+  void testCollectsSetLiteral() {
     assertThat(collect(new SetColor2(new LiteralLong(5))), containsInAnyOrder(5L));
   }
 
   @Test
-  public void testCollectsMatch() {
+  void testCollectsMatch() {
     assertThat(collect(new If(new MatchColor2(7), ImmutableList.of())), containsInAnyOrder(7L));
   }
 
   @Test
-  public void testIgnoresNonLiteral() {
+  void testIgnoresNonLiteral() {
     assertThat(collect(new SetColor2(new VarLong("var"))), empty());
   }
 
   @Test
-  public void testIgnoresColor() {
+  void testIgnoresColor() {
     assertThat(
         collect(new If(new MatchColor(7), ImmutableList.of()), new SetColor(new LiteralLong(5))),
         empty());

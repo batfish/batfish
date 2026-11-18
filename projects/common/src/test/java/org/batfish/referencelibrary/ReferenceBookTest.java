@@ -3,8 +3,10 @@ package org.batfish.referencelibrary;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.exc.ValueInstantiationException;
 import com.google.common.collect.ImmutableList;
@@ -17,18 +19,14 @@ import java.util.Set;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.IpWildcard;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link ReferenceBook} */
-public class ReferenceBookTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class ReferenceBookTest {
 
   /** check that we deserialize a basic object correctly */
   @Test
-  public void testBookDeserializationBasic() throws IOException {
+  void testBookDeserializationBasic() throws IOException {
     ReferenceBook book =
         BatfishObjectMapper.mapper()
             .readValue(
@@ -45,74 +43,93 @@ public class ReferenceBookTest {
 
   /** check that we throw an error for duplicate address groups */
   @Test
-  public void testBookDeserializationDupAddressGroup() throws IOException {
-    _thrown.expect(ValueInstantiationException.class);
-    _thrown.expectMessage("Duplicate");
-
-    BatfishObjectMapper.mapper()
-        .readValue(
-            readResource("org/batfish/referencelibrary/bookDupAddressGroup.json", UTF_8),
-            ReferenceBook.class);
+  void testBookDeserializationDupAddressGroup() {
+    Throwable exception =
+        assertThrows(
+            ValueInstantiationException.class,
+            () ->
+                BatfishObjectMapper.mapper()
+                    .readValue(
+                        readResource(
+                            "org/batfish/referencelibrary/bookDupAddressGroup.json", UTF_8),
+                        ReferenceBook.class));
+    assertThat(exception.getMessage(), containsString("Duplicate"));
   }
 
   /** check that we throw an error for a non-existent child address group name */
   @Test
-  public void testBookUndefChildAddressGroup() throws IOException {
-    _thrown.expect(ValueInstantiationException.class);
-    _thrown.expectMessage("Following child address group names are not defined: [ag3]");
-
-    BatfishObjectMapper.mapper()
-        .readValue(
-            readResource("org/batfish/referencelibrary/bookUndefChildAddressGroup.json", UTF_8),
-            ReferenceBook.class);
+  void testBookUndefChildAddressGroup() {
+    Throwable exception =
+        assertThrows(
+            ValueInstantiationException.class,
+            () ->
+                BatfishObjectMapper.mapper()
+                    .readValue(
+                        readResource(
+                            "org/batfish/referencelibrary/bookUndefChildAddressGroup.json", UTF_8),
+                        ReferenceBook.class));
+    assertThat(
+        exception.getMessage(),
+        containsString("Following child address group names are not defined: [ag3]"));
   }
 
   /** check that we throw an error when the same name is used in a service object and group */
   @Test
-  public void testBookDeserializationDupServiceName() throws IOException {
-    _thrown.expect(ValueInstantiationException.class);
-    _thrown.expectMessage("Duplicate");
-
-    BatfishObjectMapper.mapper()
-        .readValue(
-            readResource("org/batfish/referencelibrary/bookDupServiceName.json", UTF_8),
-            ReferenceBook.class);
+  void testBookDeserializationDupServiceName() {
+    Throwable exception =
+        assertThrows(
+            ValueInstantiationException.class,
+            () ->
+                BatfishObjectMapper.mapper()
+                    .readValue(
+                        readResource("org/batfish/referencelibrary/bookDupServiceName.json", UTF_8),
+                        ReferenceBook.class));
+    assertThat(exception.getMessage(), containsString("Duplicate"));
   }
 
   /** check that we throw an error for undefined address groups */
   @Test
-  public void testBookDeserializationUndefAddressGroup() throws IOException {
-    _thrown.expect(ValueInstantiationException.class);
-    _thrown.expectMessage("Undefined");
-
-    BatfishObjectMapper.mapper()
-        .readValue(
-            readResource("org/batfish/referencelibrary/bookUndefAddressGroup.json", UTF_8),
-            ReferenceBook.class);
+  void testBookDeserializationUndefAddressGroup() {
+    Throwable exception =
+        assertThrows(
+            ValueInstantiationException.class,
+            () ->
+                BatfishObjectMapper.mapper()
+                    .readValue(
+                        readResource(
+                            "org/batfish/referencelibrary/bookUndefAddressGroup.json", UTF_8),
+                        ReferenceBook.class));
+    assertThat(exception.getMessage(), containsString("Undefined"));
   }
 
   /** check that we throw an error for undefined service name */
   @Test
-  public void testBookDeserializationUndefServiceName() throws IOException {
-    _thrown.expect(ValueInstantiationException.class);
-    _thrown.expectMessage("Undefined");
-
-    BatfishObjectMapper.mapper()
-        .readValue(
-            readResource("org/batfish/referencelibrary/bookUndefServiceName.json", UTF_8),
-            ReferenceBook.class);
+  void testBookDeserializationUndefServiceName() {
+    Throwable exception =
+        assertThrows(
+            ValueInstantiationException.class,
+            () ->
+                BatfishObjectMapper.mapper()
+                    .readValue(
+                        readResource(
+                            "org/batfish/referencelibrary/bookUndefServiceName.json", UTF_8),
+                        ReferenceBook.class));
+    assertThat(exception.getMessage(), containsString("Undefined"));
   }
 
   @Test
-  public void testAddGroupAndDescendantNamesNonExistentGroup() {
-    _thrown.expect(NoSuchElementException.class);
-    ReferenceBook book = ReferenceBook.builder("book").build();
-    Set<String> groupNames = new HashSet<>();
-    book.addGroupAndDescendantNames("a", groupNames);
+  void testAddGroupAndDescendantNamesNonExistentGroup() {
+    assertThrows(
+        NoSuchElementException.class,
+        () -> {
+          ReferenceBook book = ReferenceBook.builder("book").build();
+          Set<String> groupNames = new HashSet<>();
+          book.addGroupAndDescendantNames("a", groupNames);
+        });
   }
 
   @Test
-  public void testAddGroupAndDescendantNamesCycles() {
+  void testAddGroupAndDescendantNamesCycles() {
     // a -> b -> a
     ReferenceBook book =
         ReferenceBook.builder("book")
@@ -127,7 +144,7 @@ public class ReferenceBookTest {
   }
 
   @Test
-  public void testAddGroupAndDescendantNamesNoChildren() {
+  void testAddGroupAndDescendantNamesNoChildren() {
     ReferenceBook book =
         ReferenceBook.builder("book")
             .setAddressGroups(ImmutableList.of(new AddressGroup("a", null, null)))
@@ -138,7 +155,7 @@ public class ReferenceBookTest {
   }
 
   @Test
-  public void testAddGroupAndDescendantNamesDeepChildren() {
+  void testAddGroupAndDescendantNamesDeepChildren() {
     ReferenceBook book =
         ReferenceBook.builder("book")
             .setAddressGroups(
@@ -154,7 +171,7 @@ public class ReferenceBookTest {
   }
 
   @Test
-  public void testGetAddressesRecursive() {
+  void testGetAddressesRecursive() {
     ReferenceBook book =
         ReferenceBook.builder("book")
             .setAddressGroups(
@@ -171,7 +188,7 @@ public class ReferenceBookTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     ReferenceBook book = ReferenceBook.builder("book").build();
     assertThat(SerializationUtils.clone(book), equalTo(book));
   }

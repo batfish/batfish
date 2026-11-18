@@ -12,15 +12,15 @@ import org.batfish.grammar.MockGrammarSettings;
 import org.batfish.grammar.cumulus_ports.CumulusPortsParser.Cumulus_ports_configurationContext;
 import org.batfish.representation.cumulus_concatenated.CumulusConcatenatedConfiguration;
 import org.batfish.representation.cumulus_concatenated.CumulusPortsConfiguration.PortSettings;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public final class CumulusPortsGrammarTest {
+final class CumulusPortsGrammarTest {
   CumulusConcatenatedConfiguration _config;
   Warnings _warnings;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _config = new CumulusConcatenatedConfiguration();
     _warnings = new Warnings();
   }
@@ -41,17 +41,17 @@ public final class CumulusPortsGrammarTest {
   }
 
   @Test
-  public void testComment() {
+  void testComment() {
     parse("# a \n # b");
   }
 
   @Test
-  public void testBlankLine() {
+  void testBlankLine() {
     parse(" \n \n\n");
   }
 
   @Test
-  public void testBreakout() {
+  void testBreakout() {
     parse("1=4x25G\n");
 
     PortSettings settings = new PortSettings();
@@ -65,7 +65,7 @@ public final class CumulusPortsGrammarTest {
   }
 
   @Test
-  public void testDisabled() {
+  void testDisabled() {
     parse("1=disabled\n");
     PortSettings settings = new PortSettings();
     settings.setDisabled(true);
@@ -75,7 +75,7 @@ public final class CumulusPortsGrammarTest {
   }
 
   @Test
-  public void testSpeed() {
+  void testSpeed() {
     parse("1=100G\n");
     PortSettings settings = new PortSettings();
     settings.setSpeed(100000);

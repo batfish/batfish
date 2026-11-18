@@ -4,38 +4,39 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.testing.EqualsTester;
 import java.util.AbstractMap.SimpleEntry;
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link InsertOrderedMap} */
-public class InsertOrderedMapTest {
+class InsertOrderedMapTest {
 
   private InsertOrderedMap<String, String> _testMap;
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
     _testMap = new InsertOrderedMap<>();
   }
 
   @Test
-  public void testIsEmptyOnCreation() {
+  void testIsEmptyOnCreation() {
     assertTrue(_testMap.isEmpty());
   }
 
   @Test
-  public void testPut() {
+  void testPut() {
     _testMap.put("key", "value");
     assertThat(_testMap.get("key"), equalTo("value"));
   }
 
   @Test
-  public void testPutAsReplace() {
+  void testPutAsReplace() {
     _testMap.put("key", "value");
     _testMap.put("key2", "value2");
     _testMap.put("key", "newValue");
@@ -44,24 +45,24 @@ public class InsertOrderedMapTest {
     assertThat(_testMap.keySet(), contains("key2", "key"));
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void testPutRejectsNullKey() {
-    _testMap.put(null, "value");
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void testPutRejectsNullValue() {
-    _testMap.put("key", null);
+  @Test
+  void testPutRejectsNullKey() {
+    assertThrows(IllegalArgumentException.class, () -> _testMap.put(null, "value"));
   }
 
   @Test
-  public void testPutAll() {
+  void testPutRejectsNullValue() {
+    assertThrows(IllegalArgumentException.class, () -> _testMap.put("key", null));
+  }
+
+  @Test
+  void testPutAll() {
     _testMap.putAll(ImmutableSortedMap.of("a", "1", "b", "2", "c", "3"));
     assertThat(_testMap.keySet(), contains("a", "b", "c"));
   }
 
   @Test
-  public void testRemove() {
+  void testRemove() {
     String key = "key";
     _testMap.put(key, "value");
     _testMap.remove(key);
@@ -71,14 +72,14 @@ public class InsertOrderedMapTest {
   }
 
   @Test
-  public void testClear() {
+  void testClear() {
     _testMap.put("key", "value");
     _testMap.clear();
     assertTrue(_testMap.isEmpty());
   }
 
   @Test
-  public void tetKeySetIterationOrder() {
+  void tetKeySetIterationOrder() {
     _testMap.put("first", "1");
     _testMap.put("second", "2");
     _testMap.put("last", "3");
@@ -86,7 +87,7 @@ public class InsertOrderedMapTest {
   }
 
   @Test
-  public void testValuesIterationOrder() {
+  void testValuesIterationOrder() {
     _testMap.put("first", "1");
     _testMap.put("second", "2");
     _testMap.put("last", "3");
@@ -94,7 +95,7 @@ public class InsertOrderedMapTest {
   }
 
   @Test
-  public void tetEntrySetIterationOrder() {
+  void tetEntrySetIterationOrder() {
     _testMap.put("first", "1");
     _testMap.put("second", "2");
     _testMap.put("last", "3");
@@ -107,14 +108,14 @@ public class InsertOrderedMapTest {
   }
 
   @Test
-  public void testPutFirst() {
+  void testPutFirst() {
     _testMap.put("key", "value");
     _testMap.putFirst("first", "1");
     assertThat(_testMap.keySet(), contains("first", "key"));
   }
 
   @Test
-  public void testMoveFirst() {
+  void testMoveFirst() {
     _testMap.put("key1", "value");
     _testMap.put("key2", "value");
     _testMap.put("key3", "value");
@@ -122,13 +123,13 @@ public class InsertOrderedMapTest {
     assertThat(_testMap.keySet(), contains("key3", "key1", "key2"));
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void testMoveFirstRejectNonexistent() {
-    _testMap.moveFirst("key3");
+  @Test
+  void testMoveFirstRejectNonexistent() {
+    assertThrows(IllegalArgumentException.class, () -> _testMap.moveFirst("key3"));
   }
 
   @Test
-  public void testMoveLast() {
+  void testMoveLast() {
     _testMap.put("key1", "value");
     _testMap.put("key2", "value");
     _testMap.put("key3", "value");
@@ -136,13 +137,13 @@ public class InsertOrderedMapTest {
     assertThat(_testMap.keySet(), contains("key2", "key3", "key1"));
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void testMoveLastRejectNonexistent() {
-    _testMap.moveLast("key3");
+  @Test
+  void testMoveLastRejectNonexistent() {
+    assertThrows(IllegalArgumentException.class, () -> _testMap.moveLast("key3"));
   }
 
   @Test
-  public void testMoveBefore() {
+  void testMoveBefore() {
     _testMap.put("key1", "value");
     _testMap.put("key2", "value2");
     _testMap.moveBefore("key2", "key1");
@@ -150,7 +151,7 @@ public class InsertOrderedMapTest {
   }
 
   @Test
-  public void testMoveBeforeSameKey() {
+  void testMoveBeforeSameKey() {
     _testMap.put("key1", "value");
     _testMap.put("key2", "value2");
     // This should have no effect
@@ -158,20 +159,28 @@ public class InsertOrderedMapTest {
     assertThat(_testMap.keySet(), contains("key1", "key2"));
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void testMoveBeforeRejectNonExistentKey() {
-    _testMap.put("key1", "value");
-    _testMap.moveBefore("notThere", "key1");
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void testMoveBeforeRejectNonExistentPivot() {
-    _testMap.put("key1", "value");
-    _testMap.moveBefore("key1", "notThere");
+  @Test
+  void testMoveBeforeRejectNonExistentKey() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> {
+          _testMap.put("key1", "value");
+          _testMap.moveBefore("notThere", "key1");
+        });
   }
 
   @Test
-  public void testMoveAfter() {
+  void testMoveBeforeRejectNonExistentPivot() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> {
+          _testMap.put("key1", "value");
+          _testMap.moveBefore("key1", "notThere");
+        });
+  }
+
+  @Test
+  void testMoveAfter() {
     _testMap.put("key1", "value");
     _testMap.put("key2", "value");
     _testMap.moveAfter("key1", "key2");
@@ -179,7 +188,7 @@ public class InsertOrderedMapTest {
   }
 
   @Test
-  public void testMoveAfterSameKey() {
+  void testMoveAfterSameKey() {
     _testMap.put("key1", "value");
     _testMap.put("key2", "value2");
     // This should have no effect
@@ -187,20 +196,28 @@ public class InsertOrderedMapTest {
     assertThat(_testMap.keySet(), contains("key1", "key2"));
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void testMoveAfterRejectNonExistentKey() {
-    _testMap.put("key1", "value");
-    _testMap.moveAfter("notThere", "key1");
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void testMoveAfterRejectNonExistentPivot() {
-    _testMap.put("key1", "value");
-    _testMap.moveAfter("key1", "notThere");
+  @Test
+  void testMoveAfterRejectNonExistentKey() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> {
+          _testMap.put("key1", "value");
+          _testMap.moveAfter("notThere", "key1");
+        });
   }
 
   @Test
-  public void testEquals() {
+  void testMoveAfterRejectNonExistentPivot() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> {
+          _testMap.put("key1", "value");
+          _testMap.moveAfter("key1", "notThere");
+        });
+  }
+
+  @Test
+  void testEquals() {
     _testMap.put("first", "val1");
     _testMap.put("second", "val2");
     InsertOrderedMap<String, String> shouldEqual = new InsertOrderedMap<>();
@@ -220,7 +237,7 @@ public class InsertOrderedMapTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     _testMap.put("key1", "value");
     assertThat(SerializationUtils.clone(_testMap), equalTo(_testMap));
   }

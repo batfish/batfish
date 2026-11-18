@@ -33,14 +33,10 @@ import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.Grammar;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link Parser} producing {@link InterfaceAstNode}. */
-public class ParserInterfaceTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class ParserInterfaceTest {
 
   private static Set<ParsedAutoCompleteSuggestion> autoCompleteHelper(
       String query, CompletionMetadata completionMetadata) {
@@ -67,7 +63,7 @@ public class ParserInterfaceTest {
   }
 
   @Test
-  public void testCompletionEmpty() {
+  void testCompletionEmpty() {
     String query = "";
 
     CompletionMetadata completionMetadata =
@@ -113,7 +109,7 @@ public class ParserInterfaceTest {
   }
 
   @Test
-  public void testCompletionPartialName() {
+  void testCompletionPartialName() {
     String query = "iface1"; // this could be a complete term or a partial name
 
     CompletionMetadata completionMetadata =
@@ -149,7 +145,7 @@ public class ParserInterfaceTest {
   }
 
   @Test
-  public void testParseInterfaceConnectedTo() {
+  void testParseInterfaceConnectedTo() {
     ConnectedToInterfaceAstNode expectedAst =
         new ConnectedToInterfaceAstNode(new IpAstNode("1.1.1.1"));
 
@@ -165,7 +161,7 @@ public class ParserInterfaceTest {
   }
 
   @Test
-  public void testParseInterfaceInterfaceGroup() {
+  void testParseInterfaceInterfaceGroup() {
     InterfaceGroupInterfaceAstNode expectedAst = new InterfaceGroupInterfaceAstNode("a", "b");
 
     assertThat(
@@ -180,7 +176,7 @@ public class ParserInterfaceTest {
   }
 
   @Test
-  public void testParseInterfaceName() {
+  void testParseInterfaceName() {
     String ifaceName = "ifa-ce0:1/0.0";
     NameInterfaceAstNode expectedAst = new NameInterfaceAstNode(ifaceName);
 
@@ -192,7 +188,7 @@ public class ParserInterfaceTest {
   }
 
   @Test
-  public void testParseInterfaceNameRegex() {
+  void testParseInterfaceNameRegex() {
     String regex = "^iface 0-0:1\\/0.*.?$";
     String regexWithSlashes = "/" + regex + "/";
     NameRegexInterfaceAstNode expectedAst = new NameRegexInterfaceAstNode(regex);
@@ -206,7 +202,7 @@ public class ParserInterfaceTest {
   }
 
   @Test
-  public void testParseInterfaceNameRegexDeprecated() {
+  void testParseInterfaceNameRegexDeprecated() {
     String regex = "iface1/0.*";
     InterfaceAstNode expectedAst = new NameRegexInterfaceAstNode(regex);
 
@@ -218,7 +214,7 @@ public class ParserInterfaceTest {
   }
 
   @Test
-  public void testParseInterfaceParens() {
+  void testParseInterfaceParens() {
     assertThat(
         SpecifierAstBuilder.getAst(Grammar.INTERFACE_SPECIFIER, "(e1/0)"),
         equalTo(new NameInterfaceAstNode("e1/0")));
@@ -233,7 +229,7 @@ public class ParserInterfaceTest {
   }
 
   @Test
-  public void testParseInterfaceType() {
+  void testParseInterfaceType() {
     TypeInterfaceAstNode expectedAst =
         new TypeInterfaceAstNode(new StringAstNode(InterfaceType.PHYSICAL.toString()));
 
@@ -249,7 +245,7 @@ public class ParserInterfaceTest {
   }
 
   @Test
-  public void testParseInterfaceVrf() {
+  void testParseInterfaceVrf() {
     VrfInterfaceAstNode expectedAst = new VrfInterfaceAstNode(new StringAstNode("vrf-name"));
 
     assertThat(
@@ -264,7 +260,7 @@ public class ParserInterfaceTest {
   }
 
   @Test
-  public void testParseInterfaceZone() {
+  void testParseInterfaceZone() {
     ZoneInterfaceAstNode expectedAst = new ZoneInterfaceAstNode(new StringAstNode("zone-name"));
 
     assertThat(
@@ -279,7 +275,7 @@ public class ParserInterfaceTest {
   }
 
   @Test
-  public void testParseInterfaceWithNodeSimple() {
+  void testParseInterfaceWithNodeSimple() {
     InterfaceAstNode expectedAst =
         new InterfaceWithNodeInterfaceAstNode(
             new NameNodeAstNode("n"), new NameInterfaceAstNode("e"));
@@ -291,7 +287,7 @@ public class ParserInterfaceTest {
   }
 
   @Test
-  public void testParseInterfaceWithNodeComplexNodeTerm() {
+  void testParseInterfaceWithNodeComplexNodeTerm() {
     InterfaceAstNode expectedAst =
         new InterfaceWithNodeInterfaceAstNode(
             new UnionNodeAstNode(new NameNodeAstNode("n1"), new NameNodeAstNode("n2")),
@@ -310,7 +306,7 @@ public class ParserInterfaceTest {
   }
 
   @Test
-  public void testParseInterfaceDifference() {
+  void testParseInterfaceDifference() {
     DifferenceInterfaceAstNode expectedNode =
         new DifferenceInterfaceAstNode(
             new NameInterfaceAstNode("eth0"), new NameInterfaceAstNode("loopback0"));
@@ -324,7 +320,7 @@ public class ParserInterfaceTest {
   }
 
   @Test
-  public void testParseInterfaceIntersection() {
+  void testParseInterfaceIntersection() {
     IntersectionInterfaceAstNode expectedNode =
         new IntersectionInterfaceAstNode(
             new NameInterfaceAstNode("eth0"), new NameInterfaceAstNode("loopback0"));
@@ -338,7 +334,7 @@ public class ParserInterfaceTest {
   }
 
   @Test
-  public void testParseInterfaceUnion() {
+  void testParseInterfaceUnion() {
     UnionInterfaceAstNode expectedNode =
         new UnionInterfaceAstNode(
             new NameInterfaceAstNode("eth0"), new NameInterfaceAstNode("loopback0"));
@@ -353,7 +349,7 @@ public class ParserInterfaceTest {
 
   /** Test if we got the precedence of set operators right. Intersection is higher priority. */
   @Test
-  public void testParseInterfaceSetOpPrecedence() {
+  void testParseInterfaceSetOpPrecedence() {
     assertThat(
         SpecifierAstBuilder.getAst(Grammar.INTERFACE_SPECIFIER, "eth0\\loopback0&eth1"),
         equalTo(
@@ -375,7 +371,7 @@ public class ParserInterfaceTest {
    * autocompletion
    */
   @Test
-  public void testContextSensitiveInterfaceGroup() {
+  void testContextSensitiveInterfaceGroup() {
     ReferenceLibrary library =
         new ReferenceLibrary(
             ImmutableList.of(
@@ -402,7 +398,7 @@ public class ParserInterfaceTest {
    * Test that interface rules are written in a way that allows for context sensitive autocompletion
    */
   @Test
-  public void testContextSensitiveInterfaceName() {
+  void testContextSensitiveInterfaceName() {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder()
             .setInterfaces(

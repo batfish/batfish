@@ -5,9 +5,9 @@ import static org.batfish.representation.juniper.AsPathMatchExprParser.convertTo
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.routing_policy.as_path.AsPathContext;
@@ -22,7 +22,7 @@ import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IntComparison;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.Not;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests of {@link AsPathMatchExprParser}.
@@ -31,7 +31,7 @@ import org.junit.Test;
  *     href="https://www.juniper.net/documentation/en_US/junos/topics/usage-guidelines/policy-configuring-as-path-regular-expressions-to-use-as-routing-policy-match-conditions.html">Juniper
  *     docs</a>
  */
-public class AsPathMatchExprParserTest {
+class AsPathMatchExprParserTest {
 
   private final AsPathMatchExprEvaluator _evaluator =
       new AsPathMatchExprEvaluator(AsPathContext.builder().setInputAsPath(AsPath.empty()).build());
@@ -45,7 +45,7 @@ public class AsPathMatchExprParserTest {
   }
 
   @Test
-  public void testMatchingSingleNumber() {
+  void testMatchingSingleNumber() {
     AsPathMatchExpr res = convertToAsPathMatchExpr("1234");
     assertThat(res, instanceOf(AsSetsMatchingRanges.class)); // did not fall back to regex
     assertMatches(res, 1234L);
@@ -57,7 +57,7 @@ public class AsPathMatchExprParserTest {
   }
 
   @Test
-  public void testContainsAsn() {
+  void testContainsAsn() {
     AsPathMatchExpr res = convertToAsPathMatchExpr(".* 1234 .*");
     assertThat(res, instanceOf(AsSetsMatchingRanges.class)); // did not fall back to regex
     assertMatches(res, 1234L);
@@ -70,7 +70,7 @@ public class AsPathMatchExprParserTest {
   }
 
   @Test
-  public void testStartsWithAsn() {
+  void testStartsWithAsn() {
     for (String regex : new String[] {"1234 .*", "^1234 .*"}) {
       AsPathMatchExpr res = convertToAsPathMatchExpr(regex);
       assertThat(res, instanceOf(AsSetsMatchingRanges.class)); // did not fall back to regex
@@ -85,7 +85,7 @@ public class AsPathMatchExprParserTest {
   }
 
   @Test
-  public void testEndsWithAsn() {
+  void testEndsWithAsn() {
     for (String regex : new String[] {".* 1234", ".* 1234$"}) {
       AsPathMatchExpr res = convertToAsPathMatchExpr(regex);
       assertThat(res, instanceOf(AsSetsMatchingRanges.class)); // did not fall back to regex
@@ -100,7 +100,7 @@ public class AsPathMatchExprParserTest {
   }
 
   @Test
-  public void testContainsAsnRange() {
+  void testContainsAsnRange() {
     for (String regex : new String[] {".* [123-187] .*", ".* 123-187 .*", ".* (123-187) .*"}) {
       AsPathMatchExpr res = convertToAsPathMatchExpr(regex);
       assertThat(res, instanceOf(AsSetsMatchingRanges.class)); // did not fall back to regex
@@ -116,7 +116,7 @@ public class AsPathMatchExprParserTest {
   }
 
   @Test
-  public void testSingleAsnRange() {
+  void testSingleAsnRange() {
     for (String regex : new String[] {"[123-187]", "123-187", "(123-187)"}) {
       AsPathMatchExpr res = convertToAsPathMatchExpr(regex);
       assertThat(res, instanceOf(AsSetsMatchingRanges.class)); // did not fall back to regex
@@ -132,7 +132,7 @@ public class AsPathMatchExprParserTest {
   }
 
   @Test
-  public void testAsPathLength() {
+  void testAsPathLength() {
     AsPathMatchExpr res = convertToAsPathMatchExpr(".{50,}");
     assertThat(
         res, equalTo(HasAsPathLength.of(new IntComparison(IntComparator.GE, new LiteralInt(50)))));
@@ -143,7 +143,7 @@ public class AsPathMatchExprParserTest {
    * AsPathRegexTest}.
    */
   @Test
-  public void testAsPathMatchRegexFallback() {
+  void testAsPathMatchRegexFallback() {
     for (String regex : new String[] {"1234?", "1234{0,1}", "12{1,4} 34", "123 (56 | 78)?", "()"}) {
       AsPathMatchExpr res1 = convertToAsPathMatchExpr(regex);
       assertThat(res1, instanceOf(AsPathMatchRegex.class));
@@ -163,7 +163,7 @@ public class AsPathMatchExprParserTest {
    * regex that converts to {@link MatchAsPath}.
    */
   @Test
-  public void testAsPathMatchNone() {
+  void testAsPathMatchNone() {
     assertSame(convertToBooleanExpr("!.*"), BooleanExprs.FALSE);
     assertThat(convertToBooleanExpr("!1"), instanceOf(Not.class));
     assertThat(convertToBooleanExpr(".* 1234 .*"), instanceOf(MatchAsPath.class));

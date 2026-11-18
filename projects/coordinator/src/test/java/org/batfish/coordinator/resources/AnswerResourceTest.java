@@ -12,6 +12,7 @@ import static org.hamcrest.Matchers.iterableWithSize;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import java.io.File;
 import java.io.IOException;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -36,14 +37,13 @@ import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.datamodel.table.TableView;
 import org.batfish.datamodel.table.TableViewRow;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 @ParametersAreNonnullByDefault
-public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+class AnswerResourceTest extends WorkMgrServiceV2TestBase {
+  @TempDir public File _folder;
 
   private Builder getAnswerTarget(String network, String question, @Nullable String snapshot) {
     return addHeader(
@@ -80,13 +80,13 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
         .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY);
   }
 
-  @Before
-  public void initTestEnvironment() {
+  @BeforeEach
+  void initTestEnvironment() {
     WorkMgrTestUtils.initWorkManager(_folder);
   }
 
   @Test
-  public void testGetAnswer() throws IOException {
+  void testGetAnswer() throws IOException {
     String network = "network";
     String snapshot = "snapshot";
     String question = "question";
@@ -108,7 +108,7 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetAnswerBadQuery() throws IOException {
+  void testGetAnswerBadQuery() throws IOException {
     String network = "network";
     String snapshot = "snapshot";
     String question = "question";
@@ -127,7 +127,7 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetAnswerNotFound() throws IOException {
+  void testGetAnswerNotFound() throws IOException {
     String network = "network";
     String snapshot = "snapshot";
     String bogusSnapshot = "bogusSnapshot";
@@ -167,7 +167,7 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testFilterAnswer() throws IOException {
+  void testFilterAnswer() throws IOException {
     String network = "network";
     String snapshot = "snapshot";
     String question = "question";
@@ -218,7 +218,7 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testFilterAnswerNoFilter() throws IOException {
+  void testFilterAnswerNoFilter() throws IOException {
     String network = "network";
     String snapshot = "snapshot";
     String question = "question";
@@ -268,7 +268,7 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testFilterAnswerBadRequest() throws IOException {
+  void testFilterAnswerBadRequest() throws IOException {
     String network = "network";
     String snapshot = "snapshot";
     String question = "question";
@@ -289,7 +289,7 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testFilterAnswerMissing() throws IOException {
+  void testFilterAnswerMissing() throws IOException {
     String network = "network";
     String snapshot = "snapshot";
     String bogusSnapshot = "bogusSnapshot";

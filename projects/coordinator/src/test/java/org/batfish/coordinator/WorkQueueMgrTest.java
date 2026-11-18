@@ -4,14 +4,17 @@ import static org.batfish.coordinator.matchers.WorkQueueMatchers.hasWorkItem;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.iterableWithSize;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import java.io.File;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Collections;
@@ -31,22 +34,18 @@ import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.NodeRolesId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.role.NodeRolesData;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests for {@link WorkQueueMgr}. */
-public final class WorkQueueMgrTest {
+final class WorkQueueMgrTest {
 
   private static final String NETWORK = "container";
 
   private static final String SNAPSHOT = "snapshot";
 
   private static final String REFERENCE_SNAPSHOT = "referenceSnapshot";
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
   private SnapshotMetadataMgr _snapshotMetadataManager;
   private WorkQueueMgr _workQueueMgr;
 
@@ -125,14 +124,14 @@ public final class WorkQueueMgrTest {
     return null;
   }
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private NetworkId _networkId;
 
   private IdManager _idManager;
 
-  @Before
-  public void init() {
+  @BeforeEach
+  void init() {
     Main.mainInit(new String[0]);
     Main.setLogger(new BatfishLogger("debug", false));
     WorkMgrTestUtils.initWorkManager(_folder);
@@ -196,9 +195,9 @@ public final class WorkQueueMgrTest {
                 .setSnapshotId(_idManager.getSnapshotId(SNAPSHOT, _networkId).get())
                 .setWorkType(wType)
                 .build());
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage("Cannot queue ");
-    doAction(new Action(ActionType.QUEUE, work));
+    Throwable exception =
+        assertThrows(BatfishException.class, () -> doAction(new Action(ActionType.QUEUE, work)));
+    assertThat(exception.getMessage(), containsString("Cannot queue "));
   }
 
   private void workIsRejected(
@@ -217,9 +216,9 @@ public final class WorkQueueMgrTest {
                 .setIsDifferential(true)
                 .setWorkType(wType)
                 .build());
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage("Cannot queue ");
-    doAction(new Action(ActionType.QUEUE, work));
+    Throwable exception =
+        assertThrows(BatfishException.class, () -> doAction(new Action(ActionType.QUEUE, work)));
+    assertThat(exception.getMessage(), containsString("Cannot queue "));
   }
 
   private void workIsQueued(
@@ -265,7 +264,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void getCompletedWork() throws Exception {
+  void getCompletedWork() throws Exception {
     String snapshot = "snapshot";
     WorkMgrTestUtils.initSnapshotWithTopology(NETWORK, snapshot, ImmutableSet.of());
     SnapshotId snapshot1Id = _idManager.getSnapshotId(snapshot, _networkId).get();
@@ -307,7 +306,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void getCompletedWorkBadFilter() {
+  void getCompletedWorkBadFilter() {
     // Make sure we get no results or error filtering on a bogus snapshot
     List<QueuedWork> works0 =
         _workQueueMgr.getCompletedWork(new NetworkId("bogus"), new SnapshotId("bogus"));
@@ -315,7 +314,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void getCompletedWorkFilter() throws Exception {
+  void getCompletedWorkFilter() throws Exception {
     String snapshot1 = "snapshot1";
     String snapshot2 = "snapshot2";
     String network1 = "network1";
@@ -365,7 +364,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void getMatchingWorkAbsent() throws Exception {
+  void getMatchingWorkAbsent() throws Exception {
     String snapshot = "snapshot1";
     initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
     WorkItem wItem = new WorkItem(NETWORK, snapshot);
@@ -393,7 +392,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void getMatchingWorkPresent() throws Exception {
+  void getMatchingWorkPresent() throws Exception {
     String snapshot = "snapshot1";
     initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
     WorkItem wItem1 = new WorkItem(NETWORK, snapshot);
@@ -418,7 +417,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void listIncompleteWork() throws Exception {
+  void listIncompleteWork() throws Exception {
     String snapshot = "snapshot1";
     String otherNetwork = "other";
     initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
@@ -450,7 +449,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void listIncompleteWorkForSpecificStatus() throws Exception {
+  void listIncompleteWorkForSpecificStatus() throws Exception {
     String snapshot = "snapshot1";
     initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
     WorkDetails.Builder builder =
@@ -473,7 +472,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void listIncompleteWorkForSpecificSnapshot() throws Exception {
+  void listIncompleteWorkForSpecificSnapshot() throws Exception {
     String snapshot1 = "snapshot1";
     String snapshot2 = "snapshot2";
     initSnapshotMetadata(snapshot1, ProcessingStatus.UNINITIALIZED);
@@ -500,7 +499,7 @@ public final class WorkQueueMgrTest {
   // BEGIN: INDEPENDENT_ANSWERING TESTS
 
   @Test
-  public void indAnsweringIsQueued() throws Exception {
+  void indAnsweringIsQueued() throws Exception {
     workIsQueued(
         ProcessingStatus.UNINITIALIZED,
         WorkType.INDEPENDENT_ANSWERING,
@@ -513,22 +512,22 @@ public final class WorkQueueMgrTest {
   // BEGIN: PARSING_DEPENDENT_ANSWERING TESTS
 
   @Test
-  public void pdAnsweringForUninitializedBase() throws Exception {
+  void pdAnsweringForUninitializedBase() throws Exception {
     workIsRejected(ProcessingStatus.UNINITIALIZED, WorkType.PARSING_DEPENDENT_ANSWERING);
   }
 
   @Test
-  public void pdAnsweringForParsingBase() throws Exception {
+  void pdAnsweringForParsingBase() throws Exception {
     workIsRejected(ProcessingStatus.PARSING, WorkType.PARSING_DEPENDENT_ANSWERING);
   }
 
   @Test
-  public void pdAnsweringForParsingFailBase() throws Exception {
+  void pdAnsweringForParsingFailBase() throws Exception {
     workIsRejected(ProcessingStatus.PARSING_FAIL, WorkType.PARSING_DEPENDENT_ANSWERING);
   }
 
   @Test
-  public void pdAnsweringForParsedBase() throws Exception {
+  void pdAnsweringForParsedBase() throws Exception {
     workIsQueued(
         ProcessingStatus.PARSED,
         WorkType.PARSING_DEPENDENT_ANSWERING,
@@ -537,7 +536,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void pdAnsweringForDataplaningBase() throws Exception {
+  void pdAnsweringForDataplaningBase() throws Exception {
     workIsQueued(
         ProcessingStatus.DATAPLANING,
         WorkType.PARSING_DEPENDENT_ANSWERING,
@@ -546,7 +545,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void pdAnsweringForDataplaningFailBase() throws Exception {
+  void pdAnsweringForDataplaningFailBase() throws Exception {
     workIsQueued(
         ProcessingStatus.DATAPLANING_FAIL,
         WorkType.PARSING_DEPENDENT_ANSWERING,
@@ -555,7 +554,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void pdAnsweringForDataplanedBase() throws Exception {
+  void pdAnsweringForDataplanedBase() throws Exception {
     workIsQueued(
         ProcessingStatus.DATAPLANED,
         WorkType.PARSING_DEPENDENT_ANSWERING,
@@ -564,7 +563,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void pdAnsweringWithBaseParsingQueued() throws Exception {
+  void pdAnsweringWithBaseParsingQueued() throws Exception {
     initSnapshotMetadata(SNAPSHOT, ProcessingStatus.UNINITIALIZED);
     queueWork(SNAPSHOT, WorkType.PARSING);
     workIsQueued(
@@ -599,7 +598,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void pdAnsweringWithBaseDataplaningQueued() throws Exception {
+  void pdAnsweringWithBaseDataplaningQueued() throws Exception {
     initSnapshotMetadata(SNAPSHOT, ProcessingStatus.PARSED);
     queueWork(SNAPSHOT, WorkType.DATAPLANING);
     workIsQueued(
@@ -625,7 +624,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void pdAnsweringForUninitializedDelta() throws Exception {
+  void pdAnsweringForUninitializedDelta() throws Exception {
     workIsRejected(
         ProcessingStatus.PARSED,
         ProcessingStatus.UNINITIALIZED,
@@ -633,7 +632,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void pdAnsweringForParsingFailDelta() throws Exception {
+  void pdAnsweringForParsingFailDelta() throws Exception {
     workIsRejected(
         ProcessingStatus.PARSED,
         ProcessingStatus.PARSING_FAIL,
@@ -641,7 +640,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void pdAnsweringForParsedDelta() throws Exception {
+  void pdAnsweringForParsedDelta() throws Exception {
     workIsQueued(
         ProcessingStatus.PARSED,
         ProcessingStatus.PARSED,
@@ -651,7 +650,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void pdAnsweringForDataplaningDelta() throws Exception {
+  void pdAnsweringForDataplaningDelta() throws Exception {
     workIsQueued(
         ProcessingStatus.PARSED,
         ProcessingStatus.DATAPLANING,
@@ -661,7 +660,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void pdAnsweringForDataplaningFailDelta() throws Exception {
+  void pdAnsweringForDataplaningFailDelta() throws Exception {
     workIsQueued(
         ProcessingStatus.PARSED,
         ProcessingStatus.DATAPLANING_FAIL,
@@ -671,7 +670,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void pdAnsweringForDataplanedDelta() throws Exception {
+  void pdAnsweringForDataplanedDelta() throws Exception {
     workIsQueued(
         ProcessingStatus.PARSED,
         ProcessingStatus.DATAPLANED,
@@ -681,7 +680,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void pdAnsweringWithDeltaParsingQueued() throws Exception {
+  void pdAnsweringWithDeltaParsingQueued() throws Exception {
     initSnapshotMetadata(SNAPSHOT, ProcessingStatus.PARSED);
     initSnapshotMetadata(REFERENCE_SNAPSHOT, ProcessingStatus.UNINITIALIZED);
     queueWork(REFERENCE_SNAPSHOT, WorkType.PARSING);
@@ -730,7 +729,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void pdAnsweringWithDeltaDataplaningQueued() throws Exception {
+  void pdAnsweringWithDeltaDataplaningQueued() throws Exception {
     initSnapshotMetadata(SNAPSHOT, ProcessingStatus.PARSED);
     initSnapshotMetadata(REFERENCE_SNAPSHOT, ProcessingStatus.PARSED);
     queueWork(REFERENCE_SNAPSHOT, WorkType.DATAPLANING);
@@ -765,22 +764,22 @@ public final class WorkQueueMgrTest {
   // BEGIN: DATAPLANE_DEPENDENT_ANSWERING TESTS
 
   @Test
-  public void ddAnsweringForUninitializedBase() throws Exception {
+  void ddAnsweringForUninitializedBase() throws Exception {
     workIsRejected(ProcessingStatus.UNINITIALIZED, WorkType.DATAPLANE_DEPENDENT_ANSWERING);
   }
 
   @Test
-  public void ddAnsweringForParsingBase() throws Exception {
+  void ddAnsweringForParsingBase() throws Exception {
     workIsRejected(ProcessingStatus.PARSING, WorkType.DATAPLANE_DEPENDENT_ANSWERING);
   }
 
   @Test
-  public void ddAnsweringForParsingFailBase() throws Exception {
+  void ddAnsweringForParsingFailBase() throws Exception {
     workIsRejected(ProcessingStatus.PARSING_FAIL, WorkType.DATAPLANE_DEPENDENT_ANSWERING);
   }
 
   @Test
-  public void ddAnsweringForParsedBase() throws Exception {
+  void ddAnsweringForParsedBase() throws Exception {
     workIsQueued(
         ProcessingStatus.PARSED,
         WorkType.DATAPLANE_DEPENDENT_ANSWERING,
@@ -789,17 +788,17 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void ddAnsweringForDataplaningBase() throws Exception {
+  void ddAnsweringForDataplaningBase() throws Exception {
     workIsRejected(ProcessingStatus.DATAPLANING, WorkType.DATAPLANE_DEPENDENT_ANSWERING);
   }
 
   @Test
-  public void ddAnsweringForDataplaningFailBase() throws Exception {
+  void ddAnsweringForDataplaningFailBase() throws Exception {
     workIsRejected(ProcessingStatus.DATAPLANING_FAIL, WorkType.DATAPLANE_DEPENDENT_ANSWERING);
   }
 
   @Test
-  public void ddAnsweringForDataplanedBase() throws Exception {
+  void ddAnsweringForDataplanedBase() throws Exception {
     workIsQueued(
         ProcessingStatus.DATAPLANED,
         WorkType.DATAPLANE_DEPENDENT_ANSWERING,
@@ -808,7 +807,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void ddAnsweringWithBaseParsingQueued() throws Exception {
+  void ddAnsweringWithBaseParsingQueued() throws Exception {
     initSnapshotMetadata(SNAPSHOT, ProcessingStatus.UNINITIALIZED);
     queueWork(SNAPSHOT, WorkType.PARSING);
     workIsQueued(
@@ -837,21 +836,21 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void ddAnsweringWithBaseParsingQueuedDataplaningFail() throws Exception {
+  void ddAnsweringWithBaseParsingQueuedDataplaningFail() throws Exception {
     initSnapshotMetadata(SNAPSHOT, ProcessingStatus.UNINITIALIZED);
     queueWork(SNAPSHOT, WorkType.PARSING);
     workIsRejected(ProcessingStatus.DATAPLANING_FAIL, WorkType.DATAPLANE_DEPENDENT_ANSWERING);
   }
 
   @Test
-  public void ddAnsweringWithBaseParsingQueuedDataplaning() throws Exception {
+  void ddAnsweringWithBaseParsingQueuedDataplaning() throws Exception {
     initSnapshotMetadata(SNAPSHOT, ProcessingStatus.UNINITIALIZED);
     queueWork(SNAPSHOT, WorkType.PARSING);
     workIsRejected(ProcessingStatus.DATAPLANING, WorkType.DATAPLANE_DEPENDENT_ANSWERING);
   }
 
   @Test
-  public void ddAnsweringWithBaseDataplaningQueued() throws Exception {
+  void ddAnsweringWithBaseDataplaningQueued() throws Exception {
     initSnapshotMetadata(SNAPSHOT, ProcessingStatus.PARSED);
     queueWork(SNAPSHOT, WorkType.DATAPLANING);
     workIsQueued(
@@ -874,7 +873,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void ddAnsweringForUninitializedDelta() throws Exception {
+  void ddAnsweringForUninitializedDelta() throws Exception {
     workIsRejected(
         ProcessingStatus.DATAPLANED,
         ProcessingStatus.UNINITIALIZED,
@@ -882,7 +881,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void ddAnsweringForParsingFailDelta() throws Exception {
+  void ddAnsweringForParsingFailDelta() throws Exception {
     workIsRejected(
         ProcessingStatus.DATAPLANED,
         ProcessingStatus.PARSING_FAIL,
@@ -890,7 +889,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void ddAnsweringForParsedDelta() throws Exception {
+  void ddAnsweringForParsedDelta() throws Exception {
     workIsQueued(
         ProcessingStatus.DATAPLANED,
         ProcessingStatus.PARSED,
@@ -900,7 +899,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void ddAnsweringForDataplaningDelta() throws Exception {
+  void ddAnsweringForDataplaningDelta() throws Exception {
     workIsRejected(
         ProcessingStatus.DATAPLANED,
         ProcessingStatus.DATAPLANING,
@@ -908,7 +907,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void ddAnsweringForDataplaningFailDelta() throws Exception {
+  void ddAnsweringForDataplaningFailDelta() throws Exception {
     workIsRejected(
         ProcessingStatus.DATAPLANED,
         ProcessingStatus.DATAPLANING_FAIL,
@@ -916,7 +915,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void ddAnsweringForDataplanedDelta() throws Exception {
+  void ddAnsweringForDataplanedDelta() throws Exception {
     workIsQueued(
         ProcessingStatus.DATAPLANED,
         ProcessingStatus.DATAPLANED,
@@ -926,7 +925,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void ddAnsweringWithDeltaParsingQueued() throws Exception {
+  void ddAnsweringWithDeltaParsingQueued() throws Exception {
     initSnapshotMetadata(SNAPSHOT, ProcessingStatus.DATAPLANED);
     initSnapshotMetadata(REFERENCE_SNAPSHOT, ProcessingStatus.UNINITIALIZED);
     queueWork(REFERENCE_SNAPSHOT, WorkType.PARSING);
@@ -964,7 +963,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void ddAnsweringWithDeltaParsingQueuedDataplaningFail() throws Exception {
+  void ddAnsweringWithDeltaParsingQueuedDataplaningFail() throws Exception {
     initSnapshotMetadata(SNAPSHOT, ProcessingStatus.DATAPLANED);
     initSnapshotMetadata(REFERENCE_SNAPSHOT, ProcessingStatus.UNINITIALIZED);
     queueWork(REFERENCE_SNAPSHOT, WorkType.PARSING);
@@ -975,7 +974,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void ddAnsweringWithDeltaParsingQueuedDataplaning() throws Exception {
+  void ddAnsweringWithDeltaParsingQueuedDataplaning() throws Exception {
     initSnapshotMetadata(SNAPSHOT, ProcessingStatus.DATAPLANED);
     initSnapshotMetadata(REFERENCE_SNAPSHOT, ProcessingStatus.UNINITIALIZED);
     queueWork(REFERENCE_SNAPSHOT, WorkType.PARSING);
@@ -986,7 +985,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void ddAnsweringWithDeltaDataplaningQueued() throws Exception {
+  void ddAnsweringWithDeltaDataplaningQueued() throws Exception {
     initSnapshotMetadata(SNAPSHOT, ProcessingStatus.DATAPLANED);
     initSnapshotMetadata(REFERENCE_SNAPSHOT, ProcessingStatus.PARSED);
     queueWork(REFERENCE_SNAPSHOT, WorkType.DATAPLANING);
@@ -1021,49 +1020,49 @@ public final class WorkQueueMgrTest {
   // BEGIN: PARSING work tests
 
   @Test
-  public void parsingForUninitializedBase() throws Exception {
+  void parsingForUninitializedBase() throws Exception {
     workIsQueued(ProcessingStatus.UNINITIALIZED, WorkType.PARSING, WorkStatusCode.UNASSIGNED, 1);
   }
 
   @Test
-  public void parsingAnsweringForParsingBase() throws Exception {
+  void parsingAnsweringForParsingBase() throws Exception {
     workIsQueued(ProcessingStatus.PARSING, WorkType.PARSING, WorkStatusCode.UNASSIGNED, 1);
   }
 
   @Test
-  public void parsingForParsingFailBase() throws Exception {
+  void parsingForParsingFailBase() throws Exception {
     workIsQueued(ProcessingStatus.PARSING_FAIL, WorkType.PARSING, WorkStatusCode.UNASSIGNED, 1);
   }
 
   @Test
-  public void parsingForParsedBase() throws Exception {
+  void parsingForParsedBase() throws Exception {
     workIsQueued(ProcessingStatus.PARSED, WorkType.PARSING, WorkStatusCode.UNASSIGNED, 1);
   }
 
   @Test
-  public void parsingForDataplaningBase() throws Exception {
+  void parsingForDataplaningBase() throws Exception {
     workIsQueued(ProcessingStatus.DATAPLANING, WorkType.PARSING, WorkStatusCode.UNASSIGNED, 1);
   }
 
   @Test
-  public void parsingForDataplaningFailBase() throws Exception {
+  void parsingForDataplaningFailBase() throws Exception {
     workIsQueued(ProcessingStatus.DATAPLANING_FAIL, WorkType.PARSING, WorkStatusCode.UNASSIGNED, 1);
   }
 
   @Test
-  public void parsingForDataplanedBase() throws Exception {
+  void parsingForDataplanedBase() throws Exception {
     workIsQueued(ProcessingStatus.DATAPLANED, WorkType.PARSING, WorkStatusCode.UNASSIGNED, 1);
   }
 
   @Test
-  public void parsingWithConflictingWorkQueued1() throws Exception {
+  void parsingWithConflictingWorkQueued1() throws Exception {
     initSnapshotMetadata(SNAPSHOT, ProcessingStatus.PARSED);
     queueWork(SNAPSHOT, WorkType.PARSING_DEPENDENT_ANSWERING);
     workIsRejected(ProcessingStatus.UNINITIALIZED, WorkType.PARSING);
   }
 
   @Test
-  public void parsingWithConflictingWorkQueued2() throws Exception {
+  void parsingWithConflictingWorkQueued2() throws Exception {
     initSnapshotMetadata(SNAPSHOT, ProcessingStatus.UNINITIALIZED);
     initSnapshotMetadata("other", ProcessingStatus.DATAPLANED);
     queueWork(SNAPSHOT, WorkType.PARSING); // this work interferes
@@ -1072,7 +1071,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void parsingWithDeltaConflictingWorkQueued() throws Exception {
+  void parsingWithDeltaConflictingWorkQueued() throws Exception {
     initSnapshotMetadata("other", ProcessingStatus.DATAPLANED);
     initSnapshotMetadata(SNAPSHOT, ProcessingStatus.DATAPLANED);
     queueWork("other", SNAPSHOT, WorkType.PARSING_DEPENDENT_ANSWERING);
@@ -1080,7 +1079,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void parsingWithNonConflictingWorkQueued() throws Exception {
+  void parsingWithNonConflictingWorkQueued() throws Exception {
     initSnapshotMetadata("other", ProcessingStatus.DATAPLANED);
     queueWork("other", WorkType.PARSING_DEPENDENT_ANSWERING);
     workIsQueued(ProcessingStatus.UNINITIALIZED, WorkType.PARSING, WorkStatusCode.UNASSIGNED, 2);
@@ -1091,49 +1090,49 @@ public final class WorkQueueMgrTest {
   // BEGIN: DATAPLANING work tests
 
   @Test
-  public void dataplaningForUninitializedBase() throws Exception {
+  void dataplaningForUninitializedBase() throws Exception {
     workIsRejected(ProcessingStatus.UNINITIALIZED, WorkType.DATAPLANING);
   }
 
   @Test
-  public void dataplaningForParsingBase() throws Exception {
+  void dataplaningForParsingBase() throws Exception {
     workIsRejected(ProcessingStatus.PARSING, WorkType.DATAPLANING);
   }
 
   @Test
-  public void dataplaningForParsingFailBase() throws Exception {
+  void dataplaningForParsingFailBase() throws Exception {
     workIsRejected(ProcessingStatus.PARSING_FAIL, WorkType.DATAPLANING);
   }
 
   @Test
-  public void dataplaningForParsedBase() throws Exception {
+  void dataplaningForParsedBase() throws Exception {
     workIsQueued(ProcessingStatus.PARSED, WorkType.DATAPLANING, WorkStatusCode.UNASSIGNED, 1);
   }
 
   @Test
-  public void dataplaningForDataplaningBase() throws Exception {
+  void dataplaningForDataplaningBase() throws Exception {
     workIsQueued(ProcessingStatus.DATAPLANING, WorkType.DATAPLANING, WorkStatusCode.UNASSIGNED, 1);
   }
 
   @Test
-  public void dataplaningForDataplaningFailBase() throws Exception {
+  void dataplaningForDataplaningFailBase() throws Exception {
     workIsQueued(ProcessingStatus.DATAPLANING_FAIL, WorkType.PARSING, WorkStatusCode.UNASSIGNED, 1);
   }
 
   @Test
-  public void dataplaningForDataplanedBase() throws Exception {
+  void dataplaningForDataplanedBase() throws Exception {
     workIsQueued(ProcessingStatus.DATAPLANED, WorkType.PARSING, WorkStatusCode.UNASSIGNED, 1);
   }
 
   @Test
-  public void dataplaningWithConflictingWorkQueued1() throws Exception {
+  void dataplaningWithConflictingWorkQueued1() throws Exception {
     initSnapshotMetadata(SNAPSHOT, ProcessingStatus.DATAPLANED);
     queueWork(SNAPSHOT, WorkType.DATAPLANE_DEPENDENT_ANSWERING);
     workIsRejected(ProcessingStatus.UNINITIALIZED, WorkType.PARSING);
   }
 
   @Test
-  public void dataplaningWithConflictingWorkQueued2() throws Exception {
+  void dataplaningWithConflictingWorkQueued2() throws Exception {
     initSnapshotMetadata(SNAPSHOT, ProcessingStatus.DATAPLANED);
     initSnapshotMetadata("other", ProcessingStatus.UNINITIALIZED);
     queueWork(SNAPSHOT, WorkType.PARSING); // this work interferes
@@ -1142,7 +1141,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void dataplaningWithDeltaConflictingWorkQueued() throws Exception {
+  void dataplaningWithDeltaConflictingWorkQueued() throws Exception {
     initSnapshotMetadata("other", ProcessingStatus.DATAPLANED);
     initSnapshotMetadata(SNAPSHOT, ProcessingStatus.DATAPLANED);
     queueWork("other", SNAPSHOT, WorkType.PARSING_DEPENDENT_ANSWERING);
@@ -1150,14 +1149,14 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void dataplaningWithNonConflictingWorkQueued() throws Exception {
+  void dataplaningWithNonConflictingWorkQueued() throws Exception {
     initSnapshotMetadata("other", ProcessingStatus.DATAPLANED);
     queueWork("other", WorkType.PARSING_DEPENDENT_ANSWERING);
     workIsQueued(ProcessingStatus.PARSED, WorkType.DATAPLANING, WorkStatusCode.UNASSIGNED, 2);
   }
 
   @Test
-  public void dataplaningAfterParsingFailure() throws Exception {
+  void dataplaningAfterParsingFailure() throws Exception {
     String snapshot = "snapshot1";
     initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
     SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, _networkId).get();
@@ -1188,7 +1187,7 @@ public final class WorkQueueMgrTest {
   // END: DATAPLANING work tests
 
   @Test
-  public void queueUnassignedWork() throws Exception {
+  void queueUnassignedWork() throws Exception {
     String snapshot = "snapshot1";
     initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
     WorkDetails.Builder builder =
@@ -1209,7 +1208,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void queueUnassignedWorkUnknown() throws Exception {
+  void queueUnassignedWorkUnknown() throws Exception {
     String snapshot = "snapshot1";
     initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
     QueuedWork work1 =
@@ -1225,7 +1224,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void testGetWorkForChecking() throws Exception {
+  void testGetWorkForChecking() throws Exception {
     String snapshot = "snapshot1";
     initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
     List<QueuedWork> workToCheck = _workQueueMgr.getWorkForChecking();
@@ -1275,7 +1274,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void queueUnassignedWorkDuplicate() throws Exception {
+  void queueUnassignedWorkDuplicate() throws Exception {
     String snapshot = "snapshot1";
     initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
     QueuedWork work1 =
@@ -1288,14 +1287,14 @@ public final class WorkQueueMgrTest {
                 .build());
     _workQueueMgr.queueUnassignedWork(work1);
 
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage("Duplicate work item");
+    Throwable exception =
+        assertThrows(BatfishException.class, () -> _workQueueMgr.queueUnassignedWork(work1));
 
-    _workQueueMgr.queueUnassignedWork(work1);
+    assertThat(exception.getMessage(), containsString("Duplicate work item"));
   }
 
   @Test
-  public void workIsUnblocked1() throws Exception {
+  void workIsUnblocked1() throws Exception {
     String snapshot = "snapshot1";
     initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
 
@@ -1344,7 +1343,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void workIsUnblocked2() throws Exception {
+  void workIsUnblocked2() throws Exception {
     String snapshot = "snapshot1";
     initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
 
@@ -1393,7 +1392,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void processTaskCheckTerminatedByUser() throws Exception {
+  void processTaskCheckTerminatedByUser() throws Exception {
     String snapshot = "snapshot1";
     initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
 
@@ -1419,7 +1418,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void testProcessTaskCheckResultPromoteSuccessfulParse() throws Exception {
+  void testProcessTaskCheckResultPromoteSuccessfulParse() throws Exception {
     String snapshot = "snapshot1";
     initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
     SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, _networkId).get();
@@ -1446,7 +1445,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void testProcessTaskCheckResultPromoteUnsuccessfulParse() throws Exception {
+  void testProcessTaskCheckResultPromoteUnsuccessfulParse() throws Exception {
     String snapshot = "snapshot1";
     initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
     SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, _networkId).get();
@@ -1473,7 +1472,7 @@ public final class WorkQueueMgrTest {
   }
 
   @Test
-  public void testProcessTaskCheckResultPromoteNoChange() throws Exception {
+  void testProcessTaskCheckResultPromoteNoChange() throws Exception {
     String snapshot = "snapshot1";
     initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
     SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, _networkId).get();

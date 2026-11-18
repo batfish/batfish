@@ -24,13 +24,10 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.Statements;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link FirstMatchChain} */
-@RunWith(JUnit4.class)
-public class FirstMatchChainTest {
+class FirstMatchChainTest {
 
   private static RoutingPolicy P1 =
       RoutingPolicy.builder()
@@ -74,7 +71,7 @@ public class FirstMatchChainTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new Object())
         .addEqualityGroup(
@@ -86,19 +83,19 @@ public class FirstMatchChainTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     FirstMatchChain fmc = new FirstMatchChain(ImmutableList.of(BooleanExprs.TRUE));
     assertThat(SerializationUtils.clone(fmc), equalTo(fmc));
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     FirstMatchChain fmc = new FirstMatchChain(ImmutableList.of(BooleanExprs.TRUE));
     assertThat(BatfishObjectMapper.clone(fmc, FirstMatchChain.class), equalTo(fmc));
   }
 
   @Test
-  public void testEvaluate() {
+  void testEvaluate() {
     // Test that first match is used
     FirstMatchChain fmc =
         new FirstMatchChain(ImmutableList.of(BooleanExprs.FALSE, BooleanExprs.TRUE));
@@ -115,7 +112,7 @@ public class FirstMatchChainTest {
   }
 
   @Test
-  public void testWithCallExprs() {
+  void testWithCallExprs() {
     /*
     Two policies in chain, plus a default policy:
     - P1 accepts routes with tag 1
@@ -152,7 +149,7 @@ public class FirstMatchChainTest {
   }
 
   @Test
-  public void testToString() {
+  void testToString() {
     FirstMatchChain fmc = new FirstMatchChain(ImmutableList.of(BooleanExprs.TRUE));
     assertThat(fmc.toString(), equalTo("FirstMatchChain{subroutines=[True]}"));
   }

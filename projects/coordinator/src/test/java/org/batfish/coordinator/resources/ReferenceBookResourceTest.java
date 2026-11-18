@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import java.io.File;
 import java.io.IOException;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation.Builder;
@@ -20,17 +21,16 @@ import org.batfish.coordinator.WorkMgrTestUtils;
 import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public class ReferenceBookResourceTest extends WorkMgrServiceV2TestBase {
+class ReferenceBookResourceTest extends WorkMgrServiceV2TestBase {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
-  @Before
-  public void initTestEnvironment() {
+  @BeforeEach
+  void initTestEnvironment() {
     WorkMgrTestUtils.initWorkManager(_folder);
   }
 
@@ -45,7 +45,7 @@ public class ReferenceBookResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void delReferenceBook() throws IOException {
+  void delReferenceBook() throws IOException {
     String container = "someContainer";
     Main.getWorkMgr().initNetwork(container, null);
 
@@ -70,7 +70,7 @@ public class ReferenceBookResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void getReferenceBook() throws IOException {
+  void getReferenceBook() throws IOException {
     String container = "someContainer";
     Main.getWorkMgr().initNetwork(container, null);
 
@@ -96,7 +96,7 @@ public class ReferenceBookResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testPutReferenceBookMissingNetwork() {
+  void testPutReferenceBookMissingNetwork() {
     String network = "network1";
     String bookName = "book1";
 
@@ -109,7 +109,7 @@ public class ReferenceBookResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void putReferenceBookSuccess() throws IOException {
+  void putReferenceBookSuccess() throws IOException {
     String network = "someContainer";
     String bookName = "book1";
     Main.getWorkMgr().initNetwork(network, null);

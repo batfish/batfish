@@ -53,8 +53,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableList;
@@ -109,13 +109,13 @@ import org.batfish.question.routes.RoutesAnswererUtil.RouteEntryPresenceStatus;
 import org.batfish.question.routes.RoutesQuestion.PrefixMatchType;
 import org.batfish.specifier.RoutingProtocolSpecifier;
 import org.hamcrest.Matcher;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link RoutesAnswererUtil} */
-public class RoutesAnswererUtilTest {
+class RoutesAnswererUtilTest {
 
   @Test
-  public void testAlignRtRowAttrs() {
+  void testAlignRtRowAttrs() {
     RouteRowAttribute rra1 = RouteRowAttribute.builder().setAdminDistance(10L).build();
     RouteRowAttribute rra3 = RouteRowAttribute.builder().setAdminDistance(30L).build();
     RouteRowAttribute rra5 = RouteRowAttribute.builder().setAdminDistance(50L).build();
@@ -140,7 +140,7 @@ public class RoutesAnswererUtilTest {
   }
 
   @Test
-  public void testAlignRtRowAttrsTrailingNulls1() {
+  void testAlignRtRowAttrsTrailingNulls1() {
     RouteRowAttribute rra1 = RouteRowAttribute.builder().setAdminDistance(10L).build();
     RouteRowAttribute rra2 = RouteRowAttribute.builder().setAdminDistance(20L).build();
     RouteRowAttribute rra3 = RouteRowAttribute.builder().setAdminDistance(30L).build();
@@ -159,7 +159,7 @@ public class RoutesAnswererUtilTest {
   }
 
   @Test
-  public void testAlignRtRowAttrsTrailingNulls2() {
+  void testAlignRtRowAttrsTrailingNulls2() {
     RouteRowAttribute rra1 = RouteRowAttribute.builder().setAdminDistance(10L).build();
     RouteRowAttribute rra2 = RouteRowAttribute.builder().setAdminDistance(20L).build();
     RouteRowAttribute rra3 = RouteRowAttribute.builder().setAdminDistance(30L).build();
@@ -178,7 +178,7 @@ public class RoutesAnswererUtilTest {
   }
 
   @Test
-  public void testAlignRtRowAttrsLeadingNulls() {
+  void testAlignRtRowAttrsLeadingNulls() {
     RouteRowAttribute rra1 = RouteRowAttribute.builder().setAdminDistance(10L).build();
     RouteRowAttribute rra2 = RouteRowAttribute.builder().setAdminDistance(20L).build();
     RouteRowAttribute rra3 = RouteRowAttribute.builder().setAdminDistance(30L).build();
@@ -197,7 +197,7 @@ public class RoutesAnswererUtilTest {
   }
 
   @Test
-  public void testMainRibColumnsValue() {
+  void testMainRibColumnsValue() {
     AbstractRoute route =
         OspfExternalType2Route.builder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
@@ -236,7 +236,7 @@ public class RoutesAnswererUtilTest {
   }
 
   @Test
-  public void testBgpRibRouteColumnsValue() {
+  void testBgpRibRouteColumnsValue() {
     // Create two BGP routes: one standard route and one from a BGP unnumbered session
     Ip ip = Ip.parse("1.1.1.1");
     Prefix prefix = ip.toPrefix();
@@ -317,7 +317,7 @@ public class RoutesAnswererUtilTest {
   }
 
   @Test
-  public void testBgpRibRoutes_empty() {
+  void testBgpRibRoutes_empty() {
     Multiset<Row> rows =
         getBgpRibRoutes(
             ImmutableTable.of(), // no BGP rib for the specified vrfs
@@ -331,7 +331,7 @@ public class RoutesAnswererUtilTest {
   }
 
   @Test
-  public void testGetBgpRoutesCommunities() {
+  void testGetBgpRoutesCommunities() {
     Ip ip = Ip.parse("1.1.1.1");
     Table<String, String, Set<Bgpv4Route>> bgpRouteTable = HashBasedTable.create();
     bgpRouteTable.put(
@@ -364,7 +364,7 @@ public class RoutesAnswererUtilTest {
   }
 
   @Test
-  public void testEvpnRibRouteColumns() {
+  void testEvpnRibRouteColumns() {
     // Create two EVPN routes: one standard route and one from a BGP unnumbered session
     Ip ip = Ip.parse("1.1.1.1");
     Prefix prefix = ip.toPrefix();
@@ -424,7 +424,7 @@ public class RoutesAnswererUtilTest {
   }
 
   @Test
-  public void testEvpnRibRoutes_empty() {
+  void testEvpnRibRoutes_empty() {
     Multiset<Row> rows =
         getEvpnRoutes(
             ImmutableTable.of(), // no EVPN rib for the specified vrfs
@@ -438,7 +438,7 @@ public class RoutesAnswererUtilTest {
   }
 
   @Test
-  public void testComputeNextHopNode() {
+  void testComputeNextHopNode() {
     assertThat(computeNextHopNode(null, ImmutableMap.of()), nullValue());
     assertThat(computeNextHopNode(Ip.parse("1.1.1.1"), null), nullValue());
     assertThat(computeNextHopNode(Ip.parse("1.1.1.1"), ImmutableMap.of()), nullValue());
@@ -457,7 +457,7 @@ public class RoutesAnswererUtilTest {
   }
 
   @Test
-  public void testBgpRoutesRowDiff() {
+  void testBgpRoutesRowDiff() {
     RouteRowAttribute.Builder routeRowAttrBuilder =
         RouteRowAttribute.builder()
             .setAdminDistance(200L)
@@ -555,7 +555,7 @@ public class RoutesAnswererUtilTest {
   }
 
   @Test
-  public void testGetMainRibRouteRowsDiffPopulatesAllColumns() {
+  void testGetMainRibRouteRowsDiffPopulatesAllColumns() {
     RouteRowKey primaryKey = new RouteRowKey("node", "vrf", Prefix.parse("1.0.0.0/8"));
     MainRibRouteRowSecondaryKey secondaryKey =
         new MainRibRouteRowSecondaryKey(NextHopIp.of(Ip.parse("1.1.1.1")), "bgp");
@@ -600,7 +600,7 @@ public class RoutesAnswererUtilTest {
   }
 
   @Test
-  public void testGetBgpRouteRowsDiffPopulatesAllColumns() {
+  void testGetBgpRouteRowsDiffPopulatesAllColumns() {
     RouteRowKey primaryKey = new RouteRowKey("node", "vrf", Prefix.parse("1.0.0.0/8"));
     BgpRouteRowSecondaryKey secondaryKey =
         new BgpRouteRowSecondaryKey(
@@ -672,7 +672,7 @@ public class RoutesAnswererUtilTest {
   }
 
   @Test
-  public void testGetEvpnRouteRowsDiffPopulatesAllColumns() {
+  void testGetEvpnRouteRowsDiffPopulatesAllColumns() {
     RouteRowKey primaryKey = new RouteRowKey("node", "vrf", Prefix.parse("1.0.0.0/8"));
     EvpnRouteRowSecondaryKey secondaryKey =
         new EvpnRouteRowSecondaryKey(
@@ -749,7 +749,7 @@ public class RoutesAnswererUtilTest {
   }
 
   @Test
-  public void testGroupMatchingRoutesByPrefix() {
+  void testGroupMatchingRoutesByPrefix() {
     FinalMainRib rib =
         FinalMainRib.of(
             OspfExternalType2Route.builder()
@@ -806,7 +806,7 @@ public class RoutesAnswererUtilTest {
   }
 
   @Test
-  public void testGroupBgpRoutes_filterByProtocol() {
+  void testGroupBgpRoutes_filterByProtocol() {
     Bgpv4Route bgpRoute =
         Bgpv4Route.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
@@ -881,7 +881,7 @@ public class RoutesAnswererUtilTest {
   }
 
   @Test
-  public void testGroupMatchingBgpRoutesByPrefix() {
+  void testGroupMatchingBgpRoutesByPrefix() {
     Prefix prefix = Prefix.strict("1.1.1.0/24");
     Ip nhip1 = Ip.parse("1.1.1.2");
     Ip nhip2 = Ip.parse("1.1.1.3");
@@ -967,7 +967,7 @@ public class RoutesAnswererUtilTest {
 
   /** Test that groupBgpRoutes produces a diff when a route goes from back to best. */
   @Test
-  public void testGroupBgpRoutes_backup() {
+  void testGroupBgpRoutes_backup() {
     Prefix prefix = Prefix.strict("1.1.1.0/24");
     Ip nhip = Ip.parse("1.1.1.2");
     Bgpv4Route route =
@@ -1024,7 +1024,7 @@ public class RoutesAnswererUtilTest {
   }
 
   @Test
-  public void testBgpRouteToRouteRowAttribute() {
+  void testBgpRouteToRouteRowAttribute() {
     Bgpv4Route route =
         Bgpv4Route.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
@@ -1065,7 +1065,7 @@ public class RoutesAnswererUtilTest {
   }
 
   @Test
-  public void testGetRoutesDiffCommonKey() {
+  void testGetRoutesDiffCommonKey() {
     RouteRowKey routeRowKey = new RouteRowKey("node", "vrf", Prefix.parse("2.2.2.2/24"));
     RouteRowSecondaryKey rrsk1 =
         new MainRibRouteRowSecondaryKey(NextHopIp.of(Ip.parse("1.1.1.1")), "bgp");
@@ -1134,7 +1134,7 @@ public class RoutesAnswererUtilTest {
   }
 
   @Test
-  public void testGetRoutesDiffNonCommonKey() {
+  void testGetRoutesDiffNonCommonKey() {
     RouteRowKey routeRowKey1 = new RouteRowKey("node1", "vrf", Prefix.parse("1.1.1.1/24"));
     RouteRowKey routeRowKey2 = new RouteRowKey("node2", "vrf", Prefix.parse("1.1.1.2/24"));
 
@@ -1169,7 +1169,7 @@ public class RoutesAnswererUtilTest {
   }
 
   @Test
-  public void testAbstractRoutesRowDiff() {
+  void testAbstractRoutesRowDiff() {
     RouteRowAttribute.Builder routeRowAttrBuilder =
         RouteRowAttribute.builder().setAdminDistance(200L).setMetric(2L);
 
@@ -1197,7 +1197,7 @@ public class RoutesAnswererUtilTest {
   }
 
   @Test
-  public void testPopulateRouteRowAttributes() {
+  void testPopulateRouteRowAttributes() {
     RouteRowAttribute routeRowAttribute =
         RouteRowAttribute.builder().setMetric(1L).setAdminDistance(1L).setTag(1L).build();
     Row.RowBuilder rowBuilder = Row.builder();
@@ -1215,7 +1215,7 @@ public class RoutesAnswererUtilTest {
   }
 
   @Test
-  public void testPrefixMatches() {
+  void testPrefixMatches() {
     Prefix p24 = Prefix.parse("1.1.1.0/24");
     Prefix p16 = Prefix.parse("1.1.0.0/16");
     Prefix p32 = Prefix.parse("1.1.1.1/32");
@@ -1235,7 +1235,7 @@ public class RoutesAnswererUtilTest {
   }
 
   @Test
-  public void testGetMatchingPrefixRoutes_fromRib() {
+  void testGetMatchingPrefixRoutes_fromRib() {
     AbstractRoute r1 = new ConnectedRoute(Prefix.parse("1.1.1.0/24"), "r1");
     AbstractRoute r2 = new ConnectedRoute(Prefix.parse("1.2.1.0/24"), "r2");
     FinalMainRib rib = FinalMainRib.of(r1, r2);
@@ -1277,7 +1277,7 @@ public class RoutesAnswererUtilTest {
   }
 
   @Test
-  public void testGetMatchingRoutes() {
+  void testGetMatchingRoutes() {
     Prefix bestAndBackup = Prefix.parse("1.1.1.0/24");
     Prefix bestOnly = Prefix.parse("1.2.1.0/24");
 
@@ -1456,7 +1456,7 @@ public class RoutesAnswererUtilTest {
   }
 
   @Test
-  public void testLongestPrefixMatch() {
+  void testLongestPrefixMatch() {
     AbstractRoute r1 = new ConnectedRoute(Prefix.parse("1.1.1.0/24"), "r1");
     AbstractRoute r2 = new ConnectedRoute(Prefix.parse("1.2.1.0/24"), "r2");
     Set<AbstractRoute> routes = ImmutableSet.of(r1, r2);
@@ -1477,7 +1477,7 @@ public class RoutesAnswererUtilTest {
   }
 
   @Test
-  public void testPopulateBgpRouteAttributes() {
+  void testPopulateBgpRouteAttributes() {
     // deliberately not sorted
     RouteRowAttribute attr =
         RouteRowAttribute.builder().setClusterList(ImmutableSet.of(5L, 1L, 3L, 2L)).build();

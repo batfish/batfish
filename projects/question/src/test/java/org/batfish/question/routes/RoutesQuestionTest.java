@@ -5,12 +5,12 @@ import static org.hamcrest.Matchers.equalTo;
 
 import org.batfish.question.routes.RoutesQuestion.RibProtocol;
 import org.batfish.specifier.AllNodesNodeSpecifier;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link RoutesQuestion} */
-public class RoutesQuestionTest {
+class RoutesQuestionTest {
   @Test
-  public void testDefaultParams() {
+  void testDefaultParams() {
     RoutesQuestion question = new RoutesQuestion();
 
     assertThat(question.getDataPlane(), equalTo(true));

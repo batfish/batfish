@@ -4,12 +4,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import net.sf.javabdd.BDD;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link BDDPacketLength}. */
-public final class BDDPacketLengthTest {
+final class BDDPacketLengthTest {
   @Test
-  public void testSatAssignment() {
+  void testSatAssignment() {
     BDDPacket pkt = new BDDPacket();
     BDDPacketLength pktLen = pkt.getPacketLength();
 

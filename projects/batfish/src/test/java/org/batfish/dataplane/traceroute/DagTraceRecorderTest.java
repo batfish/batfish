@@ -7,9 +7,9 @@ import static org.batfish.datamodel.matchers.TraceMatchers.hasHops;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
@@ -20,9 +20,9 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.HopTestUtils;
 import org.batfish.dataplane.traceroute.DagTraceRecorder.NodeKey;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class DagTraceRecorderTest {
+class DagTraceRecorderTest {
   private static final Flow TEST_FLOW =
       Flow.builder().setDstIp(Ip.parse("1.1.1.1")).setIngressNode("node").build();
 
@@ -66,7 +66,7 @@ public class DagTraceRecorderTest {
    * <p>We cannot record the partial trace: C -> B
    */
   @Test
-  public void testNoReuse_requiredBreadcrumb() {
+  void testNoReuse_requiredBreadcrumb() {
     HopInfo hopA = forwardedHop("A");
     HopInfo hopB = forwardedHop("B");
     HopInfo hopALoop = loopHop("A");
@@ -85,7 +85,7 @@ public class DagTraceRecorderTest {
    * <p>We cannot record the partial trace: C -> B
    */
   @Test
-  public void testNoReuse_forbiddenBreadcrumb() {
+  void testNoReuse_forbiddenBreadcrumb() {
     Flow flow = Flow.builder().setDstIp(Ip.parse("1.1.1.1")).setIngressNode("node").build();
     HopInfo hopA = forwardedHop("A");
     HopInfo hopB = forwardedHop("B");
@@ -104,7 +104,7 @@ public class DagTraceRecorderTest {
    * <p>D transforms the flow, so we cannot record the partial trace: D -> B
    */
   @Test
-  public void testNoReuse_transformedFlow() {
+  void testNoReuse_transformedFlow() {
     Flow transformedFlow = TEST_FLOW.toBuilder().setDstIp(Ip.parse("2.2.2.2")).build();
     HopInfo hopA = forwardedHop("A");
     HopInfo hopB = forwardedHop("B");
@@ -117,7 +117,7 @@ public class DagTraceRecorderTest {
   }
 
   @Test
-  public void testRecordPartialTrace() {
+  void testRecordPartialTrace() {
     HopInfo hopA = forwardedHop("A");
     HopInfo hopB = forwardedHop("B");
     HopInfo hopC = acceptedHop("C");
@@ -131,7 +131,7 @@ public class DagTraceRecorderTest {
    * Test that trace order is preserved. This is important for making TraceDag transparent to users.
    */
   @Test
-  public void testTraceOrder() {
+  void testTraceOrder() {
     HopInfo hopA1 = forwardedHop("A1");
     HopInfo hopA2 = forwardedHop("A2");
     HopInfo hopB = forwardedHop("B");
@@ -182,7 +182,7 @@ public class DagTraceRecorderTest {
   }
 
   @Test
-  public void testNodeKeyEquals() {
+  void testNodeKeyEquals() {
     Flow flow1 = TEST_FLOW;
     Flow flow2 = TEST_FLOW.toBuilder().setDstIp(Ip.parse("2.2.2.2")).build();
     Hop hop1 = HopTestUtils.acceptedHop("hop1");

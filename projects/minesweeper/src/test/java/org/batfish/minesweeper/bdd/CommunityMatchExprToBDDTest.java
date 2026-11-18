@@ -1,6 +1,7 @@
 package org.batfish.minesweeper.bdd;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -54,13 +55,11 @@ import org.batfish.minesweeper.CommunityVar.Type;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.batfish.minesweeper.ConfigAtomicPredicatesTestUtils;
 import org.batfish.minesweeper.bdd.TransferBDD.Context;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link org.batfish.minesweeper.bdd.CommunityMatchExprToBDD}. */
-public class CommunityMatchExprToBDDTest {
+class CommunityMatchExprToBDDTest {
   private static final String HOSTNAME = "hostname";
   private static final String POLICY_NAME = "policy";
   private IBatfish _batfish;
@@ -68,10 +67,8 @@ public class CommunityMatchExprToBDDTest {
   private CommunitySetMatchExprToBDD.Arg _arg;
   private CommunityMatchExprToBDD _communityMatchExprToBDD;
 
-  @Rule public ExpectedException _exception = ExpectedException.none();
-
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder()
@@ -113,7 +110,7 @@ public class CommunityMatchExprToBDDTest {
   }
 
   @Test
-  public void testVisitAllExtendedCommunities() {
+  void testVisitAllExtendedCommunities() {
     BDD result =
         _communityMatchExprToBDD.visitAllExtendedCommunities(
             AllExtendedCommunities.instance(), _arg);
@@ -136,7 +133,7 @@ public class CommunityMatchExprToBDDTest {
   }
 
   @Test
-  public void testVisitAllLargeCommunities() {
+  void testVisitAllLargeCommunities() {
     BDD result =
         _communityMatchExprToBDD.visitAllLargeCommunities(AllLargeCommunities.instance(), _arg);
 
@@ -144,7 +141,7 @@ public class CommunityMatchExprToBDDTest {
   }
 
   @Test
-  public void testVisitAllStandardCommunities() {
+  void testVisitAllStandardCommunities() {
     BDD result =
         _communityMatchExprToBDD.visitAllStandardCommunities(
             AllStandardCommunities.instance(), _arg);
@@ -164,7 +161,7 @@ public class CommunityMatchExprToBDDTest {
   }
 
   @Test
-  public void testVisitCommunityAcl() {
+  void testVisitCommunityAcl() {
     CommunityAcl cacl =
         new CommunityAcl(
             ImmutableList.of(
@@ -183,7 +180,7 @@ public class CommunityMatchExprToBDDTest {
   }
 
   @Test
-  public void testVisitCommunityIn() {
+  void testVisitCommunityIn() {
     CommunityIn ci =
         new CommunityIn(
             new LiteralCommunitySet(
@@ -199,7 +196,7 @@ public class CommunityMatchExprToBDDTest {
   }
 
   @Test
-  public void testVisitCommunityIs() {
+  void testVisitCommunityIs() {
     CommunityIs ci = new CommunityIs(StandardCommunity.parse("20:30"));
 
     BDD result = _communityMatchExprToBDD.visitCommunityIs(ci, _arg);
@@ -210,7 +207,7 @@ public class CommunityMatchExprToBDDTest {
   }
 
   @Test
-  public void testVisitCommunityMatchAll() {
+  void testVisitCommunityMatchAll() {
     CommunityMatchAll cma =
         new CommunityMatchAll(
             ImmutableList.of(
@@ -226,7 +223,7 @@ public class CommunityMatchExprToBDDTest {
   }
 
   @Test
-  public void testVisitCommunityMatchAny() {
+  void testVisitCommunityMatchAny() {
     CommunityMatchAny cma =
         new CommunityMatchAny(
             ImmutableList.of(
@@ -242,7 +239,7 @@ public class CommunityMatchExprToBDDTest {
   }
 
   @Test
-  public void testVisitCommunityMatchExprReference() {
+  void testVisitCommunityMatchExprReference() {
     String name = "name";
     _baseConfig.setCommunityMatchExprs(
         ImmutableMap.of(name, new CommunityMatchRegex(ColonSeparatedRendering.instance(), "^20:")));
@@ -256,7 +253,7 @@ public class CommunityMatchExprToBDDTest {
   }
 
   @Test
-  public void testVisitCommunityMatchRegex() {
+  void testVisitCommunityMatchRegex() {
     CommunityMatchRegex cmr = new CommunityMatchRegex(ColonSeparatedRendering.instance(), "^20:");
 
     BDD result = _communityMatchExprToBDD.visitCommunityMatchRegex(cmr, _arg);
@@ -267,7 +264,7 @@ public class CommunityMatchExprToBDDTest {
   }
 
   @Test
-  public void testVisitCommunityNot() {
+  void testVisitCommunityNot() {
     CommunityNot cn = new CommunityNot(new CommunityIs(StandardCommunity.parse("20:30")));
 
     BDD result = _communityMatchExprToBDD.visitCommunityNot(cn, _arg);
@@ -278,43 +275,48 @@ public class CommunityMatchExprToBDDTest {
   }
 
   @Test
-  public void testVisitExtendedCommunityGlobalAdministratorHighMatch() {
+  void testVisitExtendedCommunityGlobalAdministratorHighMatch() {
     ExtendedCommunityGlobalAdministratorHighMatch ec =
         new ExtendedCommunityGlobalAdministratorHighMatch(
             new IntComparison(IntComparator.EQ, new LiteralInt(3)));
-    _exception.expect(UnsupportedOperationException.class);
-    _communityMatchExprToBDD.visitExtendedCommunityGlobalAdministratorHighMatch(ec, _arg);
+    assertThrows(
+        UnsupportedOperationException.class,
+        () ->
+            _communityMatchExprToBDD.visitExtendedCommunityGlobalAdministratorHighMatch(ec, _arg));
   }
 
   @Test
-  public void testVisitExtendedCommunityGlobalAdministratorLowMatch() {
+  void testVisitExtendedCommunityGlobalAdministratorLowMatch() {
     ExtendedCommunityGlobalAdministratorLowMatch ec =
         new ExtendedCommunityGlobalAdministratorLowMatch(
             new IntComparison(IntComparator.EQ, new LiteralInt(3)));
-    _exception.expect(UnsupportedOperationException.class);
-    _communityMatchExprToBDD.visitExtendedCommunityGlobalAdministratorLowMatch(ec, _arg);
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> _communityMatchExprToBDD.visitExtendedCommunityGlobalAdministratorLowMatch(ec, _arg));
   }
 
   @Test
-  public void testVisitExtendedCommunityGlobalAdministratorMatch() {
+  void testVisitExtendedCommunityGlobalAdministratorMatch() {
     ExtendedCommunityGlobalAdministratorMatch ec =
         new ExtendedCommunityGlobalAdministratorMatch(
             new LongComparison(IntComparator.EQ, new LiteralLong(3L)));
-    _exception.expect(UnsupportedOperationException.class);
-    _communityMatchExprToBDD.visitExtendedCommunityGlobalAdministratorMatch(ec, _arg);
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> _communityMatchExprToBDD.visitExtendedCommunityGlobalAdministratorMatch(ec, _arg));
   }
 
   @Test
-  public void testVisitExtendedCommunityLocalAdministratorMatch() {
+  void testVisitExtendedCommunityLocalAdministratorMatch() {
     ExtendedCommunityLocalAdministratorMatch ec =
         new ExtendedCommunityLocalAdministratorMatch(
             new LongComparison(IntComparator.EQ, new LiteralLong(3L)));
-    _exception.expect(UnsupportedOperationException.class);
-    _communityMatchExprToBDD.visitExtendedCommunityLocalAdministratorMatch(ec, _arg);
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> _communityMatchExprToBDD.visitExtendedCommunityLocalAdministratorMatch(ec, _arg));
   }
 
   @Test
-  public void testVisitOpaqueExtendedCommunities() {
+  void testVisitOpaqueExtendedCommunities() {
     BDD result =
         _communityMatchExprToBDD.visitOpaqueExtendedCommunities(
             OpaqueExtendedCommunities.of(true, 3), _arg);
@@ -323,7 +325,7 @@ public class CommunityMatchExprToBDDTest {
   }
 
   @Test
-  public void testVisitRouteTargetExtendedCommunities() {
+  void testVisitRouteTargetExtendedCommunities() {
     BDD result =
         _communityMatchExprToBDD.visitRouteTargetExtendedCommunities(
             RouteTargetExtendedCommunities.instance(), _arg);
@@ -332,7 +334,7 @@ public class CommunityMatchExprToBDDTest {
   }
 
   @Test
-  public void testVisitSiteOfOriginExtendedCommunities() {
+  void testVisitSiteOfOriginExtendedCommunities() {
     BDD result =
         _communityMatchExprToBDD.visitSiteOfOriginExtendedCommunities(
             SiteOfOriginExtendedCommunities.instance(), _arg);
@@ -341,7 +343,7 @@ public class CommunityMatchExprToBDDTest {
   }
 
   @Test
-  public void testVisitStandardCommunityHighMatch() {
+  void testVisitStandardCommunityHighMatch() {
     StandardCommunityHighMatch schm =
         new StandardCommunityHighMatch(new IntComparison(IntComparator.EQ, new LiteralInt(20)));
 
@@ -353,16 +355,17 @@ public class CommunityMatchExprToBDDTest {
   }
 
   @Test
-  public void testVisitStandardCommunityHighMatchUnsupported() {
+  void testVisitStandardCommunityHighMatchUnsupported() {
     StandardCommunityHighMatch schm =
         new StandardCommunityHighMatch(new IntComparison(IntComparator.LT, new LiteralInt(20)));
 
-    _exception.expect(UnsupportedOperationException.class);
-    _communityMatchExprToBDD.visitStandardCommunityHighMatch(schm, _arg);
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> _communityMatchExprToBDD.visitStandardCommunityHighMatch(schm, _arg));
   }
 
   @Test
-  public void testVisitStandardCommunityLowMatch() {
+  void testVisitStandardCommunityLowMatch() {
     StandardCommunityLowMatch sclm =
         new StandardCommunityLowMatch(new IntComparison(IntComparator.EQ, new LiteralInt(30)));
 
@@ -374,16 +377,17 @@ public class CommunityMatchExprToBDDTest {
   }
 
   @Test
-  public void testVisitStandardCommunityLowMatchUnsupported() {
+  void testVisitStandardCommunityLowMatchUnsupported() {
     StandardCommunityLowMatch sclm =
         new StandardCommunityLowMatch(new IntComparison(IntComparator.LT, new LiteralInt(20)));
 
-    _exception.expect(UnsupportedOperationException.class);
-    _communityMatchExprToBDD.visitStandardCommunityLowMatch(sclm, _arg);
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> _communityMatchExprToBDD.visitStandardCommunityLowMatch(sclm, _arg));
   }
 
   @Test
-  public void testVisitVPNDistinguisherExtendedCommunities() {
+  void testVisitVPNDistinguisherExtendedCommunities() {
     BDD result =
         _communityMatchExprToBDD.visitVpnDistinguisherExtendedCommunities(
             VpnDistinguisherExtendedCommunities.instance(), _arg);

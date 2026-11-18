@@ -28,6 +28,11 @@
  */
 package net.sf.javabdd.bdd;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -36,8 +41,7 @@ import java.util.Set;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDDomain;
 import net.sf.javabdd.BDDFactory;
-import org.junit.internal.runners.JUnit38ClassRunner;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * IteratorTests
@@ -45,13 +49,9 @@ import org.junit.runner.RunWith;
  * @author jwhaley
  * @version $Id: IteratorTests.java,v 1.6 2005/06/03 20:19:46 joewhaley Exp $
  */
-@RunWith(JUnit38ClassRunner.class)
-public class IteratorTest extends BDDTestCase {
-  public static void main(String[] args) {
-    junit.textui.TestRunner.run(IteratorTest.class);
-  }
-
-  public void testOneZeroIterator() {
+class IteratorTest extends BDDTestCase {
+  @Test
+  void testOneZeroIterator() {
     reset();
     assertTrue(hasNext());
     while (hasNext()) {
@@ -115,7 +115,8 @@ public class IteratorTest extends BDDTestCase {
     }
   }
 
-  public void testRandomIterator() {
+  @Test
+  void testRandomIterator() {
     reset();
     assertTrue(hasNext());
     while (hasNext()) {

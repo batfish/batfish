@@ -24,17 +24,13 @@ import org.batfish.common.CompletionMetadata;
 import org.batfish.common.util.isp.IspModelingUtils;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.specifier.Grammar;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link Parser} producing {@link LocationAstNode}. */
-public class ParserLocationTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class ParserLocationTest {
 
   @Test
-  public void testCompletionEmpty() {
+  void testCompletionEmpty() {
     String query = "";
 
     CompletionMetadata completionMetadata =
@@ -72,7 +68,7 @@ public class ParserLocationTest {
   }
 
   @Test
-  public void testCompletionPartialName() {
+  void testCompletionPartialName() {
     String query = "node1"; // this could be a complete term or a partial name
 
     CompletionMetadata completionMetadata =
@@ -102,7 +98,7 @@ public class ParserLocationTest {
   }
 
   @Test
-  public void testParseLocationBrackets() {
+  void testParseLocationBrackets() {
     // make sure that bracket binds more tightly than union
     assertThat(
         SpecifierAstBuilder.getAst(Grammar.LOCATION_SPECIFIER, "n1 , n2[e2]"),
@@ -141,7 +137,7 @@ public class ParserLocationTest {
   }
 
   @Test
-  public void testParseLocationDifference() {
+  void testParseLocationDifference() {
     DifferenceLocationAstNode expectedNode =
         new DifferenceLocationAstNode(
             InterfaceLocationAstNode.createFromInterface(new VrfInterfaceAstNode("eth1")),
@@ -156,7 +152,7 @@ public class ParserLocationTest {
   }
 
   @Test
-  public void testParseLocationEnter() {
+  void testParseLocationEnter() {
     EnterLocationAstNode expectedAst =
         new EnterLocationAstNode(
             InterfaceLocationAstNode.createFromNode(new NameNodeAstNode("node1")));
@@ -174,7 +170,7 @@ public class ParserLocationTest {
 
   /** Test of the special internet query and then also interfaces on the internet node. */
   @Test
-  public void testParseLocationInternet() {
+  void testParseLocationInternet() {
     assertThat(
         SpecifierAstBuilder.getAst(Grammar.LOCATION_SPECIFIER, "internet"),
         equalTo(InternetLocationAstNode.INSTANCE));
@@ -196,7 +192,7 @@ public class ParserLocationTest {
   }
 
   @Test
-  public void testParseLocationNodeInterface() {
+  void testParseLocationNodeInterface() {
     String input = "node[@interfaceType(physical)]";
     InterfaceLocationAstNode expectedAst =
         InterfaceLocationAstNode.createFromInterfaceWithNode(
@@ -210,7 +206,7 @@ public class ParserLocationTest {
   }
 
   @Test
-  public void testParseLocationInterfaceDeprecatedOvereating() {
+  void testParseLocationInterfaceDeprecatedOvereating() {
     // the whole expression should not be eaten by the deprecated regex parser
     String input = "tor-001a.sea3[/.*/]";
     LocationAstNode expectedAst =
@@ -224,7 +220,7 @@ public class ParserLocationTest {
   }
 
   @Test
-  public void testParseLocationInterfaceSpecifier() {
+  void testParseLocationInterfaceSpecifier() {
     String input = "@interfaceType(physical)";
     InterfaceLocationAstNode expectedAst =
         InterfaceLocationAstNode.createFromInterface(
@@ -237,7 +233,7 @@ public class ParserLocationTest {
   }
 
   @Test
-  public void testParseLocationIntersection() {
+  void testParseLocationIntersection() {
     IntersectionLocationAstNode expectedNode =
         new IntersectionLocationAstNode(
             InterfaceLocationAstNode.createFromInterface(new VrfInterfaceAstNode("eth1")),
@@ -252,7 +248,7 @@ public class ParserLocationTest {
   }
 
   @Test
-  public void testParseLocationNode() {
+  void testParseLocationNode() {
     String input = "node";
     InterfaceLocationAstNode expectedAst = InterfaceLocationAstNode.createFromNode(input);
 
@@ -263,7 +259,7 @@ public class ParserLocationTest {
   }
 
   @Test
-  public void testParseLocationNodeDeprecated() {
+  void testParseLocationNodeDeprecated() {
     String input = "node.*";
     InterfaceLocationAstNode expectedAst =
         InterfaceLocationAstNode.createFromNode(new NameRegexNodeAstNode(input));
@@ -272,7 +268,7 @@ public class ParserLocationTest {
   }
 
   @Test
-  public void testParseLocationParens() {
+  void testParseLocationParens() {
     assertThat(
         SpecifierAstBuilder.getAst(Grammar.LOCATION_SPECIFIER, "(node)"),
         equalTo(InterfaceLocationAstNode.createFromNode("node")));
@@ -296,7 +292,7 @@ public class ParserLocationTest {
 
   /** Test if we got the precedence of set operators right. Intersection is higher priority. */
   @Test
-  public void testParseLocationSetOpPrecedence() {
+  void testParseLocationSetOpPrecedence() {
     assertThat(
         SpecifierAstBuilder.getAst(Grammar.LOCATION_SPECIFIER, "@vrf(eth1)\\@vrf(eth2)&@vrf(eth3)"),
         equalTo(
@@ -317,7 +313,7 @@ public class ParserLocationTest {
   }
 
   @Test
-  public void testParseLocationUnion() {
+  void testParseLocationUnion() {
     UnionLocationAstNode expectedNode =
         new UnionLocationAstNode(
             InterfaceLocationAstNode.createFromInterface(new VrfInterfaceAstNode("eth1")),

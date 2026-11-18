@@ -8,22 +8,22 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.representation.juniper.Family;
 import org.batfish.representation.juniper.JuniperConfiguration;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosExplicitNullCosTest {
+final class JunosExplicitNullCosTest {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testExtraction() {
+  void testExtraction() {
     JuniperConfiguration bare = parseJuniperConfig(_folder, "explicit-null-cos");
     assertThat(
         bare.getMasterLogicalSystem().getDefaultRoutingInstance().getExplicitNullCosFamilies(),
@@ -44,7 +44,7 @@ public final class JunosExplicitNullCosTest {
   }
 
   @Test
-  public void testNoConversionWarnings() throws IOException {
+  void testNoConversionWarnings() throws IOException {
     String hostname = "explicit-null-cos";
     Batfish batfish = getBatfish(_folder, hostname);
     batfish.loadConfigurations(batfish.getSnapshot());

@@ -10,12 +10,12 @@ import java.util.Map;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.questions.DisplayHints.Extraction;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class DisplayHintsTest {
+class DisplayHintsTest {
 
   @Test
-  public void displayHintsParsingTest() throws IOException {
+  void displayHintsParsingTest() throws IOException {
     String text = readResource("org/batfish/datamodel/questions/displayHintsTest.json", UTF_8);
     DisplayHints displayHints = BatfishObjectMapper.mapper().readValue(text, DisplayHints.class);
 

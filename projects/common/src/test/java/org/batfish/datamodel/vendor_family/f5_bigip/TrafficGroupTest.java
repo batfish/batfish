@@ -1,20 +1,20 @@
 package org.batfish.datamodel.vendor_family.f5_bigip;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.datamodel.MacAddress;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link TrafficGroup}. */
-public final class TrafficGroupTest {
+final class TrafficGroupTest {
 
   private TrafficGroup.Builder _builder;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _builder =
         TrafficGroup.builder()
             .setHaGroup("h")
@@ -24,7 +24,7 @@ public final class TrafficGroupTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     TrafficGroup obj = _builder.build();
     new EqualsTester()
         .addEqualityGroup(obj, obj, _builder.build())
@@ -37,7 +37,7 @@ public final class TrafficGroupTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     TrafficGroup obj = _builder.build();
     assertEquals(obj, SerializationUtils.clone(obj));
   }

@@ -3,12 +3,12 @@ package org.batfish.common;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class AnswerRowsOptionsTest {
+final class AnswerRowsOptionsTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     ColumnFilter cf1 = new ColumnFilter("a", "1", false);
     ColumnFilter cf2 = new ColumnFilter("a", "1", true);
     AnswerRowsOptions group1Elem1 =

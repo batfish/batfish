@@ -13,12 +13,12 @@ import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ParseEnvironmentBgpTableResultTest {
+class ParseEnvironmentBgpTableResultTest {
 
   @Test
-  public void testApplyTo() {
+  void testApplyTo() {
     String key = "file.cfg";
 
     ParseTreeSentences parseTree = new ParseTreeSentences();

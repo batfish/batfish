@@ -7,17 +7,17 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.function.Supplier;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpProtocol;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class AclLineMatchExprsTest {
+class AclLineMatchExprsTest {
   private static boolean matches(AclLineMatchExpr expr, Flow flow) {
     return new Evaluator(flow, "src", ImmutableMap.of(), ImmutableMap.of()).visit(expr);
   }
@@ -41,7 +41,7 @@ public class AclLineMatchExprsTest {
   }
 
   @Test
-  public void testAnd() {
+  void testAnd() {
     assertThat(and(ImmutableList.of()), equalTo(TrueExpr.INSTANCE));
 
     MatchSrcInterface expr = matchSrcInterface("a");
@@ -49,7 +49,7 @@ public class AclLineMatchExprsTest {
   }
 
   @Test
-  public void testOr() {
+  void testOr() {
     assertThat(or(ImmutableList.of()), equalTo(FalseExpr.INSTANCE));
 
     MatchSrcInterface expr = matchSrcInterface("a");
@@ -57,7 +57,7 @@ public class AclLineMatchExprsTest {
   }
 
   @Test
-  public void testNewTcpFlows() {
+  void testNewTcpFlows() {
     assertFalse(matches(NEW_TCP_FLOWS, ACK_FLOW));
     assertFalse(matches(NEW_TCP_FLOWS, ACK_FLOW));
     assertFalse(matches(NEW_TCP_FLOWS, RST_FLOW));
@@ -67,7 +67,7 @@ public class AclLineMatchExprsTest {
   }
 
   @Test
-  public void testNewFlows() {
+  void testNewFlows() {
     assertFalse(matches(NEW_FLOWS, ACK_FLOW));
     assertFalse(matches(NEW_FLOWS, RST_FLOW));
     assertFalse(matches(NEW_FLOWS, SYN_ACK_FLOW));

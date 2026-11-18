@@ -10,6 +10,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
@@ -23,18 +24,17 @@ import org.batfish.main.Batfish;
 import org.batfish.representation.juniper.JuniperConfiguration;
 import org.batfish.representation.juniper.NextHop;
 import org.batfish.representation.juniper.StaticRouteV6;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosQualifiedNextHopInterfaceTest {
+final class JunosQualifiedNextHopInterfaceTest {
 
   private static final String HOSTNAME = "qualified-next-hop-interface";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testExtractionReferencesAndConversion() throws IOException {
+  void testExtractionReferencesAndConversion() throws IOException {
     Batfish batfish = getBatfish(_folder, HOSTNAME);
     JuniperConfiguration vendorConfiguration = getVendorConfiguration(batfish, HOSTNAME);
     Prefix6 prefix6 = Prefix6.parse("2001:db8:2::/64");

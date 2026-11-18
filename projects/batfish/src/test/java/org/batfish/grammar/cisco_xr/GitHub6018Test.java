@@ -12,6 +12,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.notNullValue;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import javax.annotation.Nonnull;
@@ -27,18 +28,15 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.cisco_xr.CiscoXrConfiguration;
 import org.batfish.representation.cisco_xr.Interface;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests for https://github.com/batfish/batfish/issues/6018. */
-public final class GitHub6018Test {
+final class GitHub6018Test {
 
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/cisco_xr/testconfigs/";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+  @TempDir public File _folder;
 
   private @Nonnull Configuration parseConfig(String hostname) {
     try {
@@ -79,7 +77,7 @@ public final class GitHub6018Test {
   }
 
   @Test
-  public void testGitHub6018Extraction() {
+  void testGitHub6018Extraction() {
     CiscoXrConfiguration c = parseVendorConfig("gh6018");
     assertThat(c.getInterfaces(), hasKeys("TenGigE0/0/0/24/0", "Bundle-Ether5"));
     Interface tenGE = c.getInterfaces().get("TenGigE0/0/0/24/0");
@@ -87,7 +85,7 @@ public final class GitHub6018Test {
   }
 
   @Test
-  public void testGitHub6018Conversion() {
+  void testGitHub6018Conversion() {
     Configuration c = parseConfig("gh6018");
     assertThat(c.getAllInterfaces(), hasKeys("TenGigE0/0/0/24/0", "Bundle-Ether5"));
     org.batfish.datamodel.Interface tenGE = c.getAllInterfaces().get("TenGigE0/0/0/24/0");

@@ -37,12 +37,12 @@ import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link VxlanVniPropertiesAnswerer} */
-public final class VxlanVniPropertiesAnswererTest {
+final class VxlanVniPropertiesAnswererTest {
   @Test
-  public void testAnswer() {
+  void testAnswer() {
     IBatfish batfish = new VxlanVniPropertiesAnswererTest.TestBatfish();
     VxlanVniPropertiesAnswerer answerer =
         new VxlanVniPropertiesAnswerer(new VxlanVniPropertiesQuestion(null, "/.*/"), batfish);
@@ -89,7 +89,7 @@ public final class VxlanVniPropertiesAnswererTest {
   }
 
   @Test
-  public void testSpecifyNodes() {
+  void testSpecifyNodes() {
     IBatfish batfish = new VxlanVniPropertiesAnswererTest.TestBatfish();
     VxlanVniPropertiesAnswerer answerer =
         new VxlanVniPropertiesAnswerer(new VxlanVniPropertiesQuestion("minimal", "/.*/"), batfish);
@@ -114,7 +114,7 @@ public final class VxlanVniPropertiesAnswererTest {
   }
 
   @Test
-  public void testSpecifyProperties() {
+  void testSpecifyProperties() {
     IBatfish batfish = new VxlanVniPropertiesAnswererTest.TestBatfish();
     VxlanVniPropertiesAnswerer answerer =
         new VxlanVniPropertiesAnswerer(new VxlanVniPropertiesQuestion(null, VLAN), batfish);

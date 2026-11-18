@@ -8,11 +8,11 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class Bgpv4ToEvpnVrfLeakConfigTest {
+class Bgpv4ToEvpnVrfLeakConfigTest {
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     Bgpv4ToEvpnVrfLeakConfig val =
         Bgpv4ToEvpnVrfLeakConfig.builder()
             .setImportFromVrf("vrf1")
@@ -23,7 +23,7 @@ public class Bgpv4ToEvpnVrfLeakConfigTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     Bgpv4ToEvpnVrfLeakConfig val =
         Bgpv4ToEvpnVrfLeakConfig.builder()
             .setImportFromVrf("vrf1")
@@ -34,7 +34,7 @@ public class Bgpv4ToEvpnVrfLeakConfigTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     Bgpv4ToEvpnVrfLeakConfig.Builder b =
         Bgpv4ToEvpnVrfLeakConfig.builder()
             .setImportFromVrf("vrf1")

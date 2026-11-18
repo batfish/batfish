@@ -4,17 +4,17 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasKey;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public class VlanInterfacesTest {
+class VlanInterfacesTest {
   private static final String TESTCONFIGS_PREFIX = "org/batfish/main/testconfigs/";
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private Configuration parseConfig(String hostname) {
     try {
@@ -30,7 +30,7 @@ public class VlanInterfacesTest {
 
   /** Tests Batfish#disableUnusableVlanInterfaces. */
   @Test
-  public void testDisableUnusableInterfaces() {
+  void testDisableUnusableInterfaces() {
     Configuration c = parseConfig("vlan");
     assertThat(
         c.getAllInterfaces().keySet(),

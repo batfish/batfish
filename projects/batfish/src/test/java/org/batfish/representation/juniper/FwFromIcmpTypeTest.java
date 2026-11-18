@@ -1,18 +1,18 @@
 package org.batfish.representation.juniper;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link FwFromIcmpType} */
-public class FwFromIcmpTypeTest {
+class FwFromIcmpTypeTest {
   @Test
-  public void testToAclLineMatchExpr() {
+  void testToAclLineMatchExpr() {
     FwFromIcmpType from = new FwFromIcmpType(new SubRange(1, 2));
     assertEquals(
         from.toAclLineMatchExpr(null, null, null),
@@ -25,7 +25,7 @@ public class FwFromIcmpTypeTest {
   }
 
   @Test
-  public void testToAclLineMatchExpr_single() {
+  void testToAclLineMatchExpr_single() {
     FwFromIcmpType from = new FwFromIcmpType(SubRange.singleton(1));
     assertEquals(
         from.toAclLineMatchExpr(null, null, null),

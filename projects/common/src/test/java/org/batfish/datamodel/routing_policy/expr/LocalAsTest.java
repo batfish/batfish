@@ -12,18 +12,18 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.routing_policy.Environment;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link LocalAs}. */
-public class LocalAsTest {
+class LocalAsTest {
 
   @Test
-  public void testToString() {
+  void testToString() {
     assertThat(LocalAs.instance().toString(), equalTo("LocalAs"));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             LocalAs.instance(),
@@ -35,7 +35,7 @@ public class LocalAsTest {
   }
 
   @Test
-  public void testLocalAs() {
+  void testLocalAs() {
     Configuration c =
         new NetworkFactory()
             .configurationBuilder()

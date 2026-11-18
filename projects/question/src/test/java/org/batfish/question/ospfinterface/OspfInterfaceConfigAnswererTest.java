@@ -34,13 +34,13 @@ import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.questions.OspfInterfacePropertySpecifier;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link OspfInterfaceConfigurationAnswerer} */
-public class OspfInterfaceConfigAnswererTest {
+class OspfInterfaceConfigAnswererTest {
 
   @Test
-  public void testGetRows() {
+  void testGetRows() {
     NetworkFactory nf = new NetworkFactory();
     Configuration configuration =
         nf.configurationBuilder()
@@ -107,7 +107,7 @@ public class OspfInterfaceConfigAnswererTest {
   }
 
   @Test
-  public void testMetaData() {
+  void testMetaData() {
     List<ColumnMetadata> metas =
         OspfInterfaceConfigurationAnswerer.createColumnMetadata(
             OspfInterfacePropertySpecifier.ALL.getMatchingProperties());

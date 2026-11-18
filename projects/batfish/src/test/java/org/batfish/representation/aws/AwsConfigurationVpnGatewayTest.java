@@ -7,6 +7,7 @@ import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTcpFlo
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testTrace;
 
 import com.google.common.collect.ImmutableList;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.batfish.common.plugin.IBatfish;
@@ -14,17 +15,16 @@ import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * E2e tests that connectivity to and from the on-prem network works as expected. The configs have a
  * single private subnet along with a VPN gateway and the customer gateway. The on-prem router
  * config was generated via AWS.
  */
-public class AwsConfigurationVpnGatewayTest {
+class AwsConfigurationVpnGatewayTest {
 
   private static final String TESTCONFIGS_DIR = "org/batfish/representation/aws/test-vpn-gateway";
 
@@ -57,12 +57,12 @@ public class AwsConfigurationVpnGatewayTest {
   private static Ip _vgwUnderlayIp = Ip.parse("18.217.248.9");
   private static String _onPremRouter = onPremRouterFile; // no hostname in the file, so name = file
 
-  @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public static File _folder;
 
   private static IBatfish _batfish;
 
-  @BeforeClass
-  public static void setup() throws IOException {
+  @BeforeAll
+  static void setup() throws IOException {
     _batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
@@ -74,7 +74,7 @@ public class AwsConfigurationVpnGatewayTest {
   }
 
   @Test
-  public void testFromOnPrem() {
+  void testFromOnPrem() {
     testTrace(
         getAnyFlow(_onPremRouter, _privateIp, _batfish),
         FlowDisposition.DENIED_IN,
@@ -97,7 +97,7 @@ public class AwsConfigurationVpnGatewayTest {
   }
 
   @Test
-  public void testToOnPrem() {
+  void testToOnPrem() {
     testTrace(
         getAnyFlow(_instance, Ip.parse("8.8.8.8"), _batfish), // On prem announces default
         FlowDisposition.NO_ROUTE,
@@ -107,7 +107,7 @@ public class AwsConfigurationVpnGatewayTest {
 
   /** Packets to the underlay interface Ip on VGW should not end up at the VGW */
   @Test
-  public void testInstanceToUnderlayInterfaceIp() {
+  void testInstanceToUnderlayInterfaceIp() {
     testTrace(
         getAnyFlow(_instance, _vgwUnderlayIp, _batfish),
         FlowDisposition.NO_ROUTE,
@@ -117,7 +117,7 @@ public class AwsConfigurationVpnGatewayTest {
 
   /** Underlay interface Ip should be accessible from the Internet */
   @Test
-  public void testInternetToUnderlayInterfaceIp() {
+  void testInternetToUnderlayInterfaceIp() {
     testTrace(
         getTcpFlow(INTERNET_HOST_NAME, Ip.parse("8.8.8.8"), _vgwUnderlayIp, 80),
         FlowDisposition.ACCEPTED,

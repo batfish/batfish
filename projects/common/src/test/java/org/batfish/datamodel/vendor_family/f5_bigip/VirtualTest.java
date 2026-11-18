@@ -1,6 +1,6 @@
 package org.batfish.datamodel.vendor_family.f5_bigip;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
@@ -10,16 +10,16 @@ import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link Virtual}. */
-public final class VirtualTest {
+final class VirtualTest {
 
   private Virtual.Builder _builder;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _builder =
         Virtual.builder()
             .setDescription("d")
@@ -43,7 +43,7 @@ public final class VirtualTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     Virtual obj = _builder.build();
     new EqualsTester()
         .addEqualityGroup(obj, obj, _builder.build())
@@ -70,7 +70,7 @@ public final class VirtualTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     Virtual obj = _builder.build();
     assertEquals(obj, SerializationUtils.clone(obj));
   }

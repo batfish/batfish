@@ -14,10 +14,10 @@ import org.batfish.datamodel.answers.InputValidationNotes.Validity;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.Grammar;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link ParsedInputValidator} */
-public class ParsedInputValidatorTest {
+class ParsedInputValidatorTest {
 
   private static ParsedInputValidator getTestPIV(String query) {
     return getTestPIV(
@@ -59,7 +59,7 @@ public class ParsedInputValidatorTest {
   }
 
   @Test
-  public void testInvalidInput() {
+  void testInvalidInput() {
     String query = "(a";
     assertThat(
         getTestPIV(query).run(),
@@ -71,7 +71,7 @@ public class ParsedInputValidatorTest {
   }
 
   @Test
-  public void testInvalidIp() {
+  void testInvalidIp() {
     String query = "1.1.1.345";
 
     IllegalArgumentException exception = getException(query, IpAstNode::new);
@@ -90,7 +90,7 @@ public class ParsedInputValidatorTest {
   }
 
   @Test
-  public void testInvalidRegex() {
+  void testInvalidRegex() {
     String pattern = "*a";
 
     IllegalArgumentException exception = getException(pattern, RegexAstNode::new);
@@ -105,7 +105,7 @@ public class ParsedInputValidatorTest {
    * The actual content of the messages is tested inside individual validators
    */
   @Test
-  public void testNoMatch() {
+  void testNoMatch() {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder().setNodes(ImmutableSet.of("b1", "b2")).build();
     String query = "a";
@@ -118,7 +118,7 @@ public class ParsedInputValidatorTest {
 
   /** Test that we create the right type of notes object when expanding things. */
   @Test
-  public void testExpand() {
+  void testExpand() {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder().setNodes(ImmutableSet.of("b1", "b2", "a1")).build();
     String query = "/b/";

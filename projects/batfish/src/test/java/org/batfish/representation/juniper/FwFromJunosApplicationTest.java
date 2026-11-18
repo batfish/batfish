@@ -2,7 +2,7 @@ package org.batfish.representation.juniper;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -15,20 +15,20 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link FwFromJunosApplication} */
-public class FwFromJunosApplicationTest {
+class FwFromJunosApplicationTest {
   private final JuniperConfiguration _jc = new JuniperConfiguration();
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
     _jc.setFilename("host");
   }
 
   @Test
-  public void testApplyTo() {
+  void testApplyTo() {
     JunosApplication junosApp = JunosApplication.JUNOS_BGP;
     FwFromJunosApplication from = new FwFromJunosApplication(junosApp);
 
@@ -59,7 +59,7 @@ public class FwFromJunosApplicationTest {
    * app's AclLineMatchExpr.
    */
   @Test
-  public void testToAclLineMatchExpr() {
+  void testToAclLineMatchExpr() {
     JunosApplication junosApp = JunosApplication.JUNOS_BGP;
 
     assertEquals(

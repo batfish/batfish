@@ -19,10 +19,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -44,13 +45,12 @@ import org.batfish.main.BatfishTestUtils;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.symbolic.IngressLocation;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public class BDDMultipathInconsistencyTest {
-  @Rule public TemporaryFolder temp = new TemporaryFolder();
+class BDDMultipathInconsistencyTest {
+  @TempDir public File temp;
 
   private final BDDPacket _pkt = new BDDPacket();
   private final IpSpaceToBDD _srcToBDD = _pkt.getSrcIpSpaceToBDD();
@@ -72,8 +72,8 @@ public class BDDMultipathInconsistencyTest {
     return _srcToBDD.toBDD(ip);
   }
 
-  @Before
-  public void setup() throws IOException {
+  @BeforeEach
+  void setup() throws IOException {
     _net = new TestNetwork();
     _batfish = BatfishTestUtils.getBatfish(_net._configs, temp);
 
@@ -93,7 +93,7 @@ public class BDDMultipathInconsistencyTest {
   }
 
   @Test
-  public void testBDDNetworkGraph_sourceNat_noMatch() {
+  void testBDDNetworkGraph_sourceNat_noMatch() {
     IpSpaceAssignment assignment =
         IpSpaceAssignment.builder()
             .assign(
@@ -142,7 +142,7 @@ public class BDDMultipathInconsistencyTest {
   }
 
   @Test
-  public void testBDDNetworkGraph_sourceNat_match() {
+  void testBDDNetworkGraph_sourceNat_match() {
     IpSpaceAssignment assignment =
         IpSpaceAssignment.builder()
             .assign(
@@ -195,7 +195,7 @@ public class BDDMultipathInconsistencyTest {
   }
 
   @Test
-  public void testAllDispositions() {
+  void testAllDispositions() {
     IpSpaceAssignment assignment =
         _batfish.getAllSourcesInferFromLocationIpSpaceAssignment(_batfish.getSnapshot());
     Set<FlowDisposition> dropDispositions =

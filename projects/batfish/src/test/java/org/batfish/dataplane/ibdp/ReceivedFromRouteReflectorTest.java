@@ -9,6 +9,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 
 import com.google.common.collect.Table;
+import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 import org.batfish.datamodel.Bgpv4Route;
@@ -17,13 +18,12 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** End-to-end tests of the setting of the receivedFromRouteReflectorClient BGP route bit. */
-public final class ReceivedFromRouteReflectorTest {
+final class ReceivedFromRouteReflectorTest {
 
   /*
   rrcm: Route-Reflector-Client that exports from the Main RIB
@@ -52,8 +52,8 @@ public final class ReceivedFromRouteReflectorTest {
    - all routes rr receives from nrrcm and nrrcb should have the receivedFromRouteReflectorClient
      bit unset in rr's main/BGP RIBs
   */
-  @Before
-  public void setup() throws IOException {
+  @BeforeEach
+  void setup() throws IOException {
     String snapshotPath = "org/batfish/dataplane/ibdp/route-reflection/rrrc";
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
@@ -81,7 +81,7 @@ public final class ReceivedFromRouteReflectorTest {
   private static final Prefix RRCM_EBGP = Prefix.strict("1.0.0.5/32");
 
   @Test
-  public void testBgpRib() {
+  void testBgpRib() {
     Table<String, String, Set<Bgpv4Route>> bgpRoutes = _dp.getBgpRoutes();
     Set<Bgpv4Route> rrRoutes = bgpRoutes.get("rr", DEFAULT_VRF_NAME);
     assertNotReceivedFromRouteReflectorClient(rrRoutes, NRRCB_STATIC);
@@ -118,6 +118,6 @@ public final class ReceivedFromRouteReflectorTest {
         routes, hasItem(allOf(hasPrefix(prefix), isReceivedFromRouteReflectorClient(false))));
   }
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
   private DataPlane _dp;
 }

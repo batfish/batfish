@@ -46,10 +46,10 @@ import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class RouteReflectionTest {
+class RouteReflectionTest {
 
   private static final Prefix AS1_PREFIX = Prefix.parse("1.0.0.0/8");
   private static final Prefix AS3_PREFIX = Prefix.parse("3.0.0.0/8");
@@ -367,8 +367,8 @@ public class RouteReflectionTest {
   }
 
   /** Initialize builders with values common to all tests */
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _ab =
         new BgpAdvertisement.Builder()
             .setClusterList(ImmutableSortedSet.of())
@@ -415,7 +415,7 @@ public class RouteReflectionTest {
    *       edge1(client of rr, CID: rr1-loopback) <=> rr1(client of rr2, CID: rr2-loopback) <=> rr2
    */
   @Test
-  public void testAcceptDifferentCluster() {
+  void testAcceptDifferentCluster() {
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         generateRoutesTwoReflectors(false);
 
@@ -428,7 +428,7 @@ public class RouteReflectionTest {
    *       edge1 <=> rr(no clients) <=> edge2
    */
   @Test
-  public void testNoRouteReflection() {
+  void testNoRouteReflection() {
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         generateRoutesOneReflector(false, false);
 
@@ -443,7 +443,7 @@ public class RouteReflectionTest {
    *       edge1(client of rr, CID: rr1-loopback) <=> rr1(client of rr2, CID: rr1-loopback) <=> rr2
    */
   @Test
-  public void testRejectSameCluster() {
+  void testRejectSameCluster() {
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         generateRoutesTwoReflectors(true);
 
@@ -456,7 +456,7 @@ public class RouteReflectionTest {
    *       edge1(client) <=> rr <=> edge2
    */
   @Test
-  public void testSingleReflectorOneClient() {
+  void testSingleReflectorOneClient() {
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         generateRoutesOneReflector(true, false);
 
@@ -471,7 +471,7 @@ public class RouteReflectionTest {
    *       edge1(client) <=> rr <=> (client)edge2
    */
   @Test
-  public void testSingleReflectorTwoClients() {
+  void testSingleReflectorTwoClients() {
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         generateRoutesOneReflector(true, true);
 

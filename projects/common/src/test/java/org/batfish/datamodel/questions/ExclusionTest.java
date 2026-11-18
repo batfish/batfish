@@ -8,12 +8,12 @@ import com.fasterxml.jackson.databind.node.IntNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ExclusionTest {
+class ExclusionTest {
 
   @Test
-  public void firstCoversSecondArrayCovers() {
+  void firstCoversSecondArrayCovers() {
     JsonNode node1 = BatfishObjectMapper.mapper().createArrayNode().add(new TextNode("value"));
     JsonNode node2 =
         BatfishObjectMapper.mapper()
@@ -27,7 +27,7 @@ public class ExclusionTest {
   }
 
   @Test
-  public void firstCoversSecondObjectCovers() {
+  void firstCoversSecondObjectCovers() {
     JsonNode node1 =
         BatfishObjectMapper.mapper().createObjectNode().set("key1", new TextNode("value"));
     JsonNode node2 =
@@ -41,7 +41,7 @@ public class ExclusionTest {
   }
 
   @Test
-  public void firstCoversSecondObjectMismatchType() {
+  void firstCoversSecondObjectMismatchType() {
     JsonNode node1 =
         BatfishObjectMapper.mapper().createObjectNode().set("key1", new TextNode("value"));
     JsonNode node2 = BatfishObjectMapper.mapper().createArrayNode().add(new TextNode("value"));
@@ -52,7 +52,7 @@ public class ExclusionTest {
   }
 
   @Test
-  public void firstCoversSecondObjectMissingKey() {
+  void firstCoversSecondObjectMissingKey() {
     JsonNode node1 =
         BatfishObjectMapper.mapper().createObjectNode().set("key1", new TextNode("value"));
     JsonNode node2 =
@@ -64,7 +64,7 @@ public class ExclusionTest {
   }
 
   @Test
-  public void firstCoversSecondValueMatch() {
+  void firstCoversSecondValueMatch() {
     JsonNode node1 = new TextNode("abc");
     JsonNode node2 = new TextNode("abc");
 
@@ -74,7 +74,7 @@ public class ExclusionTest {
   }
 
   @Test
-  public void firstCoversSecondValueMismatch() {
+  void firstCoversSecondValueMismatch() {
     JsonNode node1 = new TextNode("2");
     JsonNode node2 = new IntNode(2); // different type
 

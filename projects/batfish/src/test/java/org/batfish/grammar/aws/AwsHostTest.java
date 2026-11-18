@@ -7,12 +7,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.graph.ValueGraph;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.batfish.common.NetworkSnapshot;
@@ -30,19 +31,15 @@ import org.batfish.datamodel.matchers.IpsecPhase2ProposalMatchers;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests of {@link org.batfish.representation.host.HostInterface} in an AWS environment. */
 // TODO: this should just be a test of HostInterface, decoupled from AWS.
-public class AwsHostTest {
+class AwsHostTest {
   private static final String TESTRIG_PREFIX = "org/batfish/grammar/aws/testrigs/";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+  @TempDir public File _folder;
 
   private static String _vpnConnectionId = "vpn-ba2e34a8";
   private static String _vpnInterface1 = vpnInterfaceName(vpnTunnelId(_vpnConnectionId, 1));
@@ -77,7 +74,7 @@ public class AwsHostTest {
   }
 
   @Test
-  public void testNatIpsecVpnsNotShared() throws IOException {
+  void testNatIpsecVpnsNotShared() throws IOException {
     Batfish batfish = getBatfishForConfigs("host1-not-shared.json");
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);
@@ -105,7 +102,7 @@ public class AwsHostTest {
   }
 
   @Test
-  public void testNatIpsecVpnsShared() throws IOException {
+  void testNatIpsecVpnsShared() throws IOException {
     Batfish batfish = getBatfishForConfigs("host1-shared.json");
     batfish.computeDataPlane(batfish.getSnapshot());
     Topology fixedPointLayer3Topology =
@@ -132,7 +129,7 @@ public class AwsHostTest {
   }
 
   @Test
-  public void testNatIpsecTopologyNotShared() throws IOException {
+  void testNatIpsecTopologyNotShared() throws IOException {
     Batfish batfish = getBatfishForConfigs("host1-not-shared.json");
 
     ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology =
@@ -179,7 +176,7 @@ public class AwsHostTest {
   }
 
   @Test
-  public void testNatIpsecTopologyShared() throws IOException {
+  void testNatIpsecTopologyShared() throws IOException {
     Batfish batfish = getBatfishForConfigs("host1-shared.json");
 
     ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology =

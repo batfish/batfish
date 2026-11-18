@@ -11,24 +11,24 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link If} */
 @ParametersAreNonnullByDefault
-public final class IfTest {
+final class IfTest {
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     assertThat(SerializationUtils.clone(IF), equalTo(IF));
   }
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     assertThat(BatfishObjectMapper.clone(IF, If.class), equalTo(IF));
   }
 
   @Test
-  public void testSimplifyBranches() {
+  void testSimplifyBranches() {
     Statement complexBranchStatement =
         new If(
             BooleanExprs.TRUE,
@@ -50,7 +50,7 @@ public final class IfTest {
   }
 
   @Test
-  public void testSimplifyGuard() {
+  void testSimplifyGuard() {
     assertThat(
         new If(
                 new Disjunction(BooleanExprs.CALL_EXPR_CONTEXT),
@@ -65,7 +65,7 @@ public final class IfTest {
   }
 
   @Test
-  public void testSimplifyToTrueBranch() {
+  void testSimplifyToTrueBranch() {
     assertThat(
         new If(
                 BooleanExprs.TRUE,
@@ -76,7 +76,7 @@ public final class IfTest {
   }
 
   @Test
-  public void testSimplifyToFalseBranch() {
+  void testSimplifyToFalseBranch() {
     assertThat(
         new If(
                 BooleanExprs.FALSE,
@@ -87,7 +87,7 @@ public final class IfTest {
   }
 
   @Test
-  public void testNoSimplifyImpureGuard() {
+  void testNoSimplifyImpureGuard() {
     If ifWithImpureGuard = new If(new CallExpr("foo"), ImmutableList.of(), ImmutableList.of());
     assertThat(ifWithImpureGuard.simplify(), contains(ifWithImpureGuard));
   }

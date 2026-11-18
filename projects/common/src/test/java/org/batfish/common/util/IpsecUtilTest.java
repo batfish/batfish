@@ -11,8 +11,8 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
@@ -42,15 +42,15 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.ipsec.IpsecTopology;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class IpsecUtilTest {
+class IpsecUtilTest {
   private IpsecTopology _ipsecTopology;
   private Map<String, Configuration> _configurations = new HashMap<>();
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     // creates a topology with the following edges with edge between Tunnel9 and Tunnel10 having no
     // corresponding IPsec edges/nodes
     /*
@@ -190,7 +190,7 @@ public class IpsecUtilTest {
   }
 
   @Test
-  public void testRetainCompatibleTunnelEdges() {
+  void testRetainCompatibleTunnelEdges() {
     Set<Edge> compatibleIpsecEdges =
         toEdgeSet(retainCompatibleTunnelEdges(_ipsecTopology, _configurations), _configurations);
 
@@ -205,7 +205,7 @@ public class IpsecUtilTest {
   }
 
   @Test
-  public void testGetIpsecSesssionCloud() {
+  void testGetIpsecSesssionCloud() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb = nf.configurationBuilder();
     IpsecStaticPeerConfig.Builder ipsecPeerConfigBuilder = IpsecStaticPeerConfig.builder();
@@ -236,7 +236,7 @@ public class IpsecUtilTest {
   }
 
   @Test
-  public void testNegotiateIkePhase1KeyRsa() {
+  void testNegotiateIkePhase1KeyRsa() {
     IpsecSession.Builder ipsecSessionBuilder = IpsecSession.builder();
     IkePhase1Key initiatorKey = new IkePhase1Key();
     initiatorKey.setKeyType(IkeKeyType.RSA_PUB_KEY);
@@ -253,7 +253,7 @@ public class IpsecUtilTest {
   }
 
   @Test
-  public void testNegotiatedIkePhase1EncryptedPsk() {
+  void testNegotiatedIkePhase1EncryptedPsk() {
     IpsecSession.Builder ipsecSessionBuilder = IpsecSession.builder();
     IkePhase1Key initiatorKey = new IkePhase1Key();
     initiatorKey.setKeyType(IkeKeyType.PRE_SHARED_KEY_ENCRYPTED);
@@ -271,7 +271,7 @@ public class IpsecUtilTest {
   }
 
   @Test
-  public void testNegotiateIkePhase1KeyMixedPsk() {
+  void testNegotiateIkePhase1KeyMixedPsk() {
     // A device whose config exposes the plaintext key (e.g. AWS) peering with one whose config
     // only ever contains an encrypted key (e.g. Cisco 'key 6', or any Palo Alto gateway). The
     // values cannot be compared, so negotiation continues with an empty key rather than failing.
@@ -298,7 +298,7 @@ public class IpsecUtilTest {
   }
 
   @Test
-  public void testNegotiateIkePhase1KeyMissingKey() {
+  void testNegotiateIkePhase1KeyMissingKey() {
     // A peer with no key configured at all, e.g. an IOS keyring with no pre-shared-key statement,
     // is not a peer whose key Batfish could not read: it cannot authenticate, whatever the other
     // side has. Also covers the other side's key hash being dereferenced for comparison.
@@ -326,7 +326,7 @@ public class IpsecUtilTest {
   }
 
   @Test
-  public void testNegotiateIkePhase1KeyRsaVersusPskFail() {
+  void testNegotiateIkePhase1KeyRsaVersusPskFail() {
     // Different authentication methods entirely - not merely an unreadable key - must still fail.
     // The guard is a conjunction over both operands, so check every RSA/PSK combination.
     for (IkeKeyType psk :
@@ -350,7 +350,7 @@ public class IpsecUtilTest {
   }
 
   @Test
-  public void testGetIpsecSessionMixedPskNegotiatesPhase2() {
+  void testGetIpsecSessionMixedPskNegotiatesPhase2() {
     // End to end: a peer whose key is encrypted and one whose key is plaintext must still reach
     // phase 2, since retainCompatibleTunnelEdges drops any session with no negotiated P2 proposal.
     Configuration initiatorOwner = configWithIpsec(IkeKeyType.PRE_SHARED_KEY_ENCRYPTED);
@@ -383,7 +383,7 @@ public class IpsecUtilTest {
   }
 
   @Test
-  public void testNegotiateIkePhase1KeyPsk() {
+  void testNegotiateIkePhase1KeyPsk() {
     IpsecSession.Builder ipsecSessionBuilder = IpsecSession.builder();
     IkePhase1Key initiatorKey = new IkePhase1Key();
     initiatorKey.setKeyType(IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED);
@@ -402,7 +402,7 @@ public class IpsecUtilTest {
   }
 
   @Test
-  public void testNegotiateIkePhase1KeyPskFail() {
+  void testNegotiateIkePhase1KeyPskFail() {
     IpsecSession.Builder ipsecSessionBuilder = IpsecSession.builder();
     IkePhase1Key initiatorKey = new IkePhase1Key();
     initiatorKey.setKeyType(IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED);

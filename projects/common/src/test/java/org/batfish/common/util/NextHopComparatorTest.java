@@ -11,13 +11,13 @@ import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.route.nh.NextHopVrf;
 import org.batfish.datamodel.route.nh.NextHopVtep;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link NextHopComparator}. */
-public final class NextHopComparatorTest {
+final class NextHopComparatorTest {
 
   @Test
-  public void testCompareClass() {
+  void testCompareClass() {
     NextHopDiscard discard = NextHopDiscard.instance();
     NextHopInterface iface = NextHopInterface.of("foo");
     NextHopIp ip = NextHopIp.of(Ip.parse("1.1.1.1"));
@@ -40,13 +40,13 @@ public final class NextHopComparatorTest {
   }
 
   @Test
-  public void testCompareNextHopDiscard() {
+  void testCompareNextHopDiscard() {
     assertThat(
         instance().compare(NextHopDiscard.instance(), NextHopDiscard.instance()), equalTo(0));
   }
 
   @Test
-  public void testCompareNextHopInterface() {
+  void testCompareNextHopInterface() {
     assertThat(
         instance().compare(NextHopInterface.of("foo"), NextHopInterface.of("foo")), equalTo(0));
     assertThat(instance().compare(NextHopInterface.of("a"), NextHopInterface.of("b")), lessThan(0));
@@ -82,7 +82,7 @@ public final class NextHopComparatorTest {
   }
 
   @Test
-  public void testCompareNextHopIp() {
+  void testCompareNextHopIp() {
     assertThat(
         instance().compare(NextHopIp.of(Ip.parse("1.1.1.1")), NextHopIp.of(Ip.parse("1.1.1.1"))),
         equalTo(0));
@@ -95,14 +95,14 @@ public final class NextHopComparatorTest {
   }
 
   @Test
-  public void testCompareNextHopVrf() {
+  void testCompareNextHopVrf() {
     assertThat(instance().compare(NextHopVrf.of("foo"), NextHopVrf.of("foo")), equalTo(0));
     assertThat(instance().compare(NextHopVrf.of("foo"), NextHopVrf.of("foo1")), lessThan(0));
     assertThat(instance().compare(NextHopVrf.of("foo1"), NextHopVrf.of("foo2")), lessThan(0));
   }
 
   @Test
-  public void testCompareNextHopVtep() {
+  void testCompareNextHopVtep() {
     assertThat(
         instance()
             .compare(

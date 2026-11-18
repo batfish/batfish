@@ -5,13 +5,13 @@ import static org.hamcrest.Matchers.equalTo;
 
 import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link AnswerSummary} */
-public class AnswerSummaryTest {
+class AnswerSummaryTest {
 
   @Test
-  public void combineTest() {
+  void combineTest() {
     AnswerSummary summary = new AnswerSummary("notes1", 1, 2, 3);
     AnswerSummary summaryOther = new AnswerSummary("notes2", 4, 5, 6);
     summary.combine(summaryOther);
@@ -22,7 +22,7 @@ public class AnswerSummaryTest {
   }
 
   @Test
-  public void deserializationTest() throws IOException {
+  void deserializationTest() throws IOException {
     String summaryStr =
         "{\"notes\" : \"notes1\", \"numFailed\" : 21, \"numPassed\" : 23, " + "\"numResults\": 42}";
     AnswerSummary summary = BatfishObjectMapper.mapper().readValue(summaryStr, AnswerSummary.class);
@@ -33,7 +33,7 @@ public class AnswerSummaryTest {
   }
 
   @Test
-  public void serializationTest() {
+  void serializationTest() {
     AnswerSummary summary = new AnswerSummary("notes1", 21, 23, 42);
 
     // The summary should survive cloning through JSON.

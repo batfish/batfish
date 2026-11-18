@@ -7,13 +7,13 @@ import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link BgpVrfLeakConfig} */
-public class BgpVrfLeakConfigTest {
+class BgpVrfLeakConfigTest {
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     BgpVrfLeakConfig val =
         BgpVrfLeakConfig.builder()
             .setImportFromVrf("vrf1")
@@ -26,7 +26,7 @@ public class BgpVrfLeakConfigTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     BgpVrfLeakConfig val =
         BgpVrfLeakConfig.builder()
             .setImportFromVrf("vrf1")
@@ -39,7 +39,7 @@ public class BgpVrfLeakConfigTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     BgpVrfLeakConfig.Builder b =
         BgpVrfLeakConfig.builder()
             .setImportFromVrf("vrf1")

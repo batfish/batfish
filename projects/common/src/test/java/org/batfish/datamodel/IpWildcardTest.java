@@ -4,16 +4,16 @@ import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.testing.EqualsTester;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link IpWildcard}. */
-public class IpWildcardTest {
+class IpWildcardTest {
   @Test
-  public void testConstructionAndEquality() {
+  void testConstructionAndEquality() {
     new EqualsTester()
         .addEqualityGroup(
             IpWildcard.parse("1.2.3.4"),
@@ -40,7 +40,7 @@ public class IpWildcardTest {
   }
 
   @Test
-  public void testContains() {
+  void testContains() {
     IpSpace ipWildcard =
         IpWildcard.ipWithWildcardMask(Ip.create(0x01010001L), Ip.create(0x0000FF00L)).toIpSpace();
     assertThat(ipWildcard, containsIp(Ip.parse("1.1.1.1")));
@@ -49,7 +49,7 @@ public class IpWildcardTest {
   }
 
   @Test
-  public void testComplement() {
+  void testComplement() {
     IpSpace ipSpace =
         IpWildcard.ipWithWildcardMask(Ip.create(0x01010001L), Ip.create(0x0000FF00L))
             .toIpSpace()
@@ -60,7 +60,7 @@ public class IpWildcardTest {
   }
 
   @Test
-  public void testIntersects() {
+  void testIntersects() {
     /*
      * The second Ip of an IpWildcard indicates which bits of the first Ip
      * are significant (i.e. not wild). In this example, since the significant bits of
@@ -70,11 +70,11 @@ public class IpWildcardTest {
         IpWildcard.ipWithWildcardMask(Ip.create(0x00b0000aL), Ip.create(0x00FF00FFL).inverted());
     IpWildcard wc2 =
         IpWildcard.ipWithWildcardMask(Ip.create(0x000cd000L), Ip.create(0x0000FF00L).inverted());
-    assertTrue("wildcards should overlap", wc1.intersects(wc2));
+    assertTrue(wc1.intersects(wc2), "wildcards should overlap");
   }
 
   @Test
-  public void testNotIntersects() {
+  void testNotIntersects() {
     /*
      * Since the significant regions of wc1 and wc2 overlap and are not equal, there is no
      * intersection between them.
@@ -87,28 +87,28 @@ public class IpWildcardTest {
   }
 
   @Test
-  public void testSupersetOf() {
+  void testSupersetOf() {
     IpWildcard wc1 = IpWildcard.parse("1.2.0.0/16");
     IpWildcard wc2 = IpWildcard.parse("1.2.3.0/24");
 
-    assertTrue("IpWildcard.supersetOf should not be strict", wc1.supersetOf(wc1));
+    assertTrue(wc1.supersetOf(wc1), "IpWildcard.supersetOf should not be strict");
 
-    assertTrue("wc1 should be a superset of wc2", wc1.supersetOf(wc2));
-    assertFalse("wc2 should not be a superset of wc1", wc2.supersetOf(wc1));
+    assertTrue(wc1.supersetOf(wc2), "wc1 should be a superset of wc2");
+    assertFalse(wc2.supersetOf(wc1), "wc2 should not be a superset of wc1");
 
     wc1 = IpWildcard.ipWithWildcardMask(Ip.create(0x12005600L), Ip.create(0xFF00FF00L).inverted());
     wc2 = IpWildcard.ipWithWildcardMask(Ip.create(0x12345600L), Ip.create(0xFFFFFF00L).inverted());
-    assertTrue("wc1 should be a superset of wc2", wc1.supersetOf(wc2));
-    assertFalse("wc2 should not be a superset of wc1", wc2.supersetOf(wc1));
+    assertTrue(wc1.supersetOf(wc2), "wc1 should be a superset of wc2");
+    assertFalse(wc2.supersetOf(wc1), "wc2 should not be a superset of wc1");
   }
 
   @Test
-  public void testSuperset_ANY() {
-    assertTrue("ANY should be a superset of itself", IpWildcard.ANY.supersetOf(IpWildcard.ANY));
+  void testSuperset_ANY() {
+    assertTrue(IpWildcard.ANY.supersetOf(IpWildcard.ANY), "ANY should be a superset of itself");
   }
 
   @Test
-  public void testToString() {
+  void testToString() {
     assertThat(IpWildcard.parse("1.2.3.4").toString(), equalTo("1.2.3.4"));
     assertThat(IpWildcard.parse("1.2.3.4/0").toString(), equalTo("0.0.0.0/0"));
     assertThat(IpWildcard.parse("1.2.3.4/8").toString(), equalTo("1.0.0.0/8"));

@@ -39,10 +39,10 @@ import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.trace.TraceTree;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link ServiceToMatchExpr}. */
-public final class ServiceToMatchExprTest {
+final class ServiceToMatchExprTest {
   private final ServiceToMatchExpr _serviceToMatchExpr = new ServiceToMatchExpr(ImmutableMap.of());
 
   private final BddTestbed _tb = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
@@ -59,7 +59,7 @@ public final class ServiceToMatchExprTest {
           .build();
 
   @Test
-  public void testCpmiAnyObject() {
+  void testCpmiAnyObject() {
     AclLineMatchExpr expr = _serviceToMatchExpr.visit(new CpmiAnyObject(Uid.of("1")), true);
     assertBddsEqual(expr, TrueExpr.INSTANCE);
     List<TraceTree> trace =
@@ -69,7 +69,7 @@ public final class ServiceToMatchExprTest {
   }
 
   @Test
-  public void testIcmp() {
+  void testIcmp() {
     ServiceIcmp service = new ServiceIcmp("icmp", 1, 2, Uid.of("1"));
     AclLineMatchExpr expr = _serviceToMatchExpr.visit(service, true);
     assertBddsEqual(
@@ -102,7 +102,7 @@ public final class ServiceToMatchExprTest {
   }
 
   @Test
-  public void testIcmpNoCode() {
+  void testIcmpNoCode() {
     ServiceIcmp serviceNoCode = new ServiceIcmp("icmp", 1, null, Uid.of("1"));
     AclLineMatchExpr exprNoCode = _serviceToMatchExpr.visit(serviceNoCode, true);
     assertBddsEqual(
@@ -130,7 +130,7 @@ public final class ServiceToMatchExprTest {
   }
 
   @Test
-  public void testOtherMatch() {
+  void testOtherMatch() {
     String match = "uh_dport > 33000, (IPV4_VER (ip_ttl < 30))";
     ServiceOther service = ServiceOther.of("udp", IpProtocol.UDP.number(), match, Uid.of("1"));
     AclLineMatchExpr expr = _serviceToMatchExpr.visit(service, true);
@@ -160,7 +160,7 @@ public final class ServiceToMatchExprTest {
   }
 
   @Test
-  public void testOtherNoMatch() {
+  void testOtherNoMatch() {
     ServiceOther service = ServiceOther.of("udp", IpProtocol.UDP.number(), null, Uid.of("1"));
     AclLineMatchExpr expr = _serviceToMatchExpr.visit(service, true);
     assertBddsEqual(expr, and(matchIpProtocol(IpProtocol.UDP)));
@@ -181,7 +181,7 @@ public final class ServiceToMatchExprTest {
   }
 
   @Test
-  public void testTcp() {
+  void testTcp() {
     ServiceTcp service = new ServiceTcp("tcp", "100-105,300", Uid.of("1"));
     AclLineMatchExpr expr = _serviceToMatchExpr.visit(service, true);
     assertBddsEqual(
@@ -216,7 +216,7 @@ public final class ServiceToMatchExprTest {
   }
 
   @Test
-  public void testUdp() {
+  void testUdp() {
     ServiceUdp service = new ServiceUdp("udp", "222", Uid.of("1"));
     AclLineMatchExpr expr = _serviceToMatchExpr.visit(service, true);
     assertBddsEqual(
@@ -244,7 +244,7 @@ public final class ServiceToMatchExprTest {
   }
 
   @Test
-  public void testGroup() {
+  void testGroup() {
     Uid service1Uid = Uid.of("1");
     Uid service2Uid = Uid.of("2");
     Uid service3Uid = Uid.of("3");
@@ -311,7 +311,7 @@ public final class ServiceToMatchExprTest {
   }
 
   @Test
-  public void testGroupInvalidMember() {
+  void testGroupInvalidMember() {
     Uid unknown1Uid = Uid.of("1");
     Uid group1Uid = Uid.of("11");
     ServiceGroup group1 = new ServiceGroup("group1", ImmutableList.of(unknown1Uid), group1Uid);
@@ -329,7 +329,7 @@ public final class ServiceToMatchExprTest {
   }
 
   @Test
-  public void testPortRangeStringToIntegerSpace() {
+  void testPortRangeStringToIntegerSpace() {
     // Empty string
     assertThat(portRangeStringToIntegerSpace(""), equalTo(IntegerSpace.EMPTY));
 
@@ -377,7 +377,7 @@ public final class ServiceToMatchExprTest {
   }
 
   @Test
-  public void testPortStringToIntegerSpace() {
+  void testPortStringToIntegerSpace() {
     assertThat(portStringToIntegerSpace(""), equalTo(IntegerSpace.EMPTY));
     assertThat(portStringToIntegerSpace(","), equalTo(IntegerSpace.EMPTY));
     assertThat(portStringToIntegerSpace("50"), equalTo(IntegerSpace.of(50)));

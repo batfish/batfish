@@ -8,10 +8,10 @@ import static org.hamcrest.Matchers.equalTo;
 import java.nio.file.Paths;
 import org.batfish.common.Warnings;
 import org.batfish.config.Settings;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link FlattenVendorConfigurationJob}. */
-public class FlattenVendorConfigurationJobTest {
+class FlattenVendorConfigurationJobTest {
   private static final String JUNIPER_TESTCONFIGS_PREFIX = "org/batfish/job/juniper/";
   private static final String PAN_TESTCONFIGS_PREFIX = "org/batfish/job/palo_alto/";
   private static final String VYOS_TESTCONFIGS_PREFIX = "org/batfish/job/vyos/";
@@ -29,7 +29,7 @@ public class FlattenVendorConfigurationJobTest {
   }
 
   @Test
-  public void testFlattenVendorConfigurationJobJuniper() {
+  void testFlattenVendorConfigurationJobJuniper() {
     String nestedConfig = "nested-config";
     String flattenedConfig = "nested-config-flattened";
     // Confirm Juniper nested config is flattened properly
@@ -39,7 +39,7 @@ public class FlattenVendorConfigurationJobTest {
   }
 
   @Test
-  public void testFlattenVendorConfigurationJobJuniperBrackets() {
+  void testFlattenVendorConfigurationJobJuniperBrackets() {
     String nestedConfig = "nested-config-brackets";
     String flattenedConfig = "nested-config-brackets-flattened";
 
@@ -50,7 +50,7 @@ public class FlattenVendorConfigurationJobTest {
   }
 
   @Test
-  public void testFlattenVendorConfigurationJobPaloAlto() {
+  void testFlattenVendorConfigurationJobPaloAlto() {
     String nestedConfig = "nested-config";
     String flattenedConfig = "nested-config-flattened";
     // Confirm Palo Alto nested config is flattened properly
@@ -60,7 +60,7 @@ public class FlattenVendorConfigurationJobTest {
   }
 
   @Test
-  public void testFlattenVendorConfigurationJobPaloAltoBrackets() {
+  void testFlattenVendorConfigurationJobPaloAltoBrackets() {
     String nestedConfig = "nested-config-brackets";
     String flattenedConfig = "nested-config-brackets-flattened";
 
@@ -70,7 +70,7 @@ public class FlattenVendorConfigurationJobTest {
   }
 
   @Test
-  public void testFlattenVendorConfigurationJobUnknown() {
+  void testFlattenVendorConfigurationJobUnknown() {
     String unknownFileText = "unknown config format {\ntest;\n}\n";
     FlattenVendorConfigurationJob job =
         new FlattenVendorConfigurationJob(
@@ -84,7 +84,7 @@ public class FlattenVendorConfigurationJobTest {
   }
 
   @Test
-  public void testFlattenVendorConfigurationJobVyos() {
+  void testFlattenVendorConfigurationJobVyos() {
     String nestedConfig = "nested-config";
     String flattenedConfig = "nested-config-flattened";
     // Confirm Vyos nested config is flattened properly

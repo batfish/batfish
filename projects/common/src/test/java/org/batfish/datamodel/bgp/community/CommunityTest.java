@@ -5,12 +5,12 @@ import static org.hamcrest.Matchers.equalTo;
 
 import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link Community} */
-public class CommunityTest {
+class CommunityTest {
   @Test
-  public void testJsonDeserialization() throws IOException {
+  void testJsonDeserialization() throws IOException {
     assertThat(
         BatfishObjectMapper.mapper().readValue("1", Community.class),
         equalTo(StandardCommunity.of(1)));

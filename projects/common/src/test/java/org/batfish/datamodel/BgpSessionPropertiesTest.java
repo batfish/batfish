@@ -20,16 +20,16 @@ import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.BgpTopologyUtils.ConfedSessionType;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link BgpSessionProperties} */
-public class BgpSessionPropertiesTest {
+class BgpSessionPropertiesTest {
   private static Object[] withToBuilder(BgpSessionProperties properties) {
     return new Object[] {properties, properties.toBuilder().build()};
   }
 
   @Test
-  public void testSessionCreationEbgp() {
+  void testSessionCreationEbgp() {
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("2.2.2.2");
     long as1 = 1;
@@ -97,7 +97,7 @@ public class BgpSessionPropertiesTest {
   }
 
   @Test
-  public void testSessionCreationIbgp() {
+  void testSessionCreationIbgp() {
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("2.2.2.2");
     long as = 1;
@@ -164,7 +164,7 @@ public class BgpSessionPropertiesTest {
   }
 
   @Test
-  public void testSessionCreationIbgpAdvertiseInactive() {
+  void testSessionCreationIbgpAdvertiseInactive() {
     // advertiseInactive holds for iBGP sessions, not just eBGP.
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("2.2.2.2");
@@ -202,7 +202,7 @@ public class BgpSessionPropertiesTest {
   }
 
   @Test
-  public void testSessionCreationIbgpAcrossConfederation() {
+  void testSessionCreationIbgpAcrossConfederation() {
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("2.2.2.2");
     long peeringAs = 1;
@@ -275,7 +275,7 @@ public class BgpSessionPropertiesTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     long headAs = 1;
     long tailAs = 3;
     Ip headIp = Ip.parse("1.1.1.1");
@@ -317,7 +317,7 @@ public class BgpSessionPropertiesTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     Ip headIp = Ip.parse("1.1.1.1");
     Ip tailIp = Ip.parse("2.2.2.2");
     BgpSessionProperties bsp =
@@ -336,7 +336,7 @@ public class BgpSessionPropertiesTest {
   }
 
   @Test
-  public void testGetAddressFamilyIntersection() {
+  void testGetAddressFamilyIntersection() {
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("2.2.2.2");
     BgpActivePeerConfig.Builder peerBuilder =
@@ -374,7 +374,7 @@ public class BgpSessionPropertiesTest {
 
   /** Test that session head/tail IPs are not {@link Ip#AUTO} for dynamic session */
   @Test
-  public void testPassiveSessionIpComputation() {
+  void testPassiveSessionIpComputation() {
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("2.2.2.2");
     long as1 = 1;

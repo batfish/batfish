@@ -3,8 +3,8 @@ package org.batfish.datamodel.acl;
 import static org.batfish.datamodel.ExprAclLine.accepting;
 import static org.batfish.datamodel.ExprAclLine.rejecting;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -13,13 +13,13 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.LineAction;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link AclLineEvaluator} */
-public class AclLineEvaluatorTest {
+class AclLineEvaluatorTest {
 
   @Test
-  public void testVisitAclAclLine() {
+  void testVisitAclAclLine() {
     Ip permitIp = Ip.parse("1.1.1.1");
     Ip denyIp = Ip.parse("2.2.2.2");
     IpAccessList acl =

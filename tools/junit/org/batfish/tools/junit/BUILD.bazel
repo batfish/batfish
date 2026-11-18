@@ -1,0 +1,14 @@
+load("@rules_java//java:defs.bzl", "java_library")
+
+package(default_visibility = ["//visibility:public"])
+
+# Main class for the java_test targets created by junit_tests in //skylark:junit.bzl.
+java_library(
+    name = "runner",
+    srcs = ["JUnitPlatformRunner.java"],
+    deps = [
+        "@maven//:org_junit_platform_junit_platform_engine",
+        "@maven//:org_junit_platform_junit_platform_launcher",
+        "@maven//:org_junit_platform_junit_platform_reporting",
+    ],
+)

@@ -25,13 +25,13 @@ import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableMetadata;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link OspfAreaConfigurationAnswerer} */
-public class OspfAreaConfigurationAnswererTest {
+class OspfAreaConfigurationAnswererTest {
 
   @Test
-  public void testGetRows() {
+  void testGetRows() {
     NetworkFactory nf = new NetworkFactory();
     Configuration configuration =
         nf.configurationBuilder()
@@ -108,7 +108,7 @@ public class OspfAreaConfigurationAnswererTest {
   }
 
   @Test
-  public void testMetaData() {
+  void testMetaData() {
     List<ColumnMetadata> metas =
         OspfAreaConfigurationAnswerer.createTableMetadata().getColumnMetadata();
 

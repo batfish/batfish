@@ -6,28 +6,28 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasKey;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.main.Batfish;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosEscapedQuotedStringTest {
+final class JunosEscapedQuotedStringTest {
 
   private static final String ESCAPED_LOGIN_MESSAGE = "junos-escaped-login-message";
   private static final String HOSTNAME = "junos-escaped-quoted-string";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testEscapedQuotedString() throws IOException {
+  void testEscapedQuotedString() throws IOException {
     Batfish batfish = getBatfish(_folder, HOSTNAME);
     assertThat(batfish.loadConfigurations(batfish.getSnapshot()), hasKey(HOSTNAME));
     assertThat(getParseWarnings(batfish, HOSTNAME), empty());
   }
 
   @Test
-  public void testEscapedLoginMessage() throws IOException {
+  void testEscapedLoginMessage() throws IOException {
     Batfish batfish = getBatfish(_folder, ESCAPED_LOGIN_MESSAGE);
     assertThat(batfish.loadConfigurations(batfish.getSnapshot()), hasKey(ESCAPED_LOGIN_MESSAGE));
     assertThat(getParseWarnings(batfish, ESCAPED_LOGIN_MESSAGE), empty());

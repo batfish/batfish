@@ -5,12 +5,12 @@ import static org.batfish.common.util.isp.IspModelingUtils.LINK_LOCAL_ADDRESS;
 import com.google.common.testing.EqualsTester;
 import org.batfish.common.topology.Layer1Node;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class IspInterfaceTest {
+class IspInterfaceTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     Layer1Node layer1Node = new Layer1Node("host", "interface");
     new EqualsTester()
         .addEqualityGroup(

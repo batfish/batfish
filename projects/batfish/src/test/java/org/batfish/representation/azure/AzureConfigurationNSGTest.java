@@ -4,6 +4,7 @@ import static org.batfish.representation.azure.AzureConfigurationTestUtils.testS
 import static org.batfish.representation.azure.AzureConfigurationTestUtils.testTrace;
 
 import com.google.common.collect.ImmutableList;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.batfish.common.plugin.IBatfish;
@@ -12,12 +13,11 @@ import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public class AzureConfigurationNSGTest {
+class AzureConfigurationNSGTest {
 
   private static final String TESTCONFIGS_DIR = "org/batfish/representation/azure/test-nsg";
 
@@ -58,17 +58,17 @@ public class AzureConfigurationNSGTest {
   private static final Ip CLOUDFLARE_DNS_IP = Ip.parse("1.1.1.1");
   // private static final Ip ANOTHER_VNET_IP = Ip.parse("10.2.0.6");
 
-  @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public static File _folder;
 
   private static IBatfish _batfish;
 
-  @BeforeClass
-  public static void setup() throws IOException {
+  @BeforeAll
+  static void setup() throws IOException {
     _batfish = testSetup(TESTCONFIGS_DIR, fileNames, _folder);
   }
 
   @Test
-  public void testHostToHost() {
+  void testHostToHost() {
 
     // ping from VM1 to VM2
     testTrace(
@@ -100,7 +100,7 @@ public class AzureConfigurationNSGTest {
   }
 
   @Test
-  public void testVm1toVm2SSH() {
+  void testVm1toVm2SSH() {
 
     // ssh from VM1 to VM2
     testTrace(
@@ -117,7 +117,7 @@ public class AzureConfigurationNSGTest {
   }
 
   @Test
-  public void testVm1toVm2Http() {
+  void testVm1toVm2Http() {
 
     // http from VM1 to VM2
     testTrace(
@@ -134,7 +134,7 @@ public class AzureConfigurationNSGTest {
   }
 
   @Test
-  public void testIntraSubnetFiltering() {
+  void testIntraSubnetFiltering() {
 
     // http from VM3 to VM2 (same subnet but nsg-subnet2.json should apply and deny)
     testTrace(
@@ -164,7 +164,7 @@ public class AzureConfigurationNSGTest {
   }
 
   @Test
-  public void testVm2toCloudflare() {
+  void testVm2toCloudflare() {
 
     // VM2 to cloudflare dns server
     // expected to fail because security rule "BlockCloudFlareDns" is expected to deny it.

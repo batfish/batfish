@@ -6,11 +6,11 @@ import static org.hamcrest.Matchers.sameInstance;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class AclIpSpaceLineTest {
+final class AclIpSpaceLineTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             AclIpSpaceLine.permit(UniverseIpSpace.INSTANCE),
@@ -21,7 +21,7 @@ public final class AclIpSpaceLineTest {
   }
 
   @Test
-  public void testInterning() {
+  void testInterning() {
     IpIpSpace space = Ip.parse("1.2.3.4").toIpSpace();
     AclIpSpaceLine permit = AclIpSpaceLine.permit(space);
     assertThat(AclIpSpaceLine.permit(space), sameInstance(permit));
@@ -32,7 +32,7 @@ public final class AclIpSpaceLineTest {
   }
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     AclIpSpaceLine line =
         AclIpSpaceLine.builder()
             .setAction(LineAction.DENY)

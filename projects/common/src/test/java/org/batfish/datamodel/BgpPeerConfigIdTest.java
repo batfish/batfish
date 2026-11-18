@@ -7,13 +7,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
 import java.util.List;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link BgpPeerConfigId} */
-public class BgpPeerConfigIdTest {
+class BgpPeerConfigIdTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     BgpPeerConfigId id = new BgpPeerConfigId("c1", "vrf1", Prefix.ZERO, false);
     new EqualsTester()
         .addEqualityGroup(id, id, new BgpPeerConfigId("c1", "vrf1", Prefix.ZERO, false))
@@ -28,13 +28,13 @@ public class BgpPeerConfigIdTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     BgpPeerConfigId id = new BgpPeerConfigId("c1", "vrf1", Prefix.ZERO, false);
     assertThat(BatfishObjectMapper.clone(id, BgpPeerConfigId.class), equalTo(id));
   }
 
   @Test
-  public void testCompareTo() {
+  void testCompareTo() {
     List<BgpPeerConfigId> ordered =
         ImmutableList.of(
             new BgpPeerConfigId("c0", "vrf0", Prefix.ZERO, false),

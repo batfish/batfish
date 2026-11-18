@@ -38,9 +38,9 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.trace.TraceTree;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class AclTracerTest {
+class AclTracerTest {
 
   private static final String ACL_IP_SPACE_NAME = "aclIpSpace";
 
@@ -79,7 +79,7 @@ public class AclTracerTest {
   }
 
   @Test
-  public void testDefaultDeniedByIpAccessList() {
+  void testDefaultDeniedByIpAccessList() {
     IpAccessList acl = IpAccessList.builder().setName(ACL_NAME).build();
     Map<String, IpAccessList> availableAcls = ImmutableMap.of(ACL_NAME, acl);
     Map<String, IpSpace> namedIpSpaces = ImmutableMap.of();
@@ -92,7 +92,7 @@ public class AclTracerTest {
   }
 
   @Test
-  public void testDefaultDeniedByNamedAclIpSpace() {
+  void testDefaultDeniedByNamedAclIpSpace() {
     IpSpace aclIpSpace =
         AclIpSpace.permitting(Ip.parse("255.255.255.255").toIpSpace())
             .thenPermitting(Ip.parse("255.255.255.254").toIpSpace())
@@ -120,7 +120,7 @@ public class AclTracerTest {
   }
 
   @Test
-  public void testDeniedByIndirectPermit() {
+  void testDeniedByIndirectPermit() {
     String aclIndirectName = "aclIndirect";
     IpAccessList acl =
         IpAccessList.builder()
@@ -148,7 +148,7 @@ public class AclTracerTest {
   }
 
   @Test
-  public void testDeniedByAclLine() {
+  void testDeniedByAclLine() {
     IpAccessList acl =
         IpAccessList.builder()
             .setName(ACL_NAME)
@@ -170,7 +170,7 @@ public class AclTracerTest {
   }
 
   @Test
-  public void testDeniedByNamedAclIpSpaceLine() {
+  void testDeniedByNamedAclIpSpaceLine() {
     IpSpace aclIpSpace =
         AclIpSpace.permitting(Ip.parse("255.255.255.255").toIpSpace())
             .thenPermitting(Ip.parse("255.255.255.254").toIpSpace())
@@ -199,7 +199,7 @@ public class AclTracerTest {
   }
 
   @Test
-  public void testDeniedByNamedSimpleIpSpace() {
+  void testDeniedByNamedSimpleIpSpace() {
     String ipSpaceName = "aclIpSpace";
 
     IpAccessList acl =
@@ -225,7 +225,7 @@ public class AclTracerTest {
   }
 
   @Test
-  public void testDeniedByUnnamedAclIpSpace() {
+  void testDeniedByUnnamedAclIpSpace() {
     IpSpace aclIpSpace =
         AclIpSpace.permitting(Ip.parse("255.255.255.255").toIpSpace())
             .thenPermitting(Ip.parse("255.255.255.254").toIpSpace())
@@ -251,7 +251,7 @@ public class AclTracerTest {
   }
 
   @Test
-  public void testDeniedByUnnamedSimpleIpSpace() {
+  void testDeniedByUnnamedSimpleIpSpace() {
     IpSpace ipSpace = EmptyIpSpace.INSTANCE;
     IpAccessList acl =
         IpAccessList.builder()
@@ -272,7 +272,7 @@ public class AclTracerTest {
   }
 
   @Test
-  public void testPermittedByAclLine() {
+  void testPermittedByAclLine() {
     IpAccessList acl =
         IpAccessList.builder().setName(ACL_NAME).setLines(ImmutableList.of(ACCEPT_ALL)).build();
     Map<String, IpAccessList> availableAcls = ImmutableMap.of(ACL_NAME, acl);
@@ -286,7 +286,7 @@ public class AclTracerTest {
   }
 
   @Test
-  public void testPermittedByNamedSimpleIpSpace() {
+  void testPermittedByNamedSimpleIpSpace() {
     String ipSpaceName = "aclIpSpace";
     IpAccessList acl =
         IpAccessList.builder()
@@ -316,7 +316,7 @@ public class AclTracerTest {
   }
 
   @Test
-  public void testPermittedByUnnamedAclIpSpace() {
+  void testPermittedByUnnamedAclIpSpace() {
     IpSpace aclIpSpace =
         AclIpSpace.permitting(Prefix.parse("0.0.0.0/1").toIpSpace())
             .thenPermitting(Prefix.parse("1.0.0.0/1").toIpSpace())
@@ -342,7 +342,7 @@ public class AclTracerTest {
   }
 
   @Test
-  public void testPermittedByUnnamedSimpleIpSpace() {
+  void testPermittedByUnnamedSimpleIpSpace() {
     IpSpace ipSpace = UniverseIpSpace.INSTANCE;
     IpAccessList acl =
         IpAccessList.builder()
@@ -364,7 +364,7 @@ public class AclTracerTest {
   }
 
   @Test
-  public void testDeniedByIndirectAndExpr() {
+  void testDeniedByIndirectAndExpr() {
     String aclIndirectName1 = "aclIndirect1";
     String aclIndirectName2 = "aclIndirect2";
     IpAccessList acl =
@@ -418,7 +418,7 @@ public class AclTracerTest {
   }
 
   @Test
-  public void testAclAclLine() {
+  void testAclAclLine() {
     IpAccessList acl =
         IpAccessList.builder()
             .setName(ACL_NAME)
@@ -445,7 +445,7 @@ public class AclTracerTest {
   }
 
   @Test
-  public void testLinesWithTraceElement() {
+  void testLinesWithTraceElement() {
     TraceElement aclTraceElement = TraceElement.of("acl trace element");
     IpAccessList acl =
         IpAccessList.builder()
@@ -479,127 +479,127 @@ public class AclTracerTest {
   }
 
   @Test
-  public void testAnd_False() {
+  void testAnd_False() {
     List<TraceTree> trace = trace(and(trueExpr("a"), falseExpr("b")));
     assertThat(trace, empty());
   }
 
   @Test
-  public void testAnd_withoutTraceElement() {
+  void testAnd_withoutTraceElement() {
     List<TraceTree> trace = trace(and(trueExpr("a"), trueExpr("b")));
     assertThat(trace, contains(isTraceTree("a"), isTraceTree("b")));
   }
 
   @Test
-  public void testAnd_withTraceElement() {
+  void testAnd_withTraceElement() {
     List<TraceTree> trace = trace(and("and", trueExpr("a"), trueExpr("b")));
     assertThat(trace, contains(isTraceTree("and", isTraceTree("a"), isTraceTree("b"))));
   }
 
   @Test
-  public void testOr_false() {
+  void testOr_false() {
     List<TraceTree> trace = trace(or(falseExpr("a"), falseExpr("b"), falseExpr("c")));
     assertThat(trace, empty());
   }
 
   @Test
-  public void testOr_withoutTraceElement() {
+  void testOr_withoutTraceElement() {
     List<TraceTree> trace = trace(or(falseExpr("a"), trueExpr("b"), falseExpr("c")));
     assertThat(trace, contains(isTraceTree("b")));
   }
 
   @Test
-  public void testOr_withTraceElement() {
+  void testOr_withTraceElement() {
     List<TraceTree> trace = trace(or("or", falseExpr("a"), trueExpr("b"), falseExpr("c")));
     assertThat(trace, contains(isTraceTree("or", isTraceTree("b"))));
   }
 
   @Test
-  public void testOr_allTrue() {
+  void testOr_allTrue() {
     List<TraceTree> trace = trace(or("or", trueExpr("a"), trueExpr("b"), trueExpr("c")));
     assertThat(trace, contains(isTraceTree("or", isTraceTree("a"))));
   }
 
   @Test
-  public void testMatchHeaderspace_withoutTraceElement() {
+  void testMatchHeaderspace_withoutTraceElement() {
     List<TraceTree> trace = trace(new MatchHeaderSpace(TRUE_HEADERSPACE));
     assertThat(trace, empty());
   }
 
   @Test
-  public void testMatchHeaderspace_withTraceElement() {
+  void testMatchHeaderspace_withTraceElement() {
     TraceElement a = TraceElement.of("a");
     List<TraceTree> trace = trace(new MatchHeaderSpace(TRUE_HEADERSPACE, a));
     assertThat(trace, contains(isTraceTree(a)));
   }
 
   @Test
-  public void testMatchIpProtocol_withoutTraceElement() {
+  void testMatchIpProtocol_withoutTraceElement() {
     List<TraceTree> trace = trace(new MatchIpProtocol(FLOW.getIpProtocol(), null));
     assertThat(trace, empty());
   }
 
   @Test
-  public void testMatchIpProtocol_withTraceElement() {
+  void testMatchIpProtocol_withTraceElement() {
     TraceElement a = TraceElement.of("a");
     List<TraceTree> trace = trace(new MatchIpProtocol(FLOW.getIpProtocol(), a));
     assertThat(trace, contains(isTraceTree(a)));
   }
 
   @Test
-  public void testMatchDestinationIp_withoutTraceElement() {
+  void testMatchDestinationIp_withoutTraceElement() {
     List<TraceTree> trace = trace(new MatchDestinationIp(UniverseIpSpace.INSTANCE, null));
     assertThat(trace, empty());
   }
 
   @Test
-  public void testMatchDestinationIp_withTraceElement() {
+  void testMatchDestinationIp_withTraceElement() {
     TraceElement a = TraceElement.of("a");
     List<TraceTree> trace = trace(new MatchDestinationIp(UniverseIpSpace.INSTANCE, a));
     assertThat(trace, contains(isTraceTree(a)));
   }
 
   @Test
-  public void testMatchSourceIp_withoutTraceElement() {
+  void testMatchSourceIp_withoutTraceElement() {
     List<TraceTree> trace = trace(new MatchSourceIp(UniverseIpSpace.INSTANCE, null));
     assertThat(trace, empty());
   }
 
   @Test
-  public void testMatchSourceIp_withTraceElement() {
+  void testMatchSourceIp_withTraceElement() {
     TraceElement a = TraceElement.of("a");
     List<TraceTree> trace = trace(new MatchSourceIp(UniverseIpSpace.INSTANCE, a));
     assertThat(trace, contains(isTraceTree(a)));
   }
 
   @Test
-  public void testMatchDestinationPort_withoutTraceElement() {
+  void testMatchDestinationPort_withoutTraceElement() {
     List<TraceTree> trace = trace(new MatchDestinationPort(IntegerSpace.of(2), null), FLOW_PORTS);
     assertThat(trace, empty());
   }
 
   @Test
-  public void testMatchDestinationPort_withTraceElement() {
+  void testMatchDestinationPort_withTraceElement() {
     TraceElement a = TraceElement.of("a");
     List<TraceTree> trace = trace(new MatchDestinationPort(IntegerSpace.of(2), a), FLOW_PORTS);
     assertThat(trace, contains(isTraceTree(a)));
   }
 
   @Test
-  public void testMatchSourcePort_withoutTraceElement() {
+  void testMatchSourcePort_withoutTraceElement() {
     List<TraceTree> trace = trace(new MatchSourcePort(IntegerSpace.of(1), null), FLOW_PORTS);
     assertThat(trace, empty());
   }
 
   @Test
-  public void testMatchSourcePort_withTraceElement() {
+  void testMatchSourcePort_withTraceElement() {
     TraceElement a = TraceElement.of("a");
     List<TraceTree> trace = trace(new MatchSourcePort(IntegerSpace.of(1), a), FLOW_PORTS);
     assertThat(trace, contains(isTraceTree(a)));
   }
 
   @Test
-  public void testPermittedByAcl() {
+  void testPermittedByAcl() {
     TraceElement a = TraceElement.of("a");
     String aclName = "acl";
     IpAccessList acl = IpAccessList.builder().setName(aclName).setLines(ACCEPT_ALL).build();
@@ -615,7 +615,7 @@ public class AclTracerTest {
   }
 
   @Test
-  public void testDeniedByAcl() {
+  void testDeniedByAcl() {
     TraceElement a = TraceElement.of("a");
     String aclName = "acl";
     IpAccessList acl = IpAccessList.builder().setName(aclName).setLines(REJECT_ALL).build();
@@ -631,7 +631,7 @@ public class AclTracerTest {
   }
 
   @Test
-  public void testDeniedByAcl_noMatch() {
+  void testDeniedByAcl_noMatch() {
     TraceElement a = TraceElement.of("a");
     String aclName = "acl";
     IpAccessList acl = IpAccessList.builder().setName(aclName).build();
@@ -647,7 +647,7 @@ public class AclTracerTest {
   }
 
   @Test
-  public void testLineWithExprAnnotations() {
+  void testLineWithExprAnnotations() {
     AclLineMatchExpr expr = trueExpr("a");
     IpAccessList acl =
         IpAccessList.builder().setName("acl").setLines(ExprAclLine.accepting(expr)).build();
@@ -656,7 +656,7 @@ public class AclTracerTest {
   }
 
   @Test
-  public void testMatchSrcInterface_withoutTraceElement() {
+  void testMatchSrcInterface_withoutTraceElement() {
     String iface = "iface";
     List<TraceTree> trace =
         AclTracer.trace(
@@ -670,7 +670,7 @@ public class AclTracerTest {
   }
 
   @Test
-  public void testMatchSrcInterface_withTraceElement() {
+  void testMatchSrcInterface_withTraceElement() {
     String iface = "iface";
     TraceElement a = TraceElement.of("a");
     List<TraceTree> trace =
@@ -685,19 +685,19 @@ public class AclTracerTest {
   }
 
   @Test
-  public void testNotMatchExpr_withoutTraceElement() {
+  void testNotMatchExpr_withoutTraceElement() {
     List<TraceTree> trace = trace(not(falseExpr("false")));
     assertThat(trace, empty());
   }
 
   @Test
-  public void testNotMatchExpr_withTraceElement() {
+  void testNotMatchExpr_withTraceElement() {
     List<TraceTree> trace = trace(not("not", falseExpr("false")));
     assertThat(trace, contains(isTraceTree("not")));
   }
 
   @Test
-  public void testNotMatchExpr_false() {
+  void testNotMatchExpr_false() {
     List<TraceTree> trace = trace(not("not", trueExpr("true")));
     assertThat(trace, empty());
   }

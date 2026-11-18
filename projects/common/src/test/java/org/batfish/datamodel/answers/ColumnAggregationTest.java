@@ -1,12 +1,12 @@
 package org.batfish.datamodel.answers;
 
 import com.google.common.testing.EqualsTester;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class ColumnAggregationTest {
+final class ColumnAggregationTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     ColumnAggregation a1 = new ColumnAggregation(Aggregation.MAX, "a");
     ColumnAggregation a2 = new ColumnAggregation(Aggregation.MAX, "a");
     ColumnAggregation b1 = new ColumnAggregation(Aggregation.MAX, "b");

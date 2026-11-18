@@ -3,19 +3,17 @@ package org.batfish.datamodel;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.batfish.datamodel.route.nh.NextHopDiscard;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-public class RipInternalRouteTest {
-  @Rule public ExpectedException _expectedException = ExpectedException.none();
+class RipInternalRouteTest {
   private static final int adminCost =
       RoutingProtocol.RIP.getDefaultAdministrativeCost(ConfigurationFormat.CISCO_IOS);
 
   @Test
-  public void testConstructorAcceptsValidMetric() {
+  void testConstructorAcceptsValidMetric() {
     // Test all valid metrics, there are only 16 of them. Just testing that no exceptions are thrown
     for (int m = 0; m <= RipRoute.MAX_ROUTE_METRIC; m++) {
       new RipInternalRoute(Prefix.parse("1.1.1.1/32"), Ip.parse("2.2.2.2"), adminCost, m, 1L);
@@ -23,19 +21,25 @@ public class RipInternalRouteTest {
   }
 
   @Test
-  public void testConstructorRejectsLowMetric() {
-    _expectedException.expect(IllegalArgumentException.class);
-    new RipInternalRoute(Prefix.parse("1.1.1.1/32"), Ip.parse("2.2.2.2"), adminCost, 17, 1L);
+  void testConstructorRejectsLowMetric() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> {
+          new RipInternalRoute(Prefix.parse("1.1.1.1/32"), Ip.parse("2.2.2.2"), adminCost, 17, 1L);
+        });
   }
 
   @Test
-  public void testConstructorRejectsHighMetric() {
-    _expectedException.expect(IllegalArgumentException.class);
-    new RipInternalRoute(Prefix.parse("1.1.1.1/32"), Ip.parse("2.2.2.2"), adminCost, -1, 1L);
+  void testConstructorRejectsHighMetric() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> {
+          new RipInternalRoute(Prefix.parse("1.1.1.1/32"), Ip.parse("2.2.2.2"), adminCost, -1, 1L);
+        });
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     RipInternalRoute r1 =
         new RipInternalRoute(Prefix.parse("1.1.1.1/32"), Ip.parse("2.2.2.2"), adminCost, 1, 1L);
     RipInternalRoute r1copy =
@@ -64,7 +68,7 @@ public class RipInternalRouteTest {
   }
 
   @Test
-  public void testToBuilder() {
+  void testToBuilder() {
     RipInternalRoute r =
         RipInternalRoute.builder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))

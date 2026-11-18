@@ -19,14 +19,14 @@ import org.batfish.grammar.VendorConfigurationFormatDetector;
 import org.batfish.grammar.flattener.Flattener;
 import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.main.Batfish;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class JuniperFlattenerTest {
+class JuniperFlattenerTest {
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/juniper/testconfigs/";
 
   /** Test that sequences of flat lines do not create a linear tree. */
   @Test
-  public void testFlatLinesDoNotNest() {
+  void testFlatLinesDoNotNest() {
     String hostname = "flatten-flat-lines-no-nesting";
 
     int numCopies = 33;
@@ -58,7 +58,7 @@ public class JuniperFlattenerTest {
   }
 
   @Test
-  public void testEscapedQuotedStrings() {
+  void testEscapedQuotedStrings() {
     Flattener flattener =
         Batfish.flatten(
             readResource(TESTCONFIGS_PREFIX + "junos-escaped-quoted-string", UTF_8),
@@ -81,7 +81,7 @@ public class JuniperFlattenerTest {
 
   /** Test that configurations with `apply-flags omit` are flattened correctly. */
   @Test
-  public void testFlattenWithApplyFlagsOmit() {
+  void testFlattenWithApplyFlagsOmit() {
     Flattener flattener =
         Batfish.flatten(
             readResource(TESTCONFIGS_PREFIX + "flatten-with-apply-flags-omit", UTF_8),
@@ -108,7 +108,7 @@ public class JuniperFlattenerTest {
 
   /** Test for https://github.com/batfish/batfish/issues/6149. */
   @Test
-  public void testGH6149Flatten() {
+  void testGH6149Flatten() {
     String hostname = "gh-6149-flatten";
     Flattener flattener =
         Batfish.flatten(
@@ -131,7 +131,7 @@ public class JuniperFlattenerTest {
   }
 
   @Test
-  public void testNestedConfigLineMap() {
+  void testNestedConfigLineMap() {
     String hostname = "nested-config-with-flat-statements";
     Flattener flattener =
         Batfish.flatten(
@@ -169,7 +169,7 @@ public class JuniperFlattenerTest {
   }
 
   @Test
-  public void testRoutingEnginePrompts() {
+  void testRoutingEnginePrompts() {
     Flattener flattener =
         Batfish.flatten(
             readResource(TESTCONFIGS_PREFIX + "flatten-routing-engine-prompts", UTF_8),
@@ -190,7 +190,7 @@ public class JuniperFlattenerTest {
 
   /** A protected parent hierarchy and all its children remain in the effective configuration. */
   @Test
-  public void testProtectedHierarchy() {
+  void testProtectedHierarchy() {
     Flattener flattener =
         Batfish.flatten(
             readResource(TESTCONFIGS_PREFIX + "flatten-protect", UTF_8),
@@ -222,7 +222,7 @@ public class JuniperFlattenerTest {
    * was deleted.
    */
   @Test
-  public void testDeleteReplaceNoSpuriousSetLines() {
+  void testDeleteReplaceNoSpuriousSetLines() {
     String hostname = "flatten-delete-replace";
     Flattener flattener =
         Batfish.flatten(

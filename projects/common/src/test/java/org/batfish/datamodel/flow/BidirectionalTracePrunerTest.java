@@ -14,10 +14,10 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Collection;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.pojo.Node;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** A test for {@link BidirectionalTracePruner}. */
-public class BidirectionalTracePrunerTest {
+class BidirectionalTracePrunerTest {
   private static final Flow FLOW1;
   private static final Flow FLOW2;
   private static final Flow FLOW3;
@@ -35,7 +35,7 @@ public class BidirectionalTracePrunerTest {
 
   /** Test that forward flow values are covered before reverse flow, dispositions, or hops. */
   @Test
-  public void testForwardFlow() {
+  void testForwardFlow() {
     Trace trace1 = new Trace(ACCEPTED, ImmutableList.of(HOP1));
     Trace trace2 = new Trace(EXITS_NETWORK, ImmutableList.of(HOP2));
     Trace trace3 = new Trace(DELIVERED_TO_SUBNET, ImmutableList.of(HOP3));
@@ -57,7 +57,7 @@ public class BidirectionalTracePrunerTest {
 
   /** Test that reverse flow values are covered before dispositions or hops. */
   @Test
-  public void testReverseFlow() {
+  void testReverseFlow() {
     Trace trace1 = new Trace(ACCEPTED, ImmutableList.of(HOP1));
     Trace trace2 = new Trace(EXITS_NETWORK, ImmutableList.of(HOP2));
     Trace trace3 = new Trace(DELIVERED_TO_SUBNET, ImmutableList.of(HOP3));
@@ -79,7 +79,7 @@ public class BidirectionalTracePrunerTest {
 
   /** Test that forward dispositions are covered before reverse dispositions or hops. */
   @Test
-  public void testForwardDisposition() {
+  void testForwardDisposition() {
     Trace trace1 = new Trace(ACCEPTED, ImmutableList.of(HOP1));
     Trace trace2 = new Trace(ACCEPTED, ImmutableList.of(HOP2));
     Trace trace3 = new Trace(EXITS_NETWORK, ImmutableList.of(HOP3));
@@ -102,7 +102,7 @@ public class BidirectionalTracePrunerTest {
 
   /** Test that reverse dispositions are covered before hops. */
   @Test
-  public void testReverseDisposition() {
+  void testReverseDisposition() {
     Trace trace1 = new Trace(ACCEPTED, ImmutableList.of(HOP1));
     Trace trace2 = new Trace(ACCEPTED, ImmutableList.of(HOP2));
     Trace trace3 = new Trace(DENIED_IN, ImmutableList.of(HOP3));
@@ -125,7 +125,7 @@ public class BidirectionalTracePrunerTest {
 
   /** Test that forward hops are covered before reverse hops. */
   @Test
-  public void testForwardHops() {
+  void testForwardHops() {
     Trace trace1 = new Trace(ACCEPTED, ImmutableList.of(HOP1));
     Trace trace2 = new Trace(ACCEPTED, ImmutableList.of(HOP2));
     Trace trace3 = new Trace(ACCEPTED, ImmutableList.of(HOP3));
@@ -147,7 +147,7 @@ public class BidirectionalTracePrunerTest {
 
   /** Test that reverse hops are covered. */
   @Test
-  public void testReverseHops() {
+  void testReverseHops() {
     Trace trace1 = new Trace(ACCEPTED, ImmutableList.of(HOP1));
     Trace trace2 = new Trace(ACCEPTED, ImmutableList.of(HOP2));
     Trace trace3 = new Trace(ACCEPTED, ImmutableList.of(HOP3));

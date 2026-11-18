@@ -2,7 +2,7 @@ package org.batfish.minesweeper.collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -37,11 +37,11 @@ import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.TrackSucceeded;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.minesweeper.utils.Tuple;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link CommunityNameCollector}. */
-public class CommunityNameCollectorTest {
+class CommunityNameCollectorTest {
 
   private static final String HOSTNAME = "hostname";
   private static final String COMM_LST_1 = "comm1";
@@ -53,8 +53,8 @@ public class CommunityNameCollectorTest {
 
   private Configuration _config;
 
-  @Before
-  public void setup() throws IOException {
+  @BeforeEach
+  void setup() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder()
@@ -94,7 +94,7 @@ public class CommunityNameCollectorTest {
   }
 
   @Test
-  public void testVisitConjunction() {
+  void testVisitConjunction() {
 
     Conjunction c =
         new Conjunction(
@@ -110,7 +110,7 @@ public class CommunityNameCollectorTest {
   }
 
   @Test
-  public void testVisitConjunctionChain() {
+  void testVisitConjunctionChain() {
 
     ConjunctionChain cc =
         new ConjunctionChain(
@@ -127,7 +127,7 @@ public class CommunityNameCollectorTest {
   }
 
   @Test
-  public void testVisitDisjunction() {
+  void testVisitDisjunction() {
 
     Disjunction d =
         new Disjunction(
@@ -143,7 +143,7 @@ public class CommunityNameCollectorTest {
   }
 
   @Test
-  public void testVisitFirstMatchChain() {
+  void testVisitFirstMatchChain() {
 
     FirstMatchChain fmc =
         new FirstMatchChain(
@@ -160,7 +160,7 @@ public class CommunityNameCollectorTest {
   }
 
   @Test
-  public void testVisitTrackSucceeded() {
+  void testVisitTrackSucceeded() {
     assertThat(
         _collector.visitTrackSucceeded(
             new TrackSucceeded("foo"), new Tuple<>(new HashSet<>(), _config)),
@@ -168,7 +168,7 @@ public class CommunityNameCollectorTest {
   }
 
   @Test
-  public void testVisitNot() {
+  void testVisitNot() {
 
     Not n =
         new Not(
@@ -181,7 +181,7 @@ public class CommunityNameCollectorTest {
   }
 
   @Test
-  public void testVisitWithEnvironmentExpr() {
+  void testVisitWithEnvironmentExpr() {
 
     WithEnvironmentExpr wee = new WithEnvironmentExpr();
     wee.setExpr(

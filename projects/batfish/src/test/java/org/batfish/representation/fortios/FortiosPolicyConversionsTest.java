@@ -5,13 +5,13 @@ import static org.hamcrest.Matchers.equalTo;
 
 import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.vendor.VendorStructureId;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class FortiosPolicyConversionsTest {
+class FortiosPolicyConversionsTest {
   private static final BatfishUUID UUID = new BatfishUUID(4);
 
   @Test
-  public void testAddressIpSpaceMetadata() {
+  void testAddressIpSpaceMetadata() {
     Address address = new Address("foo", UUID);
     assertThat(
         FortiosPolicyConversions.toIpSpaceMetadata(address, "configs/file.txt"),
@@ -30,7 +30,7 @@ public class FortiosPolicyConversionsTest {
   }
 
   @Test
-  public void testAddressGroupIpSpaceMetadata() {
+  void testAddressGroupIpSpaceMetadata() {
     Addrgrp group = new Addrgrp("foo", UUID);
     assertThat(
         FortiosPolicyConversions.toIpSpaceMetadata(group, "configs/file.txt"),

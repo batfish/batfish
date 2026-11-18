@@ -17,7 +17,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -37,27 +37,24 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.matchers.IkePhase1KeyMatchers;
 import org.batfish.representation.cisco_asa.DistributeList.DistributeListFilterType;
 import org.batfish.vendor.VendorStructureId;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link AsaConversions} class */
-@RunWith(JUnit4.class)
-public class AsaConversionsTest {
+class AsaConversionsTest {
 
   private static final String IKE_PHASE1_KEY = "IKE_Phase1_Key";
   private NetworkFactory _nf;
   private Warnings _warnings;
 
-  @Before
-  public void before() {
+  @BeforeEach
+  void before() {
     _warnings = new Warnings(true, true, true);
     _nf = new NetworkFactory();
   }
 
   @Test
-  public void testSanityCheckEigrpDistributeListAbsentFilter() {
+  void testSanityCheckEigrpDistributeListAbsentFilter() {
     Configuration c =
         _nf.configurationBuilder()
             .setHostname("conf")
@@ -77,7 +74,7 @@ public class AsaConversionsTest {
   }
 
   @Test
-  public void testCreateAclWithSymmetricalLines() {
+  void testCreateAclWithSymmetricalLines() {
     IpAccessList ipAccessList =
         _nf.aclBuilder()
             .setLines(
@@ -100,7 +97,7 @@ public class AsaConversionsTest {
   }
 
   @Test
-  public void testGetMatchingPskInvalidLocalIface() {
+  void testGetMatchingPskInvalidLocalIface() {
     IsakmpProfile isakmpProfile = new IsakmpProfile("Missing_Local_Interface");
     // Empty interfaceName value represents incorrect local-address value
     isakmpProfile.setLocalInterfaceName(INVALID_LOCAL_INTERFACE);
@@ -123,7 +120,7 @@ public class AsaConversionsTest {
   }
 
   @Test
-  public void testGetMatchingPskNullKeyring() {
+  void testGetMatchingPskNullKeyring() {
     IsakmpProfile isakmpProfile = new IsakmpProfile("Null_Keyring");
     // Empty interfaceName value represents incorrect local-address value
     isakmpProfile.setLocalInterfaceName("local_interface");
@@ -143,7 +140,7 @@ public class AsaConversionsTest {
   }
 
   @Test
-  public void testGetMatchingPskMissingKeyring() {
+  void testGetMatchingPskMissingKeyring() {
     IsakmpProfile isakmpProfile = new IsakmpProfile("Missing_Keyring");
     // Empty interfaceName value represents incorrect local-address value
     isakmpProfile.setLocalInterfaceName("local_interface");
@@ -164,7 +161,7 @@ public class AsaConversionsTest {
   }
 
   @Test
-  public void testGetMatchingPskInvalidLocalIfaceKr() {
+  void testGetMatchingPskInvalidLocalIfaceKr() {
     IsakmpProfile isakmpProfile = new IsakmpProfile("Invalid_Iface_Local_Address");
     // Empty interfaceName value represents incorrect local-address value
     isakmpProfile.setLocalInterfaceName("local_interface");
@@ -185,7 +182,7 @@ public class AsaConversionsTest {
   }
 
   @Test
-  public void testGetMatchingPskValidKeyring() {
+  void testGetMatchingPskValidKeyring() {
     IsakmpProfile isakmpProfile = new IsakmpProfile("Valid_Keyring");
     // Empty interfaceName value represents incorrect local-address value
     isakmpProfile.setLocalInterfaceName("local_interface");
@@ -205,7 +202,7 @@ public class AsaConversionsTest {
   }
 
   @Test
-  public void testGetMatchingPskInvalidKeyring() {
+  void testGetMatchingPskInvalidKeyring() {
     IsakmpProfile isakmpProfile = new IsakmpProfile("Invalid_Keyring");
     // Empty interfaceName value represents incorrect local-address value
     isakmpProfile.setLocalInterfaceName("local_interface");
@@ -225,7 +222,7 @@ public class AsaConversionsTest {
   }
 
   @Test
-  public void testSanityCheckDistributeListFilterType() {
+  void testSanityCheckDistributeListFilterType() {
     AsaConfiguration oldConfig = new AsaConfiguration();
     oldConfig.setHostname("cisco_conf");
     oldConfig.setWarnings(new Warnings(false, true, false));
@@ -248,7 +245,7 @@ public class AsaConversionsTest {
   }
 
   @Test
-  public void testSanityCheckDistributeListPrefixList() {
+  void testSanityCheckDistributeListPrefixList() {
     AsaConfiguration oldConfig = new AsaConfiguration();
     oldConfig.setHostname("cisco_conf");
     oldConfig.setWarnings(new Warnings(false, true, false));
@@ -278,7 +275,7 @@ public class AsaConversionsTest {
   }
 
   @Test
-  public void testToOspfDeadIntervalExplicit() {
+  void testToOspfDeadIntervalExplicit() {
     AsaConfiguration c = basicAsaConfig();
     Interface iface = new Interface("FastEthernet0/0", c);
     iface.setOspfDeadInterval(7);
@@ -289,7 +286,7 @@ public class AsaConversionsTest {
   }
 
   @Test
-  public void testToOspfDeadIntervalFromHello() {
+  void testToOspfDeadIntervalFromHello() {
     AsaConfiguration c = basicAsaConfig();
     Interface iface = new Interface("FastEthernet0/0", c);
 
@@ -302,7 +299,7 @@ public class AsaConversionsTest {
   }
 
   @Test
-  public void testToOspfDeadIntervalFromType() {
+  void testToOspfDeadIntervalFromType() {
     AsaConfiguration c = basicAsaConfig();
     Interface iface = new Interface("FastEthernet0/0", c);
 
@@ -318,7 +315,7 @@ public class AsaConversionsTest {
   }
 
   @Test
-  public void testToOspfHelloIntervalExplicit() {
+  void testToOspfHelloIntervalExplicit() {
     AsaConfiguration c = basicAsaConfig();
     Interface iface = new Interface("FastEthernet0/0", c);
 
@@ -330,7 +327,7 @@ public class AsaConversionsTest {
   }
 
   @Test
-  public void testToOspfHelloIntervalFromType() {
+  void testToOspfHelloIntervalFromType() {
     AsaConfiguration c = basicAsaConfig();
     Interface iface = new Interface("FastEthernet0/0", c);
 
@@ -345,7 +342,7 @@ public class AsaConversionsTest {
   }
 
   @Test
-  public void testToOspfNetworkType() {
+  void testToOspfNetworkType() {
     assertThat(
         AsaConversions.toOspfNetworkType(null, new Warnings()),
         equalTo(org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST));
@@ -353,7 +350,7 @@ public class AsaConversionsTest {
 
   /** Check that vendorStructureId is set when extended ACL is converted to route filter list */
   @Test
-  public void testToRouterFilterList_extendedAccessList_vendorStructureId() {
+  void testToRouterFilterList_extendedAccessList_vendorStructureId() {
     ExtendedAccessList acl = new ExtendedAccessList("name");
     RouteFilterList rfl = toRouteFilterList(acl, "file");
     assertThat(
@@ -365,7 +362,7 @@ public class AsaConversionsTest {
 
   /** Check that vendorStructureId is set when standard ACL is converted to route filter list */
   @Test
-  public void testToRouterFilterList_standardAccessList_vendorStructureId() {
+  void testToRouterFilterList_standardAccessList_vendorStructureId() {
     StandardAccessList acl = new StandardAccessList("name");
     RouteFilterList rfl = toRouteFilterList(acl, "file");
     assertThat(
@@ -377,7 +374,7 @@ public class AsaConversionsTest {
 
   /** Check that vendorStructureId is set when prefix list is converted to route filter list */
   @Test
-  public void testToRouterFilterList_prefixList_vendorStructureId() {
+  void testToRouterFilterList_prefixList_vendorStructureId() {
     PrefixList plist = new PrefixList("name");
     RouteFilterList rfl = toRouteFilterList(plist, "file");
     assertThat(

@@ -1,23 +1,21 @@
 package org.batfish.datamodel.table;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.NoSuchElementException;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-public class RowBuilderTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class RowBuilderTest {
 
   @Test
-  public void testGetTypeReference() {
+  void testGetTypeReference() {
     String column = "col";
     List<String> stringList = ImmutableList.of("a", "b");
     Row row = Row.builder().put(column, stringList).build();
@@ -27,16 +25,15 @@ public class RowBuilderTest {
   }
 
   @Test
-  public void testGetTypeReferenceInvalid() {
+  void testGetTypeReferenceInvalid() {
     String column = "col";
     Row row = Row.builder().put(column, "text").build();
 
-    _thrown.expect(ClassCastException.class);
-    row.get(column, new TypeReference<Integer>() {});
+    assertThrows(ClassCastException.class, () -> row.get(column, new TypeReference<Integer>() {}));
   }
 
   @Test
-  public void putAllCorrect() {
+  void putAllCorrect() {
     Row row = Row.builder().put("col1", 20).put("col2", 21).put("col3", 24).build();
 
     // all columns should be copied over when we don't limit
@@ -51,17 +48,18 @@ public class RowBuilderTest {
   }
 
   @Test
-  public void putAllFail() {
+  void putAllFail() {
     Row row = Row.builder().put("col1", 20).build();
 
     // Specifying a non-existent column throws an exception
-    _thrown.expect(NoSuchElementException.class);
-    _thrown.expectMessage("is not present");
-    Row.builder().putAll(row, ImmutableSet.of("col2"));
+    Throwable exception =
+        assertThrows(
+            NoSuchElementException.class, () -> Row.builder().putAll(row, ImmutableSet.of("col2")));
+    assertThat(exception.getMessage(), containsString("is not present"));
   }
 
   @Test
-  public void rowOfCorrect() {
+  void rowOfCorrect() {
     assertThat(Row.builder().rowOf(), equalTo(Row.builder().build()));
     assertThat(Row.builder().rowOf("a", 5), equalTo(Row.builder().put("a", 5).build()));
     assertThat(
@@ -70,16 +68,17 @@ public class RowBuilderTest {
   }
 
   @Test
-  public void rowOfOddElements() {
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("expecting an even number of parameters, not 1");
-    Row.builder().rowOf("a");
+  void rowOfOddElements() {
+    Throwable exception =
+        assertThrows(IllegalArgumentException.class, () -> Row.builder().rowOf("a"));
+    assertThat(
+        exception.getMessage(), containsString("expecting an even number of parameters, not 1"));
   }
 
   @Test
-  public void rowOfArgumentsWrong() {
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("argument 2 must be a string, but is: 7");
-    Row.builder().rowOf("a", 5, 7, "b");
+  void rowOfArgumentsWrong() {
+    Throwable exception =
+        assertThrows(IllegalArgumentException.class, () -> Row.builder().rowOf("a", 5, 7, "b"));
+    assertThat(exception.getMessage(), containsString("argument 2 must be a string, but is: 7"));
   }
 }

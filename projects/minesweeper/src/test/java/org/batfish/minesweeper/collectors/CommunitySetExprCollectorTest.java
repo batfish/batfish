@@ -1,6 +1,6 @@
 package org.batfish.minesweeper.collectors;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -25,11 +25,11 @@ import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighLowExprs;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.minesweeper.utils.Tuple;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link CommunitySetExprCollector}. */
-public class CommunitySetExprCollectorTest {
+class CommunitySetExprCollectorTest {
   private static final String HOSTNAME = "hostname";
   private static final String COMM_LST_1 = "comm1";
   private static final String COMM_LST_2 = "comm2";
@@ -38,8 +38,8 @@ public class CommunitySetExprCollectorTest {
 
   private Configuration _config;
 
-  @Before
-  public void setup() throws IOException {
+  @BeforeEach
+  void setup() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder()
@@ -62,7 +62,7 @@ public class CommunitySetExprCollectorTest {
   }
 
   @Test
-  public void testVisitCommunityExprsSet() {
+  void testVisitCommunityExprsSet() {
     CommunityExprsSet ces =
         CommunityExprsSet.of(
             new StandardCommunityHighLowExprs(new LiteralInt(20), new LiteralInt(30)),
@@ -75,7 +75,7 @@ public class CommunitySetExprCollectorTest {
   }
 
   @Test
-  public void testVisitCommunitySetDifference() {
+  void testVisitCommunitySetDifference() {
     CommunitySetDifference csd =
         new CommunitySetDifference(
             new CommunitySetExprReference(COMM_LST_2),
@@ -88,7 +88,7 @@ public class CommunitySetExprCollectorTest {
   }
 
   @Test
-  public void testVisitCommunitySetExprReference() {
+  void testVisitCommunitySetExprReference() {
     Set<String> result =
         _collector.visitCommunitySetExprReference(
             new CommunitySetExprReference(COMM_LST_2), new Tuple<>(new HashSet<>(), _config));
@@ -97,7 +97,7 @@ public class CommunitySetExprCollectorTest {
   }
 
   @Test
-  public void testVisitCommunitySetReference() {
+  void testVisitCommunitySetReference() {
     Set<String> result =
         _collector.visitCommunitySetReference(
             new CommunitySetReference(COMM_LST_2), new Tuple<>(new HashSet<>(), _config));
@@ -106,7 +106,7 @@ public class CommunitySetExprCollectorTest {
   }
 
   @Test
-  public void testVisitCommunitySetUnion() {
+  void testVisitCommunitySetUnion() {
     CommunitySetUnion csu =
         CommunitySetUnion.of(
             new CommunitySetExprReference(COMM_LST_1), new CommunitySetExprReference(COMM_LST_2));
@@ -118,7 +118,7 @@ public class CommunitySetExprCollectorTest {
   }
 
   @Test
-  public void testVisitInputCommunities() {
+  void testVisitInputCommunities() {
 
     Set<String> result =
         _collector.visitInputCommunities(

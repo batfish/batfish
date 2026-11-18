@@ -2,8 +2,9 @@ package org.batfish.datamodel.bgp.community;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
@@ -11,16 +12,13 @@ import java.math.BigInteger;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link ExtendedCommunity} */
-public final class ExtendedCommunityTest {
-  @Rule public ExpectedException thrown = ExpectedException.none();
+final class ExtendedCommunityTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     ExtendedCommunity ec = ExtendedCommunity.of(0, 2L, 123L);
     new EqualsTester()
         .addEqualityGroup(ec, ExtendedCommunity.of(0, 2L, 123L))
@@ -42,7 +40,7 @@ public final class ExtendedCommunityTest {
   }
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     for (ExtendedCommunity ec :
         ImmutableList.of(
             ExtendedCommunity.of(1, 2L, 123L),
@@ -57,7 +55,7 @@ public final class ExtendedCommunityTest {
   }
 
   @Test
-  public void testParse() {
+  void testParse() {
     assertThat(ExtendedCommunity.parse("1:1:1"), equalTo(ExtendedCommunity.of(1, 1L, 1L)));
     assertThat(ExtendedCommunity.parse("1:65535:1"), equalTo(ExtendedCommunity.of(1, 65535L, 1L)));
     assertThat(ExtendedCommunity.parse("1:656L:1"), equalTo(ExtendedCommunity.of(1, 656L, 1L)));
@@ -87,7 +85,7 @@ public final class ExtendedCommunityTest {
   }
 
   @Test
-  public void testParseHighTypeOctet() {
+  void testParseHighTypeOctet() {
     // A bare numeric first field whose type octet has the high bit set must
     // parse as an opaque/unknown extended community rather than being rejected
     // by signed-byte arithmetic. Junos emits these via the generic
@@ -105,7 +103,7 @@ public final class ExtendedCommunityTest {
   }
 
   @Test
-  public void testOfHighTypeOctet() {
+  void testOfHighTypeOctet() {
     // of() must not reject a type octet >= 0x80 via signed-byte arithmetic.
     ExtendedCommunity ec = ExtendedCommunity.of(0xFDE8, 672277L, 36867L);
     assertThat(ec.getSubtype(), equalTo(0xE8));
@@ -114,14 +112,13 @@ public final class ExtendedCommunityTest {
   }
 
   @Test
-  public void testOfTypeOutOfRange() {
+  void testOfTypeOutOfRange() {
     // A combined type+subtype must fit in 2 bytes (0-0xFFFF).
-    thrown.expect(IllegalArgumentException.class);
-    ExtendedCommunity.of(0x10000, 1, 1);
+    assertThrows(IllegalArgumentException.class, () -> ExtendedCommunity.of(0x10000, 1, 1));
   }
 
   @Test
-  public void testOfUnknownTypeAccepted() {
+  void testOfUnknownTypeAccepted() {
     // Type octets we do not specifically recognize (e.g. 0x04) are modeled as
     // opaque values rather than rejected.
     ExtendedCommunity ec = ExtendedCommunity.of(4 << 8, 1, 1);
@@ -130,55 +127,47 @@ public final class ExtendedCommunityTest {
   }
 
   @Test
-  public void testOfWithInvalidTypeAdminCombo() {
-    thrown.expect(IllegalArgumentException.class);
-    ExtendedCommunity.of(0, 1 << 16, 1);
+  void testOfWithInvalidTypeAdminCombo() {
+    assertThrows(IllegalArgumentException.class, () -> ExtendedCommunity.of(0, 1 << 16, 1));
   }
 
   @Test
-  public void testParseTooFewParts() {
-    thrown.expect(IllegalArgumentException.class);
-    ExtendedCommunity.parse("1:1");
+  void testParseTooFewParts() {
+    assertThrows(IllegalArgumentException.class, () -> ExtendedCommunity.parse("1:1"));
   }
 
   @Test
-  public void testParseTooManyParts() {
-    thrown.expect(IllegalArgumentException.class);
-    ExtendedCommunity.parse("1:1:1:1");
+  void testParseTooManyParts() {
+    assertThrows(IllegalArgumentException.class, () -> ExtendedCommunity.parse("1:1:1:1"));
   }
 
   @Test
-  public void testParseNegativeType() {
-    thrown.expect(IllegalArgumentException.class);
-    ExtendedCommunity.parse("-1:1:1");
+  void testParseNegativeType() {
+    assertThrows(IllegalArgumentException.class, () -> ExtendedCommunity.parse("-1:1:1"));
   }
 
   @Test
-  public void testParseLargeType() {
-    thrown.expect(IllegalArgumentException.class);
-    ExtendedCommunity.parse("65536:1:1");
+  void testParseLargeType() {
+    assertThrows(IllegalArgumentException.class, () -> ExtendedCommunity.parse("65536:1:1"));
   }
 
   @Test
-  public void testParseGenericNegativeType() {
-    thrown.expect(IllegalArgumentException.class);
-    ExtendedCommunity.parse("0x-1:0x2:0x3");
+  void testParseGenericNegativeType() {
+    assertThrows(IllegalArgumentException.class, () -> ExtendedCommunity.parse("0x-1:0x2:0x3"));
   }
 
   @Test
-  public void testParseGenericNegativeSubtype() {
-    thrown.expect(IllegalArgumentException.class);
-    ExtendedCommunity.parse("0x3:0x-4:0x5");
+  void testParseGenericNegativeSubtype() {
+    assertThrows(IllegalArgumentException.class, () -> ExtendedCommunity.parse("0x3:0x-4:0x5"));
   }
 
   @Test
-  public void testParseGenericNegativeValue() {
-    thrown.expect(IllegalArgumentException.class);
-    ExtendedCommunity.parse("0x3:0x4:0x-5");
+  void testParseGenericNegativeValue() {
+    assertThrows(IllegalArgumentException.class, () -> ExtendedCommunity.parse("0x3:0x4:0x-5"));
   }
 
   @Test
-  public void testParseUnknownTypeAccepted() {
+  void testParseUnknownTypeAccepted() {
     // "1024" makes type octet 0x04, which we do not specifically recognize;
     // it is modeled as an opaque value rather than rejected.
     ExtendedCommunity ec = ExtendedCommunity.parse("1024:1:1");
@@ -186,57 +175,51 @@ public final class ExtendedCommunityTest {
   }
 
   @Test
-  public void testParseNegativeGlobalAdmin() {
-    thrown.expect(IllegalArgumentException.class);
-    ExtendedCommunity.parse("1:-1:1");
+  void testParseNegativeGlobalAdmin() {
+    assertThrows(IllegalArgumentException.class, () -> ExtendedCommunity.parse("1:-1:1"));
   }
 
   @Test
-  public void testParseLargeGlobalAdmin() {
-    thrown.expect(IllegalArgumentException.class);
-    ExtendedCommunity.parse("1:4294967296:1");
+  void testParseLargeGlobalAdmin() {
+    assertThrows(IllegalArgumentException.class, () -> ExtendedCommunity.parse("1:4294967296:1"));
   }
 
   @Test
-  public void testParseNegativeLocalAdmin() {
-    thrown.expect(IllegalArgumentException.class);
-    ExtendedCommunity.parse("1:1:-1");
+  void testParseNegativeLocalAdmin() {
+    assertThrows(IllegalArgumentException.class, () -> ExtendedCommunity.parse("1:1:-1"));
   }
 
   @Test
-  public void testParseLargeLocalAdmin() {
-    thrown.expect(IllegalArgumentException.class);
-    ExtendedCommunity.parse("1:1:4294967296");
+  void testParseLargeLocalAdmin() {
+    assertThrows(IllegalArgumentException.class, () -> ExtendedCommunity.parse("1:1:4294967296"));
   }
 
   @Test
-  public void testParseLargeGlobalAdminBecauseLsuffix() {
-    thrown.expect(IllegalArgumentException.class);
-    ExtendedCommunity.parse("origin:656L:65536");
+  void testParseLargeGlobalAdminBecauseLsuffix() {
+    assertThrows(
+        IllegalArgumentException.class, () -> ExtendedCommunity.parse("origin:656L:65536"));
   }
 
   @Test
-  public void testGetLAInapplicable() {
+  void testGetLAInapplicable() {
     ExtendedCommunity community = ExtendedCommunity.opaque(true, 0x00, 65559);
-    thrown.expect(UnsupportedOperationException.class);
-    community.getLocalAdministrator();
+    assertThrows(UnsupportedOperationException.class, () -> community.getLocalAdministrator());
   }
 
   @Test
-  public void testGetGAInapplicable() {
+  void testGetGAInapplicable() {
     ExtendedCommunity community = ExtendedCommunity.opaque(true, 0x00, 65559);
-    thrown.expect(UnsupportedOperationException.class);
-    community.getGlobalAdministrator();
+    assertThrows(UnsupportedOperationException.class, () -> community.getGlobalAdministrator());
   }
 
   @Test
-  public void testIsTransitive() {
+  void testIsTransitive() {
     assertTrue(ExtendedCommunity.parse("1:1:1").isTransitive());
     assertFalse(ExtendedCommunity.parse("16384:1:1").isTransitive());
   }
 
   @Test
-  public void testMatchString() {
+  void testMatchString() {
     ExtendedCommunity ec = ExtendedCommunity.parse("origin:65555L:1");
     assertThat(ec.matchString(), equalTo("65555:1"));
 
@@ -246,7 +229,7 @@ public final class ExtendedCommunityTest {
   }
 
   @Test
-  public void testToString() {
+  void testToString() {
     assertThat(ExtendedCommunity.parse("origin:65555:1").toString(), equalTo("515:65555L:1"));
     assertThat(ExtendedCommunity.parse("origin:1L:1").toString(), equalTo("515:1L:1"));
     assertThat(ExtendedCommunity.parse("origin:1:1").toString(), equalTo("3:1:1"));
@@ -259,7 +242,7 @@ public final class ExtendedCommunityTest {
   }
 
   @Test
-  public void testToBigInt() {
+  void testToBigInt() {
     assertThat(ExtendedCommunity.of(0, 0, 0).asBigInt(), equalTo(BigInteger.ZERO));
     assertThat(
         ExtendedCommunity.of((0x40 << 8) + 1, 65535, 4294967295L).asBigInt(),
@@ -278,7 +261,7 @@ public final class ExtendedCommunityTest {
   }
 
   @Test
-  public void testTargetCreation() {
+  void testTargetCreation() {
     assertThat(ExtendedCommunity.target(1, 65555), equalTo(ExtendedCommunity.of(0x02, 1, 65555)));
     assertThat(
         ExtendedCommunity.target(65555, 1),
@@ -288,7 +271,7 @@ public final class ExtendedCommunityTest {
   }
 
   @Test
-  public void testOpaqueCreation() {
+  void testOpaqueCreation() {
     ExtendedCommunity communityTransitive = ExtendedCommunity.opaque(true, 0x00, 65559);
     assertThat(communityTransitive.getValue(), equalTo(65559L));
     ExtendedCommunity communityIntransitive = ExtendedCommunity.opaque(false, 0x01, 2);
@@ -296,7 +279,7 @@ public final class ExtendedCommunityTest {
   }
 
   @Test
-  public void testIsRouteOrigin() {
+  void testIsRouteOrigin() {
     assertTrue(ExtendedCommunity.of(0x0003, 1, 1).isRouteOrigin());
     assertTrue(ExtendedCommunity.of(0x0103, 1, 1).isRouteOrigin());
     assertTrue(ExtendedCommunity.of(0x0203, 1, 1).isRouteOrigin());
@@ -305,7 +288,7 @@ public final class ExtendedCommunityTest {
   }
 
   @Test
-  public void testIsRouteTarget() {
+  void testIsRouteTarget() {
     assertTrue(ExtendedCommunity.target(1, 1).isRouteTarget());
     assertTrue(ExtendedCommunity.parse("514:65555L:1").isRouteTarget());
     assertTrue(ExtendedCommunity.of(0x0002, 1, 1).isRouteTarget());
@@ -317,7 +300,7 @@ public final class ExtendedCommunityTest {
   }
 
   @Test
-  public void testIsVpnDistinguisher() {
+  void testIsVpnDistinguisher() {
     assertTrue(ExtendedCommunity.of(0x0010, 1, 1).isVpnDistinguisher());
     assertTrue(ExtendedCommunity.of(0x0110, 1, 1).isVpnDistinguisher());
     assertFalse(ExtendedCommunity.of(0x0003, 1, 1).isVpnDistinguisher());
@@ -325,7 +308,7 @@ public final class ExtendedCommunityTest {
   }
 
   @Test
-  public void testIsOpaque() {
+  void testIsOpaque() {
     assertFalse(ExtendedCommunity.of(0x0010, 1, 1).isOpaque());
     assertFalse(ExtendedCommunity.of(0x0110, 1, 1).isOpaque());
     assertTrue(ExtendedCommunity.of(0x0300, 1, 1).isOpaque());
@@ -333,7 +316,7 @@ public final class ExtendedCommunityTest {
   }
 
   @Test
-  public void testGetGlobalAdmin() {
+  void testGetGlobalAdmin() {
     assertThat(ExtendedCommunity.of(1, 2, 3).getGlobalAdministrator(), equalTo(2L));
     assertThat(
         ExtendedCommunity.of(1, 42995L, 4294967295L).getGlobalAdministrator(), equalTo(42995L));
@@ -345,7 +328,7 @@ public final class ExtendedCommunityTest {
   }
 
   @Test
-  public void testGetLocalAdmin() {
+  void testGetLocalAdmin() {
     assertThat(ExtendedCommunity.of(1, 2, 3).getLocalAdministrator(), equalTo(3L));
     assertThat(
         ExtendedCommunity.of(1, 42995L, 4294967295L).getLocalAdministrator(), equalTo(4294967295L));
@@ -356,14 +339,14 @@ public final class ExtendedCommunityTest {
   }
 
   @Test
-  public void testGetSubType() {
+  void testGetSubType() {
     assertThat(ExtendedCommunity.of(0x0201, 2, 3).getSubtype(), equalTo(0x01));
     assertThat(ExtendedCommunity.opaque(true, 0x04, 3).getSubtype(), equalTo(0x04));
     assertThat(ExtendedCommunity.target(1, 3).getSubtype(), equalTo(0x02));
   }
 
   @Test
-  public void testWellKnownCommunities() {
+  void testWellKnownCommunities() {
     /*
      * The following byte arrays are copied directly out of RFC's level bit representation. Would not recommend using
      * this type of test otherwise.
@@ -380,7 +363,7 @@ public final class ExtendedCommunityTest {
   }
 
   @Test
-  public void testEncapsulationCreation() {
+  void testEncapsulationCreation() {
     ExtendedCommunity community = ExtendedCommunity.encapsulation(7);
     assertThat(community.getValue(), equalTo(7L));
     assertThat(community.getSubtype(), equalTo(0x0C));
@@ -389,13 +372,14 @@ public final class ExtendedCommunityTest {
   }
 
   @Test
-  public void testEncapsulationInvalidTunnelType() {
-    thrown.expect(IllegalArgumentException.class);
-    ExtendedCommunity.encapsulation(0x10000L); // Exceeds 16-bit limit
+  void testEncapsulationInvalidTunnelType() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> ExtendedCommunity.encapsulation(0x10000L)); // Exceeds 16-bit limit
   }
 
   @Test
-  public void testIsEncapsulation() {
+  void testIsEncapsulation() {
     assertTrue(ExtendedCommunity.encapsulation(7).isEncapsulation());
     assertTrue(ExtendedCommunity.of(0x030C, 0, 7).isEncapsulation());
     assertFalse(ExtendedCommunity.of(0x030D, 0, 7).isEncapsulation()); // Wrong subtype
@@ -405,7 +389,7 @@ public final class ExtendedCommunityTest {
   }
 
   @Test
-  public void testIsBandwidth() {
+  void testIsBandwidth() {
     assertTrue(ExtendedCommunity.bandwidth(false, 65535, 20000).isBandwidth());
     assertTrue(ExtendedCommunity.bandwidth(true, 65535, 20000).isBandwidth());
     assertTrue(ExtendedCommunity.of(0x4004, 65535, 20000).isBandwidth());

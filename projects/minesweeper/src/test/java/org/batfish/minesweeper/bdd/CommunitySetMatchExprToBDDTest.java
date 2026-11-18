@@ -3,8 +3,8 @@ package org.batfish.minesweeper.bdd;
 import static org.batfish.common.bdd.BDDMatchers.isOne;
 import static org.batfish.common.bdd.BDDMatchers.isZero;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -47,13 +47,11 @@ import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.batfish.minesweeper.ConfigAtomicPredicatesTestUtils;
 import org.batfish.minesweeper.bdd.TransferBDD.Context;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link org.batfish.minesweeper.bdd.CommunitySetMatchExprToBDD} */
-public class CommunitySetMatchExprToBDDTest {
+class CommunitySetMatchExprToBDDTest {
   private static final String HOSTNAME = "hostname";
   private static final String POLICY_NAME = "policy";
   private IBatfish _batfish;
@@ -62,10 +60,8 @@ public class CommunitySetMatchExprToBDDTest {
   private CommunitySetMatchExprToBDD.Arg _arg;
   private CommunitySetMatchExprToBDD _communitySetMatchExprToBDD;
 
-  @Rule public ExpectedException _expectedException = ExpectedException.none();
-
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder()
@@ -97,7 +93,7 @@ public class CommunitySetMatchExprToBDDTest {
   }
 
   @Test
-  public void testVisitCommunitySetAcl() {
+  void testVisitCommunitySetAcl() {
     CommunitySetAcl csacl =
         new CommunitySetAcl(
             ImmutableList.of(
@@ -118,7 +114,7 @@ public class CommunitySetMatchExprToBDDTest {
   }
 
   @Test
-  public void testVisitCommunitySetHasSize() {
+  void testVisitCommunitySetHasSize() {
     List<HasSize> treatFalse =
         ImmutableList.of(
             new HasSize(new IntComparison(IntComparator.LT, new LiteralInt(5))),
@@ -151,7 +147,7 @@ public class CommunitySetMatchExprToBDDTest {
   }
 
   @Test
-  public void testVisitCommunitySetMatchAll() {
+  void testVisitCommunitySetMatchAll() {
     CommunitySetMatchAll csma =
         new CommunitySetMatchAll(
             ImmutableList.of(
@@ -169,7 +165,7 @@ public class CommunitySetMatchExprToBDDTest {
   }
 
   @Test
-  public void testVisitCommunitySetMatchAny() {
+  void testVisitCommunitySetMatchAny() {
     CommunitySetMatchAny csma =
         new CommunitySetMatchAny(
             ImmutableList.of(
@@ -187,7 +183,7 @@ public class CommunitySetMatchExprToBDDTest {
   }
 
   @Test
-  public void testVisitCommunitySetMatchExprReference() {
+  void testVisitCommunitySetMatchExprReference() {
     String name = "name";
     _baseConfig.setCommunitySetMatchExprs(
         ImmutableMap.of(
@@ -203,17 +199,18 @@ public class CommunitySetMatchExprToBDDTest {
   }
 
   @Test
-  public void testVisitCommunitySetMatchRegex() {
+  void testVisitCommunitySetMatchRegex() {
     CommunitySetMatchRegex csmr =
         new CommunitySetMatchRegex(
             new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()),
             "^65000:123 65011:12[3]$");
-    _expectedException.expect(UnsupportedOperationException.class);
-    _communitySetMatchExprToBDD.visitCommunitySetMatchRegex(csmr, _arg);
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> _communitySetMatchExprToBDD.visitCommunitySetMatchRegex(csmr, _arg));
   }
 
   @Test
-  public void testVisitCommunityNot() {
+  void testVisitCommunityNot() {
     HasCommunity hc =
         new HasCommunity(new CommunityNot(new CommunityIs(StandardCommunity.parse("20:30"))));
 
@@ -237,7 +234,7 @@ public class CommunitySetMatchExprToBDDTest {
   }
 
   @Test
-  public void testVisitCommunitySetNot() {
+  void testVisitCommunitySetNot() {
     CommunitySetNot csn =
         new CommunitySetNot(new HasCommunity(new CommunityIs(StandardCommunity.parse("20:30"))));
 
@@ -249,7 +246,7 @@ public class CommunitySetMatchExprToBDDTest {
   }
 
   @Test
-  public void testVisitHasCommunity() {
+  void testVisitHasCommunity() {
     HasCommunity hc =
         new HasCommunity(
             new CommunityMatchAll(
@@ -265,7 +262,7 @@ public class CommunitySetMatchExprToBDDTest {
   }
 
   @Test
-  public void testVisitHasCommunity2() {
+  void testVisitHasCommunity2() {
     HasCommunity hc =
         new HasCommunity(
             new CommunityAcl(
@@ -283,10 +280,11 @@ public class CommunitySetMatchExprToBDDTest {
   }
 
   @Test
-  public void testVisitHasSize() {
+  void testVisitHasSize() {
     HasSize hs = new HasSize(new IntComparison(IntComparator.EQ, new LiteralInt(32)));
-    _expectedException.expect(UnsupportedOperationException.class);
-    _communitySetMatchExprToBDD.visitHasSize(hs, _arg);
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> _communitySetMatchExprToBDD.visitHasSize(hs, _arg));
   }
 
   private BDD cvarToBDD(CommunityVar cvar) {

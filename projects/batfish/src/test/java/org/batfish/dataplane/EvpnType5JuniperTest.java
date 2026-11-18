@@ -10,14 +10,15 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Table;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -37,19 +38,18 @@ import org.batfish.dataplane.ibdp.IncrementalDataPlane;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** End-to-end dataplane test for testing BGP EVPN Type 5 Route propagation and Traceroute. */
-public class EvpnType5JuniperTest {
+class EvpnType5JuniperTest {
 
   private static final String TESTRIGS_PREFIX = "org/batfish/dataplane/testrigs/";
   private static final String TESTRIG_NAME = "bgp-evpn-type5-route-test";
   private static final List<String> TESTRIG_NODE_NAMES =
       ImmutableList.of("edge1", "router1", "node2-1", "node1-1");
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private Batfish loadTestrigAndComputeDataPlane() throws IOException {
     Batfish batfish =
@@ -69,7 +69,7 @@ public class EvpnType5JuniperTest {
   }
 
   @Test
-  public void testEvpnType5RoutePropagation() throws IOException {
+  void testEvpnType5RoutePropagation() throws IOException {
     Batfish batfish = loadTestrigAndComputeDataPlane();
     NetworkSnapshot snapshot = batfish.getSnapshot();
 
@@ -101,12 +101,12 @@ public class EvpnType5JuniperTest {
       }
     }
     assertTrue(
-        String.format("Route %s should be in %s %s", targetPrefix, "node1-1", "TENANT-A"),
-        foundInNode1);
+        foundInNode1,
+        String.format("Route %s should be in %s %s", targetPrefix, "node1-1", "TENANT-A"));
   }
 
   @Test
-  public void testEvpnType5RoutePropagation_router1() throws IOException {
+  void testEvpnType5RoutePropagation_router1() throws IOException {
     Batfish batfish = loadTestrigAndComputeDataPlane();
     NetworkSnapshot snapshot = batfish.getSnapshot();
 
@@ -124,12 +124,12 @@ public class EvpnType5JuniperTest {
       }
     }
     assertTrue(
-        String.format("Route %s should be in %s %s", targetPrefix, "router1", "TENANT-A"),
-        foundInRouter1);
+        foundInRouter1,
+        String.format("Route %s should be in %s %s", targetPrefix, "router1", "TENANT-A"));
   }
 
   @Test
-  public void testTracerouteNode1ToEdge1() throws IOException {
+  void testTracerouteNode1ToEdge1() throws IOException {
     Batfish batfish = loadTestrigAndComputeDataPlane();
     NetworkSnapshot snapshot = batfish.getSnapshot();
 
@@ -158,7 +158,7 @@ public class EvpnType5JuniperTest {
   }
 
   @Test
-  public void testEvpnType5RouteOriginatorIp() throws IOException {
+  void testEvpnType5RouteOriginatorIp() throws IOException {
     Batfish batfish = loadTestrigAndComputeDataPlane();
     NetworkSnapshot snapshot = batfish.getSnapshot();
 
@@ -177,8 +177,8 @@ public class EvpnType5JuniperTest {
       }
     }
 
-    assertNotNull("Route should be present and be a BGP route", originatorIp);
-    assertNotEquals("Originator IP should not be 0.0.0.0", Ip.ZERO, originatorIp);
+    assertNotNull(originatorIp, "Route should be present and be a BGP route");
+    assertNotEquals(Ip.ZERO, originatorIp, "Originator IP should not be 0.0.0.0");
 
     // We expect the Originator ID to match router1's router ID (172.16.0.100).
     assertThat(originatorIp, org.hamcrest.Matchers.equalTo(Ip.parse("172.16.0.100")));

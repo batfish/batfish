@@ -3,12 +3,12 @@ package org.batfish.datamodel;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class IpProtocolTest {
+class IpProtocolTest {
 
   @Test
-  public void testFromString() {
+  void testFromString() {
     for (IpProtocol ipProtocol : IpProtocol.values()) {
       assertThat(IpProtocol.fromString(ipProtocol.name()), equalTo(ipProtocol));
     }

@@ -26,21 +26,21 @@ import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link Configuration}. */
-public final class ConfigurationTest {
+final class ConfigurationTest {
 
   private NetworkFactory _factory;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _factory = new NetworkFactory();
   }
 
   @Test
-  public void testComputeRoutingPolicySources() {
+  void testComputeRoutingPolicySources() {
     String bgpExportPolicyName = "bgpExportPolicy";
     String bgpImportPolicyName = "bgpImportPolicy";
     String bgpMissingExportPolicyName = "bgpMissingExportPolicy";
@@ -146,7 +146,7 @@ public final class ConfigurationTest {
   }
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     // TODO: other properties
     Map<String, CommunityMatchExpr> communityMatchExprs =
         ImmutableMap.of("cme", AllStandardCommunities.instance());
@@ -171,7 +171,7 @@ public final class ConfigurationTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     // TODO: other properties
     Map<String, CommunityMatchExpr> communityMatchExprs =
         ImmutableMap.of("cme", AllStandardCommunities.instance());

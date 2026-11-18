@@ -11,6 +11,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 
+import java.io.File;
 import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
@@ -26,15 +27,14 @@ import org.batfish.vendor.cool_nos.representation.NextHopDiscard;
 import org.batfish.vendor.cool_nos.representation.NextHopGateway;
 import org.batfish.vendor.cool_nos.representation.NextHopInterface;
 import org.batfish.vendor.cool_nos.representation.StaticRoute;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests of Cool NOS example grammar */
-public final class CoolNosGrammarTest {
+final class CoolNosGrammarTest {
 
   @Test
-  public void testHostnameExtraction() {
+  void testHostnameExtraction() {
     String hostname = "cool.nos.host-name";
     // vc for vendor configuration
     CoolNosConfiguration vc = parseVendorConfig(hostname);
@@ -42,7 +42,7 @@ public final class CoolNosGrammarTest {
   }
 
   @Test
-  public void testHostnameWarnings() {
+  void testHostnameWarnings() {
     String hostname = "cool.nos.host-name";
     CoolNosConfiguration vc = parseVendorConfig(hostname);
     assertThat(
@@ -63,7 +63,7 @@ public final class CoolNosGrammarTest {
   }
 
   @Test
-  public void testStaticRouteExtraction() {
+  void testStaticRouteExtraction() {
     String hostname = "cool-nos-static-routes";
     CoolNosConfiguration vc = parseVendorConfig(hostname);
     assertThat(
@@ -95,7 +95,7 @@ public final class CoolNosGrammarTest {
   }
 
   @Test
-  public void testStaticRouteWarnings() {
+  void testStaticRouteWarnings() {
     String hostname = "cool-nos-static-routes";
     CoolNosConfiguration vc = parseVendorConfig(hostname);
     assertThat(
@@ -108,14 +108,14 @@ public final class CoolNosGrammarTest {
   }
 
   @Test
-  public void testLogSyslog() {
+  void testLogSyslog() {
     String hostname = "cool.nos.null-rule";
     parseVendorConfig(hostname);
   }
 
   // TODO: helpful conversion tests without having to alter VendorConfigurationFormatDetector
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private @Nonnull CoolNosConfiguration parseVendorConfig(String hostname) {
     String src = readResource(TESTCONFIGS_PREFIX + hostname, UTF_8);

@@ -13,12 +13,12 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link CommunityVar} */
-public class CommunityVarTest {
+class CommunityVarTest {
   @Test
-  public void testToAutomaton() {
+  void testToAutomaton() {
 
     // community literals
     CommunityVar cv0 = CommunityVar.from(StandardCommunity.of(20, 30));
@@ -56,7 +56,7 @@ public class CommunityVarTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     CommunityVar cv = CommunityVar.from(StandardCommunity.of(1, 1));
     new EqualsTester()
         .addEqualityGroup(cv, cv, CommunityVar.from(StandardCommunity.of(1, 1)))
@@ -68,7 +68,7 @@ public class CommunityVarTest {
   }
 
   @Test
-  public void testCompare() {
+  void testCompare() {
     List<CommunityVar> ordered =
         ImmutableList.of(CommunityVar.from("1:1"), CommunityVar.from("1:2"));
 

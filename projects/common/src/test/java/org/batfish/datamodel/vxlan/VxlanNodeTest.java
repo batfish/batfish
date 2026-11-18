@@ -2,36 +2,36 @@ package org.batfish.datamodel.vxlan;
 
 import static org.batfish.datamodel.vxlan.VniLayer.LAYER_2;
 import static org.batfish.datamodel.vxlan.VniLayer.LAYER_3;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.testing.EqualsTester;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-public final class VxlanNodeTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+final class VxlanNodeTest {
 
   @Test
-  public void testBuilderMissingHostname() {
-    _thrown.expect(IllegalArgumentException.class);
-    VxlanNode.builder().setVni(1).setVniLayer(LAYER_2).build();
+  void testBuilderMissingHostname() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> VxlanNode.builder().setVni(1).setVniLayer(LAYER_2).build());
   }
 
   @Test
-  public void testBuilderMissingVni() {
-    _thrown.expect(IllegalArgumentException.class);
-    VxlanNode.builder().setHostname("h").setVniLayer(LAYER_2).build();
+  void testBuilderMissingVni() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> VxlanNode.builder().setHostname("h").setVniLayer(LAYER_2).build());
   }
 
   @Test
-  public void testBuilderMissingVniLayer() {
-    _thrown.expect(IllegalArgumentException.class);
-    VxlanNode.builder().setHostname("h").setVni(1).build();
+  void testBuilderMissingVniLayer() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> VxlanNode.builder().setHostname("h").setVni(1).build());
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     VxlanNode.Builder builder = VxlanNode.builder().setHostname("h").setVni(1).setVniLayer(LAYER_2);
     VxlanNode n = builder.build();
 

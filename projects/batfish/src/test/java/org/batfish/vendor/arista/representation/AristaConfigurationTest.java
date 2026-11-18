@@ -22,12 +22,12 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.vendor.VendorStructureId;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class AristaConfigurationTest {
+class AristaConfigurationTest {
 
   @Test
-  public void testToStatement_traceable() {
+  void testToStatement_traceable() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
         nf.configurationBuilder()

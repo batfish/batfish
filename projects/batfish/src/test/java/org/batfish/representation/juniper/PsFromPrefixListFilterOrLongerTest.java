@@ -14,12 +14,12 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class PsFromPrefixListFilterOrLongerTest {
+class PsFromPrefixListFilterOrLongerTest {
 
   @Test
-  public void toBooleanExpr() {
+  void toBooleanExpr() {
     // Set up
     PrefixList pl = new PrefixList("pl");
     pl.getPrefixes().add(Prefix.parse("1.2.3.4/32"));

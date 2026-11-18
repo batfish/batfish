@@ -9,8 +9,8 @@ import static org.batfish.representation.cumulus_concatenated.InterfaceConverter
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableSet;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -20,10 +20,10 @@ import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.Prefix;
 import org.batfish.representation.frr.StaticRoute;
 import org.batfish.representation.frr.Vxlan;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for Cumulus {@link CumulusInterfacesConfiguration} {@link InterfaceConverter}. */
-public class InterfaceConverterTest {
+class InterfaceConverterTest {
   private static final ConcreteInterfaceAddress ADDR1 =
       ConcreteInterfaceAddress.parse("1.2.3.4/24");
   private static final ConcreteInterfaceAddress ADDR2 =
@@ -70,14 +70,14 @@ public class InterfaceConverterTest {
   }
 
   @Test
-  public void testIsVlan() {
+  void testIsVlan() {
     assertTrue(isVlan(new InterfacesInterface("vlan123")));
     assertFalse(isVlan(new InterfacesInterface("vni123")));
     assertFalse(isVlan(new InterfacesInterface(BRIDGE_NAME)));
   }
 
   @Test
-  public void testIsInterface() {
+  void testIsInterface() {
     assertTrue(isInterface(new InterfacesInterface("swp1")));
     assertFalse(isInterface(new InterfacesInterface("vlan123")));
 
@@ -97,27 +97,27 @@ public class InterfaceConverterTest {
   }
 
   @Test
-  public void testGetEncapsulationVlan() {
+  void testGetEncapsulationVlan() {
     assertThat(getEncapsulationVlan(new InterfacesInterface("swp1")), nullValue());
     assertThat(getEncapsulationVlan(new InterfacesInterface("swp1.1")), equalTo(1));
     assertThat(getEncapsulationVlan(new InterfacesInterface("peerlink.4094")), equalTo(4094));
   }
 
   @Test
-  public void testGetSuperInterfaceName_physicalSubInterface() {
+  void testGetSuperInterfaceName_physicalSubInterface() {
     assertThat(getSuperInterfaceName("swp1.0"), equalTo("swp1"));
     assertThat(getSuperInterfaceName("swp1s5.0"), equalTo("swp1s5"));
     assertThat(getSuperInterfaceName("eth0.0"), equalTo("eth0"));
   }
 
   @Test
-  public void testGetSuperInterface_none() {
+  void testGetSuperInterface_none() {
     // could be a bond slave, but isn't in bondSlaveParents map
     assertThat(getSuperInterfaceName("swp1"), nullValue());
   }
 
   @Test
-  public void testConvertVxlan() {
+  void testConvertVxlan() {
     Vxlan vxlan = convertVxlan(VXLAN_IFACE);
     assertThat(vxlan.getName(), equalTo(VXLAN_IFACE.getName()));
     assertThat(vxlan.getId(), equalTo(VXLAN_IFACE.getVxlanId()));

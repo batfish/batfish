@@ -40,11 +40,11 @@ import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierFactories;
 import org.batfish.specifier.SpecifierFactories.Version;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** End-to-end tests of {@link SpecifiersAnswerer}. */
-public class SpecifiersAnswererTest {
+class SpecifiersAnswererTest {
 
   Configuration _c1;
   Configuration _c2;
@@ -55,8 +55,8 @@ public class SpecifiersAnswererTest {
   SpecifierContext _context;
 
   /** Set up a network with two nodes, each with one interface and one filter */
-  @Before
-  public void initNetwork() {
+  @BeforeEach
+  void initNetwork() {
     NetworkFactory nf = new NetworkFactory();
     _c1 =
         nf.configurationBuilder()
@@ -107,7 +107,7 @@ public class SpecifiersAnswererTest {
   }
 
   @Test
-  public void resolveFilterTest() {
+  void resolveFilterTest() {
     SpecifiersQuestion question = new SpecifiersQuestion(QueryType.FILTER);
     question.setFilterSpecifierInput(_filter1.getName());
 
@@ -126,7 +126,7 @@ public class SpecifiersAnswererTest {
   }
 
   @Test
-  public void resolveInterfaceTest() {
+  void resolveInterfaceTest() {
     SpecifiersQuestion question = new SpecifiersQuestion(QueryType.INTERFACE);
     question.setInterfaceSpecifierInput(_iface1.getName());
 
@@ -145,7 +145,7 @@ public class SpecifiersAnswererTest {
   }
 
   @Test
-  public void resolveIpSpaceTest() {
+  void resolveIpSpaceTest() {
     String prefix = "3.3.3.3/24";
 
     SpecifiersQuestion questionWithIp = new SpecifiersQuestion(QueryType.LOCATION);
@@ -167,7 +167,7 @@ public class SpecifiersAnswererTest {
   }
 
   @Test
-  public void resolveIpSpaceOfLocationTest() {
+  void resolveIpSpaceOfLocationTest() {
     SpecifiersQuestion questionWithLocation =
         new SpecifiersQuestion(QueryType.IP_SPACE_OF_LOCATION);
     questionWithLocation.setLocationSpecifierInput(_c1.getHostname());
@@ -186,7 +186,7 @@ public class SpecifiersAnswererTest {
   }
 
   @Test
-  public void resolveIpSpaceOfLocationTestDefault() {
+  void resolveIpSpaceOfLocationTestDefault() {
     SpecifiersQuestion question = new SpecifiersQuestion(QueryType.IP_SPACE);
 
     assertThat(
@@ -208,7 +208,7 @@ public class SpecifiersAnswererTest {
   }
 
   @Test
-  public void resolveLocationTest() {
+  void resolveLocationTest() {
     SpecifiersQuestion question = new SpecifiersQuestion(QueryType.LOCATION);
     question.setLocationSpecifierInput(_c1.getHostname());
 
@@ -223,7 +223,7 @@ public class SpecifiersAnswererTest {
   }
 
   @Test
-  public void resolveNodeTest() {
+  void resolveNodeTest() {
     SpecifiersQuestion question = new SpecifiersQuestion(QueryType.NODE);
     question.setNodeSpecifierInput(_c1.getHostname());
 

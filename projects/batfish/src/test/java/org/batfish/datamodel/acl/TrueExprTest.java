@@ -6,13 +6,13 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.TraceElement;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link TrueExpr} */
-public class TrueExprTest {
+class TrueExprTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(TrueExpr.INSTANCE, new TrueExpr(null))
         .addEqualityGroup(new Object())
@@ -21,7 +21,7 @@ public class TrueExprTest {
   }
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     assertThat(
         TrueExpr.INSTANCE,
         equalTo(BatfishObjectMapper.clone(TrueExpr.INSTANCE, AclLineMatchExpr.class)));

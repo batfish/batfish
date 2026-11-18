@@ -1,19 +1,18 @@
 package org.batfish.representation.juniper;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link CompositeFirewallFilter}. */
-public class CompositeFirewallFilterTest {
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class CompositeFirewallFilterTest {
 
   @Test
-  public void testGetters() {
+  void testGetters() {
     ConcreteFirewallFilter foo = new ConcreteFirewallFilter("foo", Family.INET);
     foo.setUsedForFBF(true);
     ConcreteFirewallFilter bar = new ConcreteFirewallFilter("bar", Family.INET);
@@ -44,12 +43,20 @@ public class CompositeFirewallFilterTest {
   }
 
   @Test
-  public void testVerifiesFamily() {
+  void testVerifiesFamily() {
     ConcreteFirewallFilter v4 = new ConcreteFirewallFilter("v4", Family.INET);
     ConcreteFirewallFilter v6 = new ConcreteFirewallFilter("v6", Family.INET6);
 
-    _thrown.expectMessage(
-        "All member lists in a composite firewall-filter must have the same family");
-    new CompositeFirewallFilter("bad", ImmutableList.of(v4, v6));
+    Throwable exception =
+        assertThrows(
+            Exception.class,
+            () -> {
+              new CompositeFirewallFilter("bad", ImmutableList.of(v4, v6));
+            });
+
+    assertThat(
+        exception.getMessage(),
+        containsString(
+            "All member lists in a composite firewall-filter must have the same family"));
   }
 }

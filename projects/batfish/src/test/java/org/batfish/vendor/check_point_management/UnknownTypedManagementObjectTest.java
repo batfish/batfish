@@ -2,19 +2,19 @@ package org.batfish.vendor.check_point_management;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link AddressRange}. */
-public final class UnknownTypedManagementObjectTest {
+final class UnknownTypedManagementObjectTest {
 
   @Test
-  public void testJacksonDeserialization() throws JsonProcessingException {
+  void testJacksonDeserialization() throws JsonProcessingException {
     String input =
         "{"
             + "\"GARBAGE\":0,"
@@ -31,14 +31,14 @@ public final class UnknownTypedManagementObjectTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     UnknownTypedManagementObject obj =
         new UnknownTypedManagementObject("foo", Uid.of("0"), "some type that isn't handled yet");
     assertEquals(obj, SerializationUtils.clone(obj));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     UnknownTypedManagementObject obj = new UnknownTypedManagementObject("foo", Uid.of("1"), "type");
     new EqualsTester()
         .addEqualityGroup(obj, new UnknownTypedManagementObject("foo", Uid.of("1"), "type"))

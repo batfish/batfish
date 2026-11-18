@@ -2,12 +2,12 @@ package org.batfish.datamodel.answers;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.testing.EqualsTester;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class GetAnalysisAnswerMetricsAnswerTest {
+final class GetAnalysisAnswerMetricsAnswerTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     GetAnalysisAnswerMetricsAnswer group1Elem1 =
         new GetAnalysisAnswerMetricsAnswer(
             ImmutableMap.of(

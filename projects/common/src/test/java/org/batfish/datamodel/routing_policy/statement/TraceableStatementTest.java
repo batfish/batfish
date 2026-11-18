@@ -17,12 +17,12 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.trace.TraceTree;
 import org.batfish.datamodel.trace.Tracer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class TraceableStatementTest {
+class TraceableStatementTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new TraceableStatement(TraceElement.of("text"), ImmutableList.of()),
@@ -35,14 +35,14 @@ public class TraceableStatementTest {
 
   /* Trivial test: don't barf if there is not tracer in the environment */
   @Test
-  public void testExecute_noTracer() {
+  void testExecute_noTracer() {
     Configuration c = Configuration.builder().setHostname("host").build();
     Environment environment = Environment.builder(c).build();
     EMPTY_STATEMENT.execute(environment);
   }
 
   @Test
-  public void testExecute() {
+  void testExecute() {
     // no inner statements
     assertThat(executeHelper(EMPTY_STATEMENT), contains(isTraceTree("empty")));
 
@@ -71,7 +71,7 @@ public class TraceableStatementTest {
   }
 
   @Test
-  public void testSimplify() {
+  void testSimplify() {
     Statement simplifiable =
         new If(
             BooleanExprs.TRUE,

@@ -9,11 +9,11 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.flow.FilterStep.FilterStepDetail;
 import org.batfish.datamodel.flow.FilterStep.FilterType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class FilterStepTest {
+class FilterStepTest {
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     FilterStep step =
         new FilterStep(
             new FilterStepDetail(
@@ -35,7 +35,7 @@ public class FilterStepTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new Object())
         .addEqualityGroup(

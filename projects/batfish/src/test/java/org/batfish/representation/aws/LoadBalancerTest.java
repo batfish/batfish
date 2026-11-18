@@ -39,8 +39,8 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
@@ -95,9 +95,9 @@ import org.batfish.representation.aws.LoadBalancerListener.Listener;
 import org.batfish.representation.aws.LoadBalancerTargetHealth.HealthState;
 import org.batfish.representation.aws.LoadBalancerTargetHealth.TargetHealth;
 import org.batfish.representation.aws.LoadBalancerTargetHealth.TargetHealthDescription;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class LoadBalancerTest {
+class LoadBalancerTest {
 
   /** Default Ip to use in tests for the load balancer */
   private static final Ip _loadBalancerIp = Ip.parse("10.10.10.10");
@@ -134,7 +134,7 @@ public class LoadBalancerTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     LoadBalancer lb =
         new LoadBalancer(
             "arn",
@@ -215,7 +215,7 @@ public class LoadBalancerTest {
   }
 
   @Test
-  public void testDeserialization() throws IOException {
+  void testDeserialization() throws IOException {
     String text = readResource("org/batfish/representation/aws/LoadBalancerTest.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
@@ -252,7 +252,7 @@ public class LoadBalancerTest {
    * is tested in other tests
    */
   @Test
-  public void testToConfigurationNodes() {
+  void testToConfigurationNodes() {
     List<Configuration> cfgNodes =
         _loadBalancer.toConfigurationNodes(
             new ConvertedConfiguration(), Region.builder("r1").build(), new Warnings());
@@ -260,7 +260,7 @@ public class LoadBalancerTest {
   }
 
   @Test
-  public void testToConfigurationNodes_skipApplicationLb() {
+  void testToConfigurationNodes_skipApplicationLb() {
     List<Configuration> cfgNodes =
         new LoadBalancer(
                 "arn",
@@ -279,7 +279,7 @@ public class LoadBalancerTest {
 
   /** Tests the basics of the configuration object */
   @Test
-  public void testToConfigurationNode() {
+  void testToConfigurationNode() {
     AvailabilityZone availabilityZone = _loadBalancer.getAvailabilityZones().get(0);
     Prefix subnetPrefix = Prefix.create(_loadBalancerIp, 24);
     Ip publicIp = Ip.parse("1.1.1.1");
@@ -354,7 +354,7 @@ public class LoadBalancerTest {
   }
 
   @Test
-  public void testInstallTransformation() {
+  void testInstallTransformation() {
     Interface viIface =
         TestInterface.builder()
             .setName("interface")
@@ -417,7 +417,7 @@ public class LoadBalancerTest {
   }
 
   @Test
-  public void testInstallTransformation_noListener() {
+  void testInstallTransformation_noListener() {
     Interface viIface = TestInterface.builder().setName("interface").build();
     Region region = Region.builder("r1").build();
     _loadBalancer.installTransformations(
@@ -432,7 +432,7 @@ public class LoadBalancerTest {
 
   /** Test that we skip over bad actions and create the right transformation for the good one */
   @Test
-  public void testComputeListenerTransformation() {
+  void testComputeListenerTransformation() {
     DefaultAction actionBad = new DefaultAction(1, "tgArnBad", ActionType.AUTHENTICATE_OIDC);
     TargetGroup targetGroupBad =
         new TargetGroup(
@@ -492,7 +492,7 @@ public class LoadBalancerTest {
 
   /** Tests that we return null when no good action is possible */
   @Test
-  public void testComputeListenerTransformation_nullReturn() {
+  void testComputeListenerTransformation_nullReturn() {
     DefaultAction actionBad = new DefaultAction(1, "tgArnBad", ActionType.FORWARD);
     TargetGroup targetGroupBad =
         new TargetGroup(
@@ -520,7 +520,7 @@ public class LoadBalancerTest {
   }
 
   @Test
-  public void testComputeTargetGroupTransformationStep() {
+  void testComputeTargetGroupTransformationStep() {
     TargetHealthDescription unhealthyTarget =
         new TargetHealthDescription(
             new LoadBalancerTarget("targetZone", "6.6.6.6", 80),
@@ -573,7 +573,7 @@ public class LoadBalancerTest {
 
   /** Test that we return null if no target in enabled availability zones found */
   @Test
-  public void testComputeTargetGroupTransformationStep_noEnabledTarget() {
+  void testComputeTargetGroupTransformationStep_noEnabledTarget() {
     TargetHealthDescription target1 =
         new TargetHealthDescription(
             new LoadBalancerTarget("targetZone", "1.1.1.1", 80),
@@ -603,7 +603,7 @@ public class LoadBalancerTest {
 
   /** If all enabled targets are unhealthy, send traffic to all */
   @Test
-  public void testComputeTargetGroupTransformationStep_allUnhealthyTargets() {
+  void testComputeTargetGroupTransformationStep_allUnhealthyTargets() {
     TargetHealthDescription unhealthyTarget1 =
         new TargetHealthDescription(
             new LoadBalancerTarget("targetZone", "1.1.1.1", 80),
@@ -649,7 +649,7 @@ public class LoadBalancerTest {
   }
 
   @Test
-  public void testGetActiveTargets() {
+  void testGetActiveTargets() {
     TargetHealthDescription unhealthyTarget =
         new TargetHealthDescription(
             new LoadBalancerTarget("zone1", "6.6.6.6", 80),
@@ -731,7 +731,7 @@ public class LoadBalancerTest {
   }
 
   @Test
-  public void testComputeTargetTransformationStep_instanceTarget() {
+  void testComputeTargetTransformationStep_instanceTarget() {
     Ip targetIp = Ip.parse("1.1.1.1");
     Ip loadBalancerIp = Ip.parse("10.10.10.10");
     String instanceId = "instance";
@@ -759,7 +759,7 @@ public class LoadBalancerTest {
   }
 
   @Test
-  public void testComputeTargetTransformationStep_ipTarget() {
+  void testComputeTargetTransformationStep_ipTarget() {
     Ip targetIp = Ip.parse("1.1.1.1");
     Ip loadBalancerIp = Ip.parse("10.10.10.10");
     LoadBalancerTarget target = new LoadBalancerTarget("zone", targetIp.toString(), 80);
@@ -781,7 +781,7 @@ public class LoadBalancerTest {
   }
 
   @Test
-  public void testIsTargetInValidAvailabilityZone_instanceTarget() {
+  void testIsTargetInValidAvailabilityZone_instanceTarget() {
     Subnet subnet = getTestSubnet(Prefix.parse("1.1.1.1/32"), "subnet", "vpc", "targetZone");
     Instance instance =
         Instance.builder().setInstanceId("instance").setSubnetId(subnet.getId()).build();
@@ -810,7 +810,7 @@ public class LoadBalancerTest {
   }
 
   @Test
-  public void testIsTargetInValidAvailabilityZone_ipTarget() {
+  void testIsTargetInValidAvailabilityZone_ipTarget() {
     TargetGroup targetGroup =
         new TargetGroup(
             "tgArg", ImmutableList.of(), Protocol.TCP, 80, "tgName", TargetGroup.Type.IP);
@@ -849,7 +849,7 @@ public class LoadBalancerTest {
   }
 
   @Test
-  public void testChainListenerTransformations() {
+  void testChainListenerTransformations() {
     assertThat(chainListenerTransformations(ImmutableList.of()), equalTo(FINAL_TRANSFORMATION));
 
     AclLineMatchExpr matchExpr =
@@ -865,7 +865,7 @@ public class LoadBalancerTest {
   }
 
   @Test
-  public void testFindMyInterface() {
+  void testFindMyInterface() {
     // right description and subnet
     NetworkInterface networkInterface1 =
         new NetworkInterface(
@@ -911,7 +911,7 @@ public class LoadBalancerTest {
   }
 
   @Test
-  public void testComputeListenerFilter() {
+  void testComputeListenerFilter() {
     DefaultAction action = new DefaultAction(1, "tgArn", ActionType.FORWARD);
     List<Listener> listeners =
         ImmutableList.of(new Listener("listener1Arn", ImmutableList.of(action), Protocol.TCP, 80));
@@ -972,7 +972,7 @@ public class LoadBalancerTest {
   }
 
   @Test
-  public void testComputeNotForwardedFilter() {
+  void testComputeNotForwardedFilter() {
     Ip loadBalancerIp = Ip.parse("10.10.10.10");
     IpAccessList ipAccessList =
         computeNotForwardedFilter(
@@ -1010,7 +1010,7 @@ public class LoadBalancerTest {
   }
 
   @Test
-  public void testInstanceTargetStaticRoutes_noInstanceTargets() {
+  void testInstanceTargetStaticRoutes_noInstanceTargets() {
     // Load balancers with no instance targets should not have any static routes
     List<Configuration> cfgNodes =
         _loadBalancer.toConfigurationNodes(
@@ -1019,7 +1019,7 @@ public class LoadBalancerTest {
   }
 
   @Test
-  public void testInstanceTargetStaticRoutes() {
+  void testInstanceTargetStaticRoutes() {
     // Load balancers with instance targets should have static routes to each instance target via
     // their subnet
     Ip instanceIp = Ip.parse("20.20.20.20");
@@ -1062,7 +1062,7 @@ public class LoadBalancerTest {
   }
 
   @Test
-  public void testGetEnabledTargetZones() {
+  void testGetEnabledTargetZones() {
     AvailabilityZone myAz = new AvailabilityZone("s", "az1");
     AvailabilityZone otherAz = new AvailabilityZone("s", "az2");
     List<AvailabilityZone> allAzs = ImmutableList.of(myAz, otherAz);

@@ -3,11 +3,11 @@ package org.batfish.vendor.cisco_nxos.representation;
 import com.google.common.testing.EqualsTester;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class StaticRouteTest {
+class StaticRouteTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     StaticRoute.Builder builder = StaticRoute.builder().setPrefix(Prefix.parse("10.0.0.0/8"));
     new EqualsTester()
         .addEqualityGroup(builder.setDiscard(true).build(), builder.build())
@@ -22,7 +22,7 @@ public class StaticRouteTest {
   }
 
   @Test
-  public void testEqualsStaticRouteKey() {
+  void testEqualsStaticRouteKey() {
     Prefix prefix = Prefix.strict("1.1.1.0/24");
     Ip nhip = Ip.parse("2.2.2.2");
     new EqualsTester()

@@ -6,19 +6,19 @@ import static org.hamcrest.Matchers.empty;
 
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link RibResolutionTrie} */
-public final class RibResolutionTrieTest {
+final class RibResolutionTrieTest {
 
   @Test
-  public void testGetAffectedNextHopIpsEmpty() {
+  void testGetAffectedNextHopIpsEmpty() {
     RibResolutionTrie trie = new RibResolutionTrie();
     assertThat(trie.getAffectedNextHopIps(Prefix.ZERO), empty());
   }
 
   @Test
-  public void testGetAffectedNextHopIpsUnaffectedMoreSpecific() {
+  void testGetAffectedNextHopIpsUnaffectedMoreSpecific() {
     {
       RibResolutionTrie trie = new RibResolutionTrie();
       trie.addNextHopIp(Ip.parse("10.0.0.1"));
@@ -34,7 +34,7 @@ public final class RibResolutionTrieTest {
   }
 
   @Test
-  public void testGetAffectedNextHopIpsAffectedNotMoreSpecific() {
+  void testGetAffectedNextHopIpsAffectedNotMoreSpecific() {
     {
       RibResolutionTrie trie = new RibResolutionTrie();
       Ip nhip = Ip.parse("10.0.0.1");

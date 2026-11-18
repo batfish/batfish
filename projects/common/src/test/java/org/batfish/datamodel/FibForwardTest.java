@@ -1,16 +1,16 @@
 package org.batfish.datamodel;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link FibForward}. */
-public final class FibForwardTest {
+final class FibForwardTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     FibForward fibForward = FibForward.of(Ip.parse("1.1.1.1"), "eth0");
 
     new EqualsTester()
@@ -22,7 +22,7 @@ public final class FibForwardTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     FibForward fibForward = FibForward.of(Ip.parse("1.1.1.1"), "eth0");
 
     assertEquals(fibForward, SerializationUtils.clone(fibForward));

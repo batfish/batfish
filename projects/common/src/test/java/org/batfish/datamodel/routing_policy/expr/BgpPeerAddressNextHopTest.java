@@ -1,8 +1,10 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.sameInstance;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -14,13 +16,10 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link BgpPeerAddressNextHop} */
-public class BgpPeerAddressNextHopTest {
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class BgpPeerAddressNextHopTest {
 
   private static final BgpPeerAddressNextHop INSTANCE = BgpPeerAddressNextHop.getInstance();
   private static final Configuration C =
@@ -30,7 +29,7 @@ public class BgpPeerAddressNextHopTest {
           .build();
 
   @Test
-  public void testEvaluate() {
+  void testEvaluate() {
     BgpSessionProperties sessionProps =
         BgpSessionProperties.builder()
             .setRemoteAs(11111L)
@@ -47,13 +46,14 @@ public class BgpPeerAddressNextHopTest {
   }
 
   @Test
-  public void testEvaluate_noBgpSessionProperties() {
-    _thrown.expectMessage("Expected BGP session properties");
-    INSTANCE.evaluate(Environment.builder(C).build());
+  void testEvaluate_noBgpSessionProperties() {
+    Throwable exception =
+        assertThrows(Exception.class, () -> INSTANCE.evaluate(Environment.builder(C).build()));
+    assertThat(exception.getMessage(), containsString("Expected BGP session properties"));
   }
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     NextHopExpr first = BgpPeerAddressNextHop.getInstance();
     assertThat(SerializationUtils.clone(first), sameInstance(first));
     assertThat(BatfishObjectMapper.clone(first, NextHopExpr.class), sameInstance(first));

@@ -11,7 +11,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -23,12 +23,12 @@ import org.batfish.representation.palo_alto.application_definitions.ApplicationD
 import org.batfish.representation.palo_alto.application_definitions.ApplicationDefinitions;
 import org.batfish.representation.palo_alto.application_definitions.Default;
 import org.batfish.representation.palo_alto.application_definitions.Port;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link Conversions}. */
-public class ConversionsTest {
+class ConversionsTest {
   @Test
-  public void testBuiltinAppConversion() {
+  void testBuiltinAppConversion() {
     Map<String, ApplicationDefinition> appDefs = ApplicationDefinitions.INSTANCE.getApplications();
     // Should not crash / no asserts should fail
     Map<String, Application> apps =
@@ -39,7 +39,7 @@ public class ConversionsTest {
   }
 
   @Test
-  public void testBuiltinAppContainers() {
+  void testBuiltinAppContainers() {
     Multimap<String, String> appContainers =
         ApplicationDefinitions.INSTANCE.getApplicationContainers();
     // Should have some containers
@@ -47,7 +47,7 @@ public class ConversionsTest {
   }
 
   @Test
-  public void testDefinitionToApp() {
+  void testDefinitionToApp() {
     // IP protocol
     {
       Default def = createDefault(null, "19", null);
@@ -86,7 +86,7 @@ public class ConversionsTest {
   }
 
   @Test
-  public void testPortsStringToIntegerSpace() {
+  void testPortsStringToIntegerSpace() {
     assertThat(portsStringToIntegerSpace("443"), equalTo(IntegerSpace.of(443)));
     assertThat(
         portsStringToIntegerSpace("443,445"),

@@ -1,11 +1,11 @@
 package org.batfish.vendor.arista.representation;
 
 import com.google.common.testing.EqualsTester;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class StandardAccessListRemarkLineTest {
+class StandardAccessListRemarkLineTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new StandardAccessListRemarkLine(5, "remark"),

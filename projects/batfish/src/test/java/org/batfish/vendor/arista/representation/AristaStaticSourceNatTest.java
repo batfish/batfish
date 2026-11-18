@@ -27,9 +27,9 @@ import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.transformation.Transformation;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class AristaStaticSourceNatTest {
+class AristaStaticSourceNatTest {
   private final AristaStaticSourceNat _nat =
       new AristaStaticSourceNat(
           Ip.parse("1.1.1.1"), 11, Ip.parse("2.2.2.2"), 22, "someAcl", NatProtocol.ANY);
@@ -37,7 +37,7 @@ public class AristaStaticSourceNatTest {
 
   /** All fields, in direction. */
   @Test
-  public void testConversionIn() {
+  void testConversionIn() {
     Transformation trans = _nat.toIncomingTransformation(_orElse);
     // Test guard
     AclLineMatchExpr guard = trans.getGuard();
@@ -61,7 +61,7 @@ public class AristaStaticSourceNatTest {
 
   /** All fields, out direction. */
   @Test
-  public void testConversionOut() {
+  void testConversionOut() {
     Transformation trans = _nat.toOutgoingTransformation(_orElse);
     // Test guard
     AclLineMatchExpr guard = trans.getGuard();
@@ -85,7 +85,7 @@ public class AristaStaticSourceNatTest {
 
   /** Test presence and absence of protocol with and without ports. */
   @Test
-  public void testProtocolGuard() {
+  void testProtocolGuard() {
     AristaStaticSourceNat anyNoPorts =
         new AristaStaticSourceNat(
             Ip.parse("1.1.1.1"), null, Ip.parse("2.2.2.2"), null, null, NatProtocol.ANY);

@@ -20,10 +20,10 @@ import org.batfish.config.Settings;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.vendor.sros.representation.SrosConfiguration;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of the Nokia SR-OS grammar, extraction scaffold, and brace/flat/mixed equivalence. */
-public final class SrosGrammarTest {
+final class SrosGrammarTest {
 
   /**
    * The captured lab r1 config (full {@code admin show configuration} output) must parse with no
@@ -32,7 +32,7 @@ public final class SrosGrammarTest {
    * parse goal, and we additionally assert nothing was left unrecognized.
    */
   @Test
-  public void testR1ConfigParsesCleanly() {
+  void testR1ConfigParsesCleanly() {
     SrosConfiguration vc = parseVendorConfig("r1_admin_show_configuration.txt");
     assertThat(vc.getUnrecognized(), equalTo(false));
     assertThat(vc.getWarnings().getParseWarnings(), empty());
@@ -51,7 +51,7 @@ public final class SrosGrammarTest {
    * case is the one that breaks designs assuming one form per file, so it is exercised explicitly.
    */
   @Test
-  public void testBraceFlatMixedEquivalence() {
+  void testBraceFlatMixedEquivalence() {
     SrosConfiguration brace = parseVendorConfig("equivalence_brace.txt");
     SrosConfiguration flat = parseVendorConfig("equivalence_flat.txt");
     SrosConfiguration mixed = parseVendorConfig("equivalence_mixed.txt");
@@ -73,7 +73,7 @@ public final class SrosGrammarTest {
 
   /** Each equivalence config must parse with no FATAL errors and nothing unrecognized. */
   @Test
-  public void testEquivalenceConfigsClean() {
+  void testEquivalenceConfigsClean() {
     for (String name :
         new String[] {"equivalence_brace.txt", "equivalence_flat.txt", "equivalence_mixed.txt"}) {
       SrosConfiguration vc = parseVendorConfig(name);
@@ -85,7 +85,7 @@ public final class SrosGrammarTest {
   }
 
   @Test
-  public void testHostnameExtraction() {
+  void testHostnameExtraction() {
     SrosConfiguration vc = parseVendorConfig("hostname.txt");
     assertThat(vc.getHostname(), equalTo("sros-r1"));
   }
@@ -97,7 +97,7 @@ public final class SrosGrammarTest {
    * entry must still appear as a canonical statement.
    */
   @Test
-  public void testInlineEmptyBlockParses() {
+  void testInlineEmptyBlockParses() {
     SrosConfiguration vc = parseVendorConfig("inline_empty_block.txt");
     assertThat(vc.getUnrecognized(), equalTo(false));
     assertThat(vc.getWarnings().getParseWarnings(), empty());

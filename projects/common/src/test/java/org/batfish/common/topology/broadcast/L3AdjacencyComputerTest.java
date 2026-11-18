@@ -22,8 +22,8 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -58,9 +58,9 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.datamodel.vxlan.VxlanTopologyUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class L3AdjacencyComputerTest {
+class L3AdjacencyComputerTest {
   private static final InterfaceAddress CONCRETE = ConcreteInterfaceAddress.parse("1.2.3.4/24");
 
   private static Set<Dependency> dependsOn(Interface i) {
@@ -68,7 +68,7 @@ public class L3AdjacencyComputerTest {
   }
 
   @Test
-  public void testFindCorrespondingPhysicalInterface_physical() {
+  void testFindCorrespondingPhysicalInterface_physical() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c = nf.configurationBuilder().build();
     Interface physical = nf.interfaceBuilder().setOwner(c).setType(PHYSICAL).build();
@@ -86,7 +86,7 @@ public class L3AdjacencyComputerTest {
   }
 
   @Test
-  public void testFindCorrespondingPhysicalInterface_subinterface() {
+  void testFindCorrespondingPhysicalInterface_subinterface() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c = nf.configurationBuilder().build();
     Interface physical = nf.interfaceBuilder().setOwner(c).setType(PHYSICAL).build();
@@ -134,7 +134,7 @@ public class L3AdjacencyComputerTest {
   }
 
   @Test
-  public void testConnectL2InterfaceToBroadcastDomain_l3() {
+  void testConnectL2InterfaceToBroadcastDomain_l3() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c = nf.configurationBuilder().build();
     Interface l3 =
@@ -160,7 +160,7 @@ public class L3AdjacencyComputerTest {
   }
 
   @Test
-  public void testConnectL2InterfaceToBroadcastDomain_access() {
+  void testConnectL2InterfaceToBroadcastDomain_access() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c = nf.configurationBuilder().build();
     Interface access =
@@ -202,7 +202,7 @@ public class L3AdjacencyComputerTest {
   }
 
   @Test
-  public void testConnectL2InterfaceToBroadcastDomain_trunk() {
+  void testConnectL2InterfaceToBroadcastDomain_trunk() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c = nf.configurationBuilder().build();
     Interface trunk =
@@ -229,7 +229,7 @@ public class L3AdjacencyComputerTest {
   }
 
   @Test
-  public void testConnectL2InterfaceToBroadcastDomain_subif_access() {
+  void testConnectL2InterfaceToBroadcastDomain_subif_access() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c = nf.configurationBuilder().build();
     Interface physical = nf.interfaceBuilder().setOwner(c).setType(PHYSICAL).build();
@@ -272,7 +272,7 @@ public class L3AdjacencyComputerTest {
   }
 
   @Test
-  public void testConnectL2InterfaceToBroadcastDomain_unknown_mode() {
+  void testConnectL2InterfaceToBroadcastDomain_unknown_mode() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c = nf.configurationBuilder().build();
     Interface unhandledMode =
@@ -296,69 +296,64 @@ public class L3AdjacencyComputerTest {
   }
 
   @Test
-  public void testShouldCreatePhysicalInterface() {
+  void testShouldCreatePhysicalInterface() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c = nf.configurationBuilder().build();
     assertTrue(
-        "physical should be created",
         shouldCreatePhysicalInterface(
-            nf.interfaceBuilder().setOwner(c).setType(PHYSICAL).setAdminUp(true).build()));
+            nf.interfaceBuilder().setOwner(c).setType(PHYSICAL).setAdminUp(true).build()),
+        "physical should be created");
     assertFalse(
-        "physical but shutdown should not be created",
         shouldCreatePhysicalInterface(
-            nf.interfaceBuilder().setOwner(c).setType(PHYSICAL).setAdminUp(false).build()));
+            nf.interfaceBuilder().setOwner(c).setType(PHYSICAL).setAdminUp(false).build()),
+        "physical but shutdown should not be created");
     assertFalse(
-        "physical, active but aggregated should not be created",
         shouldCreatePhysicalInterface(
             nf.interfaceBuilder()
                 .setOwner(c)
                 .setType(PHYSICAL)
                 .setChannelGroup("Port-Channel1")
                 .setAdminUp(true)
-                .build()));
+                .build()),
+        "physical, active but aggregated should not be created");
     assertFalse(
-        "logical should not be created",
-        shouldCreatePhysicalInterface(nf.interfaceBuilder().setOwner(c).setType(LOGICAL).build()));
+        shouldCreatePhysicalInterface(nf.interfaceBuilder().setOwner(c).setType(LOGICAL).build()),
+        "logical should not be created");
     assertFalse(
-        "vlan should not be created",
         shouldCreatePhysicalInterface(
-            nf.interfaceBuilder()
-                .setOwner(c)
-                .setType(InterfaceType.VLAN)
-                .setAdminUp(true)
-                .build()));
+            nf.interfaceBuilder().setOwner(c).setType(InterfaceType.VLAN).setAdminUp(true).build()),
+        "vlan should not be created");
     assertTrue(
-        "aggregate,active should be created",
         shouldCreatePhysicalInterface(
             nf.interfaceBuilder()
                 .setOwner(c)
                 .setType(InterfaceType.AGGREGATED)
                 .setAdminUp(true)
-                .build()));
+                .build()),
+        "aggregate,active should be created");
     assertFalse(
-        "aggregate but shutdown should not be created",
         shouldCreatePhysicalInterface(
             nf.interfaceBuilder()
                 .setOwner(c)
                 .setType(InterfaceType.AGGREGATED)
                 .setAdminUp(false)
-                .build()));
+                .build()),
+        "aggregate but shutdown should not be created");
     assertFalse(
-        "aggregate child should not be created",
         shouldCreatePhysicalInterface(
             nf.interfaceBuilder()
                 .setOwner(c)
                 .setType(InterfaceType.AGGREGATE_CHILD)
                 .setAdminUp(true)
-                .build()));
+                .build()),
+        "aggregate child should not be created");
   }
 
   @Test
-  public void testShouldCreateL3Interface() {
+  void testShouldCreateL3Interface() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c = nf.configurationBuilder().build();
     assertTrue(
-        "l3 should be created",
         shouldCreateL3Interface(
             nf.interfaceBuilder()
                 .setOwner(c)
@@ -366,9 +361,9 @@ public class L3AdjacencyComputerTest {
                 .setSwitchport(false)
                 .setAddress(CONCRETE)
                 .setAdminUp(true)
-                .build()));
+                .build()),
+        "l3 should be created");
     assertTrue(
-        "l3 with LLA should be created",
         shouldCreateL3Interface(
             nf.interfaceBuilder()
                 .setOwner(c)
@@ -376,18 +371,18 @@ public class L3AdjacencyComputerTest {
                 .setSwitchport(false)
                 .setAddress(LinkLocalAddress.of(Ip.parse("169.254.0.1")))
                 .setAdminUp(true)
-                .build()));
+                .build()),
+        "l3 with LLA should be created");
     assertFalse(
-        "l3 with no addresses should not be created",
         shouldCreateL3Interface(
             nf.interfaceBuilder()
                 .setOwner(c)
                 .setType(PHYSICAL)
                 .setSwitchport(false)
                 .setAdminUp(true)
-                .build()));
+                .build()),
+        "l3 with no addresses should not be created");
     assertFalse(
-        "l3 shutdown should not be created",
         shouldCreateL3Interface(
             nf.interfaceBuilder()
                 .setOwner(c)
@@ -395,9 +390,9 @@ public class L3AdjacencyComputerTest {
                 .setSwitchport(false)
                 .setAddress(CONCRETE)
                 .setAdminUp(false)
-                .build()));
+                .build()),
+        "l3 shutdown should not be created");
     assertFalse(
-        "l3 loopback should not be created",
         shouldCreateL3Interface(
             nf.interfaceBuilder()
                 .setOwner(c)
@@ -405,9 +400,9 @@ public class L3AdjacencyComputerTest {
                 .setSwitchport(false)
                 .setAddress(CONCRETE)
                 .setAdminUp(true)
-                .build()));
+                .build()),
+        "l3 loopback should not be created");
     assertFalse(
-        "l3 in weird l3/switchport mode should not be created",
         shouldCreateL3Interface(
             nf.interfaceBuilder()
                 .setOwner(c)
@@ -416,11 +411,12 @@ public class L3AdjacencyComputerTest {
                 .setSwitchportMode(SwitchportMode.ACCESS)
                 .setAddress(CONCRETE)
                 .setAdminUp(true)
-                .build()));
+                .build()),
+        "l3 in weird l3/switchport mode should not be created");
   }
 
   @Test
-  public void testConnectL3InterfaceToPhysicalOrDomain_physical() {
+  void testConnectL3InterfaceToPhysicalOrDomain_physical() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c = nf.configurationBuilder().build();
     Interface physical =
@@ -464,7 +460,7 @@ public class L3AdjacencyComputerTest {
   }
 
   @Test
-  public void testConnectL3InterfaceToPhysicalOrDomain_subif() {
+  void testConnectL3InterfaceToPhysicalOrDomain_subif() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c = nf.configurationBuilder().build();
     Interface physical = nf.interfaceBuilder().setOwner(c).setType(PHYSICAL).build();
@@ -552,7 +548,7 @@ public class L3AdjacencyComputerTest {
   }
 
   @Test
-  public void testConnectL3InterfaceToPhysicalOrDomain_vlan() {
+  void testConnectL3InterfaceToPhysicalOrDomain_vlan() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c = nf.configurationBuilder().build();
     Interface vlan =
@@ -620,7 +616,7 @@ public class L3AdjacencyComputerTest {
   }
 
   @Test
-  public void testConnectL3InterfaceToPhysicalOrDomain_unknown() {
+  void testConnectL3InterfaceToPhysicalOrDomain_unknown() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c = nf.configurationBuilder().build();
     Interface loopback =
@@ -657,7 +653,7 @@ public class L3AdjacencyComputerTest {
   }
 
   @Test
-  public void testComputeEthernetHubs() {
+  void testComputeEthernetHubs() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c = nf.configurationBuilder().build();
     Interface i1 = nf.interfaceBuilder().setOwner(c).setType(PHYSICAL).build();
@@ -763,7 +759,7 @@ public class L3AdjacencyComputerTest {
   }
 
   @Test
-  public void testE2e_noL1() {
+  void testE2e_noL1() {
     Map<String, Configuration> configs = simple3InterfaceNetwork();
     // With no L1 topology, all 3 interfaces in same domain.
     L3AdjacencyComputer l3 =
@@ -774,7 +770,7 @@ public class L3AdjacencyComputerTest {
   }
 
   @Test
-  public void testE2e_L1() {
+  void testE2e_L1() {
     // With L1 topology, only connected interfaces in same domain.
     Map<String, Configuration> configs = simple3InterfaceNetwork();
     NodeInterfacePair n1 = NodeInterfacePair.of("c1", "i1");
@@ -799,7 +795,7 @@ public class L3AdjacencyComputerTest {
   }
 
   @Test
-  public void testE2e_disconnected() {
+  void testE2e_disconnected() {
     Map<String, Configuration> configs = simple3InterfaceNetwork();
     NodeInterfacePair n1 = NodeInterfacePair.of("c1", "i1");
     NodeInterfacePair n2 = NodeInterfacePair.of("c2", "i2");
@@ -823,7 +819,7 @@ public class L3AdjacencyComputerTest {
   }
 
   @Test
-  public void testE2e_encapsulation() {
+  void testE2e_encapsulation() {
     // Encapsulation vlan honored, even with no L1.
     Map<String, Configuration> configs = simple3InterfaceNetwork();
     NodeInterfacePair n1 = NodeInterfacePair.of("c1", "i1");
@@ -843,7 +839,7 @@ public class L3AdjacencyComputerTest {
   }
 
   @Test
-  public void testE2e_vxlan() {
+  void testE2e_vxlan() {
     // Topology:
     // h11 <=>           <=> h21
     //     vlan10     vlan10

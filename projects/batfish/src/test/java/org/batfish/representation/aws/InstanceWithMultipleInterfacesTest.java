@@ -20,16 +20,16 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.matchers.IpAccessListMatchers;
 import org.batfish.representation.aws.Instance.Status;
 import org.batfish.representation.aws.IpPermissions.IpRange;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link Instance} with multiple interfaces. */
-public class InstanceWithMultipleInterfacesTest {
+class InstanceWithMultipleInterfacesTest {
   /**
    * Creates a fake AWS network with one instance and two network interfaces, where each interface
    * has a different SG applied.
    */
   @Test
-  public void testInterfaceSpecificSgs() {
+  void testInterfaceSpecificSgs() {
     AwsConfiguration c = new AwsConfiguration();
     c.setWarnings(new Warnings());
 

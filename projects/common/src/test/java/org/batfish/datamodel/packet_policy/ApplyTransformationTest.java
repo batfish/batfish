@@ -9,12 +9,12 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.transformation.Transformation;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link ApplyTransformation} */
-public class ApplyTransformationTest {
+class ApplyTransformationTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     ApplyTransformation at =
         new ApplyTransformation(Transformation.always().apply(ImmutableList.of()).build());
     new EqualsTester()
@@ -30,14 +30,14 @@ public class ApplyTransformationTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     ApplyTransformation at =
         new ApplyTransformation(Transformation.always().apply(ImmutableList.of()).build());
     assertThat(SerializationUtils.clone(at), equalTo(at));
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     ApplyTransformation at =
         new ApplyTransformation(Transformation.always().apply(ImmutableList.of()).build());
     assertThat(BatfishObjectMapper.clone(at, ApplyTransformation.class), equalTo(at));

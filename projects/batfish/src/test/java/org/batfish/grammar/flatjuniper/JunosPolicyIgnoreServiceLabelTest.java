@@ -6,22 +6,22 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasKey;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.main.Batfish;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosPolicyIgnoreServiceLabelTest {
+final class JunosPolicyIgnoreServiceLabelTest {
 
   private static final String HOSTNAME = "policy-ignore-service-label";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testParsingAndConversion() throws IOException {
+  void testParsingAndConversion() throws IOException {
     Batfish batfish = getBatfish(_folder, HOSTNAME);
     assertThat(getParseWarnings(batfish, HOSTNAME), empty());
 

@@ -17,10 +17,10 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.routing_policy.Environment;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link MatchTag2}. */
-public final class MatchTag2Test {
+final class MatchTag2Test {
   private static final Configuration C =
       new NetworkFactory()
           .configurationBuilder()
@@ -43,13 +43,13 @@ public final class MatchTag2Test {
   }
 
   @Test
-  public void testOriginalRoute() {
+  void testOriginalRoute() {
     assertThat(matches(Environment.builder(C).setOriginalRoute(bgp(7L))), equalTo(true));
     assertThat(matches(Environment.builder(C).setOriginalRoute(bgp(8L))), equalTo(false));
   }
 
   @Test
-  public void testOutputAttributes() {
+  void testOutputAttributes() {
     Bgpv4Route route = bgp(8L);
     assertThat(
         matches(
@@ -61,7 +61,7 @@ public final class MatchTag2Test {
   }
 
   @Test
-  public void testStaticRouteHasTag2Zero() {
+  void testStaticRouteHasTag2Zero() {
     StaticRoute route = StaticRoute.testBuilder().setNetwork(Prefix.parse("10.0.0.0/8")).build();
     assertThat(
         new MatchTag2(IntComparator.EQ, new LiteralLong(0L))
@@ -71,7 +71,7 @@ public final class MatchTag2Test {
   }
 
   @Test
-  public void testOtherRouteHasTag2Zero() {
+  void testOtherRouteHasTag2Zero() {
     ConnectedRoute route = new ConnectedRoute(Prefix.parse("10.0.0.0/8"), "eth0");
     assertThat(
         new MatchTag2(IntComparator.EQ, new LiteralLong(0L))
@@ -81,7 +81,7 @@ public final class MatchTag2Test {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(EQ_7, new MatchTag2(IntComparator.EQ, new LiteralLong(7L)))
         .addEqualityGroup(new MatchTag2(IntComparator.GE, new LiteralLong(7L)))
@@ -91,7 +91,7 @@ public final class MatchTag2Test {
   }
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     assertThat(BatfishObjectMapper.clone(EQ_7, BooleanExpr.class), equalTo(EQ_7));
     assertThat(SerializationUtils.clone(EQ_7), equalTo(EQ_7));
   }

@@ -16,13 +16,13 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.pojo.Aggregate.AggregateType;
 import org.batfish.datamodel.vendor_family.AwsFamily;
 import org.batfish.datamodel.vendor_family.VendorFamily;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link Topology}. */
-public class TopologyTest {
+class TopologyTest {
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     Node node = new Node("node");
     Link link = new Link("src", "dst");
     Interface iface = new Interface(node.getId(), "iface");
@@ -49,7 +49,7 @@ public class TopologyTest {
 
   /** Tests that the correct topology is created. */
   @Test
-  public void testCreate() {
+  void testCreate() {
     NetworkFactory nf = new NetworkFactory();
 
     Configuration c1 = nf.configurationBuilder().setHostname("c1").build();
@@ -102,7 +102,7 @@ public class TopologyTest {
   }
 
   @Test
-  public void testCreateInterfaceType() {
+  void testCreateInterfaceType() {
     NetworkFactory nf = new NetworkFactory();
 
     Configuration c1 = nf.configurationBuilder().setHostname("c1").build();
@@ -131,7 +131,7 @@ public class TopologyTest {
   }
 
   @Test
-  public void testAwsAggregateUsesNodes() {
+  void testAwsAggregateUsesNodes() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c1 =
         nf.configurationBuilder()
@@ -159,7 +159,7 @@ public class TopologyTest {
   }
 
   @Test
-  public void testPutInAwsAggregateCreatesAwsAggregateIfNeededForVpc() {
+  void testPutInAwsAggregateCreatesAwsAggregateIfNeededForVpc() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c1 =
         nf.configurationBuilder()

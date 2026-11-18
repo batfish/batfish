@@ -2,17 +2,17 @@ package net.sf.javabdd;
 
 import static org.batfish.common.bdd.BDDMatchers.isOne;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.ImmutableBDDInteger;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {link JFactory}. */
-public class JFactoryTest {
+class JFactoryTest {
   @Test
-  public void testMultiOr() {
+  void testMultiOr() {
     JFactory factory = (JFactory) JFactory.init(100000, 10000);
     factory.setVarNum(8);
 
@@ -25,9 +25,9 @@ public class JFactoryTest {
     assertEquals(multiOr, or);
   }
 
-  @Ignore
+  @Disabled
   @Test
-  public void benchMultiOr() {
+  void benchMultiOr() {
     int bits = 20;
 
     JFactory factory = (JFactory) JFactory.init(100000, 10000);

@@ -9,20 +9,20 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.Prefix;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests of backup routes in e/i/overall BGP RIBs. */
-public final class BgpBackupRoutesTest {
+final class BgpBackupRoutesTest {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   /*
    Topology: R1 <=> R2 <=> R3 <=> R4
@@ -34,7 +34,7 @@ public final class BgpBackupRoutesTest {
    - The route should be in the backup routes of both the eBGP and BGP RIBs
   */
   @Test
-  public void testEbgpNeverActiveBackupsAreBgpBackups() throws IOException {
+  void testEbgpNeverActiveBackupsAreBgpBackups() throws IOException {
     String snapshotPath =
         "org/batfish/dataplane/ibdp/bgp-backup-routes/ebgp-never-active-backups-are-bgp-backups";
     Batfish batfish =

@@ -25,8 +25,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -34,6 +34,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -62,19 +63,18 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.aws.IpPermissions.AddressType;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public class RdsInstanceTest {
+class RdsInstanceTest {
 
-  @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public static File _folder;
   private static StaticRoute.Builder _staticRouteBuilder;
   private static Map<String, Configuration> _configurations;
 
-  @BeforeClass
-  public static void setup() throws IOException {
+  @BeforeAll
+  static void setup() throws IOException {
     _staticRouteBuilder =
         StaticRoute.testBuilder()
             .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
@@ -99,7 +99,7 @@ public class RdsInstanceTest {
   }
 
   @Test
-  public void testRdsSubnetEdge() {
+  void testRdsSubnetEdge() {
     Topology topology = TopologyUtil.synthesizeL3Topology(_configurations);
 
     // check that RDS instance is a neighbor of the deterministically chosen subnets in which its
@@ -114,7 +114,7 @@ public class RdsInstanceTest {
   }
 
   @Test
-  public void testUniqueIps() {
+  void testUniqueIps() {
     // check that  IPs are unique for all the interfaces
     List<Ip> ipsAsList =
         _configurations.values().stream()
@@ -130,7 +130,7 @@ public class RdsInstanceTest {
   }
 
   @Test
-  public void testDefaultRoute() {
+  void testDefaultRoute() {
     StaticRoute defaultRoute = _staticRouteBuilder.setNextHopIp(Ip.parse("192.168.2.17")).build();
 
     // checking that the default route is installed to the deterministically chosen subnet.
@@ -140,7 +140,7 @@ public class RdsInstanceTest {
   }
 
   @Test
-  public void testSecurityGroupsAcl() {
+  void testSecurityGroupsAcl() {
     assertThat(_configurations, hasKey("test-rds"));
     Configuration testRds = _configurations.get("test-rds");
     assertThat(testRds.getAllInterfaces().entrySet(), hasSize(1));
@@ -219,7 +219,7 @@ public class RdsInstanceTest {
   }
 
   @Test
-  public void testDeserialization() throws IOException {
+  void testDeserialization() throws IOException {
     String text = readResource("org/batfish/representation/aws/RdsInstanceTest.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
@@ -246,7 +246,7 @@ public class RdsInstanceTest {
   }
 
   @Test
-  public void testIsUp() {
+  void testIsUp() {
     // Instance should be considered up unless status is unavailable
     assertTrue(
         new RdsInstance(
@@ -276,7 +276,7 @@ public class RdsInstanceTest {
 
   /** Test that the hierarchy is configured properly */
   @Test
-  public void testToConfigurationNode_hierarchy() {
+  void testToConfigurationNode_hierarchy() {
     RdsInstance rds =
         new RdsInstance(
             "id",

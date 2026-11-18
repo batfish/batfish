@@ -5,8 +5,8 @@ import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.getIsPass
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.getPropertyDescriptor;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
@@ -14,12 +14,12 @@ import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class BgpPeerPropertySpecifierTest {
+class BgpPeerPropertySpecifierTest {
 
   @Test
-  public void getIsPassiveTest() {
+  void getIsPassiveTest() {
     assertFalse(
         getIsPassive(
             BgpActivePeerConfig.builder()
@@ -39,7 +39,7 @@ public class BgpPeerPropertySpecifierTest {
   }
 
   @Test
-  public void testReportEVPNPropertiesIfIPv4NotPresent() {
+  void testReportEVPNPropertiesIfIPv4NotPresent() {
     // Neither v4 nor EVPN defaults
     assertThat(
         getPropertyDescriptor(SEND_COMMUNITY)

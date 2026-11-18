@@ -2,20 +2,20 @@ package org.batfish.common.topology;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
 import java.util.Optional;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class HybridL3AdjacenciesTest {
+class HybridL3AdjacenciesTest {
 
   @Test
-  public void testInSameBroadcastDomain() {
+  void testInSameBroadcastDomain() {
     L3Adjacencies adjacencies =
         HybridL3Adjacencies.createForTesting(
             ImmutableSet.of("a", "b"),
@@ -47,7 +47,7 @@ public class HybridL3AdjacenciesTest {
   }
 
   @Test
-  public void testPairedPointToPointL3Interface() {
+  void testPairedPointToPointL3Interface() {
     NodeInterfacePair aL3 = NodeInterfacePair.of("a", "l3");
     NodeInterfacePair aPhys = NodeInterfacePair.of("a", "phys");
     NodeInterfacePair bL3 = NodeInterfacePair.of("b", "l3");
@@ -120,7 +120,7 @@ public class HybridL3AdjacenciesTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     NodeInterfacePair nip1 = NodeInterfacePair.of("a", "b");
     NodeInterfacePair nip2 = NodeInterfacePair.of("c", "d");
     new EqualsTester()

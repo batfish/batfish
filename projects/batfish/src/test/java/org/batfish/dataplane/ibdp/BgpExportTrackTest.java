@@ -12,6 +12,7 @@ import static org.hamcrest.Matchers.not;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
@@ -48,9 +49,8 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.TrackMethods;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * A BGP export policy that reads a track must be re-applied to what a session already carries when
@@ -61,8 +61,8 @@ import org.junit.rules.TemporaryFolder;
  * r3 first receives what the policy gives a failing track, and then has to end up with what it
  * gives a holding one.
  */
-public final class BgpExportTrackTest {
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+final class BgpExportTrackTest {
+  @TempDir public File _folder;
 
   private static final Prefix TRACKED = Prefix.parse("10.9.0.0/24");
   private static final Prefix EXPORTED = Prefix.parse("10.9.1.0/24");
@@ -223,7 +223,7 @@ public final class BgpExportTrackTest {
   }
 
   @Test
-  public void testARouteTheTrackStopsExportingIsWithdrawn() throws IOException {
+  void testARouteTheTrackStopsExportingIsWithdrawn() throws IOException {
     // Exported while the track fails, then rejected once it holds.
     DataPlane dp =
         dataPlane(
@@ -241,7 +241,7 @@ public final class BgpExportTrackTest {
   }
 
   @Test
-  public void testARouteTheTrackStartsExportingIsAdded() throws IOException {
+  void testARouteTheTrackStartsExportingIsAdded() throws IOException {
     // The companion: rejected while the track fails, exported once it holds.
     DataPlane dp =
         dataPlane(
@@ -259,7 +259,7 @@ public final class BgpExportTrackTest {
   }
 
   @Test
-  public void testARouteTheTrackChangesIsReplacedNotDuplicated() throws IOException {
+  void testARouteTheTrackChangesIsReplacedNotDuplicated() throws IOException {
     // Exported with MED 0 while the track fails and with MED 7 once it holds: r3 keeps only the
     // second.
     DataPlane dp =
@@ -280,7 +280,7 @@ public final class BgpExportTrackTest {
   }
 
   @Test
-  public void testARedistributedRouteTheTrackStopsExportingIsWithdrawn() throws IOException {
+  void testARedistributedRouteTheTrackStopsExportingIsWithdrawn() throws IOException {
     // The same for a main-RIB route the export policy redistributes.
     DataPlane dp =
         dataPlane(

@@ -4,12 +4,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import java.util.Optional;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class InetPrecedenceUtilTest {
+class InetPrecedenceUtilTest {
 
   @Test
-  public void testDefaultValue() {
+  void testDefaultValue() {
     // Test all standard aliases
     assertThat(InetPrecedenceUtil.defaultValue("be"), equalTo(Optional.of(0)));
     assertThat(InetPrecedenceUtil.defaultValue("be1"), equalTo(Optional.of(1)));

@@ -2,6 +2,7 @@ package org.batfish.datamodel.routing_policy.expr;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
@@ -19,10 +20,10 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link LastAs} */
-public final class LastAsTest {
+final class LastAsTest {
 
   private static final LastAs INSTANCE = LastAs.instance();
   private static final Configuration C =
@@ -40,23 +41,23 @@ public final class LastAsTest {
           .build();
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     assertThat(SerializationUtils.clone(LastAs.instance()), equalTo(LastAs.instance()));
   }
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     assertThat(
         BatfishObjectMapper.clone(LastAs.instance(), AsExpr.class), equalTo(LastAs.instance()));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester().addEqualityGroup(LastAs.instance(), LastAs.instance()).testEquals();
   }
 
   @Test
-  public void testEvaluate() {
+  void testEvaluate() {
     Environment.Builder envBuilder = Environment.builder(C).setDirection(Direction.IN);
 
     // If not useOutputAttributes or readFromIntermediateBgpAttributes, use original route AS path
@@ -89,24 +90,32 @@ public final class LastAsTest {
     assertThat(INSTANCE.evaluate(envBuilder.setOutputRoute(outputRoute).build()), equalTo(55555L));
   }
 
-  @Test(expected = AssertionError.class)
-  public void testEvaluate_originalRouteNotBgp() {
-    StaticRoute sr =
-        StaticRoute.testBuilder().setNetwork(Prefix.ZERO).setAdministrativeCost(1).build();
-    Environment env =
-        Environment.builder(C).setDirection(Direction.IN).setOriginalRoute(sr).build();
-    INSTANCE.evaluate(env);
-  }
-
-  @Test(expected = IllegalStateException.class)
-  public void testEvaluate_emptyAsPath() {
-    Environment env =
-        Environment.builder(C).setDirection(Direction.IN).setOriginalRoute(BGP_ROUTE).build();
-    INSTANCE.evaluate(env);
+  @Test
+  void testEvaluate_originalRouteNotBgp() {
+    assertThrows(
+        AssertionError.class,
+        () -> {
+          StaticRoute sr =
+              StaticRoute.testBuilder().setNetwork(Prefix.ZERO).setAdministrativeCost(1).build();
+          Environment env =
+              Environment.builder(C).setDirection(Direction.IN).setOriginalRoute(sr).build();
+          INSTANCE.evaluate(env);
+        });
   }
 
   @Test
-  public void testEvaluate_nonSingletonAsSet() {
+  void testEvaluate_emptyAsPath() {
+    assertThrows(
+        IllegalStateException.class,
+        () -> {
+          Environment env =
+              Environment.builder(C).setDirection(Direction.IN).setOriginalRoute(BGP_ROUTE).build();
+          INSTANCE.evaluate(env);
+        });
+  }
+
+  @Test
+  void testEvaluate_nonSingletonAsSet() {
     Bgpv4Route originalRoute =
         BGP_ROUTE.toBuilder().setAsPath(AsPath.of(AsSet.of(11111L, 22222L))).build();
     Environment env =

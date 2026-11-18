@@ -7,20 +7,20 @@ import com.google.common.testing.EqualsTester;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link org.batfish.representation.cisco_xr.LengthAsPathSetElem}. */
 @ParametersAreNonnullByDefault
-public final class LengthAsPathSetElemTest {
+final class LengthAsPathSetElemTest {
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     LengthAsPathSetElem obj = new LengthAsPathSetElem(IntComparator.GT, 1, false);
     assertThat(SerializationUtils.clone(obj), equalTo(obj));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     LengthAsPathSetElem obj = new LengthAsPathSetElem(IntComparator.GT, 1, false);
     new EqualsTester()
         .addEqualityGroup(obj, new LengthAsPathSetElem(IntComparator.GT, 1, false))

@@ -13,7 +13,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.tree.ParseTree;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Validates that the ANTLR specifier grammar accepts the same inputs the parboiled grammar did.
@@ -21,7 +21,7 @@ import org.junit.Test;
  * against representative inputs drawn from the parboiled Parser*Test suites, before the AST visitor
  * is wired up. It asserts the input parses with no syntax errors and consumes all input.
  */
-public class SpecifierGrammarParseTest {
+class SpecifierGrammarParseTest {
 
   private static class ErrorCollector extends BaseErrorListener {
     final List<String> _errors = new ArrayList<>();
@@ -111,7 +111,7 @@ public class SpecifierGrammarParseTest {
   }
 
   @Test
-  public void testNode() {
+  void testNode() {
     assertNode("node.com-011");
     assertNode("@role(a, b)");
     assertNode(" @role ( a , b ) ");
@@ -128,7 +128,7 @@ public class SpecifierGrammarParseTest {
   }
 
   @Test
-  public void testInterface() {
+  void testInterface() {
     assertInterface("Ethernet0");
     assertInterface("ge-0/0/0");
     assertInterface("@connectedTo(1.1.1.1)");
@@ -142,7 +142,7 @@ public class SpecifierGrammarParseTest {
   }
 
   @Test
-  public void testFilter() {
+  void testFilter() {
     assertFilter("acl1");
     assertFilter("@in(Ethernet0)");
     assertFilter("@out(Ethernet0)");
@@ -152,7 +152,7 @@ public class SpecifierGrammarParseTest {
   }
 
   @Test
-  public void testIpSpace() {
+  void testIpSpace() {
     assertIpSpace("1.1.1.0/24");
     assertIpSpace("1.1.1.1");
     assertIpSpace("1.1.1.1:255.255.255.0");
@@ -162,7 +162,7 @@ public class SpecifierGrammarParseTest {
   }
 
   @Test
-  public void testLocation() {
+  void testLocation() {
     assertLocation("node1");
     assertLocation("node1[Ethernet0]");
     assertLocation("@enter(node1[Ethernet0])");
@@ -171,7 +171,7 @@ public class SpecifierGrammarParseTest {
   }
 
   @Test
-  public void testRoutingPolicy() {
+  void testRoutingPolicy() {
     assertRoutingPolicy("rp1");
     assertRoutingPolicy("/rp.*/");
     assertRoutingPolicy("rp.*");
@@ -179,7 +179,7 @@ public class SpecifierGrammarParseTest {
   }
 
   @Test
-  public void testIpProtocol() {
+  void testIpProtocol() {
     assertIpProtocol("tcp");
     assertIpProtocol("51");
     assertIpProtocol("!tcp");
@@ -187,7 +187,7 @@ public class SpecifierGrammarParseTest {
   }
 
   @Test
-  public void testApp() {
+  void testApp() {
     assertApp("http");
     assertApp("icmp");
     assertApp("icmp/8");
@@ -199,7 +199,7 @@ public class SpecifierGrammarParseTest {
   }
 
   @Test
-  public void testEnumSet() {
+  void testEnumSet() {
     assertEnumSet("value1");
     assertEnumSet("!value1");
     assertEnumSet("/val.*/");

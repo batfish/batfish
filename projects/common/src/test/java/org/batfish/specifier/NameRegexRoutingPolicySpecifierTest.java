@@ -10,12 +10,12 @@ import java.util.regex.Pattern;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class NameRegexRoutingPolicySpecifierTest {
+class NameRegexRoutingPolicySpecifierTest {
 
   @Test
-  public void testResolve() {
+  void testResolve() {
 
     Configuration node1 = new Configuration("node1", ConfigurationFormat.CISCO_IOS);
     Configuration node2 = new Configuration("node2", ConfigurationFormat.CISCO_IOS);

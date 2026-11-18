@@ -28,17 +28,17 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.vxlan.VxlanTopology;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for correctness of L3 topology for various situations that arise in ISP modeling */
-public class TopologyUtilIspTest {
+class TopologyUtilIspTest {
 
   private static Configuration.Builder _cb;
   private static Interface.Builder _ib;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     NetworkFactory nf = new NetworkFactory();
     _cb = nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     _ib = nf.interfaceBuilder().setType(InterfaceType.PHYSICAL);
@@ -206,7 +206,7 @@ public class TopologyUtilIspTest {
   }
 
   @Test
-  public void testComputeRawLayer3TopologyAllConcrete() {
+  void testComputeRawLayer3TopologyAllConcrete() {
     {
       // without user L1
       TopologySetup topo = new TopologySetup(1, false, false, false);
@@ -220,7 +220,7 @@ public class TopologyUtilIspTest {
   }
 
   @Test
-  public void testComputeRawLayer3TopologyAllLla() {
+  void testComputeRawLayer3TopologyAllLla() {
     {
       // without user L1. No border-spine edges.
       TopologySetup topo = new TopologySetup(1, true, true, false);
@@ -241,7 +241,7 @@ public class TopologyUtilIspTest {
   }
 
   @Test
-  public void testComputeRawLayer3TopologyLlaIspConcreteSpine() {
+  void testComputeRawLayer3TopologyLlaIspConcreteSpine() {
     {
       // without user L1.
       TopologySetup topo = new TopologySetup(1, true, false, false);
@@ -255,7 +255,7 @@ public class TopologyUtilIspTest {
   }
 
   @Test
-  public void testComputeRawLayer3TopologyConcreteIspLlaSpine() {
+  void testComputeRawLayer3TopologyConcreteIspLlaSpine() {
     {
       // without user L1. No border-spine edges.
       TopologySetup topo = new TopologySetup(1, false, true, false);
@@ -279,7 +279,7 @@ public class TopologyUtilIspTest {
    * Tests the case of two borders that should be connected do get connected based in L3 inference.
    */
   @Test
-  public void testComputeRawLayer3TopologyTwoBorders() {
+  void testComputeRawLayer3TopologyTwoBorders() {
 
     TopologySetup topo = new TopologySetup(2, false, false, false);
 

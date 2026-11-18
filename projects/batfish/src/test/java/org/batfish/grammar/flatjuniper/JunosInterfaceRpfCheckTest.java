@@ -11,22 +11,22 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.main.Batfish;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosInterfaceRpfCheckTest {
+final class JunosInterfaceRpfCheckTest {
 
   private static final String HOSTNAME = "junos-interface-rpf-check";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testRpfCheck() throws IOException {
+  void testRpfCheck() throws IOException {
     Batfish batfish = getBatfish(_folder, HOSTNAME);
     batfish.loadConfigurations(batfish.getSnapshot());
     ConvertConfigurationAnswerElement ccae =

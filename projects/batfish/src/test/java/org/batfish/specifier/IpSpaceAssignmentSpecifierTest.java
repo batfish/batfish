@@ -23,9 +23,9 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class IpSpaceAssignmentSpecifierTest {
+class IpSpaceAssignmentSpecifierTest {
   private static final Set<Location> _allLocations;
 
   private static final Map<String, Configuration> _configs;
@@ -90,7 +90,7 @@ public class IpSpaceAssignmentSpecifierTest {
   }
 
   @Test
-  public void testConstantIpSpaceSpecifier() {
+  void testConstantIpSpaceSpecifier() {
     IpSpaceAssignment assignment =
         new ConstantIpSpaceAssignmentSpecifier(UniverseIpSpace.INSTANCE)
             .resolve(_allLocations, _context);
@@ -98,7 +98,7 @@ public class IpSpaceAssignmentSpecifierTest {
   }
 
   @Test
-  public void testInferFromLocationIpSpaceSpecifier() {
+  void testInferFromLocationIpSpaceSpecifier() {
     Set<Location> interfaceLocations = AllInterfacesLocationSpecifier.INSTANCE.resolve(_context);
     IpSpaceAssignment assignment =
         InferFromLocationIpSpaceAssignmentSpecifier.INSTANCE.resolve(interfaceLocations, _context);

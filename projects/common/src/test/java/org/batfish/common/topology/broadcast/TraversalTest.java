@@ -6,10 +6,10 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import java.util.HashSet;
 import java.util.Set;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests some interesting topologies of {@link Node nodes} and {@link Edge edges}. */
-public class TraversalTest {
+class TraversalTest {
   private static Set<L3Interface> getDomain(L3Interface iface) {
     Set<L3Interface> ret = new HashSet<>();
     Set<NodeAndData<?, ?>> visited = new HashSet<>();
@@ -19,7 +19,7 @@ public class TraversalTest {
 
   /** Untagged L3 interface, connected directly to another. */
   @Test
-  public void testSimpleUntagged() {
+  void testSimpleUntagged() {
     NodeInterfacePair i1 = NodeInterfacePair.of("h1", "i1");
     NodeInterfacePair i2 = NodeInterfacePair.of("h2", "i2");
 
@@ -40,7 +40,7 @@ public class TraversalTest {
 
   /** L3 dot1q interface, connected directly to another. */
   @Test
-  public void testSimpleTagged() {
+  void testSimpleTagged() {
     NodeInterfacePair i1 = NodeInterfacePair.of("h1", "i1");
     NodeInterfacePair i1_5 = NodeInterfacePair.of("h1", "i1.5");
     NodeInterfacePair i1_10 = NodeInterfacePair.of("h1", "i1.10");
@@ -69,7 +69,7 @@ public class TraversalTest {
 
   /** Untagged L3 interface, connected to an IRB through a switchport in access mode. */
   @Test
-  public void testAccessMode() {
+  void testAccessMode() {
     L3Interface l31 = new L3Interface(NodeInterfacePair.of("h1", "Eth1"));
     PhysicalInterface p1 = new PhysicalInterface(l31.getIface());
     EthernetHub hub = new EthernetHub("hub");
@@ -89,7 +89,7 @@ public class TraversalTest {
 
   /** Two IRBs connected with vlan translation in access mode. */
   @Test
-  public void testVlanTranslation() {
+  void testVlanTranslation() {
     L3Interface l31 = new L3Interface(NodeInterfacePair.of("h1", "Vlan5"));
     DeviceBroadcastDomain switch1 = new DeviceBroadcastDomain("h1");
     PhysicalInterface p1 = new PhysicalInterface(NodeInterfacePair.of("h1", "Eth1"));

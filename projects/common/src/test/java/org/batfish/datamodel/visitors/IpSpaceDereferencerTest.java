@@ -12,9 +12,9 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.UniverseIpSpace;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class IpSpaceDereferencerTest {
+class IpSpaceDereferencerTest {
   private static final Map<String, IpSpace> NAMED_IP_SPACES =
       ImmutableMap.of(
           "empty",
@@ -27,7 +27,7 @@ public class IpSpaceDereferencerTest {
           new IpSpaceReference("ip"));
 
   @Test
-  public void testAclIpSpace() {
+  void testAclIpSpace() {
     IpSpaceDereferencer dereferencer = new IpSpaceDereferencer(NAMED_IP_SPACES);
     AclIpSpace input =
         (AclIpSpace)

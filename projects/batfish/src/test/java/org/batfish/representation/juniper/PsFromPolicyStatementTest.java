@@ -10,11 +10,11 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class PsFromPolicyStatementTest {
+class PsFromPolicyStatementTest {
   @Test
-  public void testConversion() {
+  void testConversion() {
     JuniperConfiguration jc = new JuniperConfiguration();
     String existingPolicy = "exists";
     jc.getMasterLogicalSystem()

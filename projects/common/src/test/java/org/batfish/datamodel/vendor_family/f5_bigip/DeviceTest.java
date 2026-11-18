@@ -1,22 +1,22 @@
 package org.batfish.datamodel.vendor_family.f5_bigip;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MacAddress;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link Device}. */
-public final class DeviceTest {
+final class DeviceTest {
 
   private Device.Builder _builder;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _builder =
         Device.builder()
             .setBaseMac(MacAddress.parse("00:00:00:00:00:01"))
@@ -29,7 +29,7 @@ public final class DeviceTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     Device obj = _builder.build();
     new EqualsTester()
         .addEqualityGroup(obj, obj, _builder.build())
@@ -45,7 +45,7 @@ public final class DeviceTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     Device obj = _builder.build();
     assertEquals(obj, SerializationUtils.clone(obj));
   }

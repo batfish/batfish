@@ -15,9 +15,9 @@ import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ServiceEndpoint;
 import org.batfish.referencelibrary.ServiceObject;
 import org.batfish.referencelibrary.ServiceObjectGroup;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ReferenceBookBeanTest {
+class ReferenceBookBeanTest {
 
   private static void beanBookMatch(ReferenceBookBean bean, ReferenceBook book) {
     assertThat(bean.name, equalTo(book.getName()));
@@ -48,14 +48,14 @@ public class ReferenceBookBeanTest {
   }
 
   @Test
-  public void constructorEmptyBook() {
+  void constructorEmptyBook() {
     ReferenceBook book1 = ReferenceBook.builder("book1").build();
 
     beanBookMatch(new ReferenceBookBean(book1), book1);
   }
 
   @Test
-  public void constructorNonEmptyBook() {
+  void constructorNonEmptyBook() {
     ReferenceBook book2 =
         ReferenceBook.builder("book2")
             .setAddressGroups(ImmutableList.of(new AddressGroup(ImmutableSortedSet.of(), "ag1")))
@@ -73,7 +73,7 @@ public class ReferenceBookBeanTest {
   }
 
   @Test
-  public void toAddressBook() {
+  void toAddressBook() {
     ReferenceBookBean bean =
         new ReferenceBookBean(
             ReferenceBook.builder("book2")

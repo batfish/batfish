@@ -8,18 +8,18 @@ import java.util.List;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.Statement;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class RouteMapSetMetricTest {
+class RouteMapSetMetricTest {
 
   @Test
-  public void testGetMetric() {
+  void testGetMetric() {
     RouteMapSetMetric set = new RouteMapSetMetric(new LiteralLong(10));
     assertThat(set.getMetric(), equalTo(new LiteralLong(10)));
   }
 
   @Test
-  public void testToStatements() {
+  void testToStatements() {
     RouteMapSetMetric set = new RouteMapSetMetric(new LiteralLong(10));
     List<Statement> result =
         set.toStatements(null, null, null).collect(ImmutableList.toImmutableList());

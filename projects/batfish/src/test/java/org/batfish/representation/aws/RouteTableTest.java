@@ -18,13 +18,13 @@ import org.batfish.datamodel.Prefix6;
 import org.batfish.representation.aws.Route.State;
 import org.batfish.representation.aws.Route.TargetType;
 import org.batfish.representation.aws.RouteTable.Association;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link RouteTable} */
-public class RouteTableTest {
+class RouteTableTest {
 
   @Test
-  public void testDeserialization() throws IOException {
+  void testDeserialization() throws IOException {
     String text = readResource("org/batfish/representation/aws/RouteTableTest.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
@@ -52,7 +52,7 @@ public class RouteTableTest {
   }
 
   @Test
-  public void testDeserializationV6() throws IOException {
+  void testDeserializationV6() throws IOException {
     String text = readResource("org/batfish/representation/aws/RouteV6TableTest.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);

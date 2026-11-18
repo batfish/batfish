@@ -3,7 +3,7 @@ package org.batfish.vendor.check_point_management;
 import static org.batfish.vendor.check_point_management.TestSharedInstances.NAT_SETTINGS_TEST_INSTANCE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.testing.EqualsTester;
@@ -11,10 +11,10 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link AddressRange}. */
-public final class AddressRangeTest {
+final class AddressRangeTest {
 
   public static final AddressRange TEST_INSTANCE =
       new AddressRange(
@@ -27,7 +27,7 @@ public final class AddressRangeTest {
           Uid.of("0"));
 
   @Test
-  public void testJacksonDeserialization() throws JsonProcessingException {
+  void testJacksonDeserialization() throws JsonProcessingException {
     String input =
         "{"
             + "\"GARBAGE\":0,"
@@ -59,7 +59,7 @@ public final class AddressRangeTest {
   }
 
   @Test
-  public void testJacksonDeserialization_emptyIps() throws JsonProcessingException {
+  void testJacksonDeserialization_emptyIps() throws JsonProcessingException {
     String input =
         "{"
             + "\"GARBAGE\":0,"
@@ -85,7 +85,7 @@ public final class AddressRangeTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     AddressRange obj =
         new AddressRange(
             Ip.ZERO,
@@ -99,7 +99,7 @@ public final class AddressRangeTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     AddressRange obj =
         new AddressRange(null, null, null, null, NAT_SETTINGS_TEST_INSTANCE, "foo", Uid.of("0"));
     new EqualsTester()

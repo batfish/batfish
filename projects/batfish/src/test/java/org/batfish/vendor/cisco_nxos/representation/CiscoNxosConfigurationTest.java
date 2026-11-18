@@ -19,13 +19,13 @@ import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.vendor.VendorStructureId;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link CiscoNxosConfiguration} class */
-public class CiscoNxosConfigurationTest {
+class CiscoNxosConfigurationTest {
 
   @Test
-  public void testToOspfDeadIntervalExplicit() {
+  void testToOspfDeadIntervalExplicit() {
     OspfInterface ospf = new OspfInterface();
     ospf.setDeadIntervalS(7);
     // Explicitly set dead interval should be preferred over inference
@@ -33,7 +33,7 @@ public class CiscoNxosConfigurationTest {
   }
 
   @Test
-  public void testToOspfDeadIntervalFromHello() {
+  void testToOspfDeadIntervalFromHello() {
     OspfInterface ospf = new OspfInterface();
     int helloInterval = 1;
     ospf.setHelloIntervalS(helloInterval);
@@ -43,14 +43,14 @@ public class CiscoNxosConfigurationTest {
   }
 
   @Test
-  public void testToOspfDeadIntervalDefault() {
+  void testToOspfDeadIntervalDefault() {
     OspfInterface ospf = new OspfInterface();
     // Since the dead interval and hello interval are not set, it should be the default value
     assertThat(toOspfDeadInterval(ospf), equalTo(DEFAULT_DEAD_INTERVAL_S));
   }
 
   @Test
-  public void testToOspfHelloIntervalExplicit() {
+  void testToOspfHelloIntervalExplicit() {
     OspfInterface ospf = new OspfInterface();
     ospf.setHelloIntervalS(7);
     // Explicitly set hello interval should be preferred over default
@@ -58,7 +58,7 @@ public class CiscoNxosConfigurationTest {
   }
 
   @Test
-  public void testToOspfHelloIntervalDefault() {
+  void testToOspfHelloIntervalDefault() {
     OspfInterface ospf = new OspfInterface();
     // Since the hello interval is not set, it should be the default value
     assertThat(toOspfHelloInterval(ospf), equalTo(DEFAULT_HELLO_INTERVAL_S));
@@ -66,7 +66,7 @@ public class CiscoNxosConfigurationTest {
 
   /** Check that vendorStructureId is set when prefix list is converted to route filter list */
   @Test
-  public void testToRouterFilterList_prefixList_vendorStructureId() {
+  void testToRouterFilterList_prefixList_vendorStructureId() {
     IpPrefixList plist = new IpPrefixList("name");
     RouteFilterList rfl = toRouteFilterList(plist, "file");
     assertThat(
@@ -78,7 +78,7 @@ public class CiscoNxosConfigurationTest {
 
   /** Check that tracing is added to route map entries */
   @Test
-  public void testToStatement_tracing() {
+  void testToStatement_tracing() {
     CiscoNxosConfiguration cc = new CiscoNxosConfiguration();
     cc.setFilename("file");
 

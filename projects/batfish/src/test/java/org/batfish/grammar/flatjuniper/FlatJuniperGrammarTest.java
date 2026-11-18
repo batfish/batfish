@@ -233,11 +233,12 @@ import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -246,6 +247,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -567,19 +569,15 @@ import org.batfish.representation.juniper.VniOptions;
 import org.batfish.representation.juniper.VrrpGroup;
 import org.batfish.representation.juniper.Zone;
 import org.hamcrest.Matchers;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests for {@link FlatJuniperParser} and {@link FlatJuniperControlPlaneExtractor}. */
-public final class FlatJuniperGrammarTest {
+final class FlatJuniperGrammarTest {
 
   private static final String TESTRIGS_PREFIX = "org/batfish/grammar/juniper/testrigs/";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+  @TempDir public File _folder;
 
   private static Flow createFlow(String sourceAddress, String destinationAddress) {
     return createFlow(Ip.parse(sourceAddress), Ip.parse(destinationAddress));
@@ -626,7 +624,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testApplicationsExtraction() {
+  void testApplicationsExtraction() {
     String hostname = "applications";
     JuniperConfiguration vc = parseJuniperConfig(hostname);
     assertThat(
@@ -647,7 +645,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testApplicationsReferences() throws IOException {
+  void testApplicationsReferences() throws IOException {
     String hostname = "applications";
     String filename = "configs/" + hostname;
 
@@ -665,7 +663,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testApplicationSet() throws IOException {
+  void testApplicationSet() throws IOException {
     String hostname = "application-set";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -776,7 +774,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testApplicationSetNested() {
+  void testApplicationSetNested() {
     String hostname = "application-set-nested";
     Configuration c = parseConfig(hostname);
 
@@ -819,7 +817,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testApplicationWithTerms() {
+  void testApplicationWithTerms() {
     String hostname = "application-with-terms";
     Configuration c = parseConfig(hostname);
 
@@ -862,7 +860,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testApplicationIcmp6() {
+  void testApplicationIcmp6() {
     String hostname = "application-icmp6";
     JuniperConfiguration vc = parseJuniperConfig(hostname);
 
@@ -891,7 +889,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testAuthenticationKeyChain() throws IOException {
+  void testAuthenticationKeyChain() throws IOException {
     String hostname = "authentication-key-chain";
     String filename = "configs/" + hostname;
 
@@ -908,7 +906,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testAuthenticationOrder() {
+  void testAuthenticationOrder() {
     String hostname = "authentication-order";
 
     Configuration configuration = parseConfig(hostname);
@@ -934,7 +932,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testAutonomousSystem() throws IOException {
+  void testAutonomousSystem() throws IOException {
     String testrigName = "autonomous-system";
     String c1Name = "as1";
     String c2Name = "as2";
@@ -959,7 +957,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testStaticRouteCommunities() throws IOException {
+  void testStaticRouteCommunities() throws IOException {
     /*
     Setup: r1 has a BGP import policy that rejects routes with community 100:1001.
     r2 exports:
@@ -994,7 +992,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testAutonomousSystemLoops() {
+  void testAutonomousSystemLoops() {
     Configuration c = parseConfig("autonomous-system-loops");
     assertThat(
         c,
@@ -1020,7 +1018,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testAutonomousSystemLoopsNonDefaultRoutingInstance() {
+  void testAutonomousSystemLoopsNonDefaultRoutingInstance() {
     Configuration c = parseConfig("autonomous-system-loops-routing-instance");
     assertThat(
         c,
@@ -1037,7 +1035,7 @@ public final class FlatJuniperGrammarTest {
 
   /** Tests support for dynamic bgp parsing using "bgp allow" command */
   @Test
-  public void testBgpAllow() {
+  void testBgpAllow() {
     Configuration c = parseConfig("bgp-allow");
     assertThat(
         c,
@@ -1045,22 +1043,22 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testBgpBmpParsing() {
+  void testBgpBmpParsing() {
     parseJuniperConfig("juniper-bgp-bmp");
   }
 
   @Test
-  public void testClassOfServiceParsing() {
+  void testClassOfServiceParsing() {
     parseJuniperConfig("juniper-class-of-service");
   }
 
   @Test
-  public void testClassOfServiceComprehensive() {
+  void testClassOfServiceComprehensive() {
     parseJuniperConfig("class-of-service-comprehensive");
   }
 
   @Test
-  public void testClassOfServiceImport() throws IOException {
+  void testClassOfServiceImport() throws IOException {
     // "import default" under a dscp/exp classifier and exp rewrite-rule references the built-in
     // "default" classifier/rewrite-rule.
     String hostname = "class-of-service-comprehensive";
@@ -1104,7 +1102,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testClassOfServiceBuiltinForwardingClasses() throws IOException {
+  void testClassOfServiceBuiltinForwardingClasses() throws IOException {
     String hostname = "class-of-service-builtin-forwarding-classes";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -1133,7 +1131,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testClassOfServiceDefaultClassifier() throws IOException {
+  void testClassOfServiceDefaultClassifier() throws IOException {
     String hostname = "class-of-service-default-classifier";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
 
@@ -1145,7 +1143,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testClassOfServiceDefaultRewriteRule() throws IOException {
+  void testClassOfServiceDefaultRewriteRule() throws IOException {
     String hostname = "class-of-service-default-rewrite-rule";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
 
@@ -1157,7 +1155,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testClassOfServiceQfxMcastForwardingClass() throws IOException {
+  void testClassOfServiceQfxMcastForwardingClass() throws IOException {
     String hostname = "class-of-service-qfx-mcast-fc";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
 
@@ -1170,7 +1168,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testClassOfServiceEx4300McastVariants() throws IOException {
+  void testClassOfServiceEx4300McastVariants() throws IOException {
     String hostname = "class-of-service-ex4300-mcast-variants";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
 
@@ -1183,7 +1181,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testClassOfServiceQfxShortAliases() throws IOException {
+  void testClassOfServiceQfxShortAliases() throws IOException {
     String hostname = "class-of-service-qfx-short-aliases";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
 
@@ -1196,7 +1194,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testClassOfServiceQfxFcoeNoLoss() throws IOException {
+  void testClassOfServiceQfxFcoeNoLoss() throws IOException {
     String hostname = "class-of-service-qfx-fcoe-no-loss";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
 
@@ -1210,12 +1208,12 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testInterfaceMacLimitParsing() {
+  void testInterfaceMacLimitParsing() {
     parseJuniperConfig("interface-mac-limit");
   }
 
   @Test
-  public void testSyslogHostExtraction() {
+  void testSyslogHostExtraction() {
     JuniperConfiguration c = parseJuniperConfig("juniper-syslog");
     Map<String, JunosSyslogHost> hosts = c.getMasterLogicalSystem().getSyslogHosts();
     assertThat(hosts, hasKeys("1.2.3.4", "2.3.4.5", "3.4.5.6", "4.5.6.7", "5.6.7.8", "6.7.8.9"));
@@ -1284,7 +1282,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testSyslogHostConversion() {
+  void testSyslogHostConversion() {
     // Vendor-independent conversion still emits the set of host IPs.
     Configuration c = parseConfig("juniper-syslog");
     assertThat(
@@ -1295,7 +1293,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testSyslogFileArchiveExtraction() {
+  void testSyslogFileArchiveExtraction() {
     JuniperConfiguration c = parseJuniperConfig("juniper-syslog-file-archive");
     assertThat(c.getWarnings().getParseWarnings(), empty());
     Map<String, JunosSyslogFile> files = c.getMasterLogicalSystem().getSyslogFiles();
@@ -1328,18 +1326,18 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testSystemServicesSshParsing() {
+  void testSystemServicesSshParsing() {
     parseJuniperConfig("system-services-ssh");
   }
 
   @Test
-  public void testNtpParsing() {
+  void testNtpParsing() {
     JuniperConfiguration vc = parseJuniperConfig("ntp");
     assertThat(vc.getWarnings().getParseWarnings(), empty());
   }
 
   @Test
-  public void testNtpExtraction() {
+  void testNtpExtraction() {
     JuniperConfiguration vc = parseJuniperConfig("ntp");
 
     assertThat(
@@ -1361,7 +1359,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testNtpAuthenticationConfigured() {
+  void testNtpAuthenticationConfigured() {
     JuniperConfiguration vc = parseJuniperConfig("ntp");
     Set<Integer> definedKeys = vc.getMasterLogicalSystem().getNtpAuthenticationKeys();
     Set<Integer> trustedKeys = vc.getMasterLogicalSystem().getNtpTrustedKeys();
@@ -1397,7 +1395,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testNtpInvalidKey() {
+  void testNtpInvalidKey() {
     // key-number 0 is out of the valid range (1..65534) at every site: server key,
     // authentication-key, and trusted-key. Each occurrence should warn and be dropped
     JuniperConfiguration vc = parseJuniperConfig("ntp-invalid-key");
@@ -1419,7 +1417,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testL2Topology() throws IOException {
+  void testL2Topology() throws IOException {
     /*
     L1:
       - r1, r2, and fw are all connected to the central switch sw as shown below
@@ -1492,7 +1490,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testParentChildTopology() throws IOException {
+  void testParentChildTopology() throws IOException {
     String resourcePrefix = "org/batfish/grammar/juniper/testrigs/topology";
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
@@ -1537,7 +1535,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testBgpClusterId() throws IOException {
+  void testBgpClusterId() throws IOException {
     String testrigName = "rr";
     String configName = "rr";
     Ip neighbor1Ip = Ip.parse("2.2.2.2");
@@ -1562,7 +1560,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testMisbraced() throws IOException {
+  void testMisbraced() throws IOException {
     // don't crash, do produce a config
     Batfish batfish = getBatfishForConfigurationNames("misbraced");
     batfish.getSettings().setDisableUnrecognized(false);
@@ -1570,7 +1568,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testBgpConfederation() {
+  void testBgpConfederation() {
     JuniperConfiguration c = parseJuniperConfig("bgp-confederation");
     RoutingInstance ri = c.getMasterLogicalSystem().getDefaultRoutingInstance();
     assertThat(ri.getConfederation(), equalTo(7L));
@@ -1578,7 +1576,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testBgpConfederationConversion() {
+  void testBgpConfederationConversion() {
     Configuration c = parseConfig("bgp-confederation");
     BgpProcess bgpProcess = c.getDefaultVrf().getBgpProcess();
     assertThat(
@@ -1599,7 +1597,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testBgpDescription() {
+  void testBgpDescription() {
     Configuration c = parseConfig("bgp-description");
     Map<Ip, BgpActivePeerConfig> neighbors = c.getDefaultVrf().getBgpProcess().getActiveNeighbors();
     assertThat(neighbors, hasKeys(Ip.parse("1.2.3.4"), Ip.parse("2.3.4.5")));
@@ -1608,7 +1606,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testBgpForwardingContext() {
+  void testBgpForwardingContext() {
     // Test extraction: forwarding-context at protocol level and group level
     JuniperConfiguration jc = parseJuniperConfig("bgp-forwarding-context");
     RoutingInstance vrf1 = jc.getMasterLogicalSystem().getRoutingInstances().get("VRF1");
@@ -1623,7 +1621,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testBgpForwardingContextConversion() {
+  void testBgpForwardingContextConversion() {
     // Test VI conversion: forwarding-context master → sessionVrf = SpecificVrf("default")
     Configuration c = parseConfig("bgp-forwarding-context");
 
@@ -1649,7 +1647,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testBgpDropPathAttributes() {
+  void testBgpDropPathAttributes() {
     JuniperConfiguration c = parseJuniperConfig("bgp-drop-path-attributes");
     BgpGroup master = c.getMasterLogicalSystem().getDefaultRoutingInstance().getMasterBgpGroup();
     IntegerSpace expected =
@@ -1663,7 +1661,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testDescriptionValidationFatalError() throws IOException {
+  void testDescriptionValidationFatalError() throws IOException {
     String fileKey = "description-validation";
     String warningKey = "configs/" + fileKey;
 
@@ -1684,7 +1682,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testStaticRoutePrefixValidationFatalError() throws IOException {
+  void testStaticRoutePrefixValidationFatalError() throws IOException {
     String fileKey = "static-route-prefix-validation";
     String warningKey = "configs/" + fileKey;
 
@@ -1702,7 +1700,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testPrefixNormalizationValidation() throws IOException {
+  void testPrefixNormalizationValidation() throws IOException {
     String fileKey = "prefix-normalization-validation";
     String warningKey = "configs/" + fileKey;
 
@@ -1729,7 +1727,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testPrefix6NormalizationValidation() throws IOException {
+  void testPrefix6NormalizationValidation() throws IOException {
     String fileKey = "prefix6-normalization-validation";
     String warningKey = "configs/" + fileKey;
 
@@ -1757,7 +1755,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testBgpKeepExtraction() {
+  void testBgpKeepExtraction() {
     JuniperConfiguration c = parseJuniperConfig("bgp-keep");
 
     // Routing instance R1 does not set keep
@@ -1798,13 +1796,13 @@ public final class FlatJuniperGrammarTest {
 
   /** Every form of {@code metric-out}, at every level where it is allowed, parses. */
   @Test
-  public void testBgpMetricOut() {
+  void testBgpMetricOut() {
     // The MED is not modeled, so this only checks that nothing is unrecognized.
     parseConfig("bgp-metric-out");
   }
 
   @Test
-  public void testBgpMultipath() {
+  void testBgpMultipath() {
     assertThat(
         parseConfig("bgp-multipath").getDefaultVrf(),
         hasBgpProcess(allOf(hasMultipathEbgp(true), hasMultipathIbgp(false))));
@@ -1822,7 +1820,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testBgpNeighborExtraction() throws IOException {
+  void testBgpNeighborExtraction() throws IOException {
     String hostname = "bgp-neighbor";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -1850,13 +1848,13 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testBgpPriority() {
+  void testBgpPriority() {
     assertThat(
         parseJuniperConfig("bgp-output-queue-priority").getWarnings().getParseWarnings(), empty());
   }
 
   @Test
-  public void testBgpPreferenceExtraction() {
+  void testBgpPreferenceExtraction() {
     JuniperConfiguration c = parseJuniperConfig("bgp-preference");
     RoutingInstance ri = c.getMasterLogicalSystem().getDefaultRoutingInstance();
     assertThat(ri.getMasterBgpGroup().getPreference(), equalTo(140));
@@ -1866,7 +1864,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testBgpPreferenceConversion() {
+  void testBgpPreferenceConversion() {
     Configuration c = parseConfig("bgp-preference");
     Vrf def = c.getDefaultVrf();
     assertThat(def.getBgpProcess().getAdminCost(RoutingProtocol.BGP), equalTo(140));
@@ -1893,7 +1891,7 @@ public final class FlatJuniperGrammarTest {
 
   /** For https://github.com/batfish/batfish/issues/6710 */
   @Test
-  public void testBgpRoutingOptionsAutonomousSystemGH6710() throws IOException {
+  void testBgpRoutingOptionsAutonomousSystemGH6710() throws IOException {
     String hostname = "bgp-routing-options-as-gh-6710";
     String filename = "configs/" + hostname;
     IBatfish batfish = getBatfishForConfigurationNames(hostname);
@@ -1927,7 +1925,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testBgpMultipathMultipleAs() throws IOException {
+  void testBgpMultipathMultipleAs() throws IOException {
     String testrigName = "multipath-multiple-as";
     List<String> configurationNames =
         ImmutableList.of(
@@ -1976,7 +1974,7 @@ public final class FlatJuniperGrammarTest {
 
   /** Make sure bgp type internal properly sets remote as when non explicitly specified */
   @Test
-  public void testBgpTypeInternalPeerAs() {
+  void testBgpTypeInternalPeerAs() {
     String hostname = "bgp-type-internal";
     Configuration c = parseConfig(hostname);
     assertThat(
@@ -1984,43 +1982,43 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testBgpLoops() {
+  void testBgpLoops() {
     // Just don't crash.
     parseJuniperConfig("bgp-loops");
   }
 
   @Test
-  public void testMpls() {
+  void testMpls() {
     // Just don't have parse warnings.
     parseJuniperConfig("juniper-mpls");
   }
 
   @Test
-  public void testBgpMisc() {
+  void testBgpMisc() {
     // Just don't crash.
     parseJuniperConfig("bgp-misc");
   }
 
   @Test
-  public void testBgpValidation() {
+  void testBgpValidation() {
     // Just don't crash.
     parseJuniperConfig("bgp-validation");
   }
 
   @Test
-  public void testSecurityMisc() {
+  void testSecurityMisc() {
     // Just don't have parse warnings.
     parseJuniperConfig("juniper-security-misc");
   }
 
   @Test
-  public void testVpn() {
+  void testVpn() {
     // Just don't have parse warnings.
     parseJuniperConfig("juniper-vpn");
   }
 
   @Test
-  public void testBgpAddPathExtraction() {
+  void testBgpAddPathExtraction() {
     String hostname = "juniper-bgp-add-path";
     JuniperConfiguration vc = parseJuniperConfig(hostname);
     RoutingInstance ri = vc.getMasterLogicalSystem().getDefaultRoutingInstance();
@@ -2058,7 +2056,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testBgpAddPathReferences() throws IOException {
+  void testBgpAddPathReferences() throws IOException {
     String hostname = "juniper-bgp-add-path";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ae =
@@ -2073,7 +2071,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testPolicyAddPathSendCountExtraction() {
+  void testPolicyAddPathSendCountExtraction() {
     String hostname = "juniper-policy-add-path-send-count";
     JuniperConfiguration vc = parseJuniperConfig(hostname);
     PsTerm term =
@@ -2086,7 +2084,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testPolicyAddPathSendCountConversionWarning() throws IOException {
+  void testPolicyAddPathSendCountConversionWarning() throws IOException {
     String hostname = "juniper-policy-add-path-send-count";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
@@ -2122,7 +2120,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testBgpAddPathWarnings() throws IOException {
+  void testBgpAddPathWarnings() throws IOException {
     String hostname = "juniper-bgp-add-path";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
@@ -2139,7 +2137,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testBgpAddPathConversion() {
+  void testBgpAddPathConversion() {
     String hostname = "juniper-bgp-add-path";
     Configuration c = parseConfig(hostname);
     Map<Ip, BgpActivePeerConfig> activeNeighbors =
@@ -2187,7 +2185,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testSetCommunity() {
+  void testSetCommunity() {
     Configuration c = parseConfig("community");
 
     ConnectedRoute cr = new ConnectedRoute(Prefix.strict("1.0.0.0/24"), "blah");
@@ -2245,7 +2243,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testAddCommunity() {
+  void testAddCommunity() {
     Configuration c = parseConfig("community");
 
     ConnectedRoute cr = new ConnectedRoute(Prefix.strict("1.0.0.0/24"), "blah");
@@ -2306,7 +2304,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testDeleteCommunity() {
+  void testDeleteCommunity() {
     Configuration c = parseConfig("community");
 
     Bgpv4Route base =
@@ -2381,19 +2379,19 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFtiInterfaceTypeSupport() {
+  void testFtiInterfaceTypeSupport() {
     parseConfig("juniper_fti_interface_type");
     // don't crash.
   }
 
   @Test
-  public void testJunosFtiConfiguration() {
+  void testJunosFtiConfiguration() {
     parseConfig("juniper_fti");
     // don't crash.
   }
 
   @Test
-  public void testSetProtocolsIsis() throws IOException {
+  void testSetProtocolsIsis() throws IOException {
     // don't crash.
     String hostname = "juniper-set-protocols-isis";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -2407,7 +2405,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testPsFromCommunity() {
+  void testPsFromCommunity() {
     Configuration c = parseConfig("community");
 
     Bgpv4Route base =
@@ -2465,7 +2463,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testPsFromNeighbor() {
+  void testPsFromNeighbor() {
     Configuration c = parseConfig("bgp-policy-from-neighbor");
 
     Bgpv4Route base =
@@ -2506,7 +2504,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testPsFromNextHop() throws IOException {
+  void testPsFromNextHop() throws IOException {
     Configuration c = parseConfig("bgp-policy-from-next-hop");
 
     Bgpv4Route permittedRoute =
@@ -2536,7 +2534,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testBgpDisable() throws IOException {
+  void testBgpDisable() throws IOException {
     // Config has "set protocols bgp disable"; no VI BGP process should be created
     String hostname = "bgp_disable";
     IBatfish iBatfish = getBatfishForConfigurationNames(hostname);
@@ -2545,7 +2543,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testDefaultApplications() throws IOException {
+  void testDefaultApplications() throws IOException {
     String hostname = "default-applications";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
@@ -2626,14 +2624,14 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testEnforceFirstAs() {
+  void testEnforceFirstAs() {
     String hostname = "bgp-enforce-first-as";
     Configuration c = parseConfig(hostname);
     assertThat(c, hasDefaultVrf(hasBgpProcess(hasNeighbors(hasValue(hasEnforceFirstAs())))));
   }
 
   @Test
-  public void testEthernetSwitchingFilterReference() throws IOException {
+  void testEthernetSwitchingFilterReference() throws IOException {
     String hostname = "ethernet-switching-filter";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -2646,7 +2644,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testEvpnAfExtraction() {
+  void testEvpnAfExtraction() {
     JuniperConfiguration c = parseJuniperConfig("juniper-evpn-af");
     assertNotNull(
         c.getMasterLogicalSystem()
@@ -2663,7 +2661,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testSecurityZoneTermReference() throws IOException {
+  void testSecurityZoneTermReference() throws IOException {
     String hostname = "security-zone-term-refs";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -2681,20 +2679,20 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testZoneUndefinedInterface() {
+  void testZoneUndefinedInterface() {
     // Zone references an interface with host-inbound-traffic that doesn't exist.
     // Should not crash during conversion.
     parseConfig("zone-undefined-interface");
   }
 
   @Test
-  public void testEvpnEncapsulationExtraction() {
+  void testEvpnEncapsulationExtraction() {
     JuniperConfiguration c = parseJuniperConfig("juniper-evpn-vxlan-encap");
     assertEquals(EvpnEncapsulation.VXLAN, c.getMasterLogicalSystem().getEvpn().getEncapsulation());
   }
 
   @Test
-  public void testEvpnMulticastModeIngressExtraction() {
+  void testEvpnMulticastModeIngressExtraction() {
     JuniperConfiguration c = parseJuniperConfig("juniper-evpn-multicast-ingress");
     assertEquals(
         MulticastModeOptions.INGRESS_REPLICATION,
@@ -2702,20 +2700,20 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testEvpnMulticastModeClientExtraction() {
+  void testEvpnMulticastModeClientExtraction() {
     JuniperConfiguration c = parseJuniperConfig("juniper-evpn-multicast-client");
     assertEquals(
         MulticastModeOptions.CLIENT, c.getMasterLogicalSystem().getEvpn().getMulticastMode());
   }
 
   @Test
-  public void testEvpnVniListAllExtraction() {
+  void testEvpnVniListAllExtraction() {
     JuniperConfiguration c = parseJuniperConfig("juniper-evpn-vni-list-all");
     assertTrue(c.getMasterLogicalSystem().getEvpn().getExtendedVniAll());
   }
 
   @Test
-  public void testEvpnVniListNoRangeExtraction() {
+  void testEvpnVniListNoRangeExtraction() {
     JuniperConfiguration c = parseJuniperConfig("juniper-evpn-vni-list-no-range");
     assertEquals(
         IntegerSpace.unionOf(
@@ -2724,7 +2722,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testEvpnVniListWithRangeExtraction() {
+  void testEvpnVniListWithRangeExtraction() {
     JuniperConfiguration c = parseJuniperConfig("juniper-evpn-vni-list-with-range");
     assertEquals(
         IntegerSpace.unionOf(IntegerSpace.of(new SubRange(10101, 10103)), IntegerSpace.of(10105)),
@@ -2732,7 +2730,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallFilterReferences() throws IOException {
+  void testFirewallFilterReferences() throws IOException {
     String hostname = "firewall-filters";
     String filename = "configs/" + hostname;
 
@@ -2762,7 +2760,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallFilterThenRoutingInstanceReferences() throws IOException {
+  void testFirewallFilterThenRoutingInstanceReferences() throws IOException {
     String hostname = "firewall-filter-then-routing-instance";
     String filename = "configs/" + hostname;
 
@@ -2780,7 +2778,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallFilterThenRoutingInstanceConversion() {
+  void testFirewallFilterThenRoutingInstanceConversion() {
     Configuration c = parseConfig("firewall-filter-then-routing-instance");
 
     PacketPolicy policy = c.getPacketPolicies().get("FBF");
@@ -2802,7 +2800,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallFilterExtraction() {
+  void testFirewallFilterExtraction() {
     JuniperConfiguration c = parseJuniperConfig("firewall-filters");
     Map<String, org.batfish.representation.juniper.Interface> ifaces =
         c.getMasterLogicalSystem().getInterfaces();
@@ -3037,7 +3035,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallFilterConversion() {
+  void testFirewallFilterConversion() {
     Configuration c = parseConfig("firewall-filters");
     Flow.Builder fb = builder().setIpProtocol(OSPF).setIngressNode(c.getHostname()).setDstIp(ZERO);
     Flow src1235 = fb.setSrcIp(Ip.parse("1.2.3.5")).build();
@@ -3059,7 +3057,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testTunnelAttributeExtraction() {
+  void testTunnelAttributeExtraction() {
     JuniperConfiguration vc = parseJuniperConfig("tunnel-attributes");
     Map<String, TunnelAttribute> tunnelAttributes =
         vc.getMasterLogicalSystem().getTunnelAttributes();
@@ -3081,7 +3079,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallCombinedPolicies() {
+  void testFirewallCombinedPolicies() {
     Configuration c = parseConfig("firewall-combined-policies");
     String interfaceNameTrust = "ge-0/0/0.0";
     String interfaceNameUntrust = "ge-0/0/1.0";
@@ -3137,7 +3135,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallGlobalAddressBook() {
+  void testFirewallGlobalAddressBook() {
     Configuration c = parseConfig("firewall-global-address-book");
     String interfaceNameTrust = "ge-0/0/0.0";
     String interfaceNameUntrust = "ge-0/0/1.0";
@@ -3221,7 +3219,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallGlobalAddressBookRangeError() throws IOException {
+  void testFirewallGlobalAddressBookRangeError() throws IOException {
     String hostname = "firewall-global-address-book-range-error";
     String fileKey = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -3239,7 +3237,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallGlobalPolicy() {
+  void testFirewallGlobalPolicy() {
     Configuration c = parseConfig("firewall-global-policy");
     String interfaceNameTrust = "ge-0/0/0.0";
     String interfaceNameUntrust = "ge-0/0/1.0";
@@ -3283,7 +3281,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallGlobalPolicyGlobalAddressBook() {
+  void testFirewallGlobalPolicyGlobalAddressBook() {
     /*
      * Test address book behavior when used in a global policy
      * i.e. a policy that does not have fromZone or toZone
@@ -3325,7 +3323,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallNoPolicies() {
+  void testFirewallNoPolicies() {
     Configuration c = parseConfig("firewall-no-policies");
     String interfaceNameTrust = "ge-0/0/0.0";
     String interfaceNameUntrust = "ge-0/0/1.0";
@@ -3364,7 +3362,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallApplicationServicesExtraction() {
+  void testFirewallApplicationServicesExtraction() {
     String hostname = "firewall-application-services";
     JuniperConfiguration vc = parseJuniperConfig(hostname);
     assertThat(
@@ -3379,7 +3377,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallPolicies() {
+  void testFirewallPolicies() {
     Configuration c = parseConfig("firewall-policies");
     String interfaceNameTrust = "ge-0/0/0.0";
     String interfaceNameUntrust = "ge-0/0/1.0";
@@ -3426,7 +3424,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallZoneAddressBookInline() {
+  void testFirewallZoneAddressBookInline() {
     Configuration c = parseConfig("firewall-zone-address-book-inline");
     String interfaceNameTrust = "ge-0/0/0.0";
     String interfaceNameUntrust = "ge-0/0/1.0";
@@ -3475,7 +3473,7 @@ public final class FlatJuniperGrammarTest {
    * inlined address book
    */
   @Test
-  public void testFirewallZoneAddressBookAttach() {
+  void testFirewallZoneAddressBookAttach() {
     Configuration c = parseConfig("firewall-zone-address-book-attach");
     String interfaceNameTrust = "ge-0/0/0.0";
     String interfaceNameUntrust = "ge-0/0/1.0";
@@ -3524,7 +3522,7 @@ public final class FlatJuniperGrammarTest {
    * inlined address book
    */
   @Test
-  public void testFirewallZoneAddressBookGlobal() {
+  void testFirewallZoneAddressBookGlobal() {
     Configuration c = parseConfig("firewall-zone-address-book-global");
     String interfaceNameTrust = "ge-0/0/0.0";
     String interfaceNameUntrust = "ge-0/0/1.0";
@@ -3572,7 +3570,7 @@ public final class FlatJuniperGrammarTest {
    * When both global and zone-specific (attached or inline) address books are present, global loses
    */
   @Test
-  public void testFirewallZoneAddressBookGlobalLoses() {
+  void testFirewallZoneAddressBookGlobalLoses() {
     Configuration c = parseConfig("firewall-zone-address-book-global-loses");
     String interfaceNameTrust = "ge-0/0/0.0";
     String interfaceNameUntrust = "ge-0/0/1.0";
@@ -3600,7 +3598,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallZoneAddressUndefined() {
+  void testFirewallZoneAddressUndefined() {
     Configuration c = parseConfig("firewall-zone-address-undefined");
 
     String interfaceNameTrust = "ge-0/0/0.0";
@@ -3636,7 +3634,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallZoneAddressBookAttachAndGlobal() {
+  void testFirewallZoneAddressBookAttachAndGlobal() {
     Configuration c = parseConfig("firewall-zone-address-book-attach-and-global");
 
     String interfaceNameTrust = "ge-0/0/0.0";
@@ -3666,7 +3664,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallZones() {
+  void testFirewallZones() {
     Configuration c = parseConfig("firewall-no-policies");
     String interfaceNameTrust = "ge-0/0/0.0";
     String interfaceNameUntrust = "ge-0/0/1.0";
@@ -3703,19 +3701,19 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testNameServer() {
+  void testNameServer() {
     Configuration config = parseConfig("name-server");
     assertThat(config.getDnsServers(), contains("1.2.3.4", "2.0.0.0"));
   }
 
   @Test
-  public void testDnsProxyParsing() {
+  void testDnsProxyParsing() {
     JuniperConfiguration config = parseJuniperConfig("dns-proxy");
     assertThat(config.getWarnings().getParseWarnings(), empty());
   }
 
   @Test
-  public void testDnsProxyExtraction() {
+  void testDnsProxyExtraction() {
     JuniperConfiguration config = parseJuniperConfig("dns-proxy");
     assertThat(
         config.getMasterLogicalSystem().getDnsProxyInterfaces(),
@@ -3723,19 +3721,19 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testDnsProxyExtractionAbsent() {
+  void testDnsProxyExtractionAbsent() {
     JuniperConfiguration config = parseJuniperConfig("dns-no-proxy");
     assertThat(config.getMasterLogicalSystem().getDnsProxyInterfaces(), empty());
   }
 
   @Test
-  public void testDnsForwardersExtraction() {
+  void testDnsForwardersExtraction() {
     JuniperConfiguration config = parseJuniperConfig("dns-proxy");
     assertThat(config.getMasterLogicalSystem().getDnsForwarders(), contains(Ip.parse("8.8.4.4")));
   }
 
   @Test
-  public void testAggregateDefaults() {
+  void testAggregateDefaults() {
     Configuration config = parseConfig("aggregate-defaults");
 
     Set<GeneratedRoute> aggregateRoutes = config.getDefaultVrf().getGeneratedRoutes();
@@ -3798,7 +3796,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testAggregateRoutesGenerationPolicies() {
+  void testAggregateRoutesGenerationPolicies() {
     Configuration config = parseConfig("aggregate-routes");
 
     Set<GeneratedRoute> aggregateRoutes = config.getDefaultVrf().getGeneratedRoutes();
@@ -3877,7 +3875,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testGeneratedDefaults() {
+  void testGeneratedDefaults() {
     Configuration config = parseConfig("generated-defaults");
 
     Set<GeneratedRoute> generatedRoutes = config.getDefaultVrf().getGeneratedRoutes();
@@ -3940,7 +3938,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testGeneratedRoutesGenerationPolicies() {
+  void testGeneratedRoutesGenerationPolicies() {
     Configuration config = parseConfig("generated-routes");
 
     Set<GeneratedRoute> generatedRoutes = config.getDefaultVrf().getGeneratedRoutes();
@@ -3994,7 +3992,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testGeneratedRouteCommunities() throws IOException {
+  void testGeneratedRouteCommunities() throws IOException {
     Configuration config =
         BatfishTestUtils.parseTextConfigs(
                 _folder, "org/batfish/grammar/juniper/testconfigs/generated-route-communities")
@@ -4011,7 +4009,7 @@ public final class FlatJuniperGrammarTest {
    * on, BGP peer local IP is null and the VRF's source IP inference is set to use loopback IP.
    */
   @Test
-  public void testBgpDefaultAddressSelection() throws IOException {
+  void testBgpDefaultAddressSelection() throws IOException {
     Configuration config = parseConfig("bgp-default-address-selection");
     Ip loopback = Ip.parse("1.1.1.1");
     assertEquals(config.getDefaultVrf().getSourceIpInference(), UseConstantIp.create(loopback));
@@ -4021,7 +4019,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testNestedConfig() throws IOException {
+  void testNestedConfig() throws IOException {
     String hostname = "nested-config";
 
     /* Confirm a simple extraction (hostname) works for nested config format */
@@ -4029,7 +4027,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testNestedConfigLineComments() throws IOException {
+  void testNestedConfigLineComments() throws IOException {
     String hostname = "nested-config-line-comments";
 
     // Confirm extraction works for nested configs even in the presence of line comments
@@ -4037,7 +4035,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testNestedConfigWithMultilineComment() throws IOException {
+  void testNestedConfigWithMultilineComment() throws IOException {
     String hostname = "nested-config-with-multiline-comment";
 
     // Confirm extraction works for nested configs even in the presence of multiline comments
@@ -4049,7 +4047,7 @@ public final class FlatJuniperGrammarTest {
    * data.
    */
   @Test
-  public void testNestedConfigWithQuoteBug() throws IOException {
+  void testNestedConfigWithQuoteBug() throws IOException {
     String hostname = "nested-config-with-quote-bug";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     batfish.getSettings().setDisableUnrecognized(false);
@@ -4060,7 +4058,7 @@ public final class FlatJuniperGrammarTest {
 
   /** Test for https://github.com/batfish/batfish/issues/7225. */
   @Test
-  public void testNestedConfigWithSecretData() {
+  void testNestedConfigWithSecretData() {
     String hostname = "nested-config-with-secret-data";
     Configuration c = parseConfig(hostname);
     assertThat(c.getVrfs(), hasKey("VRF_NAME"));
@@ -4071,7 +4069,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testNestedConfigStructureDef() throws IOException {
+  void testNestedConfigStructureDef() throws IOException {
     String hostname = "nested-config-structure-def";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -4090,7 +4088,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testOspfAreaDefaultMetric() throws IOException {
+  void testOspfAreaDefaultMetric() throws IOException {
     Configuration config =
         BatfishTestUtils.parseTextConfigs(
                 _folder, "org/batfish/grammar/juniper/testconfigs/ospf-area-default-metric")
@@ -4107,7 +4105,7 @@ public final class FlatJuniperGrammarTest {
 
   /** Test that we allow integers as area Ids */
   @Test
-  public void testOspfAreaInt() throws IOException {
+  void testOspfAreaInt() throws IOException {
     Configuration config =
         BatfishTestUtils.parseTextConfigs(
                 _folder, "org/batfish/grammar/juniper/testconfigs/ospf-area-int")
@@ -4120,7 +4118,7 @@ public final class FlatJuniperGrammarTest {
 
   /** Test that we warn on uknown IPs as interfaces */
   @Test
-  public void testOspfUnknownInterfaceIp() throws IOException {
+  void testOspfUnknownInterfaceIp() throws IOException {
     String hostname = "ospf-unknown-interface-ip";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ParseVendorConfigurationAnswerElement pvcae =
@@ -4133,7 +4131,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testOspfInterfaceDisable() {
+  void testOspfInterfaceDisable() {
     // Config has interfaces ge-0/0/1.0 and ge-0/0/2.0 configured in OSPF.
     // Interface ge-0/0/2.0 has disable set in OSPF config.
     Configuration config = parseConfig("ospf-interface-disable");
@@ -4145,7 +4143,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testOspfDisable() {
+  void testOspfDisable() {
     /*
     - Default VRF has OSPF process disabled, with interface ge-0/0/0.0
     - VRF INSTANCE_1 has OSPF process disabled, with interface ge-0/0/1.0
@@ -4174,7 +4172,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testOspfMetric() throws IOException {
+  void testOspfMetric() throws IOException {
     Configuration config =
         BatfishTestUtils.parseTextConfigs(
                 _folder, "org/batfish/grammar/juniper/testconfigs/ospfmetric")
@@ -4207,13 +4205,13 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testOspfPsk() {
+  void testOspfPsk() {
     /* allow both encrypted and unencrypted key */
     parseConfig("ospf-psk");
   }
 
   @Test
-  public void testOspfSummaryDiscardMetric() {
+  void testOspfSummaryDiscardMetric() {
     String hostname = "ospf-reference-bandwidth";
     Configuration c = parseConfig(hostname);
     assertThat(
@@ -4222,7 +4220,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testOspfReferenceBandwidth() {
+  void testOspfReferenceBandwidth() {
     String hostname = "ospf-reference-bandwidth";
     Configuration c = parseConfig(hostname);
     assertThat(c, hasDefaultVrf(hasOspfProcess(DEFAULT_VRF_NAME, hasReferenceBandwidth(1E9D))));
@@ -4233,7 +4231,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testPsPreferenceBehavior() {
+  void testPsPreferenceBehavior() {
     Configuration c = parseConfig("policy-statement-preference");
 
     RoutingPolicy policyPreference = c.getRoutingPolicies().get("preference");
@@ -4255,7 +4253,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testPsPreferenceStructure() {
+  void testPsPreferenceStructure() {
     Configuration c = parseConfig("policy-statement-preference");
 
     RoutingPolicy policyPreference = c.getRoutingPolicies().get("preference");
@@ -4282,7 +4280,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testPsPreferenceAddSubtractExtraction() {
+  void testPsPreferenceAddSubtractExtraction() {
     JuniperConfiguration c = parseJuniperConfig("preference-add-subtract");
     Map<String, PolicyStatement> policies = c.getMasterLogicalSystem().getPolicyStatements();
 
@@ -4323,7 +4321,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testPsPreferenceAddSubtractConversion() {
+  void testPsPreferenceAddSubtractConversion() {
     Configuration c = parseConfig("preference-add-subtract");
 
     // Test preference add
@@ -4356,7 +4354,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testPsMetricAddSubtractExtraction() {
+  void testPsMetricAddSubtractExtraction() {
     JuniperConfiguration c = parseJuniperConfig("metric-add-subtract");
     Map<String, PolicyStatement> policies = c.getMasterLogicalSystem().getPolicyStatements();
 
@@ -4397,7 +4395,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testPsMetricAddSubtractConversion() {
+  void testPsMetricAddSubtractConversion() {
     Configuration c = parseConfig("metric-add-subtract");
 
     // Test metric add
@@ -4428,7 +4426,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testPsMetric2AddSubtractExtraction() {
+  void testPsMetric2AddSubtractExtraction() {
     JuniperConfiguration c = parseJuniperConfig("metric2-add-subtract");
     Map<String, PolicyStatement> policies = c.getMasterLogicalSystem().getPolicyStatements();
 
@@ -4469,13 +4467,13 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testTacplusPsk() {
+  void testTacplusPsk() {
     /* allow both encrypted and unencrypted key */
     parseConfig("tacplus-psk");
   }
 
   @Test
-  public void testTacplusServerModel() {
+  void testTacplusServerModel() {
     JuniperConfiguration vc = parseJuniperConfig("tacplus-psk");
     Map<String, TacplusServer> servers = vc.getMasterLogicalSystem().getTacplusServers();
     assertThat(servers.keySet(), containsInAnyOrder("1.2.3.4", "2.3.4.5", "3.4.5.6", "4.5.6.7"));
@@ -4516,7 +4514,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testAccounting() {
+  void testAccounting() {
     JuniperConfiguration vc = parseJuniperConfig("juniper-accounting");
     Accounting accounting = vc.getMasterLogicalSystem().getAccounting();
     assertThat(accounting, notNullValue());
@@ -4544,7 +4542,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testLoginClass() {
+  void testLoginClass() {
     JuniperConfiguration vc = parseJuniperConfig("juniper-login-class");
     Map<String, LoginClass> classes = vc.getMasterLogicalSystem().getLogin().getClasses();
     assertThat(classes.keySet(), containsInAnyOrder("ADMIN", "READONLY"));
@@ -4554,7 +4552,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testLoginUser() {
+  void testLoginUser() {
     JuniperConfiguration vc = parseJuniperConfig("juniper-login-class");
     Map<String, LoginUser> users = vc.getMasterLogicalSystem().getLogin().getUsers();
     assertThat(users.keySet(), containsInAnyOrder("neteng", "remote", "bootstrap", "sshuser"));
@@ -4588,7 +4586,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testLoginRetryOptions() {
+  void testLoginRetryOptions() {
     JuniperConfiguration vc = parseJuniperConfig("juniper-login-class");
     LoginRetryOptions ro = vc.getMasterLogicalSystem().getLogin().getRetryOptions();
     assertThat(ro, notNullValue());
@@ -4601,7 +4599,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testLoginPassword() {
+  void testLoginPassword() {
     JuniperConfiguration vc = parseJuniperConfig("juniper-login-class");
     LoginPassword pw = vc.getMasterLogicalSystem().getLogin().getPassword();
     assertThat(pw, notNullValue());
@@ -4621,7 +4619,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testLoginClassReferences() throws IOException {
+  void testLoginClassReferences() throws IOException {
     String hostname = "juniper-login-class";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -4635,7 +4633,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testLoginRangeChecks() {
+  void testLoginRangeChecks() {
     // All values parse (within the grammar's uint bounds) but violate the documented ranges,
     // so each should warn and be dropped.
     JuniperConfiguration vc = parseJuniperConfig("juniper-login-range");
@@ -4672,7 +4670,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testIkePolicy() {
+  void testIkePolicy() {
     Configuration c = parseConfig("ike-policy");
 
     assertThat(
@@ -4708,7 +4706,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testIkeProposal() {
+  void testIkeProposal() {
     Configuration c = parseConfig("ike-proposal");
 
     // test for IKE phase1 proposals
@@ -4726,7 +4724,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testInterfaceArp() {
+  void testInterfaceArp() {
     Configuration c = parseConfig("interface-arp");
 
     /* The additional ARP IP set for irb.0 should appear in the data model */
@@ -4734,7 +4732,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testInterfaceBandwidth() {
+  void testInterfaceBandwidth() {
     Configuration c = parseConfig("interface-bandwidth");
 
     // Configuration has ge-0/0/0 with four units configured bandwidths 5000000000, 5000000k, 5000m,
@@ -4759,7 +4757,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testInterfaceMtu() {
+  void testInterfaceMtu() {
     Configuration c = parseConfig("interfaceMtu");
 
     /* Properly configured interfaces should be present in respective areas. */
@@ -4768,7 +4766,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testInterfaceNativeVlan() {
+  void testInterfaceNativeVlan() {
     String hostname = "interface-native-vlan";
     Configuration c = parseConfig(hostname);
 
@@ -4778,13 +4776,13 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testInterfaceSampling() {
+  void testInterfaceSampling() {
     // Sampling is parsed but ignored; verify parsing succeeds for both family inet and inet6
     parseConfig("interface-sampling");
   }
 
   @Test
-  public void testInterfaceOspfNetworkType() {
+  void testInterfaceOspfNetworkType() {
     String hostname = "ospf-interface-network-type";
     Configuration c = parseConfig(hostname);
     // Interface is assumed broadcast by default
@@ -4804,7 +4802,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testInterfacePrimary() throws IOException {
+  void testInterfacePrimary() throws IOException {
     String hostname = "interface-primary";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     JuniperConfiguration jc =
@@ -4831,7 +4829,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testInterfaceVniExtraction() {
+  void testInterfaceVniExtraction() {
     JuniperConfiguration c = parseJuniperConfig("interface-vni");
     Integer vni = c.getMasterLogicalSystem().getNamedVlans().get("VLAN_TEST").getVniId();
     Integer vni0 = 10101;
@@ -4839,13 +4837,13 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testIpAddressParsing() throws IOException {
+  void testIpAddressParsing() throws IOException {
     // Doesn't throw.
     parseConfig("ip_address");
   }
 
   @Test
-  public void testJuniperOspfIntervals() {
+  void testJuniperOspfIntervals() {
     JuniperConfiguration config = parseJuniperConfig("ospf-intervals");
     Map<String, org.batfish.representation.juniper.Interface> ifaces =
         config.getMasterLogicalSystem().getInterfaces();
@@ -4881,7 +4879,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testInterfaceRange() {
+  void testInterfaceRange() {
     String hostname = "interface-range";
     JuniperConfiguration juniperConfig = parseJuniperConfig(hostname);
 
@@ -4909,13 +4907,13 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testInterfaceUndefined() {
+  void testInterfaceUndefined() {
     // Should not crash.
     parseConfig("interface-undefined");
   }
 
   @Test
-  public void testInterfaceVlan() {
+  void testInterfaceVlan() {
     Configuration c = parseConfig("interface-vlan");
 
     // Expecting an Interface in ACCESS mode with VLAN 101
@@ -4973,7 +4971,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testDhcpRelayServerGroup() throws IOException {
+  void testDhcpRelayServerGroup() throws IOException {
     JuniperConfiguration c = parseJuniperConfig("dhcp-relay-server-group");
 
     SortedMap<String, DhcpRelayServerGroup> serverGroups =
@@ -4984,7 +4982,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testInterfaceVlanReferences() throws IOException {
+  void testInterfaceVlanReferences() throws IOException {
     String hostname = "interface-vlan";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -5012,7 +5010,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testInterfaceVtnet() {
+  void testInterfaceVtnet() {
     Configuration c = parseConfig("interface-vtnet");
 
     // Virtualized physical interface.
@@ -5024,7 +5022,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testInterfaceInet6Address() {
+  void testInterfaceInet6Address() {
     String hostname = "interface-inet6-address";
     JuniperConfiguration jc = parseJuniperConfig(hostname);
 
@@ -5059,7 +5057,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testInterfaceInet6Ndp() {
+  void testInterfaceInet6Ndp() {
     // A static NDP entry under an inet6 address parses; the address still converts normally.
     JuniperConfiguration jc = parseJuniperConfig("interfaces-inet6-ndp");
     Map<String, org.batfish.representation.juniper.Interface> units =
@@ -5070,7 +5068,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testIrbInterfaces() {
+  void testIrbInterfaces() {
     String hostname = "irb-interfaces";
     Configuration c = parseConfig(hostname);
 
@@ -5095,7 +5093,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallFilterDscp() {
+  void testFirewallFilterDscp() {
     String hostname = "firewall-filter-dscp";
     Configuration c = parseConfig(hostname);
 
@@ -5123,7 +5121,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testIpProtocol() {
+  void testIpProtocol() {
     String hostname = "firewall-filter-ip-protocol";
     Configuration c = parseConfig(hostname);
 
@@ -5142,7 +5140,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testSourceAddress() {
+  void testSourceAddress() {
     Configuration c = parseConfig("firewall-source-address");
     String filename = "configs/" + c.getHostname();
     String filterNameV4 = "FILTER";
@@ -5211,13 +5209,13 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testIpsecBugs() {
+  void testIpsecBugs() {
     // don't crash
     parseConfig("ipsec-bugs");
   }
 
   @Test
-  public void testIpsecPolicy() {
+  void testIpsecPolicy() {
     Configuration c = parseConfig("ipsec-policy");
 
     // tests for conversion to IPSec phase 2 policies
@@ -5280,7 +5278,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testIpsecProposalSet() {
+  void testIpsecProposalSet() {
     Configuration c = parseConfig("ipsec-proposal-set");
 
     assertThat(
@@ -5383,7 +5381,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testIpsecProposalToIpsecPhase2Proposal() {
+  void testIpsecProposalToIpsecPhase2Proposal() {
     Configuration c = parseConfig("ipsec-proposal");
     assertThat(
         c,
@@ -5456,7 +5454,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testToIpsecPeerConfig() {
+  void testToIpsecPeerConfig() {
     Configuration c = parseConfig("ipsec-vpn");
 
     assertThat(
@@ -5474,7 +5472,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testAddress() {
+  void testAddress() {
     Configuration c = parseConfig("firewall-address");
 
     assertThat(c.getIpAccessLists(), hasKeys("FILTER"));
@@ -5496,7 +5494,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testDestinationAddress() {
+  void testDestinationAddress() {
     Configuration c = parseConfig("firewall-destination-address");
     String filename = "configs/" + c.getHostname();
     String filterNameV4 = "FILTER";
@@ -5538,7 +5536,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testSourceAddressBehavior() {
+  void testSourceAddressBehavior() {
     Configuration c = parseConfig("firewall-source-address");
 
     assertThat(c.getIpAccessLists().keySet(), hasSize(2));
@@ -5556,7 +5554,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testDestinationAddressBehavior() {
+  void testDestinationAddressBehavior() {
     Configuration c = parseConfig("firewall-destination-address");
 
     assertThat(c.getIpAccessLists().keySet(), hasSize(2));
@@ -5574,13 +5572,13 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testApplyGroupsAtLevels() {
+  void testApplyGroupsAtLevels() {
     // apply-groups should be recognized at snmp and protocols levels
     parseConfig("apply-groups-at-levels");
   }
 
   @Test
-  public void testApplyGroupsReferences() throws IOException {
+  void testApplyGroupsReferences() throws IOException {
     String hostname = "juniper-apply-groups-references";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -5612,7 +5610,7 @@ public final class FlatJuniperGrammarTest {
    * reference.
    */
   @Test
-  public void testApplyGroupsInactiveOnlyGroup() throws IOException {
+  void testApplyGroupsInactiveOnlyGroup() throws IOException {
     String hostname = "juniper-group-inactive-only";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -5629,7 +5627,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testJuniperApplyGroupsChain() {
+  void testJuniperApplyGroupsChain() {
     Configuration c = parseConfig("apply-groups-chain");
     assertThat(
         c,
@@ -5638,7 +5636,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testJuniperApplyGroupsNode() throws IOException {
+  void testJuniperApplyGroupsNode() throws IOException {
     String filename = "juniper-apply-groups-node";
 
     Batfish batfish = getBatfishForConfigurationNames(filename);
@@ -5667,7 +5665,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testJuniperApplyGroupsNodeNoHostname() throws IOException {
+  void testJuniperApplyGroupsNodeNoHostname() throws IOException {
     String filename = "juniper-apply-groups-node-no-hostname";
 
     Batfish batfish = getBatfishForConfigurationNames(filename);
@@ -5689,7 +5687,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testJuniperIsis() {
+  void testJuniperIsis() {
     String hostname = "juniper-isis";
     Configuration c = parseConfig(hostname);
 
@@ -5750,7 +5748,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testIsisRedistribution() throws IOException {
+  void testIsisRedistribution() throws IOException {
     /*
     Setup: r1 and r2 share an IS-IS edge.
 
@@ -5797,7 +5795,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testIsisMinimal() {
+  void testIsisMinimal() {
     // This config has an IS-IS loopback and IS-IS interface.
     // Should contain an IS-IS process even though no level is explicitly configured.
     Configuration c = parseConfig("isis-minimal");
@@ -5805,7 +5803,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testIsisL1Disabled() {
+  void testIsisL1Disabled() {
     // This config has a loopback with an ISO address and "set protocols isis interface lo0.0" and
     // an interface ge-0/0/1.0 with both levels enabled.
     // Then in [protocols isis level 1] it sets "disable" and "wide-metrics-only".
@@ -5818,13 +5816,13 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testIsisIgnoreAttachedBit() {
+  void testIsisIgnoreAttachedBit() {
     parseConfig("isis-ignore-attached-bit");
     // don't crash.
   }
 
   @Test
-  public void testIsisInterfaceAndLevelDisable() {
+  void testIsisInterfaceAndLevelDisable() {
     Configuration c = parseConfig("isis-interface-and-level-disable");
     IsisProcess proc = c.getVrfs().get(DEFAULT_VRF_NAME).getIsisProcess();
     assertThat(proc.getLevel1(), notNullValue());
@@ -5845,14 +5843,14 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testJuniperIsisNoIsoAddress() {
+  void testJuniperIsisNoIsoAddress() {
     Configuration c = parseConfig("juniper-isis-no-iso");
 
     assertThat(c, hasDefaultVrf(hasIsisProcess(nullValue())));
   }
 
   @Test
-  public void testJuniperIsisNonLoopbackIsoAddress() {
+  void testJuniperIsisNonLoopbackIsoAddress() {
     Configuration c = parseConfig("juniper-isis-iso-non-loopback");
 
     assertThat(
@@ -5862,7 +5860,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testJuniperIsisNoReferenceBandwidth() {
+  void testJuniperIsisNoReferenceBandwidth() {
     Configuration c = parseConfig("juniper-isis-no-reference-bandwidth");
 
     // With no set metric or reference bandwidth, Juniper IS-IS cost should default to 10
@@ -5872,19 +5870,19 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testJuniperIsisOverload() {
+  void testJuniperIsisOverload() {
     Configuration c = parseConfig("juniper-isis-overload");
     assertThat(c, hasDefaultVrf(hasIsisProcess(IsisProcessMatchers.hasOverload(true))));
   }
 
   @Test
-  public void testJuniperIsisOverloadWithTimeout() {
+  void testJuniperIsisOverloadWithTimeout() {
     Configuration c = parseConfig("juniper-isis-overload-with-timeout");
     assertThat(c, hasDefaultVrf(hasIsisProcess(IsisProcessMatchers.hasOverload(false))));
   }
 
   @Test
-  public void testJuniperIsisPassive() {
+  void testJuniperIsisPassive() {
     Configuration c = parseConfig("juniper-isis-passive");
     Interface passiveL1 = c.getActiveInterfaces().get("ge-1/2/0.0");
     Interface passiveIface = c.getActiveInterfaces().get("ge-1/2/0.1");
@@ -5905,7 +5903,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testJuniperOspfStubSettings() {
+  void testJuniperOspfStubSettings() {
     Configuration c = parseConfig("juniper-ospf-stub-settings");
 
     // Get OSPF process
@@ -5933,7 +5931,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testJuniperPolicyStatementPrefixListDisjunction() {
+  void testJuniperPolicyStatementPrefixListDisjunction() {
     // Configuration has policy statement with term that checks two prefix lists.
     Configuration c = parseConfig("juniper-from-prefix-list");
 
@@ -5975,7 +5973,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testJuniperPolicyStatement() throws IOException {
+  void testJuniperPolicyStatement() throws IOException {
     String hostname = "juniper-policy-statement";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -5993,7 +5991,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testJuniperPolicyStatementTermFromExtraction() {
+  void testJuniperPolicyStatementTermFromExtraction() {
     JuniperConfiguration c = parseJuniperConfig("juniper-policy-statement-from");
     {
       PolicyStatement policy = c.getMasterLogicalSystem().getPolicyStatements().get("COLOR_POLICY");
@@ -6027,7 +6025,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testJuniperPolicyStatementTermFromValidationDatabaseExtraction() {
+  void testJuniperPolicyStatementTermFromValidationDatabaseExtraction() {
     JuniperConfiguration c =
         parseJuniperConfig("juniper-policy-statement-from-validation-database");
     PolicyStatement policy = c.getMasterLogicalSystem().getPolicyStatements().get("VDB");
@@ -6044,7 +6042,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testJuniperPolicyStatementThenCommunity() {
+  void testJuniperPolicyStatementThenCommunity() {
     JuniperConfiguration c = parseJuniperConfig("juniper-ps-then-community");
     Map<String, PsTerm> pses =
         c.getMasterLogicalSystem().getPolicyStatements().get("PS").getTerms();
@@ -6061,7 +6059,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testPsThenConflictsExtraction() {
+  void testPsThenConflictsExtraction() {
     JuniperConfiguration c = parseJuniperConfig("juniper-ps-then-conflicts");
     Map<String, PolicyStatement> pses = c.getMasterLogicalSystem().getPolicyStatements();
 
@@ -6150,7 +6148,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testPsThenConflictsConversion() {
+  void testPsThenConflictsConversion() {
     Configuration c = parseConfig("juniper-ps-then-conflicts");
 
     Bgpv4Route baseRoute =
@@ -6273,7 +6271,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testPsThenConflictsWarnings() {
+  void testPsThenConflictsWarnings() {
     JuniperConfiguration c = parseJuniperConfig("juniper-ps-then-conflicts");
     List<ParseWarning> riskyWarnings = c.getWarnings().getRiskyParseWarnings();
 
@@ -6318,7 +6316,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testJuniperPolicyStatementTermThenExtraction() {
+  void testJuniperPolicyStatementTermThenExtraction() {
     JuniperConfiguration c = parseJuniperConfig("juniper-policy-statement-then");
     {
       PolicyStatement policy = c.getMasterLogicalSystem().getPolicyStatements().get("COLOR_POLICY");
@@ -6373,25 +6371,25 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testInterfaceFilter() {
+  void testInterfaceFilter() {
     parseConfig("juniper-set-interface-filter-crash");
     // don't crash.
   }
 
   @Test
-  public void testInterfaceDamping() {
+  void testInterfaceDamping() {
     parseConfig("juniper-set-interface-damping");
     // don't crash.
   }
 
   @Test
-  public void testBgpFamilyRouteTarget() {
+  void testBgpFamilyRouteTarget() {
     parseConfig("juniper-bgp-family-route-target");
     // don't crash.
   }
 
   @Test
-  public void testJuniperPolicyStatementTermFromEvaluation() {
+  void testJuniperPolicyStatementTermFromEvaluation() {
     // Configuration has policy statements
     Configuration c = parseConfig("juniper-policy-statement-term");
     Prefix testPrefix = Prefix.parse("1.1.1.1/28");
@@ -6701,7 +6699,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testJuniperPolicyStatementFromMetric2Parsing() {
+  void testJuniperPolicyStatementFromMetric2Parsing() {
     // Test that "from metric2" statements parse and are marked as unsupported
     String hostname = "juniper-policy-statement-from-metric2";
     JuniperConfiguration vc = parseJuniperConfig(hostname);
@@ -6731,7 +6729,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testJuniperWildcards() throws IOException {
+  void testJuniperWildcards() throws IOException {
     String hostname = "juniper-wildcards";
     String loopback = "lo0.0";
     String prefix1 = "1.1.1.1/32";
@@ -6801,7 +6799,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testJuniperWildcardsReference() throws IOException {
+  void testJuniperWildcardsReference() throws IOException {
     String hostname = "juniper-wildcards";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -6831,7 +6829,7 @@ public final class FlatJuniperGrammarTest {
 
   /** Test definition and reference tracking for named communities and tunnel attributes. */
   @Test
-  public void testJuniperCommunityReference() throws IOException {
+  void testJuniperCommunityReference() throws IOException {
     String hostname = "juniper-references-in-policy";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -6880,7 +6878,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testLogicalSystems() throws IOException {
+  void testLogicalSystems() throws IOException {
     String snapshotName = "logical-systems";
     String configName = "master1";
 
@@ -6905,7 +6903,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testLogicalSystemsInterfaces() throws IOException {
+  void testLogicalSystemsInterfaces() throws IOException {
     String snapshotName = "logical-systems";
     String configName = "master1";
     String lsConfigName =
@@ -6936,7 +6934,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testLogicalSystemsFirewallFilters() throws IOException {
+  void testLogicalSystemsFirewallFilters() throws IOException {
     String snapshotName = "logical-systems";
     String configName = "master1";
     String lsConfigName =
@@ -6973,7 +6971,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testLogicalSystemsPolicyStatements() throws IOException {
+  void testLogicalSystemsPolicyStatements() throws IOException {
     String snapshotName = "logical-systems";
     String configName = "master1";
     String lsConfigName =
@@ -7010,7 +7008,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testLocalRouteExportBgp() {
+  void testLocalRouteExportBgp() {
     Configuration c = parseConfig("local-route-export-bgp");
 
     RoutingPolicy peer1RejectAllLocal =
@@ -7086,7 +7084,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testLocalRouteExportOspf() {
+  void testLocalRouteExportOspf() {
     Configuration c = parseConfig("local-route-export-ospf");
 
     String vrf1 = "vrf1";
@@ -7184,7 +7182,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testName() {
+  void testName() {
     JuniperConfiguration c = parseJuniperConfig("name");
     assertThat(c.getMasterLogicalSystem().getPolicyStatements(), hasKeys("XX"));
     PolicyStatement ps = c.getMasterLogicalSystem().getPolicyStatements().get("XX");
@@ -7197,7 +7195,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testNatDest() {
+  void testNatDest() {
     Configuration config = parseConfig("nat-dest");
 
     Map<String, Interface> interfaces = config.getAllInterfaces();
@@ -7265,7 +7263,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testNatDestJuniperConfig() {
+  void testNatDestJuniperConfig() {
     JuniperConfiguration config = parseJuniperConfig("nat-dest");
 
     Nat nat = config.getMasterLogicalSystem().getNatDestination();
@@ -7371,7 +7369,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testNatSource() {
+  void testNatSource() {
     Configuration config = parseConfig("nat-source2");
     Map<String, Interface> interfaceMap = config.getAllInterfaces();
 
@@ -7436,7 +7434,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testNatSourceJuniperConfig() {
+  void testNatSourceJuniperConfig() {
     JuniperConfiguration config = parseJuniperConfig("nat-source");
 
     Nat nat = config.getMasterLogicalSystem().getNatSource();
@@ -7511,7 +7509,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testNatSourceJuniperConfig2() {
+  void testNatSourceJuniperConfig2() {
     JuniperConfiguration config = parseJuniperConfig("nat-source2");
 
     Nat nat = config.getMasterLogicalSystem().getNatSource();
@@ -7561,7 +7559,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testAsnLeadingZerosExtraction() {
+  void testAsnLeadingZerosExtraction() {
     JuniperConfiguration vc = parseJuniperConfig("asn-leading-zeros");
     Map<Prefix, IpBgpGroup> peers =
         vc.getMasterLogicalSystem().getRoutingInstances().get("ri1").getIpBgpGroups();
@@ -7573,7 +7571,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testOspfInterfaceAreaAssignment() {
+  void testOspfInterfaceAreaAssignment() {
     Configuration c = parseConfig("ospfInterfaceAreaAssignment");
 
     /* Properly configured interfaces should be present in respective areas. */
@@ -7606,7 +7604,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testOspfRouterId() {
+  void testOspfRouterId() {
     Configuration c = parseConfig("ospf-router-id");
 
     assertThat(
@@ -7615,7 +7613,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testOspfSummaries() {
+  void testOspfSummaries() {
     Configuration c = parseConfig(("ospf-abr-with-summaries"));
 
     assertThat(
@@ -7651,7 +7649,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testOverlayEcmp() throws IOException {
+  void testOverlayEcmp() throws IOException {
     String hostname = "juniper-overlay-ecmp";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     List<ParseWarning> parseWarnings =
@@ -7664,7 +7662,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testParsingRecovery() {
+  void testParsingRecovery() {
     String recoveryText = readResource("org/batfish/grammar/juniper/testconfigs/recovery", UTF_8);
     Settings settings = new Settings();
     FlatJuniperCombinedParser cp = new FlatJuniperCombinedParser(recoveryText, settings);
@@ -7678,7 +7676,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testPredefinedJunosApplications() throws IOException {
+  void testPredefinedJunosApplications() throws IOException {
     Batfish batfish = getBatfishForConfigurationNames("pre-defined-junos-applications");
     InitInfoAnswerElement answer = batfish.initInfo(batfish.getSnapshot(), false, true);
     assertThat(
@@ -7691,7 +7689,7 @@ public final class FlatJuniperGrammarTest {
    * ConfigurationBuilder})
    */
   @Test
-  public void testPredefinedJunosApplicationsConverted() throws IOException {
+  void testPredefinedJunosApplicationsConverted() throws IOException {
     // conversion failure will cause an exception
     String hostname = "pre-defined-junos-applications-converted";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -7701,7 +7699,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testPredefinedJunosApplicationSets() throws IOException {
+  void testPredefinedJunosApplicationSets() throws IOException {
     Batfish batfish = getBatfishForConfigurationNames("pre-defined-junos-application-sets");
     InitInfoAnswerElement answer = batfish.initInfo(batfish.getSnapshot(), false, true);
     assertThat(
@@ -7710,7 +7708,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testPrefixList() throws IOException {
+  void testPrefixList() throws IOException {
     String hostname = "prefix-lists";
     String filename = "configs/" + hostname;
     Configuration c = parseConfig(hostname);
@@ -7738,7 +7736,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testRtfPrefixList() throws IOException {
+  void testRtfPrefixList() throws IOException {
     String hostname = "rtf-prefix-lists";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -7762,7 +7760,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testPrefixListEmpty() {
+  void testPrefixListEmpty() {
     Configuration c = parseConfig("prefix-list-empty");
     Flow testFlow1 = createFlow("9.8.7.6", "0.0.0.0");
     Flow testFlow2 = createFlow("1.2.3.4", "1.2.3.4");
@@ -7804,7 +7802,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testGH6149Preprocess() {
+  void testGH6149Preprocess() {
     Configuration c = parseConfig("gh-6149-preprocess");
     assertThat(
         c,
@@ -7826,19 +7824,19 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testGH6307() {
+  void testGH6307() {
     parseConfig("gh-6307");
     // don't crash.
   }
 
   @Test
-  public void testGH8744() {
+  void testGH8744() {
     parseConfig("gh-8744");
     // don't crash.
   }
 
   @Test
-  public void testImplicitInitInterface() {
+  void testImplicitInitInterface() {
     JuniperConfiguration juniperConfiguration = parseJuniperConfig("implicit-init-interface");
 
     String phyIfaceName = "ge-1/1/0";
@@ -7856,7 +7854,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testRouteFilters() {
+  void testRouteFilters() {
     Configuration c = parseConfig("route-filter");
     RouteFilterList rfl = c.getRouteFilterLists().get("route-filter-test:t1");
     assertThat(
@@ -7878,14 +7876,14 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testRouteFilterThenNextHop() {
+  void testRouteFilterThenNextHop() {
     // route-filter "<prefix> <match-type> next-hop self": match type precedes next-hop, so "self"
     // must lex as the keyword (not an interface name). Should not crash.
     parseConfig("route-filter-then-next-hop");
   }
 
   @Test
-  public void testRoutingInstanceType() {
+  void testRoutingInstanceType() {
     Configuration c = parseConfig("routing-instance-type");
 
     /* All types for now should result in a VRF */
@@ -7898,19 +7896,19 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testRoutingOptionsMiscParsing() {
+  void testRoutingOptionsMiscParsing() {
     // Just don't have parse warnings, for now.
     parseJuniperConfig("routing-options-misc");
   }
 
   @Test
-  public void testRibNamesMiscParsing() {
+  void testRibNamesMiscParsing() {
     // Just don't have parse warnings
     parseJuniperConfig("routing-options-misc");
   }
 
   @Test
-  public void testRoutingPolicy() {
+  void testRoutingPolicy() {
     Configuration c = parseConfig("routing-policy");
 
     RoutingPolicy policyExact = c.getRoutingPolicies().get("route-filter-exact");
@@ -8007,7 +8005,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testMatchFromProtocols() {
+  void testMatchFromProtocols() {
     Configuration c = parseConfig("from-protocols");
     RoutingPolicy fromIsis = c.getRoutingPolicies().get("from-isis");
     RoutingPolicy fromOspf = c.getRoutingPolicies().get("from-ospf");
@@ -8082,7 +8080,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testStaticRoutePreference() {
+  void testStaticRoutePreference() {
     Configuration c = parseConfig("static-route-preference");
     assertThat(
         c,
@@ -8106,7 +8104,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testStaticRouteOverwrite() {
+  void testStaticRouteOverwrite() {
     JuniperConfiguration c = parseJuniperConfig("static-route-overwrite");
     Map<Prefix, StaticRouteV4> staticRoutes =
         c.getMasterLogicalSystem()
@@ -8135,7 +8133,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testStaticRouteDefaultsExtraction() {
+  void testStaticRouteDefaultsExtraction() {
     // "static defaults" attributes are captured per-RIB; inheritance into the routes happens at
     // conversion. Defaults are scoped to the enclosing "static {}" block (per routing table and
     // per routing-instance).
@@ -8180,7 +8178,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testStaticRouteDefaultsConversion() {
+  void testStaticRouteDefaultsConversion() {
     // At conversion, each static route inherits its RIB's "static defaults" for any field it does
     // not set itself.
     Configuration c = parseConfig("junos-static-defaults");
@@ -8227,7 +8225,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testStaticRouteConversion() {
+  void testStaticRouteConversion() {
     Configuration c = parseConfig("static-routes");
     assertThat(
         c,
@@ -8366,7 +8364,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testStaticRouteParsing() {
+  void testStaticRouteParsing() {
     JuniperConfiguration c = parseJuniperConfig("static-routes");
     Map<Prefix, StaticRouteV4> routes =
         c.getMasterLogicalSystem()
@@ -8409,7 +8407,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testStaticRouteIPv6Parsing() {
+  void testStaticRouteIPv6Parsing() {
     JuniperConfiguration c = parseJuniperConfig("static-routes-ipv6");
     RoutingInformationBase routesDefault =
         c.getMasterLogicalSystem()
@@ -8482,7 +8480,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testStaticRoutesWarnings() throws IOException {
+  void testStaticRoutesWarnings() throws IOException {
     String hostname = "static-routes-warn";
     Configuration c = parseConfig(hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -8513,20 +8511,20 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testStormControl() {
+  void testStormControl() {
     /* allow storm-control configuration in an interface */
     parseConfig("storm-control");
   }
 
   @Test
-  public void testSecurityAddressBookGlobalAddress() {
+  void testSecurityAddressBookGlobalAddress() {
     Configuration config = parseConfig("security-address-book-global-address");
     Map<String, IpSpace> ipSpaces = config.getIpSpaces();
     assertThat(ipSpaces.keySet(), contains("global~NAME"));
   }
 
   @Test
-  public void testSecurityPolicy() {
+  void testSecurityPolicy() {
     JuniperConfiguration juniperConfiguration = parseJuniperConfig("security-policy");
     Map<String, Zone> zones = juniperConfiguration.getMasterLogicalSystem().getZones();
 
@@ -8542,7 +8540,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testSnmpClientIps() {
+  void testSnmpClientIps() {
     Configuration c = parseConfig("snmp");
     Map<String, SnmpCommunity> communities = c.getDefaultVrf().getSnmpServer().getCommunities();
     assertThat(communities, hasKeys("COMM1", "COMM2"));
@@ -8565,7 +8563,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testPreSourceNatOutgoingFilter() {
+  void testPreSourceNatOutgoingFilter() {
     Configuration config = parseConfig("security-policy");
     String ifaceIn = "ge-0/0/0.0";
     String ifaceOut = "ge-0/0/1.0";
@@ -8595,7 +8593,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testPsFromInterface() {
+  void testPsFromInterface() {
     Configuration config = parseConfig("juniper-routing-policy");
 
     // Matches iface prefix, connected route
@@ -8640,7 +8638,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testCrpdEthInterfaces() throws IOException {
+  void testCrpdEthInterfaces() throws IOException {
     String hostname = "juniper-crpd-eth-interfaces";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -8685,7 +8683,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testSourceNatPool() {
+  void testSourceNatPool() {
     JuniperConfiguration juniperConfiguration = parseJuniperConfig("juniper-sourcenat-pool");
     Map<String, NatPool> pools =
         juniperConfiguration.getMasterLogicalSystem().getNatSource().getPools();
@@ -8714,7 +8712,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testSrlgExtraction() {
+  void testSrlgExtraction() {
     JuniperConfiguration jc = parseJuniperConfig("junos-srlg");
     assertThat(jc.getMasterLogicalSystem().getSrlgs(), hasKeys("srlg-a", "srlg-b"));
     Srlg srlgA = jc.getMasterLogicalSystem().getSrlgs().get("srlg-a");
@@ -8726,7 +8724,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testSrlgReferences() throws IOException {
+  void testSrlgReferences() throws IOException {
     String hostname = "junos-srlg";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -8744,7 +8742,7 @@ public final class FlatJuniperGrammarTest {
    * Flattening a group whose only statement is such a container must still define the group.
    */
   @Test
-  public void testSrlgEmpty() throws IOException {
+  void testSrlgEmpty() throws IOException {
     String hostname = "junos-srlg-empty";
     String filename = "configs/" + hostname;
     JuniperConfiguration jc = parseJuniperConfig(hostname);
@@ -8764,13 +8762,13 @@ public final class FlatJuniperGrammarTest {
    * The BGP domain path attribute is not modeled, but the statements that control it must parse.
    */
   @Test
-  public void testBgpDomainPathId() {
+  void testBgpDomainPathId() {
     parseJuniperConfig("junos-bgp-domain-path-id");
   }
 
   /** A filter group number is not modeled, and must not displace an input or output filter. */
   @Test
-  public void testFilterGroup() {
+  void testFilterGroup() {
     Configuration c = parseConfig("junos-filter-group");
     assertThat(c, hasInterface("ge-0/0/0.0", hasIncomingFilter(hasName("FILTER"))));
     // 'group' is still usable as a filter name.
@@ -8779,7 +8777,7 @@ public final class FlatJuniperGrammarTest {
 
   /** class-of-service interfaces, and an interface within it, may be empty containers. */
   @Test
-  public void testCosInterfacesEmpty() throws IOException {
+  void testCosInterfacesEmpty() throws IOException {
     String hostname = "junos-cos-interfaces-empty";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
@@ -8792,7 +8790,7 @@ public final class FlatJuniperGrammarTest {
    * interfaces it matches. Flattening such a wildcard leaves whitespace inside the angle brackets.
    */
   @Test
-  public void testGroupWildcardQuotedPattern() {
+  void testGroupWildcardQuotedPattern() {
     Configuration c = parseConfig("junos-group-wildcard-quoted");
     assertThat(c, hasInterface("ae10.0", hasIncomingFilter(hasName("FILTER"))));
     assertThat(c, hasInterface("ae100.0", hasIncomingFilter(nullValue())));
@@ -8803,7 +8801,7 @@ public final class FlatJuniperGrammarTest {
    * that a group whose only statement is such a filter is still defined.
    */
   @Test
-  public void testVlansForwardingOptionsFilter() throws IOException {
+  void testVlansForwardingOptionsFilter() throws IOException {
     String hostname = "junos-vlans-forwarding-options-filter";
     String filename = "configs/" + hostname;
     parseJuniperConfig(hostname);
@@ -8821,7 +8819,7 @@ public final class FlatJuniperGrammarTest {
    * modeled, but must parse so that a group whose only statement is one is still defined.
    */
   @Test
-  public void testVlansMacMoveLimit() throws IOException {
+  void testVlansMacMoveLimit() throws IOException {
     String hostname = "junos-vlans-mac-move-limit";
     String filename = "configs/" + hostname;
     parseJuniperConfig(hostname);
@@ -8838,7 +8836,7 @@ public final class FlatJuniperGrammarTest {
    * that a group containing them is still defined.
    */
   @Test
-  public void testVrrpInet6Group() throws IOException {
+  void testVrrpInet6Group() throws IOException {
     String hostname = "junos-vrrp-inet6-group";
     String filename = "configs/" + hostname;
     parseJuniperConfig(hostname);
@@ -8856,7 +8854,7 @@ public final class FlatJuniperGrammarTest {
    * untagged interface whose unit 0 lacks ethernet-switching still is.
    */
   @Test
-  public void testXstpTaggedInterface() throws IOException {
+  void testXstpTaggedInterface() throws IOException {
     String hostname = "junos-xstp-tagged-interface";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
@@ -8872,7 +8870,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testScreenOptions() {
+  void testScreenOptions() {
     JuniperConfiguration juniperConfiguration = parseJuniperConfig("screen-options");
 
     assertThat(
@@ -8896,7 +8894,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testScreenOptionsToVIModel() {
+  void testScreenOptionsToVIModel() {
     Configuration config = parseConfig("screen-options");
 
     IpAccessList inAcl = config.getIpAccessLists().get("FILTER1");
@@ -8993,7 +8991,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testInstanceImport() throws IOException {
+  void testInstanceImport() throws IOException {
     String hostname = "instance-import";
     Configuration c = parseConfig(hostname);
 
@@ -9056,7 +9054,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testInterfaceRibGroup() throws IOException {
+  void testInterfaceRibGroup() throws IOException {
     String hostname = "juniper-interface-ribgroup";
     Configuration c = parseConfig(hostname);
     Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), _folder);
@@ -9098,7 +9096,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testInterfaceRibGroupWithPolicies() throws IOException {
+  void testInterfaceRibGroupWithPolicies() throws IOException {
     String hostname = "juniper-interface-ribgroup-with-policy";
     Configuration c = parseConfig(hostname);
     Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), _folder);
@@ -9159,7 +9157,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testInterfaceRibGroupWithTransformation() throws IOException {
+  void testInterfaceRibGroupWithTransformation() throws IOException {
     String hostname = "juniper-interface-ribgroup-with-transformation";
     Configuration c = parseConfig(hostname);
     Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), _folder);
@@ -9195,7 +9193,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testBgpRibGroup() throws IOException {
+  void testBgpRibGroup() throws IOException {
     String hostname = "juniper-bgp-rib-group";
     Configuration c = parseConfig(hostname);
     BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), _folder);
@@ -9219,7 +9217,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testBgpRibGroupUndefined() throws IOException {
+  void testBgpRibGroupUndefined() throws IOException {
     String hostname = "juniper-bgp-rib-group-undefined";
     Configuration c = parseConfig(hostname);
     BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), _folder);
@@ -9236,7 +9234,7 @@ public final class FlatJuniperGrammarTest {
 
   /** Throws the creation of {@link FirewallSessionInterfaceInfo} objects for juniper devices. */
   @Test
-  public void testFirewallSession() {
+  void testFirewallSession() {
     Configuration c = parseConfig("firewall-session-info");
 
     String i0Name = "ge-0/0/0.0";
@@ -9267,7 +9265,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testPortAddressTranslation() {
+  void testPortAddressTranslation() {
     JuniperConfiguration juniperConfiguration = parseJuniperConfig("juniper-nat-pat");
     Nat sourceNat = juniperConfiguration.getMasterLogicalSystem().getNatSource();
     NatPool pool0 = sourceNat.getPools().get("POOL0");
@@ -9316,7 +9314,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testVrfSpecificPoolPortAddressTranslation() {
+  void testVrfSpecificPoolPortAddressTranslation() {
     JuniperConfiguration juniperConfiguration = parseJuniperConfig("juniper-nat-vrf");
     Nat sourceNat = juniperConfiguration.getMasterLogicalSystem().getNatSource();
     NatPool pool0 = sourceNat.getPools().get("POOL0");
@@ -9326,13 +9324,13 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testJuniperSyslog() {
+  void testJuniperSyslog() {
     // Parse with no warnings
     parseJuniperConfig("juniper-syslog");
   }
 
   @Test
-  public void testSwitchOptionsExtraction() {
+  void testSwitchOptionsExtraction() {
     JuniperConfiguration juniperConfiguration = parseJuniperConfig("juniper-evpn-vxlan");
 
     SwitchOptions switchOptions = juniperConfiguration.getMasterLogicalSystem().getSwitchOptions();
@@ -9353,7 +9351,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testVniOptionsVrfTargetAutoExtraction() {
+  void testVniOptionsVrfTargetAutoExtraction() {
     JuniperConfiguration juniperConfiguration = parseJuniperConfig("juniper-evpn-vrf-target-auto");
     VniOptions vni2 = juniperConfiguration.getMasterLogicalSystem().getVniOptions().get(14002);
     ExtendedCommunityOrAuto targetOrAuto = vni2.getVrfTargetCommunityOrAuto();
@@ -9364,7 +9362,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testVniOptionsVrfTargetExtraction() {
+  void testVniOptionsVrfTargetExtraction() {
     JuniperConfiguration juniperConfiguration = parseJuniperConfig("juniper-evpn-vxlan");
     VniOptions vni4 = juniperConfiguration.getMasterLogicalSystem().getVniOptions().get(14004);
     assertThat(vni4.getVrfTargetImport(), equalTo(ExtendedCommunity.parse("target:65320:7999999")));
@@ -9381,7 +9379,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testRoutingOptionsExtraction() {
+  void testRoutingOptionsExtraction() {
     JuniperConfiguration juniperConfiguration = parseJuniperConfig("juniper-evpn-vxlan");
     Ip rd =
         juniperConfiguration
@@ -9393,7 +9391,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testRoutingInstancesEvpnIpPrefixRoutesExtraction() {
+  void testRoutingInstancesEvpnIpPrefixRoutesExtraction() {
     JuniperConfiguration juniperConfiguration =
         parseJuniperConfig("routing-instance-vrf-evpn-ip-prefix-routes");
     EvpnIpPrefixRoutes ipPrefixRoutes =
@@ -9410,7 +9408,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testSwitchOptionsVrfImportExportReferences() throws IOException {
+  void testSwitchOptionsVrfImportExportReferences() throws IOException {
     // GH-6305: policy-statements used by switch-options vrf-import/vrf-export must be marked as
     // referenced (not orphans), for both the single-name and bracketed-list forms.
     String hostname = "switch-options-vrf-import-list";
@@ -9459,7 +9457,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testSwitchOptionsRouteDistinguisherWithVrf() {
+  void testSwitchOptionsRouteDistinguisherWithVrf() {
     JuniperConfiguration juniperConfiguration =
         parseJuniperConfig("switch-options-route-distinguisher");
     SwitchOptions switchOptions = juniperConfiguration.getMasterLogicalSystem().getSwitchOptions();
@@ -9468,7 +9466,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testSwitchOptionsRouteDistinguisherIpExtraction() {
+  void testSwitchOptionsRouteDistinguisherIpExtraction() {
     JuniperConfiguration juniperConfiguration = parseJuniperConfig("switch-options-rd-ip");
     RouteDistinguisher rd =
         juniperConfiguration.getMasterLogicalSystem().getSwitchOptions().getRouteDistinguisher();
@@ -9478,7 +9476,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testSwitchOptionsRouteDistinguisherTwoByteAsnExtraction() {
+  void testSwitchOptionsRouteDistinguisherTwoByteAsnExtraction() {
     JuniperConfiguration juniperConfiguration = parseJuniperConfig("switch-options-rd-asn2");
     RouteDistinguisher rd =
         juniperConfiguration.getMasterLogicalSystem().getSwitchOptions().getRouteDistinguisher();
@@ -9488,7 +9486,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testSwitchOptionsRouteDistinguisherFourByteAsnExtraction() {
+  void testSwitchOptionsRouteDistinguisherFourByteAsnExtraction() {
     JuniperConfiguration juniperConfiguration = parseJuniperConfig("switch-options-rd-asn4");
     RouteDistinguisher rd =
         juniperConfiguration.getMasterLogicalSystem().getSwitchOptions().getRouteDistinguisher();
@@ -9498,7 +9496,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testStaticNat() {
+  void testStaticNat() {
     JuniperConfiguration juniperConfiguration = parseJuniperConfig("juniper-nat-static");
     Nat nat = juniperConfiguration.getMasterLogicalSystem().getNatStatic();
     assertThat(nat.getRuleSets().keySet(), contains("RULESET1"));
@@ -9521,7 +9519,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testStaticNatViModel() {
+  void testStaticNatViModel() {
     Configuration config = parseConfig("juniper-nat-static");
 
     // incoming transformation
@@ -9586,7 +9584,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testOspfAreaInterfaceNeighborExtraction() {
+  void testOspfAreaInterfaceNeighborExtraction() {
     JuniperConfiguration juniperConfiguration = parseJuniperConfig("ospf-area-interface-neighbor");
     assertNotNull(juniperConfiguration);
     assertNotNull(juniperConfiguration.getMasterLogicalSystem().getInterfaces().get("ge-0/0/0"));
@@ -9630,7 +9628,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testOspfAreaInterfaceNeighborConversion() {
+  void testOspfAreaInterfaceNeighborConversion() {
     Configuration config = parseConfig("ospf-area-interface-neighbor");
 
     assertNotNull(config.getAllInterfaces().get("ge-0/0/0.0").getOspfSettings().getNbmaNeighbors());
@@ -9643,7 +9641,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testRethExtraction() {
+  void testRethExtraction() {
     JuniperConfiguration config = parseJuniperConfig("juniper-reth");
 
     assertThat(
@@ -9672,7 +9670,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testRethConversion() {
+  void testRethConversion() {
     Configuration config = parseConfig("juniper-reth");
 
     assertThat(
@@ -9707,7 +9705,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testVlanAccessExtraction() {
+  void testVlanAccessExtraction() {
     JuniperConfiguration vc = parseJuniperConfig("juniper-vlan-access");
 
     assertThat(
@@ -9768,7 +9766,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testVlanAccessConversion() {
+  void testVlanAccessConversion() {
     Configuration c = parseConfig("juniper-vlan-access");
 
     assertThat(c, hasInterface("et-0/0/2.0", isSwitchport()));
@@ -9789,7 +9787,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testVlanAllExtraction() {
+  void testVlanAllExtraction() {
     JuniperConfiguration vc = parseJuniperConfig("juniper-vlan-all");
 
     String ifaceName = "et-0/0/0";
@@ -9807,7 +9805,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testVlanAllConversion() {
+  void testVlanAllConversion() {
     Configuration c = parseConfig("juniper-vlan-all");
 
     assertThat(c, hasInterface("et-0/0/0.0", isSwitchport()));
@@ -9820,7 +9818,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testVxlanL2vniConversion() {
+  void testVxlanL2vniConversion() {
     Configuration c = parseConfig("juniper-vxlan-l2vni");
 
     assertThat(c, hasInterface("xe-0/0/0.0", isSwitchport()));
@@ -9838,7 +9836,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testVxlanL2vniConversionMissingSourceAddress() throws IOException {
+  void testVxlanL2vniConversionMissingSourceAddress() throws IOException {
     String hostname = "juniper-vxlan-l2vni-missing-source-address";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
@@ -9856,7 +9854,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testVxlanL3vniConversion() {
+  void testVxlanL3vniConversion() {
     Configuration c = parseConfig("juniper-evpn-vxlan");
     Layer3Vni vrf10 = c.getVrfs().get("l3vni_vrf").getLayer3Vnis().get(50010);
     assertEquals(Ip.parse("10.84.249.26"), vrf10.getSourceAddress());
@@ -9870,7 +9868,7 @@ public final class FlatJuniperGrammarTest {
 
   /** Test that interfaces inherit OSPF settings inside a routing instance. */
   @Test
-  public void testIsisInterfaceAll() {
+  void testIsisInterfaceAll() {
     String hostname = "isis-interface-all";
     Configuration c = parseConfig(hostname);
 
@@ -9894,7 +9892,7 @@ public final class FlatJuniperGrammarTest {
 
   /** Test that interfaces inherit OSPF settings inside a routing instance. */
   @Test
-  public void testOspfInterfaceAll() {
+  void testOspfInterfaceAll() {
     String hostname = "ospf-area-interface-all";
     Configuration c = parseConfig(hostname);
 
@@ -9923,20 +9921,20 @@ public final class FlatJuniperGrammarTest {
 
   /** Test of bfe#8498 crash. */
   @Test
-  public void testOspfInterfaceAllCrash() {
+  void testOspfInterfaceAllCrash() {
     parseConfig("ospf-area-interface-all-crash");
   }
 
   /** Test that using the physical interface in OSPF context maps things to unit 0 */
   @Test
-  public void testOspfImplicitUnit0() {
+  void testOspfImplicitUnit0() {
     String hostname = "ospf-implicit-unit0";
     Configuration c = parseConfig(hostname);
     assertThat(c, hasInterface("ge-0/0/0.0", hasOspfCost(equalTo(110))));
   }
 
   @Test
-  public void testOspfAreaInterfaceAllDuplicateError() throws IOException {
+  void testOspfAreaInterfaceAllDuplicateError() throws IOException {
     String hostname = "ospf-area-interface-all-duplicate-error";
     String fileKey = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -9952,7 +9950,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testOspfAreaInterfaceDuplicateError() throws IOException {
+  void testOspfAreaInterfaceDuplicateError() throws IOException {
     String hostname = "ospf-area-interface-duplicate-error";
     String fileKey = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -9968,7 +9966,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testOspfAreaInterfaceIpMissing() throws IOException {
+  void testOspfAreaInterfaceIpMissing() throws IOException {
     String hostname = "ospf-area-interface-ip-missing";
     String fileKey = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -9980,7 +9978,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testConditionExtraction() {
+  void testConditionExtraction() {
     String hostname = "juniper-condition";
     JuniperConfiguration jc = parseJuniperConfig(hostname);
     assertThat(
@@ -10040,7 +10038,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testConditionConversion() {
+  void testConditionConversion() {
     String hostname = "juniper-condition";
     String c1TrackName = computeConditionTrackName("c1");
     String c2TrackName = computeConditionTrackName("c2");
@@ -10093,7 +10091,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testResolutionExtraction() {
+  void testResolutionExtraction() {
     String hostname = "juniper-resolution";
     JuniperConfiguration jc = parseJuniperConfig(hostname);
     Resolution r = jc.getMasterLogicalSystem().getDefaultRoutingInstance().getResolution();
@@ -10109,7 +10107,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testResolutionConversion() {
+  void testResolutionConversion() {
     String hostname = "juniper-resolution";
     Configuration c = parseConfig(hostname);
     String resolutionPolicyName = generateResolutionRibImportPolicyName(DEFAULT_VRF_NAME);
@@ -10124,7 +10122,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testVrrpExtraction() {
+  void testVrrpExtraction() {
     String hostname = "juniper-vrrp";
     JuniperConfiguration vc = parseJuniperConfig(hostname);
     org.batfish.representation.juniper.Interface i =
@@ -10146,7 +10144,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testVrrpConversion() {
+  void testVrrpConversion() {
     String hostname = "juniper-vrrp";
     Configuration c = parseConfig(hostname);
     Interface i = c.getAllInterfaces().get("xe-0/0/0.0");
@@ -10170,7 +10168,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testVrrpErrorMultipleSourceAddressesForVrid() throws IOException {
+  void testVrrpErrorMultipleSourceAddressesForVrid() throws IOException {
     String hostname = "juniper-vrrp-error-multiple-source-addresses-for-vrid";
     String fileKey = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -10185,7 +10183,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testVrrpErrorVirtualAddressOutsideSourceAddressSubnet() throws IOException {
+  void testVrrpErrorVirtualAddressOutsideSourceAddressSubnet() throws IOException {
     String hostname = "juniper-vrrp-error-virtual-address-outside-source-address-subnet";
     String fileKey = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -10201,7 +10199,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testVrrpErrorNoVirtualAddress() throws IOException {
+  void testVrrpErrorNoVirtualAddress() throws IOException {
     String hostname = "juniper-vrrp-error-no-virtual-address";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
@@ -10217,13 +10215,13 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testIgnoredProtocols() {
+  void testIgnoredProtocols() {
     // don't crash
     parseJuniperConfig("ignored-protocols");
   }
 
   @Test
-  public void testXstpInterfaceExtraction() {
+  void testXstpInterfaceExtraction() {
     JuniperConfiguration jc = parseJuniperConfig("xstp-interface-validation");
     assertThat(
         jc.getWarnings().getParseWarnings(),
@@ -10237,7 +10235,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testXstpInterfaceValidation() throws IOException {
+  void testXstpInterfaceValidation() throws IOException {
     String hostname = "xstp-interface-validation";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
@@ -10253,7 +10251,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testMaximumPrefixes() throws IOException {
+  void testMaximumPrefixes() throws IOException {
     String hostname = "maximum-prefixes";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ParseVendorConfigurationAnswerElement pvcae =
@@ -10264,19 +10262,19 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testIgnoredSystem() {
+  void testIgnoredSystem() {
     // don't crash
     parseJuniperConfig("ignored-system");
   }
 
   @Test
-  public void testIgnoredClassOfService() {
+  void testIgnoredClassOfService() {
     // don't crash
     parseJuniperConfig("ignored-class-of-service");
   }
 
   @Test
-  public void testClassOfServiceCodePointAliases() throws IOException {
+  void testClassOfServiceCodePointAliases() throws IOException {
     String hostname = "class-of-service-code-point-aliases";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -10300,7 +10298,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallFilterFromExtraction() {
+  void testFirewallFilterFromExtraction() {
     String hostname = "firewall-filter-from-port";
     JuniperConfiguration vc = parseJuniperConfig(hostname);
     Map<String, FirewallFilter> filters = vc.getMasterLogicalSystem().getFirewallFilters();
@@ -10374,19 +10372,19 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testApplyGroupsParsing() {
+  void testApplyGroupsParsing() {
     String hostname = "apply-groups";
     parseJuniperConfig(hostname);
   }
 
   @Test
-  public void testApplyGroupsRoutingInstancesParsing() {
+  void testApplyGroupsRoutingInstancesParsing() {
     Configuration c = parseConfig("apply-groups-routing-instances");
     assertThat(c, hasVrf("FOO", hasStaticRoutes(contains(hasPrefix(Prefix.parse("1.1.1.0/24"))))));
   }
 
   @Test
-  public void testDefineStructureFromNested() throws IOException {
+  void testDefineStructureFromNested() throws IOException {
     String hostname = "define-structure-from-nested";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
@@ -10401,7 +10399,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testAsPathExpandExtraction() {
+  void testAsPathExpandExtraction() {
     String hostname = "juniper_as_path_expand";
     JuniperConfiguration vc = parseJuniperConfig(hostname);
 
@@ -10461,7 +10459,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testAsPathExpandConversion() {
+  void testAsPathExpandConversion() {
     String hostname = "juniper_as_path_expand";
     Configuration c = parseConfig(hostname);
 
@@ -10524,14 +10522,14 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testNestedMultilineComments() {
+  void testNestedMultilineComments() {
     String hostname = "juniper_nested_multiline_comments";
     // don't crash
     parseConfig(hostname);
   }
 
   @Test
-  public void testInactiveInterfaceRoutes() throws IOException {
+  void testInactiveInterfaceRoutes() throws IOException {
     Configuration c = parseConfig("inactive_interface_local_route");
     Batfish batfish =
         BatfishTestUtils.getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
@@ -10544,13 +10542,13 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testInterfaceMediaTypes() {
+  void testInterfaceMediaTypes() {
     // don't crash
     parseConfig("interface-media-types");
   }
 
   @Test
-  public void testBridgeDomainsExtraction() {
+  void testBridgeDomainsExtraction() {
     String hostname = "bridge-domains";
     JuniperConfiguration vc = parseJuniperConfig(hostname);
     assertThat(
@@ -10597,7 +10595,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testBridgeDomainsConversion() {
+  void testBridgeDomainsConversion() {
     String hostname = "bridge-domains";
     Configuration c = parseConfig(hostname);
     assertThat(c, hasInterface("irb.1", allOf(hasVlan(1), isActive())));
@@ -10607,7 +10605,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testBridgeDomainsReferences() throws IOException {
+  void testBridgeDomainsReferences() throws IOException {
     String hostname = "bridge-domains";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -10627,7 +10625,7 @@ public final class FlatJuniperGrammarTest {
           "apply-path-from-apply-groups-no-match");
 
   @Test
-  public void testApplyPathNoMatchExtraction() {
+  void testApplyPathNoMatchExtraction() {
     for (String hostname : APPLY_PATH_NO_MATCH_CONFIGS) {
       JuniperConfiguration vc = parseJuniperConfig(hostname);
       assertThat(vc.getMasterLogicalSystem().getPrefixLists().get("pl1").getPrefixes(), empty());
@@ -10636,7 +10634,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testApplyPathNoMatchConversion() {
+  void testApplyPathNoMatchConversion() {
     for (String hostname : APPLY_PATH_NO_MATCH_CONFIGS) {
       Configuration c = parseConfig(hostname);
       // TODO: determine whether this should be empty or permit all
@@ -10645,13 +10643,13 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testVlanForwardingOptionsDhcpSecurity() {
+  void testVlanForwardingOptionsDhcpSecurity() {
     // doesn't crash.
     parseJuniperConfig("vlan-forwarding-options");
   }
 
   @Test
-  public void testApplyPathMixedIpAndNotIpOrPrefixExtraction() {
+  void testApplyPathMixedIpAndNotIpOrPrefixExtraction() {
     String hostname = "apply-path-mixed-ip-and-not-ip-or-prefix";
     JuniperConfiguration vc = parseJuniperConfig(hostname);
     assertThat(
@@ -10661,7 +10659,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testQuotingMistakesDontCrash() throws IOException {
+  void testQuotingMistakesDontCrash() throws IOException {
     String hostname = "quote-mistakes";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ParseVendorConfigurationAnswerElement pvcae =
@@ -10682,7 +10680,7 @@ public final class FlatJuniperGrammarTest {
    * exercising this case for all paths in there.
    */
   @Test
-  public void testApplyGroupsLists() {
+  void testApplyGroupsLists() {
     // Simply tests that all the lines parse without errors
     parseConfig("apply-groups-lists");
   }
@@ -10692,7 +10690,7 @@ public final class FlatJuniperGrammarTest {
    * when inheriting groups lines and no match is found. See {@link GroupInheritor}.
    */
   @Test
-  public void testApplyGroupsWildcardNestingExtraction() {
+  void testApplyGroupsWildcardNestingExtraction() {
     String hostname = "wildcard-nesting";
     JuniperConfiguration vc = parseJuniperConfig(hostname);
     Set<ConcreteInterfaceAddress> assignedAddresses =
@@ -10705,12 +10703,13 @@ public final class FlatJuniperGrammarTest {
     assertThat(assignedAddresses, not(hasItem(ConcreteInterfaceAddress.parse("1.0.0.1/31"))));
 
     // TODO: fix and remove expected assertion error
-    _thrown.expect(AssertionError.class);
-    assertThat(assignedAddresses, hasItem(ConcreteInterfaceAddress.parse("2.0.0.1/31")));
+    assertThrows(
+        AssertionError.class,
+        () -> assertThat(assignedAddresses, hasItem(ConcreteInterfaceAddress.parse("2.0.0.1/31"))));
   }
 
   @Test
-  public void testPrefixExportLimit() throws IOException {
+  void testPrefixExportLimit() throws IOException {
     String hostname = "prefix-export-limit";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ParseVendorConfigurationAnswerElement pvcae =
@@ -10722,25 +10721,25 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallInet6Filters() {
+  void testFirewallInet6Filters() {
     // Should not crash.
     parseConfig("firewall-ipv6-filters");
   }
 
   @Test
-  public void testSetPartial() {
+  void testSetPartial() {
     // Should not crash.
     parseConfig("set-partial");
   }
 
   @Test
-  public void testInterfacesVlanMap() {
+  void testInterfacesVlanMap() {
     // Should not crash.
     parseConfig("interfaces-vlan-map");
   }
 
   @Test
-  public void testInterfacesDsc() {
+  void testInterfacesDsc() {
     // The fixed-name discard (dsc) interface parses and converts like any other interface.
     Configuration c = parseConfig("interfaces-dsc");
     assertThat(
@@ -10750,19 +10749,19 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testInterfacesGigetherOptionsEmpty() {
+  void testInterfacesGigetherOptionsEmpty() {
     // Empty gigether-options / ether-options blocks should not crash.
     parseConfig("interfaces-gigether-options-empty");
   }
 
   @Test
-  public void testForwardingTableTraceoptions() {
+  void testForwardingTableTraceoptions() {
     // routing-options forwarding-table traceoptions should not crash.
     parseConfig("forwarding-table-traceoptions");
   }
 
   @Test
-  public void testSecurityKeyChain() {
+  void testSecurityKeyChain() {
     // Legacy "security key-chain" form (pre authentication-key-chains) extracts the same
     // JuniperAuthenticationKeyChain model, including empty keys.
     JuniperConfiguration jc = parseJuniperConfig("security-key-chain");
@@ -10774,25 +10773,25 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testInterfacesVlanTags() {
+  void testInterfacesVlanTags() {
     // Q-in-Q vlan-tags outer/inner should not crash.
     parseConfig("interfaces-vlan-tags");
   }
 
   @Test
-  public void testInterfacesFamilyVpls() {
+  void testInterfacesFamilyVpls() {
     // family vpls and empty family bridge should not crash.
     parseConfig("interfaces-family-vpls");
   }
 
   @Test
-  public void testIsisLevelIpv6Metric() {
+  void testIsisLevelIpv6Metric() {
     // IS-IS per-level ipv6/ipv4 metric variants should not crash.
     parseConfig("isis-level-ipv6-metric");
   }
 
   @Test
-  public void testInterfacesFamilyBridgeSwitching() {
+  void testInterfacesFamilyBridgeSwitching() {
     // family bridge interface-mode (access/trunk) and single vlan-id populate BridgeSwitching.
     JuniperConfiguration c = parseJuniperConfig("interfaces-family-bridge-switching");
     Map<String, org.batfish.representation.juniper.Interface> ifaces =
@@ -10817,37 +10816,37 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testIsisImport() {
+  void testIsisImport() {
     // Should not crash.
     parseConfig("isis-import");
   }
 
   @Test
-  public void testBmpStation() {
+  void testBmpStation() {
     // Should not crash.
     parseConfig("bmp-station");
   }
 
   @Test
-  public void testMultipathResolve() {
+  void testMultipathResolve() {
     // Should not crash.
     parseConfig("multipath-resolve");
   }
 
   @Test
-  public void testRecoveryTimeout() {
+  void testRecoveryTimeout() {
     // Should not crash.
     parseConfig("recovery-timeout");
   }
 
   @Test
-  public void testVrfTargetAuto() throws IOException {
+  void testVrfTargetAuto() throws IOException {
     // Should not crash.
     parseJuniperConfig("switch-options-vrf-target-auto");
   }
 
   @Test
-  public void testJuniperAsPathExclamationRegex() {
+  void testJuniperAsPathExclamationRegex() {
     Configuration c = parseConfig("juniper-as-path-exclamation-regex");
     RoutingPolicy asPathGroupPolicy1 = c.getRoutingPolicies().get("AS_PATH_GROUP_POLICY1");
     Bgpv4Route.Builder test =
@@ -10880,7 +10879,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testIfRouteExistMissingPrefix() throws IOException {
+  void testIfRouteExistMissingPrefix() throws IOException {
     String hostname = "juniper-missing-prefix-condition";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
@@ -10898,7 +10897,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testBgpPeerAsWarnings() throws IOException {
+  void testBgpPeerAsWarnings() throws IOException {
     String hostname = "bgp-peer-as-warnings";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
@@ -10922,7 +10921,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testSettingCommunityWithNoLiteralMemberHasFatalWarning() throws IOException {
+  void testSettingCommunityWithNoLiteralMemberHasFatalWarning() throws IOException {
     String hostname = "community-literals-warnings";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
@@ -10940,7 +10939,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testRiskyRegexWarnings() throws IOException {
+  void testRiskyRegexWarnings() throws IOException {
     String hostname = "risky-regexes";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
 
@@ -10961,7 +10960,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testCommunityOverlapWarnings() throws IOException {
+  void testCommunityOverlapWarnings() throws IOException {
     // Two community set actions in the same term: second wipes the first (last-wins). Emit a
     // RISK warning naming the prior community set being overwritten.
     String hostname = "overlapping-policy";
@@ -10980,7 +10979,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testPsFromExternal() {
+  void testPsFromExternal() {
     String hostname = "policy-statement-from-external";
     JuniperConfiguration juniperConfig = parseJuniperConfig(hostname);
     Configuration c = parseConfig(hostname);
@@ -11073,21 +11072,21 @@ public final class FlatJuniperGrammarTest {
                 .setNonRouting(true) // Required when using NextHopIp
                 .build();
 
-    assertTrue("Type 1 policy should match E1 route", type1Policy.processReadOnly(ospfE1Route));
+    assertTrue(type1Policy.processReadOnly(ospfE1Route), "Type 1 policy should match E1 route");
     assertFalse(
-        "Type 1 policy should not match E2 route", type1Policy.processReadOnly(ospfE2Route));
+        type1Policy.processReadOnly(ospfE2Route), "Type 1 policy should not match E2 route");
 
-    assertTrue("Type 2 policy should match E2 route", type2Policy.processReadOnly(ospfE2Route));
+    assertTrue(type2Policy.processReadOnly(ospfE2Route), "Type 2 policy should match E2 route");
     assertFalse(
-        "Type 2 policy should not match E1 route", type2Policy.processReadOnly(ospfE1Route));
+        type2Policy.processReadOnly(ospfE1Route), "Type 2 policy should not match E1 route");
 
     // Test that "any type" policy matches both E1 and E2 routes
-    assertTrue("Any type policy should match E1 route", anyTypePolicy.processReadOnly(ospfE1Route));
-    assertTrue("Any type policy should match E2 route", anyTypePolicy.processReadOnly(ospfE2Route));
+    assertTrue(anyTypePolicy.processReadOnly(ospfE1Route), "Any type policy should match E1 route");
+    assertTrue(anyTypePolicy.processReadOnly(ospfE2Route), "Any type policy should match E2 route");
   }
 
   @Test
-  public void testRiskyTerminalTermsInPolicyStatements() throws IOException {
+  void testRiskyTerminalTermsInPolicyStatements() throws IOException {
     String hostname = "risky-terminal-actions";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
@@ -11151,7 +11150,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testCommunityAddDeleteOverlapWarnings() throws IOException {
+  void testCommunityAddDeleteOverlapWarnings() throws IOException {
     String hostname = "juniper-community-add-delete-overlap";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
@@ -11185,17 +11184,17 @@ public final class FlatJuniperGrammarTest {
                     + " the same term, so it is removed")));
     // No overlap and delete-then-add cases must not produce overlap warnings.
     assertTrue(
-        "ADD-NO-OVERLAP must not produce an overlap warning",
         riskyWarnings.stream()
-            .noneMatch(w -> w.getText().contains("policy-statement ADD-NO-OVERLAP")));
+            .noneMatch(w -> w.getText().contains("policy-statement ADD-NO-OVERLAP")),
+        "ADD-NO-OVERLAP must not produce an overlap warning");
     assertTrue(
-        "DELETE-THEN-ADD must not produce an overlap warning",
         riskyWarnings.stream()
-            .noneMatch(w -> w.getText().contains("policy-statement DELETE-THEN-ADD")));
+            .noneMatch(w -> w.getText().contains("policy-statement DELETE-THEN-ADD")),
+        "DELETE-THEN-ADD must not produce an overlap warning");
   }
 
   @Test
-  public void testPsToConditionsFlag() throws IOException {
+  void testPsToConditionsFlag() throws IOException {
     String hostname = "risky-terminal-actions";
     JuniperConfiguration juniperConfig = parseJuniperConfig(hostname);
 
@@ -11237,7 +11236,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallPolicerExtraction() {
+  void testFirewallPolicerExtraction() {
     JuniperConfiguration c = parseJuniperConfig("firewall-policer");
     Map<String, Policer> policers = c.getMasterLogicalSystem().getPolicers();
 
@@ -11328,7 +11327,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallPolicerReferences() throws IOException {
+  void testFirewallPolicerReferences() throws IOException {
     String hostname = "firewall-policer";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -11349,7 +11348,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testBgpPeerImportPolicyVrfCollision() {
+  void testBgpPeerImportPolicyVrfCollision() {
     Configuration c = parseConfig("bgp-peer-import-policy-vrf-collision");
 
     // Get VRF configurations
@@ -11399,7 +11398,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallFilterTtl() {
+  void testFirewallFilterTtl() {
     String hostname = "firewall-filter-ttl";
     JuniperConfiguration vc = parseJuniperConfig(hostname);
     Map<String, FirewallFilter> filters = vc.getMasterLogicalSystem().getFirewallFilters();
@@ -11449,7 +11448,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallFilterHopLimit() {
+  void testFirewallFilterHopLimit() {
     String hostname = "firewall-filter-hop-limit";
     JuniperConfiguration vc = parseJuniperConfig(hostname);
     Map<String, FirewallFilter> filters = vc.getMasterLogicalSystem().getFirewallFilters();
@@ -11498,7 +11497,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallFilterPacketLengthSpacedRange() {
+  void testFirewallFilterPacketLengthSpacedRange() {
     String hostname = "firewall-filter-packet-length-spaced-range";
     JuniperConfiguration vc = parseJuniperConfig(hostname);
     Map<String, FirewallFilter> filters = vc.getMasterLogicalSystem().getFirewallFilters();
@@ -11524,7 +11523,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testNextLineRecoveryGh9718() {
+  void testNextLineRecoveryGh9718() {
     String hostname = "next-line-recovery-gh-9718";
     JuniperConfiguration vc = parseJuniperConfig(hostname, /* allowErrors= */ true);
 
@@ -11544,7 +11543,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testBgpLocalPreference() {
+  void testBgpLocalPreference() {
     JuniperConfiguration config = parseJuniperConfig("bgp-local-preference");
     Map<String, NamedBgpGroup> groups =
         config.getMasterLogicalSystem().getDefaultRoutingInstance().getNamedBgpGroups();
@@ -11566,7 +11565,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testBgpLocalPreferenceConversion() {
+  void testBgpLocalPreferenceConversion() {
     Configuration c = parseConfig("bgp-local-preference");
 
     // Group with local-preference 100: export policy should set local-preference
@@ -11587,7 +11586,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testSourceClassExtraction() {
+  void testSourceClassExtraction() {
     JuniperConfiguration c = parseJuniperConfig("source-class");
     Map<String, PolicyStatement> policies = c.getMasterLogicalSystem().getPolicyStatements();
     Map<String, FirewallFilter> filters = c.getMasterLogicalSystem().getFirewallFilters();
@@ -11649,7 +11648,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testSourceClassDefinitionAndReferences() throws IOException {
+  void testSourceClassDefinitionAndReferences() throws IOException {
     String hostname = "source-class";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -11671,7 +11670,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testDestinationClassExtraction() {
+  void testDestinationClassExtraction() {
     JuniperConfiguration c = parseJuniperConfig("destination-class");
     Map<String, PolicyStatement> policies = c.getMasterLogicalSystem().getPolicyStatements();
     Map<String, FirewallFilter> filters = c.getMasterLogicalSystem().getFirewallFilters();
@@ -11729,7 +11728,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testDestinationClassDefinitionAndReferences() throws IOException {
+  void testDestinationClassDefinitionAndReferences() throws IOException {
     String hostname = "destination-class";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -11751,7 +11750,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testPolicyStatementFromProtocol() {
+  void testPolicyStatementFromProtocol() {
     JuniperConfiguration vc = parseJuniperConfig("policy-statement-from-protocol");
     PolicyStatement ps = vc.getMasterLogicalSystem().getPolicyStatements().get("PS");
 
@@ -11778,7 +11777,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testPolicyStatementToProtocol() {
+  void testPolicyStatementToProtocol() {
     JuniperConfiguration vc = parseJuniperConfig("policy-statement-to-protocol");
     PolicyStatement ps = vc.getMasterLogicalSystem().getPolicyStatements().get("PS");
 
@@ -11813,7 +11812,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testPolicyStatementTo() {
+  void testPolicyStatementTo() {
     JuniperConfiguration vc = parseJuniperConfig("policy-statement-to");
     PolicyStatement ps = vc.getMasterLogicalSystem().getPolicyStatements().get("PS");
 
@@ -11852,7 +11851,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testForwardingTableExport_extraction() {
+  void testForwardingTableExport_extraction() {
     JuniperConfiguration jc = parseJuniperConfig("forwarding-table-export");
     // Policy is stored on the routing instance
     assertThat(
@@ -11867,7 +11866,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testLoadBalanceVariants() {
+  void testLoadBalanceVariants() {
     JuniperConfiguration jc = parseJuniperConfig("load-balance-variants");
     Map<String, LoadBalanceMethod> expected =
         ImmutableMap.<String, LoadBalanceMethod>builder()
@@ -11897,7 +11896,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testForwardingTableExport_conversion() {
+  void testForwardingTableExport_conversion() {
     Configuration c = parseConfig("forwarding-table-export");
     // The forwarding-table export policy should be wired via a generated wrapper policy
     assertThat(
@@ -11906,7 +11905,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testForwardingTableExport_dataPlane() throws IOException {
+  void testForwardingTableExport_dataPlane() throws IOException {
     Batfish batfish = getBatfishForConfigurationNames("forwarding-table-export");
     batfish.computeDataPlane(batfish.getSnapshot());
     DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
@@ -11931,7 +11930,7 @@ public final class FlatJuniperGrammarTest {
    * accepted.
    */
   @Test
-  public void testForwardingTableExport_defaultAccept() throws IOException {
+  void testForwardingTableExport_defaultAccept() throws IOException {
     Batfish batfish = getBatfishForConfigurationNames("forwarding-table-export-default-accept");
     batfish.computeDataPlane(batfish.getSnapshot());
     DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
@@ -11955,7 +11954,7 @@ public final class FlatJuniperGrammarTest {
    * attribute mutations, like {@code then metric}, still are.
    */
   @Test
-  public void testForwardingTableExport_classActionsNotFlagged() throws IOException {
+  void testForwardingTableExport_classActionsNotFlagged() throws IOException {
     String hostname = "forwarding-table-export-classes";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =

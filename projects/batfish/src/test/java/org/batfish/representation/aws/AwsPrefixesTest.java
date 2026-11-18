@@ -7,31 +7,31 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import org.batfish.datamodel.Prefix;
 import org.batfish.representation.aws.AwsPrefixes.AwsPrefix;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class AwsPrefixesTest {
+class AwsPrefixesTest {
 
   @Test
-  public void testGetPrefixes() {
+  void testGetPrefixes() {
     assertThat(AwsPrefixes.getPrefixes(), not(empty()));
   }
 
   @Test
-  public void testGetPrefixes_service() {
+  void testGetPrefixes_service() {
     assertThat(AwsPrefixes.getPrefixes(SERVICE_AMAZON), not(empty()));
     assertTrue(AwsPrefixes.getPrefixes(SERVICE_AMAZON).size() < AwsPrefixes.getPrefixes().size());
   }
 
   @Test
-  public void testGetAwsServicesPrefix() {
+  void testGetAwsServicesPrefix() {
     Prefix onlyAmazon = Prefix.parse("1.0.0.0/24");
     Prefix onlyEc2 = Prefix.parse("2.0.0.0/24");
     Prefix conflict = Prefix.parse("3.0.0.0/24");
@@ -53,7 +53,7 @@ public class AwsPrefixesTest {
   }
 
   @Test
-  public void testGetAwsS3Prefixes() {
+  void testGetAwsS3Prefixes() {
     List<Prefix> s3Prefixes = AwsPrefixes.getAwsS3Prefixes();
     assertFalse(s3Prefixes.isEmpty());
   }

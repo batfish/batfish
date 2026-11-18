@@ -1,6 +1,6 @@
 package org.batfish.minesweeper.communities;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -29,11 +29,11 @@ import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IntComparison;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.minesweeper.CommunityVar;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link CommunitySetMatchExprVarCollector}. */
-public class CommunitySetMatchExprVarCollectorTest {
+class CommunitySetMatchExprVarCollectorTest {
   private static final String HOSTNAME = "hostname";
   private Configuration _baseConfig;
   private CommunitySetMatchExprVarCollector _varCollector;
@@ -41,8 +41,8 @@ public class CommunitySetMatchExprVarCollectorTest {
   private static final Community COMM1 = StandardCommunity.parse("20:30");
   private static final Community COMM2 = StandardCommunity.parse("21:30");
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder()
@@ -55,7 +55,7 @@ public class CommunitySetMatchExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitCommunitySetAcl() {
+  void testVisitCommunitySetAcl() {
     CommunitySetAcl csacl =
         new CommunitySetAcl(
             ImmutableList.of(
@@ -72,7 +72,7 @@ public class CommunitySetMatchExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitCommunitySetMatchAll() {
+  void testVisitCommunitySetMatchAll() {
     CommunitySetMatchAll csma =
         new CommunitySetMatchAll(
             ImmutableList.of(
@@ -88,7 +88,7 @@ public class CommunitySetMatchExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitCommunitySetMatchAny() {
+  void testVisitCommunitySetMatchAny() {
     CommunitySetMatchAny csma =
         new CommunitySetMatchAny(
             ImmutableList.of(
@@ -104,7 +104,7 @@ public class CommunitySetMatchExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitCommunitySetMatchExprReference() {
+  void testVisitCommunitySetMatchExprReference() {
     String name = "name";
     _baseConfig.setCommunitySetMatchExprs(
         ImmutableMap.of(
@@ -121,7 +121,7 @@ public class CommunitySetMatchExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitCommunitySetMatchRegex() {
+  void testVisitCommunitySetMatchRegex() {
     CommunitySetMatchRegex cmsr =
         new CommunitySetMatchRegex(
             new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()),
@@ -132,7 +132,7 @@ public class CommunitySetMatchExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitCommunitySetNot() {
+  void testVisitCommunitySetNot() {
     CommunitySetNot csn = new CommunitySetNot(new HasCommunity(new CommunityIs(COMM1)));
 
     Set<CommunityVar> result = _varCollector.visitCommunitySetNot(csn, _baseConfig);
@@ -143,7 +143,7 @@ public class CommunitySetMatchExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitHasCommunity() {
+  void testVisitHasCommunity() {
     HasCommunity hc = new HasCommunity(new CommunityIs(COMM1));
 
     Set<CommunityVar> result = _varCollector.visitHasCommunity(hc, _baseConfig);
@@ -154,7 +154,7 @@ public class CommunitySetMatchExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitHasSize() {
+  void testVisitHasSize() {
     HasSize hs = new HasSize(new IntComparison(IntComparator.EQ, new LiteralInt(32)));
 
     Set<CommunityVar> result = _varCollector.visitHasSize(hs, _baseConfig);

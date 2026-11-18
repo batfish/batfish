@@ -1,7 +1,9 @@
 package org.batfish.datamodel.questions;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -18,16 +20,13 @@ import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.PropertySpecifier.PropertyDescriptor;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Row.RowBuilder;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-public class PropertySpecifierTest {
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class PropertySpecifierTest {
 
   /** Map should be converted to set of strings when the schema is string list */
   @Test
-  public void convertTypeIfNeededMapToStringSet() {
+  void convertTypeIfNeededMapToStringSet() {
     Object propertyValueMap =
         PropertySpecifier.convertTypeIfNeeded(
             ImmutableSortedMap.of("k1", "v1", "k2", "v2"), Schema.list(Schema.STRING));
@@ -36,7 +35,7 @@ public class PropertySpecifierTest {
 
   /** Non-string objects should be mapped to their string forms when the schema is String */
   @Test
-  public void convertTypeIfNeededNonStringToString() {
+  void convertTypeIfNeededNonStringToString() {
     Object propertyValueObject =
         PropertySpecifier.convertTypeIfNeeded(
             new Configuration("cname", ConfigurationFormat.CISCO_IOS), Schema.STRING);
@@ -45,7 +44,7 @@ public class PropertySpecifierTest {
 
   /** Collection of non-strings should be converted to collection of strings when desired */
   @Test
-  public void convertTypeIfNeededNonStringCollectionToStringCollection() {
+  void convertTypeIfNeededNonStringCollectionToStringCollection() {
     Object propertyValueCollection =
         PropertySpecifier.convertTypeIfNeeded(
             ImmutableList.of(new Configuration("cname", ConfigurationFormat.CISCO_IOS)),
@@ -55,32 +54,35 @@ public class PropertySpecifierTest {
 
   /** Null should remain null and not crash */
   @Test
-  public void convertTypeIfNeededNullInput() {
+  void convertTypeIfNeededNullInput() {
     Object propertyValueNull = PropertySpecifier.convertTypeIfNeeded(null, Schema.STRING);
     assertThat(propertyValueNull, equalTo(null));
   }
 
   /** Protect other objects for which conversion is not needed */
   @Test
-  public void convertTypeIfNeededNoConversion() {
+  void convertTypeIfNeededNoConversion() {
     Object propertyValueOther =
         PropertySpecifier.convertTypeIfNeeded(new Node("node"), Schema.NODE);
     assertThat(propertyValueOther, equalTo(new Node("node")));
   }
 
   @Test
-  public void fillPropertyFail() {
+  void fillPropertyFail() {
     PropertyDescriptor<Configuration> propDescriptor =
         new PropertyDescriptor<>(null, Schema.list(Schema.STRING), "dummy");
 
-    _thrown.expect(ClassCastException.class);
-    _thrown.expectMessage("Cannot recover object");
-
-    PropertySpecifier.fillProperty("col", "stringNotList", Row.builder(), propDescriptor);
+    Throwable exception =
+        assertThrows(
+            ClassCastException.class,
+            () ->
+                PropertySpecifier.fillProperty(
+                    "col", "stringNotList", Row.builder(), propDescriptor));
+    assertThat(exception.getMessage(), containsString("Cannot recover object"));
   }
 
   @Test
-  public void fillPropertyForcedString() {
+  void fillPropertyForcedString() {
     Configuration configuration = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
     configuration.setDefaultInboundAction(LineAction.PERMIT);
     String property = NodePropertySpecifier.DEFAULT_INBOUND_ACTION;
@@ -96,7 +98,7 @@ public class PropertySpecifierTest {
   }
 
   @Test
-  public void fillPropertyListEmpty() {
+  void fillPropertyListEmpty() {
     Configuration configuration = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
     String property = NodePropertySpecifier.NTP_SERVERS;
     PropertyDescriptor<Configuration> propertyDescriptor =
@@ -110,7 +112,7 @@ public class PropertySpecifierTest {
   }
 
   @Test
-  public void fillPropertyListNonEmpty() {
+  void fillPropertyListNonEmpty() {
     Configuration configuration = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
     configuration.setNtpServers(ImmutableSortedSet.of("sa", "sb"));
     String property = NodePropertySpecifier.NTP_SERVERS;
@@ -126,7 +128,7 @@ public class PropertySpecifierTest {
   }
 
   @Test
-  public void fillPropertyMap() {
+  void fillPropertyMap() {
     Configuration configuration = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
     configuration.setInterfaces(
         ImmutableSortedMap.of("i1", TestInterface.builder().setName("i1").build()));
@@ -142,7 +144,7 @@ public class PropertySpecifierTest {
   }
 
   @Test
-  public void fillPropertyNull() {
+  void fillPropertyNull() {
     Configuration configuration = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
     String property = NodePropertySpecifier.NTP_SOURCE_INTERFACE;
     PropertyDescriptor<Configuration> propertyDescriptor =
@@ -156,7 +158,7 @@ public class PropertySpecifierTest {
   }
 
   @Test
-  public void testFillPropertyMapForAllInterfaceProperties() {
+  void testFillPropertyMapForAllInterfaceProperties() {
     // all interface properties should be process correctly without throwing exceptions
     Configuration configuration = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
     Interface i1 = TestInterface.builder().setName("i1").build();

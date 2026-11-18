@@ -5,17 +5,17 @@ import com.google.common.testing.EqualsTester;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.IpsecProtocol;
 import org.batfish.representation.palo_alto.CryptoProfile.Type;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link CryptoProfile} */
-public class CryptoProfileTest {
+class CryptoProfileTest {
 
   private static CryptoProfile ipsecProfile() {
     return new CryptoProfile("name", Type.IPSEC);
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     CryptoProfile withProtocol = ipsecProfile();
     withProtocol.setProtocol(IpsecProtocol.AH);
 

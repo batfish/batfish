@@ -9,6 +9,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 import java.util.SortedMap;
@@ -18,17 +19,16 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 @ParametersAreNonnullByDefault
-public class EigrpTest {
+class EigrpTest {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testEigrpDistributeList() throws IOException {
+  void testEigrpDistributeList() throws IOException {
     String advertiser = "advertiser";
     String listener = "listener";
     String farlistener = "farlistener";

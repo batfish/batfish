@@ -2,7 +2,8 @@ package org.batfish.common.runtime;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -11,16 +12,13 @@ import java.util.Set;
 import java.util.TreeMap;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link SnapshotRuntimeData} */
-public class SnapshotRuntimeDataTest {
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class SnapshotRuntimeDataTest {
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     SnapshotRuntimeData.Builder builder =
         SnapshotRuntimeData.builder()
             .setRuntimeData(ImmutableMap.of("hostname", RuntimeData.EMPTY_RUNTIME_DATA));
@@ -30,7 +28,7 @@ public class SnapshotRuntimeDataTest {
   }
 
   @Test
-  public void testProcessedCorrectlyOnInitialization() {
+  void testProcessedCorrectlyOnInitialization() {
     Map<String, RuntimeData> initData = new TreeMap<>();
     initData.put("HOSTNAME", RuntimeData.EMPTY_RUNTIME_DATA);
 
@@ -41,11 +39,11 @@ public class SnapshotRuntimeDataTest {
     assertThat(
         snapshotRuntimeData.getRuntimeData(),
         equalTo(ImmutableMap.of("hostname", RuntimeData.EMPTY_RUNTIME_DATA)));
-    assertTrue(snapshotRuntimeData.getRuntimeData() instanceof ImmutableMap);
+    assertThat(snapshotRuntimeData.getRuntimeData(), instanceOf(ImmutableMap.class));
   }
 
   @Test
-  public void testGetRuntimeDataForNode() {
+  void testGetRuntimeDataForNode() {
     String hostname = "hostname";
     RuntimeData runtimeData =
         RuntimeData.builder()
@@ -64,20 +62,21 @@ public class SnapshotRuntimeDataTest {
     assertThat(srd.getRuntimeData("other"), equalTo(RuntimeData.EMPTY_RUNTIME_DATA));
 
     // Non-canonical hostname: should throw
-    _thrown.expect(AssertionError.class);
-    srd.getRuntimeData(hostname.toUpperCase());
+    assertThrows(AssertionError.class, () -> srd.getRuntimeData(hostname.toUpperCase()));
   }
 
   @Test
-  public void testBuilderSetRuntimeDataThrowsOnNonCanonicalHostname() {
+  void testBuilderSetRuntimeDataThrowsOnNonCanonicalHostname() {
     String hostname = "HOSTNAME";
-    _thrown.expect(IllegalArgumentException.class);
-    SnapshotRuntimeData.builder()
-        .setRuntimeData(ImmutableMap.of(hostname, RuntimeData.EMPTY_RUNTIME_DATA));
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            SnapshotRuntimeData.builder()
+                .setRuntimeData(ImmutableMap.of(hostname, RuntimeData.EMPTY_RUNTIME_DATA)));
   }
 
   @Test
-  public void testBuilderSetInterfacesLineUp() {
+  void testBuilderSetInterfacesLineUp() {
     String n1 = "n1";
     String n2 = "n2";
     String i1 = "i1";

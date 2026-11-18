@@ -1,19 +1,19 @@
 package org.batfish.datamodel;
 
-import static junit.framework.TestCase.assertEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
 import java.util.Optional;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class PrefixIp6SpaceTest {
+class PrefixIp6SpaceTest {
   @Test
-  public void testCompareSameClass() {
+  void testCompareSameClass() {
     PrefixIp6Space prefixIp6Space1 =
         new PrefixIp6Space(Prefix6.create(Ip6.parse("1:1:1:1::1"), 64));
     PrefixIp6Space prefixIp6Space2 =
@@ -26,7 +26,7 @@ public class PrefixIp6SpaceTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             Prefix6.parse("1:1:1:1::1/64").toIp6Space(),
@@ -36,7 +36,7 @@ public class PrefixIp6SpaceTest {
   }
 
   @Test
-  public void testTryParse() {
+  void testTryParse() {
     for (String s :
         ImmutableList.of(
             "abcd",
@@ -51,7 +51,7 @@ public class PrefixIp6SpaceTest {
   }
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     PrefixIp6Space original = new PrefixIp6Space(Prefix6.parse("2001:db8::/32"));
     assertThat(BatfishObjectMapper.clone(original, Ip6Space.class), equalTo(original));
     assertThat(SerializationUtils.clone(original), equalTo(original));

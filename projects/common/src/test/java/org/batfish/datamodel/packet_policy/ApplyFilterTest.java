@@ -6,12 +6,12 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link ApplyTransformation} */
-public class ApplyFilterTest {
+class ApplyFilterTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     ApplyFilter af = new ApplyFilter("filter");
     new EqualsTester()
         .addEqualityGroup(af, af, new ApplyFilter("filter"))
@@ -20,13 +20,13 @@ public class ApplyFilterTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     ApplyFilter af = new ApplyFilter("filter");
     assertThat(SerializationUtils.clone(af), equalTo(af));
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     ApplyFilter af = new ApplyFilter("filter");
     assertThat(BatfishObjectMapper.clone(af, ApplyFilter.class), equalTo(af));
   }

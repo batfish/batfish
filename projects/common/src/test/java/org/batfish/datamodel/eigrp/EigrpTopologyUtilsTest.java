@@ -17,13 +17,13 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link EigrpTopologyUtils} */
-public class EigrpTopologyUtilsTest {
+class EigrpTopologyUtilsTest {
 
   @Test
-  public void testInitNeighborConfigs() {
+  void testInitNeighborConfigs() {
     NetworkFactory nf = new NetworkFactory();
     Configuration configuration =
         nf.configurationBuilder()
@@ -167,7 +167,7 @@ public class EigrpTopologyUtilsTest {
   }
 
   @Test
-  public void testInitEigrpTopology() {
+  void testInitEigrpTopology() {
     Map<String, Configuration> configurations = configurationsForEigrpTopology();
     NodeInterfacePair conf1Iface1 = NodeInterfacePair.of("conf1", "iface1");
     NodeInterfacePair conf2Iface1 = NodeInterfacePair.of("conf2", "iface1");

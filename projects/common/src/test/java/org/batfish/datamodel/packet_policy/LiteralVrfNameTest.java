@@ -6,12 +6,12 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link LiteralVrfName} */
-public class LiteralVrfNameTest {
+class LiteralVrfNameTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     LiteralVrfName lv = new LiteralVrfName("vrf");
     new EqualsTester()
         .addEqualityGroup(lv, lv, new LiteralVrfName("vrf"))
@@ -21,13 +21,13 @@ public class LiteralVrfNameTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     LiteralVrfName lv = new LiteralVrfName("vrf");
     assertThat(SerializationUtils.clone(lv), equalTo(lv));
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     LiteralVrfName lv = new LiteralVrfName("vrf");
     assertThat(BatfishObjectMapper.clone(lv, LiteralVrfName.class), equalTo(lv));
   }

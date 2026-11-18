@@ -6,11 +6,13 @@ import static org.batfish.datamodel.matchers.BgpRouteMatchers.isEvpnType5RouteTh
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasItem;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Table;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -23,62 +25,73 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public class EvpnType5CumulusTest {
+class EvpnType5CumulusTest {
   private static final String SNAPSHOT_PREFIX = "org/batfish/dataplane/testrigs/";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
-  @Test(expected = AssertionError.class) // xfail this until cumulus supports type 5 routes
-  public void testType5RoutePresence() throws IOException {
-    String snapshotName = "evpn-type5-routes";
-    List<String> configurationNames =
-        ImmutableList.of(
-            "leaf1", "leaf2", "leaf3", "leaf4", "spine1", "spine2", "exitgateway", "internet");
-    Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationFiles(SNAPSHOT_PREFIX + snapshotName, configurationNames)
-                .setLayer1TopologyPrefix(SNAPSHOT_PREFIX + snapshotName)
-                .build(),
-            _folder);
+  // xfail this until cumulus supports type 5 routes
+  @Test
+  void testType5RoutePresence() throws IOException {
+    assertThrows(
+        AssertionError.class,
+        () -> {
+          String snapshotName = "evpn-type5-routes";
+          List<String> configurationNames =
+              ImmutableList.of(
+                  "leaf1",
+                  "leaf2",
+                  "leaf3",
+                  "leaf4",
+                  "spine1",
+                  "spine2",
+                  "exitgateway",
+                  "internet");
+          Batfish batfish =
+              BatfishTestUtils.getBatfishFromTestrigText(
+                  TestrigText.builder()
+                      .setConfigurationFiles(SNAPSHOT_PREFIX + snapshotName, configurationNames)
+                      .setLayer1TopologyPrefix(SNAPSHOT_PREFIX + snapshotName)
+                      .build(),
+                  _folder);
 
-    batfish.computeDataPlane(batfish.getSnapshot()); // compute and cache the dataPlane
-    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
+          batfish.computeDataPlane(batfish.getSnapshot()); // compute and cache the dataPlane
+          DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
 
-    Table<String, String, FinalMainRib> ribs = dp.getRibs();
-    String vrf1 = "vrf1";
-    final ImmutableList<String> leafs = ImmutableList.of("leaf1", "leaf2", "leaf3", "leaf4");
+          Table<String, String, FinalMainRib> ribs = dp.getRibs();
+          String vrf1 = "vrf1";
+          final ImmutableList<String> leafs = ImmutableList.of("leaf1", "leaf2", "leaf3", "leaf4");
 
-    ImmutableSet<Prefix> prefixes =
-        ImmutableSet.of(
-            Ip.parse("100.100.100.100").toPrefix(), Ip.parse("100.100.100.101").toPrefix());
+          ImmutableSet<Prefix> prefixes =
+              ImmutableSet.of(
+                  Ip.parse("100.100.100.100").toPrefix(), Ip.parse("100.100.100.101").toPrefix());
 
-    Map<String, Set<String>> nextHopInterfaces =
-        ImmutableMap.of(
-            "leaf1",
-            ImmutableSet.of("swp1", "swp11"),
-            "leaf2",
-            ImmutableSet.of("swp2", "swp12"),
-            "leaf3",
-            ImmutableSet.of("swp3", "swp13"),
-            "leaf4",
-            ImmutableSet.of("swp4", "swp14"));
+          Map<String, Set<String>> nextHopInterfaces =
+              ImmutableMap.of(
+                  "leaf1",
+                  ImmutableSet.of("swp1", "swp11"),
+                  "leaf2",
+                  ImmutableSet.of("swp2", "swp12"),
+                  "leaf3",
+                  ImmutableSet.of("swp3", "swp13"),
+                  "leaf4",
+                  ImmutableSet.of("swp4", "swp14"));
 
-    for (String leaf : leafs) {
-      Set<AbstractRoute> routes = ribs.get(leaf, vrf1).getRoutes();
-      for (Prefix prefix : prefixes) {
-        for (String nextHopIface : nextHopInterfaces.get(leaf)) {
-          assertThat(
-              routes,
-              hasItem(
-                  isEvpnType5RouteThat(
-                      allOf(hasPrefix(prefix), hasNextHopInterface(nextHopIface)))));
-        }
-      }
-    }
+          for (String leaf : leafs) {
+            Set<AbstractRoute> routes = ribs.get(leaf, vrf1).getRoutes();
+            for (Prefix prefix : prefixes) {
+              for (String nextHopIface : nextHopInterfaces.get(leaf)) {
+                assertThat(
+                    routes,
+                    hasItem(
+                        isEvpnType5RouteThat(
+                            allOf(hasPrefix(prefix), hasNextHopInterface(nextHopIface)))));
+              }
+            }
+          }
+        });
   }
 }

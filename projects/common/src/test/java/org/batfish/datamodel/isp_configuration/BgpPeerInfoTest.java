@@ -6,12 +6,12 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class BgpPeerInfoTest {
+class BgpPeerInfoTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new BgpPeerInfo("host", null, Ip.ZERO, null, null),
@@ -27,7 +27,7 @@ public class BgpPeerInfoTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     BgpPeerInfo bgpPeerInfo = new BgpPeerInfo("host", null, Ip.ZERO, null, null);
     assertThat(BatfishObjectMapper.clone(bgpPeerInfo, BgpPeerInfo.class), equalTo(bgpPeerInfo));
   }

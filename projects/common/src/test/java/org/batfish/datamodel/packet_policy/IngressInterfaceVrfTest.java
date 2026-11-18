@@ -6,24 +6,24 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link IngressInterfaceVrf} */
-public class IngressInterfaceVrfTest {
+class IngressInterfaceVrfTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     IngressInterfaceVrf iiv = IngressInterfaceVrf.instance();
     new EqualsTester().addEqualityGroup(iiv, iiv).addEqualityGroup(new Object()).testEquals();
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     IngressInterfaceVrf iiv = IngressInterfaceVrf.instance();
     assertThat(SerializationUtils.clone(iiv), equalTo(iiv));
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     IngressInterfaceVrf iiv = IngressInterfaceVrf.instance();
     assertThat(BatfishObjectMapper.clone(iiv, IngressInterfaceVrf.class), equalTo(iiv));
   }

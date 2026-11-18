@@ -6,6 +6,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 
 import com.google.common.collect.ImmutableSortedMap;
+import java.io.File;
 import java.io.IOException;
 import java.util.SortedMap;
 import org.batfish.datamodel.Configuration;
@@ -16,15 +17,14 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class CompareFiltersTest {
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+final class CompareFiltersTest {
+  @TempDir public File _folder;
 
   @Test
-  public void testMatchSrcInterface_noDifference() throws IOException {
+  void testMatchSrcInterface_noDifference() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();

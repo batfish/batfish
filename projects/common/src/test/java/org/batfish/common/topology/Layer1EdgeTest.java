@@ -1,11 +1,11 @@
 package org.batfish.common.topology;
 
 import com.google.common.testing.EqualsTester;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class Layer1EdgeTest {
+final class Layer1EdgeTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     Layer1Node n1 = new Layer1Node("a", "b");
     Layer1Node n2 = new Layer1Node("c", "d");
     new EqualsTester()

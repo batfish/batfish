@@ -12,17 +12,13 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.specifier.Grammar;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link Parser} producing {@link RoutingPolicyAstNode}. */
-public class ParserRoutingPolicyTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class ParserRoutingPolicyTest {
 
   @Test
-  public void testCompletionEmpty() {
+  void testCompletionEmpty() {
     String query = "";
 
     CompletionMetadata completionMetadata =
@@ -51,7 +47,7 @@ public class ParserRoutingPolicyTest {
   }
 
   @Test
-  public void testCompletionPartialName() {
+  void testCompletionPartialName() {
     String query = "RoutingPolicy1"; // this could be a complete term or a partial name
 
     CompletionMetadata completionMetadata =
@@ -82,7 +78,7 @@ public class ParserRoutingPolicyTest {
   }
 
   @Test
-  public void testParseRoutingPolicyName() {
+  void testParseRoutingPolicyName() {
     String routingPolicyName = "route-er";
     NameRoutingPolicyAstNode expectedAst = new NameRoutingPolicyAstNode(routingPolicyName);
 
@@ -95,7 +91,7 @@ public class ParserRoutingPolicyTest {
   }
 
   @Test
-  public void testParseRoutingPolicyNameRegex() {
+  void testParseRoutingPolicyNameRegex() {
     String regex = "^RoutingPolicy 0-0:1\\/0.*.?$";
     String regexWithSlashes = "/" + regex + "/";
     NameRegexRoutingPolicyAstNode expectedAst = new NameRegexRoutingPolicyAstNode(regex);
@@ -109,7 +105,7 @@ public class ParserRoutingPolicyTest {
   }
 
   @Test
-  public void testParseRoutingPolicyNameRegexDeprecated() {
+  void testParseRoutingPolicyNameRegexDeprecated() {
     String regex = "RoutingPolicy.*";
     NameRegexRoutingPolicyAstNode expectedAst = new NameRegexRoutingPolicyAstNode(regex);
 
@@ -121,7 +117,7 @@ public class ParserRoutingPolicyTest {
   }
 
   @Test
-  public void testParseRoutingPolicyParens() {
+  void testParseRoutingPolicyParens() {
     assertThat(
         SpecifierAstBuilder.getAst(Grammar.ROUTING_POLICY_SPECIFIER, "(RoutingPolicy)"),
         equalTo(new NameRoutingPolicyAstNode("RoutingPolicy")));
@@ -138,7 +134,7 @@ public class ParserRoutingPolicyTest {
   }
 
   @Test
-  public void testParseRoutingPolicyDifference() {
+  void testParseRoutingPolicyDifference() {
     DifferenceRoutingPolicyAstNode expectedNode =
         new DifferenceRoutingPolicyAstNode(
             new NameRoutingPolicyAstNode("RoutingPolicy1"),
@@ -155,7 +151,7 @@ public class ParserRoutingPolicyTest {
   }
 
   @Test
-  public void testParseRoutingPolicyIntersection() {
+  void testParseRoutingPolicyIntersection() {
     IntersectionRoutingPolicyAstNode expectedNode =
         new IntersectionRoutingPolicyAstNode(
             new NameRoutingPolicyAstNode("RoutingPolicy1"),
@@ -172,7 +168,7 @@ public class ParserRoutingPolicyTest {
   }
 
   @Test
-  public void testParseRoutingPolicyUnion() {
+  void testParseRoutingPolicyUnion() {
     UnionRoutingPolicyAstNode expectedNode =
         new UnionRoutingPolicyAstNode(
             new NameRoutingPolicyAstNode("RoutingPolicy1"),
@@ -190,7 +186,7 @@ public class ParserRoutingPolicyTest {
 
   /** Test if we got the precedence of set operators right. Intersection is higher priority. */
   @Test
-  public void testParseRoutingPolicySetOpPrecedence() {
+  void testParseRoutingPolicySetOpPrecedence() {
     assertThat(
         SpecifierAstBuilder.getAst(
             Grammar.ROUTING_POLICY_SPECIFIER, "RoutingPolicy1\\RoutingPolicy2&RoutingPolicy3"),

@@ -13,12 +13,12 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link SetOrigin} */
-public class SetOriginTest {
+class SetOriginTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     SetOrigin so = new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE, 1L));
     new EqualsTester()
         .addEqualityGroup(so, so, new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE, 1L)))
@@ -28,19 +28,19 @@ public class SetOriginTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     SetOrigin so = new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE, 1L));
     assertThat(SerializationUtils.clone(so), equalTo(so));
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     SetOrigin so = new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE, 1L));
     assertThat(BatfishObjectMapper.clone(so, SetOrigin.class), equalTo(so));
   }
 
   @Test
-  public void testExecuteNonBgpRoute() {
+  void testExecuteNonBgpRoute() {
     SetOrigin so = new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE, 1L));
     NetworkFactory nf = new NetworkFactory();
     Configuration c =

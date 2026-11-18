@@ -1,19 +1,19 @@
 package org.batfish.vendor.check_point_management;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.datamodel.Ip;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link ManagementDomain}. */
-public final class ManagementDomainTest {
+final class ManagementDomainTest {
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     ManagementDomain obj =
         new ManagementDomain(
             new Domain("a", Uid.of("1")), ImmutableMap.of(), ImmutableMap.of(), ImmutableList.of());
@@ -21,7 +21,7 @@ public final class ManagementDomainTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     ManagementDomain obj =
         new ManagementDomain(
             new Domain("a", Uid.of("1")), ImmutableMap.of(), ImmutableMap.of(), ImmutableList.of());

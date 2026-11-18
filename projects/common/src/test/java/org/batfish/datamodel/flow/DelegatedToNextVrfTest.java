@@ -5,19 +5,19 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link DelegatedToNextVrf}. */
-public final class DelegatedToNextVrfTest {
+final class DelegatedToNextVrfTest {
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     DelegatedToNextVrf obj = DelegatedToNextVrf.of("a");
     assertThat(BatfishObjectMapper.clone(obj, ForwardingDetail.class), equalTo(obj));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     DelegatedToNextVrf obj = DelegatedToNextVrf.of("a");
     new EqualsTester()
         .addEqualityGroup(obj, DelegatedToNextVrf.of("a"))

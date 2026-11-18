@@ -18,10 +18,10 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetTag2;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.minesweeper.utils.Tuple;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link Tag2Collector}. */
-public class Tag2CollectorTest {
+class Tag2CollectorTest {
 
   private static Set<Long> collect(Statement... statements) {
     Configuration config =
@@ -39,19 +39,19 @@ public class Tag2CollectorTest {
   }
 
   @Test
-  public void testCollectsSetLiteral() {
+  void testCollectsSetLiteral() {
     assertThat(collect(new SetTag2(new LiteralLong(5))), containsInAnyOrder(5L));
   }
 
   @Test
-  public void testCollectsEqualityMatchLiteral() {
+  void testCollectsEqualityMatchLiteral() {
     assertThat(
         collect(ifMatch(new MatchTag2(IntComparator.EQ, new LiteralLong(7)))),
         containsInAnyOrder(7L));
   }
 
   @Test
-  public void testCollectsFromMatchesAndSets() {
+  void testCollectsFromMatchesAndSets() {
     assertThat(
         collect(
             ifMatch(new MatchTag2(IntComparator.EQ, new LiteralLong(7))),
@@ -60,12 +60,12 @@ public class Tag2CollectorTest {
   }
 
   @Test
-  public void testIgnoresNonEqualityMatch() {
+  void testIgnoresNonEqualityMatch() {
     assertThat(collect(ifMatch(new MatchTag2(IntComparator.GE, new LiteralLong(7)))), empty());
   }
 
   @Test
-  public void testIgnoresNonLiteral() {
+  void testIgnoresNonLiteral() {
     assertThat(
         collect(
             ifMatch(new MatchTag2(IntComparator.EQ, new VarLong("var"))),

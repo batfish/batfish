@@ -5,11 +5,11 @@ import static org.hamcrest.Matchers.equalTo;
 
 import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class IssueTypeTest {
+class IssueTypeTest {
   @Test
-  public void testSerialization() throws IOException {
+  void testSerialization() throws IOException {
     String serialized = BatfishObjectMapper.writeString(IssueType.ConvertError);
     assertThat(
         BatfishObjectMapper.mapper().readValue(serialized, IssueType.class),

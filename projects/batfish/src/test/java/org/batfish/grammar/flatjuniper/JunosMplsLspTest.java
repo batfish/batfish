@@ -12,19 +12,19 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasKey;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.main.Batfish;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public class JunosMplsLspTest {
+class JunosMplsLspTest {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testMplsLspComprehensiveParsing() throws IOException {
+  void testMplsLspComprehensiveParsing() throws IOException {
     String hostname = "mpls-lsp-comprehensive";
     Batfish batfish = getBatfish(_folder, hostname);
     // Doesn't crash, produces configuration successfully.
@@ -32,7 +32,7 @@ public class JunosMplsLspTest {
   }
 
   @Test
-  public void testMplsPathReferences() throws IOException {
+  void testMplsPathReferences() throws IOException {
     String hostname = "mpls-lsp-comprehensive";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfish(_folder, hostname);
@@ -58,7 +58,7 @@ public class JunosMplsLspTest {
 
   /** Names containing {@code >}, e.g. LSP name "WASH->ATLA", lex so the LSP body parses. */
   @Test
-  public void testLspNameWithArrowParsing() throws IOException {
+  void testLspNameWithArrowParsing() throws IOException {
     String hostname = "junos-lsp-name-with-arrow";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfish(_folder, hostname);

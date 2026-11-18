@@ -19,11 +19,11 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class PointToPointComputerTest {
+class PointToPointComputerTest {
   @Test
-  public void testComputePhysicalPointToPoint() {
+  void testComputePhysicalPointToPoint() {
     Layer1Node n1 = new Layer1Node("a", "b");
     NodeInterfacePair i1 = n1.asNodeInterfacePair();
     Layer1Node n2 = new Layer1Node("c", "d");
@@ -55,7 +55,7 @@ public class PointToPointComputerTest {
   }
 
   @Test
-  public void testComputeSubinterfaceToParent() {
+  void testComputeSubinterfaceToParent() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();

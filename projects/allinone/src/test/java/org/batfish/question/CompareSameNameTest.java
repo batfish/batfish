@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.hasSize;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import java.io.File;
 import java.io.IOException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -16,28 +17,27 @@ import org.batfish.main.BatfishTestUtils;
 import org.batfish.question.CompareSameNameQuestionPlugin.CompareSameNameAnswerElement;
 import org.batfish.question.CompareSameNameQuestionPlugin.CompareSameNameAnswerer;
 import org.batfish.question.CompareSameNameQuestionPlugin.CompareSameNameQuestion;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** End-to-end tests of {@link CompareSameNameQuestion}. */
-public class CompareSameNameTest {
+class CompareSameNameTest {
 
   private Configuration.Builder _cb;
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private NetworkFactory _nf;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _nf = new NetworkFactory();
     _cb = _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
   }
 
   @Test
-  public void testAssumeAllUnique() throws IOException {
+  void testAssumeAllUnique() throws IOException {
     Configuration c1 = _cb.build();
     Configuration c2 = _cb.build();
     String aclName = "acl";

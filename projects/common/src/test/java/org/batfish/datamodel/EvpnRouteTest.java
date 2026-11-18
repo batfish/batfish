@@ -9,12 +9,12 @@ import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link EvpnRoute} */
-public class EvpnRouteTest {
+class EvpnRouteTest {
   @Test
-  public void testGetRouteTarget() {
+  void testGetRouteTarget() {
     EvpnType2Route.Builder builder =
         EvpnType2Route.builder()
             .setIp(Ip.parse("1.1.1.1"))

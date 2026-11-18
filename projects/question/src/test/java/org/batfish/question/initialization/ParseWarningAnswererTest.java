@@ -25,13 +25,13 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Rows;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.question.initialization.IssueAggregation.ParseWarningTriplet;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link ParseWarningAnswerer}. */
-public class ParseWarningAnswererTest {
+class ParseWarningAnswererTest {
 
   @Test
-  public void testAggregateRow() {
+  void testAggregateRow() {
     Row row =
         getAggregateRow(
             new ParseWarningTriplet("dup", "[configuration]", "comment"),
@@ -55,7 +55,7 @@ public class ParseWarningAnswererTest {
   }
 
   @Test
-  public void testGetRow() {
+  void testGetRow() {
     ParseWarning input = new ParseWarning(3, "text", "[configuration]", "comment");
     Row expected =
         Row.of(
@@ -77,7 +77,7 @@ public class ParseWarningAnswererTest {
   }
 
   @Test
-  public void testAnswererFlow() {
+  void testAnswererFlow() {
     TestBatfish batfish = new TestBatfish();
     ParseWarningAnswerer answerer = new ParseWarningAnswerer(new ParseWarningQuestion(), batfish);
     TableAnswerElement answer = answerer.answer(batfish.getSnapshot());

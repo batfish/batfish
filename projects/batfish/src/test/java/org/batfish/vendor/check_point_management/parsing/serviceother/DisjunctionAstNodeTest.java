@@ -5,19 +5,19 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link DisjunctionAstNode}. */
-public final class DisjunctionAstNodeTest {
+final class DisjunctionAstNodeTest {
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     DisjunctionAstNode obj = new DisjunctionAstNode();
     assertThat(SerializationUtils.clone(obj), equalTo(obj));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     DisjunctionAstNode obj = new DisjunctionAstNode();
     new EqualsTester()
         .addEqualityGroup(obj, new DisjunctionAstNode())
@@ -26,7 +26,7 @@ public final class DisjunctionAstNodeTest {
   }
 
   @Test
-  public void testOr() {
+  void testOr() {
     assertThat(
         new DisjunctionAstNode().or(TcpAstNode.instance()),
         equalTo(new DisjunctionAstNode(TcpAstNode.instance())));

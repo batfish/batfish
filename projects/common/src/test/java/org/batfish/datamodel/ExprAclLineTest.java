@@ -1,7 +1,7 @@
 package org.batfish.datamodel;
 
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -9,12 +9,12 @@ import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.vendor.VendorStructureId;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link ExprAclLine}. */
-public class ExprAclLineTest {
+class ExprAclLineTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     TraceElement traceElement1 = TraceElement.of("a");
     TraceElement traceElement2 = TraceElement.of("b");
     VendorStructureId vsId1 = new VendorStructureId("a", "b", "c");
@@ -41,7 +41,7 @@ public class ExprAclLineTest {
   }
 
   @Test
-  public void testToBuilder() {
+  void testToBuilder() {
     ExprAclLine line =
         ExprAclLine.builder()
             .setAction(LineAction.PERMIT)
@@ -53,7 +53,7 @@ public class ExprAclLineTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     {
       ExprAclLine l = new ExprAclLine(LineAction.PERMIT, OriginatingFromDevice.INSTANCE, "name");
       ExprAclLine clone = (ExprAclLine) BatfishObjectMapper.clone(l, AclLine.class);

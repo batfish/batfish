@@ -7,16 +7,13 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link Version}. */
-public class VersionTest {
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class VersionTest {
 
   @Test
-  public void versionExtractionFromProperties() {
+  void versionExtractionFromProperties() {
     String extractedVersion = Version.getPropertiesVersion(PROPERTIES_PATH, "batfish_version");
     String extractedVersionBadKey = Version.getPropertiesVersion(PROPERTIES_PATH, "bogus");
     String extractedVersionBadPath = Version.getPropertiesVersion("org.bogus", "batfish_version");

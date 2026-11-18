@@ -5,6 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 
 import com.google.common.collect.Table;
+import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 import org.batfish.datamodel.Bgpv4Route;
@@ -14,19 +15,18 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * Tests that a router that sends all additional-paths will advertise multiple routes that are
  * duplicate post-export, and that both will be present in the BGP RIB on the receiver.
  */
-public final class BgpAddPathDuplicateTest {
+final class BgpAddPathDuplicateTest {
 
   private static final Prefix PREFIX = Prefix.strict("10.0.0.0/32");
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
   private DataPlane _dp;
 
   /*
@@ -42,8 +42,8 @@ public final class BgpAddPathDuplicateTest {
    - as2leaf should have 2 routes identical modulo rx path-id in its BGP RIB, with one being active
      and one being backup; and therefore 1 route in its main RIB
   */
-  @Before
-  public void setup() throws IOException {
+  @BeforeEach
+  void setup() throws IOException {
     String snapshotPath = "org/batfish/dataplane/ibdp/add-path/duplicate";
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
@@ -58,7 +58,7 @@ public final class BgpAddPathDuplicateTest {
   }
 
   @Test
-  public void testBgpRib() {
+  void testBgpRib() {
     Table<String, String, Set<Bgpv4Route>> bgpRoutes = _dp.getBgpRoutes();
 
     // as2border
@@ -70,7 +70,7 @@ public final class BgpAddPathDuplicateTest {
   }
 
   @Test
-  public void testMainRib() {
+  void testMainRib() {
     Table<String, String, FinalMainRib> ribs = _dp.getRibs();
 
     // as2border

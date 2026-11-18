@@ -37,11 +37,11 @@ import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierContextImpl;
 import org.batfish.specifier.SpecifierFactories;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class HeaderConstraintsToFlowsTest {
+class HeaderConstraintsToFlowsTest {
   @Test
-  public void testGetFlows() {
+  void testGetFlows() {
     NetworkFactory nf = new NetworkFactory();
     Configuration config =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
@@ -98,7 +98,7 @@ public class HeaderConstraintsToFlowsTest {
   }
 
   @Test
-  public void testGetFlows_ICMP() {
+  void testGetFlows_ICMP() {
     NetworkFactory nf = new NetworkFactory();
     Configuration config =
         nf.configurationBuilder()

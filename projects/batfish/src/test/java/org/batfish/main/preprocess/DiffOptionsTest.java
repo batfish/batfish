@@ -5,19 +5,19 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link DiffOptions}. */
-public class DiffOptionsTest {
+class DiffOptionsTest {
 
   @Test
-  public void testDefaults() {
+  void testDefaults() {
     DiffOptions options = DiffOptions.defaults();
     assertThat("Default context lines should be 3", options.getContextLines(), equalTo(3));
   }
 
   @Test
-  public void testWithContextLines() {
+  void testWithContextLines() {
     DiffOptions options0 = DiffOptions.withContextLines(0);
     assertThat("Context lines should be 0", options0.getContextLines(), equalTo(0));
 
@@ -29,7 +29,7 @@ public class DiffOptionsTest {
   }
 
   @Test
-  public void testZeroContextLines_integration() {
+  void testZeroContextLines_integration() {
     String config1 = "line1\nline2\nline3\nline4\nline5";
     String config2 = "line1\nCHANGED\nline3\nline4\nline5";
 
@@ -46,7 +46,7 @@ public class DiffOptionsTest {
   }
 
   @Test
-  public void testExtremeContextLines_integration() {
+  void testExtremeContextLines_integration() {
     String config1 = "line1\nline2\nline3";
     String config2 = "line1\nCHANGED\nline3";
 

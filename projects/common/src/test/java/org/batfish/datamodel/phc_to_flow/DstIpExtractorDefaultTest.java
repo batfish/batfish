@@ -9,10 +9,10 @@ import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.MockSpecifierContext;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link DstIpExtractorDefault} */
-public class DstIpExtractorDefaultTest {
+class DstIpExtractorDefaultTest {
   private static Location LOC = new InterfaceLocation("host1", "interface1");
   private static IpFieldExtractorContext HELPER =
       new IpFieldExtractorContext(
@@ -22,13 +22,13 @@ public class DstIpExtractorDefaultTest {
   private static DstIpExtractorDefault DST_IP_EXTRACTOR = new DstIpExtractorDefault(HELPER);
 
   @Test
-  public void testGetValue_inferFromPhc() {
+  void testGetValue_inferFromPhc() {
     PacketHeaderConstraints phc = PacketHeaderConstraints.builder().setDstIp("2.3.4.5").build();
     assertThat(DST_IP_EXTRACTOR.getValue(phc, LOC), equalTo(Ip.parse("2.3.4.5")));
   }
 
   @Test
-  public void testGetValue_noPhc() {
+  void testGetValue_noPhc() {
     PacketHeaderConstraints phc = PacketHeaderConstraints.unconstrained();
     assertThat(DST_IP_EXTRACTOR.getValue(phc, LOC), equalTo(Ip.parse("8.8.8.8")));
   }

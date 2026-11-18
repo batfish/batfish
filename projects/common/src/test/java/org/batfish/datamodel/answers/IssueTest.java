@@ -6,13 +6,13 @@ import static org.hamcrest.Matchers.equalTo;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class IssueTest {
+class IssueTest {
 
   /** Test if Issues are (De)serialiazed properly */
   @Test
-  public void testSerDeser() throws IOException {
+  void testSerDeser() throws IOException {
     String issueStr =
         "{\"explanation\" : \"myex\", \"type\" : { \"major\" : \"maj\", \"minor\": \"min\" },"
             + " \"severity\" : 75, \"url\": \"www.cnn.com\"}";

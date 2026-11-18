@@ -7,7 +7,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcPort;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
@@ -40,10 +40,10 @@ import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.references.StructureManager;
 import org.batfish.vendor.StructureType;
 import org.batfish.vendor.VendorStructureId;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class InvalidVendorStructureIdEraserTest {
+class InvalidVendorStructureIdEraserTest {
   private enum TestStructureType implements StructureType {
     VALID;
 
@@ -56,8 +56,8 @@ public class InvalidVendorStructureIdEraserTest {
   private static final String TEST_STRUCTURE_NAME = "struct";
   private static final String TEST_FILENAME = "filename";
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     StructureManager structureManager = StructureManager.create();
     structureManager.getOrDefine(TestStructureType.VALID, TEST_STRUCTURE_NAME);
     _eraser = new InvalidVendorStructureIdEraser(TEST_FILENAME, structureManager);
@@ -86,45 +86,45 @@ public class InvalidVendorStructureIdEraserTest {
   }
 
   @Test
-  public void testAclLineMatchExprsTrueExpr() {
+  void testAclLineMatchExprsTrueExpr() {
     Function<TraceElement, AclLineMatchExpr> traceElementTFunction = TrueExpr::new;
     assertExprHandled(traceElementTFunction);
   }
 
   @Test
-  public void testAclLineMatchExprsFalseExpr() {
+  void testAclLineMatchExprsFalseExpr() {
     Function<TraceElement, AclLineMatchExpr> traceElementTFunction = FalseExpr::new;
     assertExprHandled(traceElementTFunction);
   }
 
   @Test
-  public void testAclLineMatchExprsOriginatingFromDevice() {
+  void testAclLineMatchExprsOriginatingFromDevice() {
     assertEquals(OriginatingFromDevice.INSTANCE, _eraser.visit(OriginatingFromDevice.INSTANCE));
   }
 
   @Test
-  public void testAclLineMatchExprsPermittedByAcl() {
+  void testAclLineMatchExprsPermittedByAcl() {
     Function<TraceElement, AclLineMatchExpr> traceElementTFunction =
         te -> new PermittedByAcl("acl", te);
     assertExprHandled(traceElementTFunction);
   }
 
   @Test
-  public void testAclLineMatchExprsDeniedByAcl() {
+  void testAclLineMatchExprsDeniedByAcl() {
     Function<TraceElement, AclLineMatchExpr> traceElementTFunction =
         te -> new DeniedByAcl("acl", te);
     assertExprHandled(traceElementTFunction);
   }
 
   @Test
-  public void testAclLineMatchExprsNotMatchExpr() {
+  void testAclLineMatchExprsNotMatchExpr() {
     Function<TraceElement, AclLineMatchExpr> traceElementTFunction =
         te -> new NotMatchExpr(TrueExpr.INSTANCE, te);
     assertExprHandled(traceElementTFunction);
   }
 
   @Test
-  public void testAclLineMatchExprsMatchSrcInterface() {
+  void testAclLineMatchExprsMatchSrcInterface() {
     List<String> ifaces = ImmutableList.of("i");
     Function<TraceElement, AclLineMatchExpr> traceElementTFunction =
         te -> new MatchSrcInterface(ifaces, te);
@@ -132,21 +132,21 @@ public class InvalidVendorStructureIdEraserTest {
   }
 
   @Test
-  public void testAclLineMatchExprsAndMatchExpr() {
+  void testAclLineMatchExprsAndMatchExpr() {
     Function<TraceElement, AclLineMatchExpr> traceElementTFunction =
         te -> new AndMatchExpr(ImmutableList.of(new TrueExpr(te)), te);
     assertExprHandled(traceElementTFunction);
   }
 
   @Test
-  public void testAclLineMatchExprsOrMatchExpr() {
+  void testAclLineMatchExprsOrMatchExpr() {
     Function<TraceElement, AclLineMatchExpr> traceElementTFunction =
         te -> new OrMatchExpr(ImmutableList.of(new TrueExpr(te)), te);
     assertExprHandled(traceElementTFunction);
   }
 
   @Test
-  public void testAclLineMatchExprsMatchHeaderSpace() {
+  void testAclLineMatchExprsMatchHeaderSpace() {
     HeaderSpace headerSpace = HeaderSpace.builder().setDstIps(UniverseIpSpace.INSTANCE).build();
     Function<TraceElement, AclLineMatchExpr> traceElementTFunction =
         te -> new MatchHeaderSpace(headerSpace, te);
@@ -154,7 +154,7 @@ public class InvalidVendorStructureIdEraserTest {
   }
 
   @Test
-  public void testSimpleMatches() {
+  void testSimpleMatches() {
     assertExprHandled(te -> (MatchDestinationIp) matchDst(Ip.ZERO.toIpSpace(), te));
     assertExprHandled(te -> (MatchSourceIp) matchSrc(Ip.ZERO.toIpSpace(), te));
     assertExprHandled(te -> (MatchDestinationPort) matchDstPort(1, te));
@@ -163,7 +163,7 @@ public class InvalidVendorStructureIdEraserTest {
   }
 
   @Test
-  public void testAcl() {
+  void testAcl() {
     IpAccessList acl =
         IpAccessList.builder()
             .setName("acl")
@@ -183,7 +183,7 @@ public class InvalidVendorStructureIdEraserTest {
   }
 
   @Test
-  public void testTraceElement() {
+  void testTraceElement() {
     // Valid and flat-text trace elements are left unchanged
     assertEquals(
         TraceElement.builder().add("flatText").add("valid", _validVsid).build(),
@@ -196,7 +196,7 @@ public class InvalidVendorStructureIdEraserTest {
   }
 
   @Test
-  public void testAclLines() {
+  void testAclLines() {
     // Valid VSIDs are left alone
     assertEquals(
         new AclAclLine("name", "acl", _validTe, _validVsid),

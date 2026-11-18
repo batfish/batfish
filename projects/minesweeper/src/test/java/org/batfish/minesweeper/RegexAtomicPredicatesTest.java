@@ -6,19 +6,19 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.iterableWithSize;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableSet;
 import dk.brics.automaton.Automaton;
 import dk.brics.automaton.RegExp;
 import java.util.Set;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for the {@link RegexAtomicPredicates} class. */
-public class RegexAtomicPredicatesTest {
+class RegexAtomicPredicatesTest {
   @Test
-  public void testInitAtomicPredicatesCVars() {
+  void testInitAtomicPredicatesCVars() {
     Set<CommunityVar> cvars =
         ImmutableSet.of(
             CommunityVar.from("^2[0-3]:40$"),
@@ -65,7 +65,7 @@ public class RegexAtomicPredicatesTest {
   }
 
   @Test
-  public void testNoOutOfIntegerRangeCommunities() {
+  void testNoOutOfIntegerRangeCommunities() {
     // check that we don't create atomic predicates that represent ill-formed communities, due to
     // out-of-range community values
 
@@ -97,7 +97,7 @@ public class RegexAtomicPredicatesTest {
   }
 
   @Test
-  public void testInitAtomicPredicatesAsPath() {
+  void testInitAtomicPredicatesAsPath() {
     Set<SymbolicAsPathRegex> asPathRegexes =
         ImmutableSet.of(
             new SymbolicAsPathRegex("^$"),
@@ -149,7 +149,7 @@ public class RegexAtomicPredicatesTest {
   }
 
   @Test
-  public void testNoOutOfRangeASNs() {
+  void testNoOutOfRangeASNs() {
     Set<SymbolicAsPathRegex> asPathRegexes =
         ImmutableSet.of(
             new SymbolicAsPathRegex("3333333333$"), new SymbolicAsPathRegex("^3333333333$"));
@@ -183,7 +183,7 @@ public class RegexAtomicPredicatesTest {
   }
 
   @Test
-  public void testCopyConstructor() {
+  void testCopyConstructor() {
     Set<CommunityVar> cvars =
         ImmutableSet.of(
             CommunityVar.from("^2[0-3]:40$"),

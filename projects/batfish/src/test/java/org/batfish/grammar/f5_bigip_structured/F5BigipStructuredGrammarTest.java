@@ -155,13 +155,14 @@ import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -258,14 +259,12 @@ import org.batfish.representation.f5_bigip.TrafficGroup;
 import org.batfish.representation.f5_bigip.UnicastAddress;
 import org.batfish.representation.f5_bigip.Virtual;
 import org.batfish.representation.f5_bigip.VirtualAddress;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class F5BigipStructuredGrammarTest {
+final class F5BigipStructuredGrammarTest {
   private static final String SNAPSHOTS_PREFIX =
       "org/batfish/grammar/f5_bigip_structured/snapshots/";
   private static final String TESTCONFIGS_PREFIX =
@@ -363,14 +362,12 @@ public final class F5BigipStructuredGrammarTest {
   // TODO: switch to true when tests are fixed
   private static boolean DEFAULT_DISABLE_UNRECOGNIZED = true;
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+  @TempDir public File _folder;
 
   private boolean _disableUnrecognized;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _disableUnrecognized = DEFAULT_DISABLE_UNRECOGNIZED;
   }
 
@@ -402,7 +399,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testBgpKernelRouteRedistribution() throws IOException {
+  void testBgpKernelRouteRedistribution() throws IOException {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
@@ -425,7 +422,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testBgpProcessConversion() throws IOException {
+  void testBgpProcessConversion() throws IOException {
     String hostname = "f5_bigip_structured_net_routing_bgp";
     Configuration c = parseConfig(hostname);
 
@@ -596,7 +593,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testBgpProcessReferences() throws IOException {
+  void testBgpProcessReferences() throws IOException {
     String hostname = "f5_bigip_structured_bgp_process_references";
     String file = "configs/" + hostname;
     String used = "/Common/my_bgp_process";
@@ -613,7 +610,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testBgpRouterIdAuto() throws IOException {
+  void testBgpRouterIdAuto() throws IOException {
     Configuration c = parseConfig("f5_bigip_structured_bgp_router_id_auto");
 
     // BGP Router-ID automatically chosen from highest IP address
@@ -621,7 +618,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testBgpRouterIdManual() throws IOException {
+  void testBgpRouterIdManual() throws IOException {
     Configuration c = parseConfig("f5_bigip_structured_bgp_router_id_manual");
 
     // BGP Router-ID manually set
@@ -629,7 +626,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testBgpUpdateSource() throws IOException {
+  void testBgpUpdateSource() throws IOException {
     Configuration c = parseConfig("f5_bigip_structured_bgp_neighbor_update_source");
 
     // eBGP single-hop should use interface IP and ignore update-source
@@ -682,7 +679,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testCmConversion() throws IOException {
+  void testCmConversion() throws IOException {
     Configuration c = parseConfig("f5_bigip_structured_cm");
 
     F5BigipFamily f = c.getVendorFamily().getF5Bigip();
@@ -881,7 +878,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testCmExtraction() {
+  void testCmExtraction() {
     F5BigipConfiguration vc = parseVendorConfig("f5_bigip_structured_cm");
 
     // cm device
@@ -1030,7 +1027,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testDataGroupDefinitions() throws IOException {
+  void testDataGroupDefinitions() throws IOException {
     String hostname = "f5_bigip_structured_ltm_data_group";
     String file = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -1045,7 +1042,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testDnat() throws IOException {
+  void testDnat() throws IOException {
     String snapshotName = "dnat";
     String natHostname = "f5_bigip_structured_dnat";
     String hostname = "host1";
@@ -1088,7 +1085,7 @@ public final class F5BigipStructuredGrammarTest {
               .filter(d -> d.getTransformationType() == TransformationType.DEST_NAT)
               .findFirst();
 
-      assertTrue("There is a DNAT transformation step.", stepDetailOptional.isPresent());
+      assertTrue(stepDetailOptional.isPresent(), "There is a DNAT transformation step.");
 
       TransformationStepDetail detail = stepDetailOptional.get();
 
@@ -1126,7 +1123,7 @@ public final class F5BigipStructuredGrammarTest {
               .filter(d -> d.getTransformationType() == TransformationType.DEST_NAT)
               .findFirst();
 
-      assertTrue("There is a DNAT transformation step.", stepDetailOptional.isPresent());
+      assertTrue(stepDetailOptional.isPresent(), "There is a DNAT transformation step.");
 
       TransformationStepDetail detail = stepDetailOptional.get();
 
@@ -1191,7 +1188,7 @@ public final class F5BigipStructuredGrammarTest {
               .filter(d -> d.getTransformationType() == TransformationType.SOURCE_NAT)
               .findFirst();
 
-      assertTrue("There is a DNAT transformation step.", stepDetailOptional.isPresent());
+      assertTrue(stepDetailOptional.isPresent(), "There is a DNAT transformation step.");
 
       TransformationStepDetail detail = stepDetailOptional.get();
 
@@ -1205,7 +1202,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testHaGroupExtraction() {
+  void testHaGroupExtraction() {
     F5BigipConfiguration vc = parseVendorConfig("f5_bigip_structured_sys_ha_group");
 
     assertThat(vc.getHaGroups(), hasKeys("g1"));
@@ -1238,7 +1235,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testHostname() throws IOException {
+  void testHostname() throws IOException {
     String filename = "f5_bigip_structured_hostname";
     String hostname = "myhostname";
     Map<String, Configuration> configurations = parseTextConfigs(filename);
@@ -1247,7 +1244,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testHostnameCapital() throws IOException {
+  void testHostnameCapital() throws IOException {
     String filename = "f5_bigip_structured_hostname_capital";
     String hostname = "myhostname";
     Map<String, Configuration> configurations = parseTextConfigs(filename);
@@ -1256,14 +1253,14 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testImish() {
+  void testImish() {
     assertTrue(
-        "Configuration contains an imish component",
-        parseVendorConfig("f5_bigip_structured_with_imish").getImish());
+        parseVendorConfig("f5_bigip_structured_with_imish").getImish(),
+        "Configuration contains an imish component");
   }
 
   @Test
-  public void testInterfaceDescriptionExtraction() {
+  void testInterfaceDescriptionExtraction() {
     F5BigipConfiguration vc = parseVendorConfig("f5_bigip_structured_net_interface_description");
 
     assertThat(vc.getInterfaces(), hasKeys("1.0", "2.0"));
@@ -1272,7 +1269,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testInterfaceDisabledConversion() throws IOException {
+  void testInterfaceDisabledConversion() throws IOException {
     Configuration c = parseConfig("f5_bigip_structured_net_interface_disabled");
 
     assertThat(
@@ -1288,7 +1285,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testInterfaceDisabledExtraction() {
+  void testInterfaceDisabledExtraction() {
     F5BigipConfiguration vc = parseVendorConfig("f5_bigip_structured_net_interface_disabled");
 
     assertThat(vc.getInterfaces(), hasKeys("1.0", "2.0", "3.0", "11.0", "12.0", "13.0"));
@@ -1302,7 +1299,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testInterfaceReferences() throws IOException {
+  void testInterfaceReferences() throws IOException {
     String hostname = "f5_bigip_structured_interface_references";
     String file = "configs/" + hostname;
     String undefined = "3.0";
@@ -1323,7 +1320,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testInterfaceSpeed() throws IOException {
+  void testInterfaceSpeed() throws IOException {
     Configuration c = parseConfig("f5_bigip_structured_interface");
 
     assertThat(c.getAllInterfaces().keySet(), containsInAnyOrder("1.0", "2.0"));
@@ -1332,7 +1329,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testRuleDefinitions() throws IOException {
+  void testRuleDefinitions() throws IOException {
     String hostname = "f5_bigip_structured_ltm_rule";
     String file = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -1344,7 +1341,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testKernelRoutes() throws IOException {
+  void testKernelRoutes() throws IOException {
     String hostname = "f5_bigip_structured_ltm";
     Configuration c = parseConfig(hostname);
 
@@ -1357,7 +1354,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testMonitorReferences() throws IOException {
+  void testMonitorReferences() throws IOException {
     String hostname = "f5_bigip_structured_ltm_references";
     String file = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -1483,7 +1480,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testNodeReferences() throws IOException {
+  void testNodeReferences() throws IOException {
     String hostname = "f5_bigip_structured_ltm_references";
     String file = "configs/" + hostname;
     String undefined = "/Common/node_undefined";
@@ -1504,7 +1501,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testNtp() throws IOException {
+  void testNtp() throws IOException {
     String hostname = "f5_bigip_structured_sys_ntp";
     Configuration c = parseConfig(hostname);
 
@@ -1514,7 +1511,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testPersistenceReferences() throws IOException {
+  void testPersistenceReferences() throws IOException {
     String hostname = "f5_bigip_structured_ltm_references";
     String file = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -1576,7 +1573,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testPoolReferences() throws IOException {
+  void testPoolReferences() throws IOException {
     String hostname = "f5_bigip_structured_ltm_references";
     String file = "configs/" + hostname;
     String undefined = "/Common/pool_undefined";
@@ -1597,7 +1594,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testPrefixList() throws IOException {
+  void testPrefixList() throws IOException {
     String hostname = "f5_bigip_structured_net_routing_prefix_list";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
@@ -1622,26 +1619,26 @@ public final class F5BigipStructuredGrammarTest {
         batfish.initInfo(batfish.getSnapshot(), false, true).getWarnings().get(hostname);
 
     assertTrue(
-        "Missing IPv4 prefix reported",
         warnings.getRedFlagWarnings().stream()
             .map(Warning::getText)
-            .anyMatch(Predicates.containsPattern("Missing IPv4 prefix.*PL4_WITH_MISSING_PREFIX")));
+            .anyMatch(Predicates.containsPattern("Missing IPv4 prefix.*PL4_WITH_MISSING_PREFIX")),
+        "Missing IPv4 prefix reported");
     assertTrue(
-        "Invalid IPv4 length-range reported",
         warnings.getRedFlagWarnings().stream()
             .map(Warning::getText)
             .anyMatch(
                 Predicates.containsPattern(
-                    "Invalid IPv4 prefix-len-range.*PL4_WITH_INVALID_LENGTH")));
+                    "Invalid IPv4 prefix-len-range.*PL4_WITH_INVALID_LENGTH")),
+        "Invalid IPv4 length-range reported");
     assertTrue(
-        "Missing action reported for IPv4 prefix-list",
         warnings.getRedFlagWarnings().stream()
             .map(Warning::getText)
-            .anyMatch(Predicates.containsPattern("Missing action.*PL4_WITH_MISSING_ACTION")));
+            .anyMatch(Predicates.containsPattern("Missing action.*PL4_WITH_MISSING_ACTION")),
+        "Missing action reported for IPv4 prefix-list");
   }
 
   @Test
-  public void testPrefixListReferences() throws IOException {
+  void testPrefixListReferences() throws IOException {
     String hostname = "f5_bigip_structured_prefix_list_references";
     String file = "configs/" + hostname;
     String undefined = "/Common/prefix-list-undefined";
@@ -1662,7 +1659,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testProfileReferences() throws IOException {
+  void testProfileReferences() throws IOException {
     String hostname = "f5_bigip_structured_ltm_references";
     String file = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -2579,7 +2576,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testRouteConversion() throws IOException {
+  void testRouteConversion() throws IOException {
     Configuration c = parseConfig("f5_bigip_structured_net_route");
 
     assertThat(c, hasDefaultVrf(hasStaticRoutes(hasSize(1))));
@@ -2593,7 +2590,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testRouteExtraction() {
+  void testRouteExtraction() {
     F5BigipConfiguration vc = parseVendorConfig("f5_bigip_structured_net_route");
 
     String routeName = "/Common/route1";
@@ -2608,7 +2605,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testRouteMap() throws IOException {
+  void testRouteMap() throws IOException {
     Configuration c = parseConfig("f5_bigip_structured_net_routing_route_map");
     String acceptAllName = "/Common/ACCEPT_ALL";
     String rm1Name = "/Common/rm1";
@@ -2616,7 +2613,6 @@ public final class F5BigipStructuredGrammarTest {
     // ACCEPT_ALL
     assertThat(c.getRoutingPolicies(), hasKey(acceptAllName));
     assertTrue(
-        "ACCEPT_ALL accepts arbitrary prefix 10.0.0.0/24",
         c.getRoutingPolicies()
             .get(acceptAllName)
             .call(
@@ -2625,7 +2621,8 @@ public final class F5BigipStructuredGrammarTest {
                     .setOriginalRoute(
                         new ConnectedRoute(Prefix.strict("10.0.0.0/24"), "/Common/outint"))
                     .build())
-            .getBooleanValue());
+            .getBooleanValue(),
+        "ACCEPT_ALL accepts arbitrary prefix 10.0.0.0/24");
 
     // rm1
     assertThat(c.getRoutingPolicies(), hasKey(rm1Name));
@@ -2633,14 +2630,14 @@ public final class F5BigipStructuredGrammarTest {
     RoutingPolicy rm1 = c.getRoutingPolicies().get(rm1Name);
 
     assertFalse(
-        "rm1 denies prefix 10.0.0.0/24 (via 10)",
         rm1.call(
                 Environment.builder(c)
                     .setDirection(Direction.OUT)
                     .setOriginalRoute(
                         new ConnectedRoute(Prefix.strict("10.0.0.0/24"), "/Common/outint"))
                     .build())
-            .getBooleanValue());
+            .getBooleanValue(),
+        "rm1 denies prefix 10.0.0.0/24 (via 10)");
 
     ConnectedRoute acceptedRoute =
         new ConnectedRoute(Prefix.strict("10.0.1.0/24"), "/Common/outint");
@@ -2658,25 +2655,25 @@ public final class F5BigipStructuredGrammarTest {
             .build();
     Result acceptedBy20 = rm1.call(acceptedPrefixEnvironment);
 
-    assertTrue("rm1 accepts prefix 10.0.1.0/24 (via 20)", acceptedBy20.getBooleanValue());
+    assertTrue(acceptedBy20.getBooleanValue(), "rm1 accepts prefix 10.0.1.0/24 (via 20)");
     assertThat(
         "rm1 sets communities 1:2 and 33:44 on the output route",
         outputRoute.build().getCommunities().getCommunities(),
         equalTo(ImmutableSet.of(StandardCommunity.of(1, 2), StandardCommunity.of(33, 44))));
 
     assertFalse(
-        "rm1 rejects prefix 10.0.2.0/24 (no matching entry)",
         rm1.call(
                 Environment.builder(c)
                     .setDirection(Direction.OUT)
                     .setOriginalRoute(
                         new ConnectedRoute(Prefix.strict("10.0.2.0/24"), "/Common/outint"))
                     .build())
-            .getBooleanValue());
+            .getBooleanValue(),
+        "rm1 rejects prefix 10.0.2.0/24 (no matching entry)");
   }
 
   @Test
-  public void testRouteMapReferences() throws IOException {
+  void testRouteMapReferences() throws IOException {
     String hostname = "f5_bigip_structured_route_map_references";
     String file = "configs/" + hostname;
     String undefined = "/Common/route-map-undefined";
@@ -2697,7 +2694,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testRouteReferences() throws IOException {
+  void testRouteReferences() throws IOException {
     String hostname = "f5_bigip_structured_net_route";
     String file = "configs/" + hostname;
     String used = "/Common/route1";
@@ -2710,7 +2707,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testRuleReferences() throws IOException {
+  void testRuleReferences() throws IOException {
     String hostname = "f5_bigip_structured_ltm_references";
     String file = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -2731,7 +2728,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testSelfReferences() throws IOException {
+  void testSelfReferences() throws IOException {
     String hostname = "f5_bigip_structured_self_references";
     String file = "configs/" + hostname;
     String used = "/Common/self_used";
@@ -2744,7 +2741,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testSnatBidirectionalTraceroute() throws IOException {
+  void testSnatBidirectionalTraceroute() throws IOException {
     String hostname = "f5_bigip_structured_snat";
 
     parseConfig(hostname);
@@ -2805,7 +2802,7 @@ public final class F5BigipStructuredGrammarTest {
             .filter(d -> d.getTransformationType() == TransformationType.DEST_NAT)
             .findFirst();
 
-    assertTrue("There is a DNAT transformation step.", stepDetailOptional.isPresent());
+    assertTrue(stepDetailOptional.isPresent(), "There is a DNAT transformation step.");
 
     TransformationStepDetail detail = stepDetailOptional.get();
 
@@ -2817,7 +2814,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testSnatCases() throws IOException {
+  void testSnatCases() throws IOException {
     Configuration c = parseConfig("f5_bigip_structured_ltm_snat_cases");
 
     IpSpace vlan1AdditionalArpIps = c.getAllInterfaces().get("/Common/vlan1").getAdditionalArpIps();
@@ -2840,7 +2837,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testSnatMatchingSnatButNoVirtual() throws IOException {
+  void testSnatMatchingSnatButNoVirtual() throws IOException {
     String hostname = "f5_bigip_structured_snat";
 
     Configuration c = parseConfig(hostname);
@@ -2870,7 +2867,7 @@ public final class F5BigipStructuredGrammarTest {
             .filter(d -> d.getTransformationType() == TransformationType.SOURCE_NAT)
             .findFirst();
 
-    assertTrue("There is an SNAT transformation step.", stepDetailOptional.isPresent());
+    assertTrue(stepDetailOptional.isPresent(), "There is an SNAT transformation step.");
 
     TransformationStepDetail detail = stepDetailOptional.get();
 
@@ -2888,9 +2885,9 @@ public final class F5BigipStructuredGrammarTest {
 
   // TODO: re-enable after it becomes possible to remember state between incoming and outgoing
   // transformations https://github.com/batfish/batfish/issues/3243
-  @Ignore
+  @Disabled
   @Test
-  public void testSnatMatchingVirtual() throws IOException {
+  void testSnatMatchingVirtual() throws IOException {
     String hostname = "f5_bigip_structured_snat";
     Configuration c = parseConfig("hostname");
 
@@ -2921,7 +2918,7 @@ public final class F5BigipStructuredGrammarTest {
             .filter(d -> d.getTransformationType() == TransformationType.SOURCE_NAT)
             .findFirst();
 
-    assertTrue("There is an SNAT transformation step.", stepDetailOptional.isPresent());
+    assertTrue(stepDetailOptional.isPresent(), "There is an SNAT transformation step.");
 
     TransformationStepDetail detail = stepDetailOptional.get();
 
@@ -2940,7 +2937,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testSnatpoolReferences() throws IOException {
+  void testSnatpoolReferences() throws IOException {
     String hostname = "f5_bigip_structured_ltm_references";
     String file = "configs/" + hostname;
     String undefined = "/Common/snatpool_undefined";
@@ -2961,7 +2958,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testSnatReferences() throws IOException {
+  void testSnatReferences() throws IOException {
     String hostname = "f5_bigip_structured_ltm_references";
     String file = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -2974,7 +2971,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testSnatTranslationReferences() throws IOException {
+  void testSnatTranslationReferences() throws IOException {
     String hostname = "f5_bigip_structured_ltm_references";
     String file = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -2995,14 +2992,14 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testTrunkInterfaceImplicitConversion() throws IOException {
+  void testTrunkInterfaceImplicitConversion() throws IOException {
     Configuration c = parseConfig("f5_bigip_structured_net_trunk_interface_implicit");
 
     assertThat(c, hasInterface("1.0", isActive()));
   }
 
   @Test
-  public void testTrunkInterfaceImplicitExtraction() {
+  void testTrunkInterfaceImplicitExtraction() {
     F5BigipConfiguration vc = parseVendorConfig("f5_bigip_structured_net_trunk_interface_implicit");
     String ifaceName = "1.0";
 
@@ -3011,7 +3008,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testTrunk() throws IOException {
+  void testTrunk() throws IOException {
     Configuration c = parseConfig("f5_bigip_structured_trunk");
     String trunk1Name = "trunk1";
     String trunk2Name = "trunk2";
@@ -3039,7 +3036,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testTrunkReferences() throws IOException {
+  void testTrunkReferences() throws IOException {
     String hostname = "f5_bigip_structured_trunk_references";
     String file = "configs/" + hostname;
     String undefined = "trunk_undefined";
@@ -3060,7 +3057,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testUnrecognized() throws IOException {
+  void testUnrecognized() throws IOException {
     String hostname = "f5_bigip_structured_unrecognized";
     String filename = String.format("configs/%s", hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -3074,7 +3071,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testVipDescriptionConversion() throws IOException {
+  void testVipDescriptionConversion() throws IOException {
     Configuration c = parseConfig("f5_bigip_structured_vip_description");
     F5BigipFamily f = c.getVendorFamily().getF5Bigip();
 
@@ -3111,7 +3108,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testVipDescriptionExtraction() {
+  void testVipDescriptionExtraction() {
     F5BigipConfiguration vc = parseVendorConfig("f5_bigip_structured_vip_description");
 
     // check structure presence
@@ -3148,7 +3145,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testVirtualAddressArpDisabledConversion() throws IOException {
+  void testVirtualAddressArpDisabledConversion() throws IOException {
     Configuration c = parseConfig("f5_bigip_structured_ltm_virtual_address_arp_disabled");
 
     IpSpace arpIps = c.getAllInterfaces().get("/Common/vlan1").getAdditionalArpIps();
@@ -3162,7 +3159,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testVirtualAddressArpDisabledExtraction() {
+  void testVirtualAddressArpDisabledExtraction() {
     F5BigipConfiguration vc =
         parseVendorConfig("f5_bigip_structured_ltm_virtual_address_arp_disabled");
     String vaDisabledName = "/Common/192.0.2.1";
@@ -3182,7 +3179,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testVirtualAddressIcmpEchoDisabledConversion() throws IOException {
+  void testVirtualAddressIcmpEchoDisabledConversion() throws IOException {
     String hostname = "f5_bigip_structured_ltm_virtual_address_icmp_echo_disabled";
     Configuration c = parseConfig(hostname);
     String ifaceName = "/Common/vlan1";
@@ -3207,7 +3204,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testVirtualAddressIcmpEchoDisabledExtraction() {
+  void testVirtualAddressIcmpEchoDisabledExtraction() {
     F5BigipConfiguration vc =
         parseVendorConfig("f5_bigip_structured_ltm_virtual_address_icmp_echo_disabled");
     String vaDisabledName = "/Common/192.0.2.1";
@@ -3227,7 +3224,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testVirtualAddressReferences() throws IOException {
+  void testVirtualAddressReferences() throws IOException {
     String hostname = "f5_bigip_structured_ltm_references";
     String file = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -3248,7 +3245,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testVirtualCases() throws IOException {
+  void testVirtualCases() throws IOException {
     Configuration c = parseConfig("f5_bigip_structured_ltm_virtual_cases");
 
     IpSpace vlan1AdditionalArpIps = c.getAllInterfaces().get("/Common/vlan1").getAdditionalArpIps();
@@ -3271,7 +3268,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testVirtualDisabledConversion() throws IOException {
+  void testVirtualDisabledConversion() throws IOException {
     String hostname = "f5_bigip_structured_ltm_virtual_disabled";
     Configuration c = parseConfig(hostname);
 
@@ -3285,15 +3282,15 @@ public final class F5BigipStructuredGrammarTest {
     IpSpace arpIps = vlan1.getAdditionalArpIps();
 
     assertFalse(
-        "The incoming filter should not have specific handling for flows to a disabled virtual",
-        matchesNonTrivially(incomingFilter, createHttpFlow(hostname, ipDisabled)));
+        matchesNonTrivially(incomingFilter, createHttpFlow(hostname, ipDisabled)),
+        "The incoming filter should not have specific handling for flows to a disabled virtual");
     assertTrue(
-        "The incoming filter should have specific handling for flows to an enabled virtual",
-        matchesNonTrivially(incomingFilter, createHttpFlow(hostname, ipEnabled)));
+        matchesNonTrivially(incomingFilter, createHttpFlow(hostname, ipEnabled)),
+        "The incoming filter should have specific handling for flows to an enabled virtual");
     assertTrue(
+        matchesNonTrivially(incomingFilter, createHttpFlow(hostname, ipImplicitlyEnabled)),
         "The incoming filter should have specific handling for flows to an implicitly-enabled"
-            + " virtual",
-        matchesNonTrivially(incomingFilter, createHttpFlow(hostname, ipImplicitlyEnabled)));
+            + " virtual");
 
     assertThat(arpIps, not(containsIp(ipDisabled)));
     assertThat(arpIps, containsIp(ipEnabled));
@@ -3301,7 +3298,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testVirtualDisabledExtraction() {
+  void testVirtualDisabledExtraction() {
     F5BigipConfiguration vc = parseVendorConfig("f5_bigip_structured_ltm_virtual_disabled");
     String vDisabledName = "/Common/virtual_disabled";
     String vEnabledName = "/Common/virtual_enabled";
@@ -3315,7 +3312,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testVirtualMatchesIpProtocol() throws IOException {
+  void testVirtualMatchesIpProtocol() throws IOException {
     String hostname = "f5_bigip_structured_ltm_virtual_ip_protocol";
     Configuration c = parseConfig(hostname);
     Transformation incomingTransformation =
@@ -3333,27 +3330,27 @@ public final class F5BigipStructuredGrammarTest {
     Flow nonMatchingFlow = builder.setIpProtocol(IpProtocol.UDP).build();
 
     assertTrue(
-        "Flow with correct IpProtocol TCP is matched by incoming transformation",
         eval(incomingTransformation, matchingFlow, "dummy", ImmutableMap.of(), ImmutableMap.of())
             .getTraceSteps()
             .stream()
             .map(Step::getDetail)
             .filter(Predicates.instanceOf(TransformationStepDetail.class))
             .map(TransformationStepDetail.class::cast)
-            .anyMatch(d -> d.getTransformationType() == TransformationType.DEST_NAT));
+            .anyMatch(d -> d.getTransformationType() == TransformationType.DEST_NAT),
+        "Flow with correct IpProtocol TCP is matched by incoming transformation");
     assertFalse(
-        "Flow with incorrect IpProtocol UDP is not matched by incoming transformation",
         eval(incomingTransformation, nonMatchingFlow, "dummy", ImmutableMap.of(), ImmutableMap.of())
             .getTraceSteps()
             .stream()
             .map(Step::getDetail)
             .filter(Predicates.instanceOf(TransformationStepDetail.class))
             .map(TransformationStepDetail.class::cast)
-            .anyMatch(d -> d.getTransformationType() == TransformationType.DEST_NAT));
+            .anyMatch(d -> d.getTransformationType() == TransformationType.DEST_NAT),
+        "Flow with incorrect IpProtocol UDP is not matched by incoming transformation");
   }
 
   @Test
-  public void testVirtualMisconfigurations() {
+  void testVirtualMisconfigurations() {
     F5BigipConfiguration c = parseVendorConfig("f5_bigip_structured_virtual_misconfigurations");
     Stream.of("ip_forward", "reject")
         .forEach(mode ->
@@ -3396,7 +3393,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testVirtualPoolTranslationOptions() throws IOException {
+  void testVirtualPoolTranslationOptions() throws IOException {
     // Test of pool-mode 'virtual' options:
     // - translate-address enabled/disabled: rewrite destination IP iff enabled
     // - translate-port enabled/disabled: rewrite destination port iff enabled
@@ -3429,7 +3426,7 @@ public final class F5BigipStructuredGrammarTest {
               .filter(d -> d.getTransformationType() == TransformationType.DEST_NAT)
               .findFirst();
 
-      assertTrue("There is a DNAT transformation step.", stepDetailOptional.isPresent());
+      assertTrue(stepDetailOptional.isPresent(), "There is a DNAT transformation step.");
 
       TransformationStepDetail detail = stepDetailOptional.get();
 
@@ -3453,7 +3450,7 @@ public final class F5BigipStructuredGrammarTest {
               .filter(d -> d.getTransformationType() == TransformationType.DEST_NAT)
               .findFirst();
 
-      assertTrue("There is a DNAT transformation step.", stepDetailOptional.isPresent());
+      assertTrue(stepDetailOptional.isPresent(), "There is a DNAT transformation step.");
 
       TransformationStepDetail detail = stepDetailOptional.get();
 
@@ -3479,7 +3476,7 @@ public final class F5BigipStructuredGrammarTest {
               .filter(d -> d.getTransformationType() == TransformationType.DEST_NAT)
               .findFirst();
 
-      assertTrue("There is a DNAT transformation step.", stepDetailOptional.isPresent());
+      assertTrue(stepDetailOptional.isPresent(), "There is a DNAT transformation step.");
 
       TransformationStepDetail detail = stepDetailOptional.get();
 
@@ -3501,7 +3498,7 @@ public final class F5BigipStructuredGrammarTest {
               .filter(d -> d.getTransformationType() == TransformationType.DEST_NAT)
               .findFirst();
 
-      assertTrue("There is a DNAT transformation step.", stepDetailOptional.isPresent());
+      assertTrue(stepDetailOptional.isPresent(), "There is a DNAT transformation step.");
 
       TransformationStepDetail detail = stepDetailOptional.get();
 
@@ -3513,7 +3510,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testVirtualReferences() throws IOException {
+  void testVirtualReferences() throws IOException {
     String hostname = "f5_bigip_structured_ltm_references";
     String file = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -3526,7 +3523,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testVirtualRejectFilter() throws IOException {
+  void testVirtualRejectFilter() throws IOException {
     // Test that:
     // - Traffic matching a 'virtual' in 'ip-forward' is not filtered at ingress
     // - Traffic matching a 'virtual' in 'reject' mode is filtered at ingress
@@ -3576,7 +3573,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testVlan() throws IOException {
+  void testVlan() throws IOException {
     Configuration c = parseConfig("f5_bigip_structured_vlan");
     String portName = "1.0";
     String trunkName = "trunk1";
@@ -3611,7 +3608,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testVlanReferences() throws IOException {
+  void testVlanReferences() throws IOException {
     String hostname = "f5_bigip_structured_vlan_references";
     String file = "configs/" + hostname;
     String undefined = "/Common/vlan_undefined";

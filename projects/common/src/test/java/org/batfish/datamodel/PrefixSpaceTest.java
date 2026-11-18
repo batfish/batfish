@@ -6,23 +6,20 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.collect.ImmutableSet;
 import java.util.BitSet;
 import java.util.Set;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-@RunWith(JUnit4.class)
-public class PrefixSpaceTest {
+class PrefixSpaceTest {
 
   private PrefixSpace _ps;
 
-  @Before
-  public void constructPrefixSpace() {
+  @BeforeEach
+  void constructPrefixSpace() {
     _ps = new PrefixSpace();
   }
 
   @Test
-  public void getAddressBits() {
+  void getAddressBits() {
     assertThat(PrefixSpace.getAddressBits(Ip.ZERO), equalTo(new BitSet()));
     assertThat(
         PrefixSpace.getAddressBits(Ip.MAX), equalTo(BitSet.valueOf(new long[] {0xff_ff_ff_ffL})));
@@ -32,19 +29,19 @@ public class PrefixSpaceTest {
   }
 
   @Test
-  public void constructEmptyPrefixSpaceTest() {
+  void constructEmptyPrefixSpaceTest() {
     assertThat(_ps.isEmpty(), equalTo(true));
   }
 
   @Test
-  public void constructPrefixSpaceTest() {
+  void constructPrefixSpaceTest() {
     _ps = new PrefixSpace(PrefixRange.fromString("100.0.0.0/32"));
     assertThat(_ps.isEmpty(), equalTo(false));
     assertThat(_ps.containsPrefixRange(PrefixRange.fromString("100.0.0.0/32")), equalTo(true));
   }
 
   @Test
-  public void addPrefixTest() {
+  void addPrefixTest() {
     Prefix prefix = Prefix.parse("100.0.0.0/32");
     _ps.addPrefix(prefix);
     assertThat(_ps.getPrefixRanges().size(), equalTo(1));
@@ -52,7 +49,7 @@ public class PrefixSpaceTest {
   }
 
   @Test
-  public void addPrefixRangeTest() {
+  void addPrefixRangeTest() {
     PrefixRange range = PrefixRange.fromString("10.10.10.0/32:16-24");
     _ps = new PrefixSpace(range);
     assertThat(_ps.containsPrefixRange(range), equalTo(true));
@@ -83,7 +80,7 @@ public class PrefixSpaceTest {
   }
 
   @Test
-  public void addSpaceTest() {
+  void addSpaceTest() {
     PrefixRange range = PrefixRange.fromString("100.0.0.0/32");
     _ps.addSpace(new PrefixSpace(range));
     assertThat(_ps.isEmpty(), equalTo(false));
@@ -91,7 +88,7 @@ public class PrefixSpaceTest {
   }
 
   @Test
-  public void containsPrefixTest() {
+  void containsPrefixTest() {
     Prefix prefix = Prefix.parse("10.10.10.0/24");
     _ps.addPrefix(prefix);
 
@@ -118,7 +115,7 @@ public class PrefixSpaceTest {
   }
 
   @Test
-  public void containsPrefixRangeTest() {
+  void containsPrefixRangeTest() {
     PrefixRange range = PrefixRange.fromString("10.10.10.0/20:16-24");
     _ps.addPrefixRange(range);
 
@@ -145,7 +142,7 @@ public class PrefixSpaceTest {
   }
 
   @Test
-  public void getPrefixRangesTest() {
+  void getPrefixRangesTest() {
     assertThat("No ranges yet", _ps.getPrefixRanges().isEmpty(), equalTo(true));
     _ps.addPrefixRange(PrefixRange.fromString("10.10.10.0/20:18-21"));
     Set<PrefixRange> ranges = _ps.getPrefixRanges();
@@ -159,7 +156,7 @@ public class PrefixSpaceTest {
   }
 
   @Test
-  public void intersectionAndOverlapsTest() {
+  void intersectionAndOverlapsTest() {
     PrefixSpace other = new PrefixSpace();
     assertThat("empty spaces don't intersect", _ps.intersection(other).isEmpty(), equalTo(true));
     assertThat("no overlap for empty spaces", _ps.overlaps(other), equalTo(false));
@@ -188,7 +185,7 @@ public class PrefixSpaceTest {
   }
 
   @Test
-  public void testPruning() {
+  void testPruning() {
     PrefixRange ten8to15 = PrefixRange.fromString("10.0.0.0/8:8-15");
     PrefixRange ten8to16 = PrefixRange.fromString("10.0.0.0/8:8-16");
     PrefixRange ten9to17 = PrefixRange.fromString("10.0.0.0/8:9-17");

@@ -5,12 +5,12 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link ServerPort} */
-public class ServerPortTest {
+class ServerPortTest {
   @Test
-  public void testServerPortAndTypeEquality() {
+  void testServerPortAndTypeEquality() {
     ServerPort.ServerPortAndType obj = new ServerPort.ServerPortAndType(10, ServerPort.Type.UDP);
     new EqualsTester()
         .addEqualityGroup(obj, new ServerPort.ServerPortAndType(10, ServerPort.Type.UDP))
@@ -20,7 +20,7 @@ public class ServerPortTest {
   }
 
   @Test
-  public void testServerPortAndTypeSerialization() {
+  void testServerPortAndTypeSerialization() {
     ServerPort.ServerPortAndType obj = new ServerPort.ServerPortAndType(10, ServerPort.Type.UDP);
     ServerPort.ServerPortAndType clone = SerializationUtils.clone(obj);
     assertThat(obj, equalTo(clone));

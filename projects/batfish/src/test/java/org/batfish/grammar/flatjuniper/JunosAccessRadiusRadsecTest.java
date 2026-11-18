@@ -15,22 +15,22 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.ACCESS_RA
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.main.Batfish;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosAccessRadiusRadsecTest {
+final class JunosAccessRadiusRadsecTest {
 
   private static final String CONFIG_NAME = "access-radius-radsec";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testParsingAndReferences() throws IOException {
+  void testParsingAndReferences() throws IOException {
     Batfish batfish = getBatfish(_folder, CONFIG_NAME);
     batfish.loadConfigurations(batfish.getSnapshot());
     ConvertConfigurationAnswerElement ccae =

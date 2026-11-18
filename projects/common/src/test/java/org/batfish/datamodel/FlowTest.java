@@ -3,12 +3,12 @@ package org.batfish.datamodel;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.nullValue;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@Flow}. */
-public class FlowTest {
+class FlowTest {
   @Test
-  public void testBuildNonIcmpFlow() {
+  void testBuildNonIcmpFlow() {
     // IP protocol is not ICMP, so don't include ICMP code or type.
     Flow flow =
         Flow.builder()
@@ -25,7 +25,7 @@ public class FlowTest {
   }
 
   @Test
-  public void testBuildNonPortFlow() {
+  void testBuildNonPortFlow() {
     // IP protocol does not have ports, so don't include source or dest port.
     Flow flow =
         Flow.builder()

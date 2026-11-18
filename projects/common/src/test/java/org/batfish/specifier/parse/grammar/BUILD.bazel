@@ -10,8 +10,8 @@ junit_tests(
     srcs = glob(["*.java"]),
     deps = [
         "//projects/common/src/main/antlr4/org/batfish/specifier/parse/grammar:specifier_grammar",
-        "@maven//:junit_junit",
         "@maven//:org_antlr_antlr4_runtime",
         "@maven//:org_hamcrest_hamcrest",
+        "@maven//:org_junit_jupiter_junit_jupiter_api",
     ],
 )

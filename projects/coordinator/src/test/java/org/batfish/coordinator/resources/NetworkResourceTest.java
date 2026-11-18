@@ -8,6 +8,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
+import java.io.File;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation.Builder;
@@ -19,18 +20,17 @@ import org.batfish.common.CoordConstsV2;
 import org.batfish.coordinator.Main;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 @ParametersAreNonnullByDefault
-public final class NetworkResourceTest extends WorkMgrServiceV2TestBase {
+final class NetworkResourceTest extends WorkMgrServiceV2TestBase {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
-  @Before
-  public void initContainer() {
+  @BeforeEach
+  void initContainer() {
     WorkMgrTestUtils.initWorkManager(_folder);
   }
 
@@ -52,7 +52,7 @@ public final class NetworkResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testForkSnapshot() throws Exception {
+  void testForkSnapshot() throws Exception {
     String networkName = "network";
     String snapshotName = "snapshot";
     String baseSnapshotName = "baseSnapshot";
@@ -97,7 +97,7 @@ public final class NetworkResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testForkSnapshotBadRequest() {
+  void testForkSnapshotBadRequest() {
     String networkName = "network";
     String snapshotName = "snapshot";
     String baseSnapshotName = "baseSnapshot";
@@ -122,7 +122,7 @@ public final class NetworkResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetContainer() {
+  void testGetContainer() {
     String containerName = "someContainer";
     Main.getWorkMgr().initNetwork(containerName, null);
     try (Response response = getNetworkTarget(containerName).get()) {
@@ -133,7 +133,7 @@ public final class NetworkResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testDeleteNetwork() {
+  void testDeleteNetwork() {
     String network = "network1";
     Main.getWorkMgr().initNetwork(network, null);
     try (Response response = getNetworkTarget(network).delete()) {
@@ -142,7 +142,7 @@ public final class NetworkResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testDeleteNetworkMissingNetwork() {
+  void testDeleteNetworkMissingNetwork() {
     String network = "network1";
     try (Response response = getNetworkTarget(network).delete()) {
       assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));

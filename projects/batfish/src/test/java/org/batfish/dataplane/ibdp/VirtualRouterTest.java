@@ -22,10 +22,10 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -104,10 +104,10 @@ import org.batfish.datamodel.tracking.TrackMethodEvaluator;
 import org.batfish.dataplane.rib.RibDelta;
 import org.batfish.dataplane.rib.RouteAdvertisement;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link VirtualRouter} */
-public class VirtualRouterTest {
+class VirtualRouterTest {
   /** Make a CISCO IOS router with 3 interfaces named Eth1-Eth3, /16 prefixes on each interface */
   private static final Map<String, ConcreteInterfaceAddress> exampleInterfaceAddresses =
       ImmutableMap.<String, ConcreteInterfaceAddress>builder()
@@ -126,7 +126,7 @@ public class VirtualRouterTest {
 
   /** The dirty-state description names the pending main RIB delta that makes a VR dirty. */
   @Test
-  public void testDescribeDirtyState() {
+  void testDescribeDirtyState() {
     VirtualRouter vr = makeIosVirtualRouter("r1");
     addInterfaces(vr.getConfiguration(), exampleInterfaceAddresses);
     vr.initForIgpComputation(TopologyContext.builder().build());
@@ -237,7 +237,7 @@ public class VirtualRouterTest {
    * if a route to its next-hop IP disappears.
    */
   @Test
-  public void testActivateStaticRoutesRemoval() {
+  void testActivateStaticRoutesRemoval() {
     VirtualRouter vr = makeIosVirtualRouter("n1");
     addInterfaces(vr.getConfiguration(), exampleInterfaceAddresses);
 
@@ -276,7 +276,7 @@ public class VirtualRouterTest {
    * RIB delta.
    */
   @Test
-  public void testActivateStaticRoutesOnlyForAffectedNextHops() {
+  void testActivateStaticRoutesOnlyForAffectedNextHops() {
     VirtualRouter vr = makeIosVirtualRouter("n1");
     addInterfaces(vr.getConfiguration(), exampleInterfaceAddresses);
 
@@ -343,7 +343,7 @@ public class VirtualRouterTest {
 
   /** The FIB is dropped between topology rounds and rebuilt from the main RIB on demand. */
   @Test
-  public void testClearFibDropsItAndComputeFibRebuildsIt() {
+  void testClearFibDropsItAndComputeFibRebuildsIt() {
     VirtualRouter vr = makeIosVirtualRouter(null);
     addInterfaces(vr.getConfiguration(), exampleInterfaceAddresses);
     vr.initRibs();
@@ -366,7 +366,7 @@ public class VirtualRouterTest {
 
   /** Check that initialization of Connected RIB is as expected */
   @Test
-  public void testInitConnectedRib() {
+  void testInitConnectedRib() {
     // Setup
     VirtualRouter vr = makeIosVirtualRouter(null);
     addInterfaces(vr.getConfiguration(), exampleInterfaceAddresses);
@@ -388,7 +388,7 @@ public class VirtualRouterTest {
 
   /** Check that initialization of Kernel RIB is as expected */
   @Test
-  public void testInitKernelRib() {
+  void testInitKernelRib() {
     // Setup
     String hostname = "n1";
     Ip missingRequiredOwnedIp = Ip.parse("10.0.0.0");
@@ -430,7 +430,7 @@ public class VirtualRouterTest {
   }
 
   @Test
-  public void testShouldActivateKernelRoute() {
+  void testShouldActivateKernelRoute() {
     // Setup
     String hostname = "n1";
     Ip missingRequiredOwnedIp = Ip.parse("10.0.0.0");
@@ -461,7 +461,7 @@ public class VirtualRouterTest {
 
   /** Check that initialization of Local RIB is as expected */
   @Test
-  public void testInitLocalRib() {
+  void testInitLocalRib() {
     // Setup
     VirtualRouter vr = makeIosVirtualRouter(null);
     addInterfaces(vr.getConfiguration(), exampleInterfaceAddresses);
@@ -484,7 +484,7 @@ public class VirtualRouterTest {
 
   /** Check that VRF static routes are put into appropriate RIBs upon initialization. */
   @Test
-  public void testInitStaticRibs() {
+  void testInitStaticRibs() {
     VirtualRouter vr = makeIosVirtualRouter(null);
     addInterfaces(vr.getConfiguration(), exampleInterfaceAddresses);
 
@@ -533,7 +533,7 @@ public class VirtualRouterTest {
   }
 
   @Test
-  public void testInitRibsEmpty() {
+  void testInitRibsEmpty() {
     VirtualRouter vr = makeIosVirtualRouter(null);
 
     // We expect the router to have the following RIBs and all of them are empty
@@ -556,7 +556,7 @@ public class VirtualRouterTest {
 
   /** Check that initialization of RIP internal routes happens correctly */
   @Test
-  public void testRipInitialization() {
+  void testRipInitialization() {
     // Incomplete Setup
     VirtualRouter vr = makeIosVirtualRouter(null);
     addInterfaces(vr.getConfiguration(), exampleInterfaceAddresses);
@@ -591,7 +591,7 @@ public class VirtualRouterTest {
 
   /** Test that the static RIB correctly pulls static routes from the VRF */
   @Test
-  public void testStaticRibInit() {
+  void testStaticRibInit() {
     VirtualRouter vr = makeIosVirtualRouter(null);
     vr.initRibs();
     SortedSet<StaticRoute> routeSet =
@@ -613,7 +613,7 @@ public class VirtualRouterTest {
 
   /** Test basic message queuing operations */
   @Test
-  public void testQueueDelta() {
+  void testQueueDelta() {
     Queue<RouteAdvertisement<AbstractRoute>> q = new ConcurrentLinkedQueue<>();
 
     // Test queueing empty deltas
@@ -655,7 +655,7 @@ public class VirtualRouterTest {
 
   /** Test that removed routes are queued before added routes */
   @Test
-  public void testQueueDeltaOrder() {
+  void testQueueDeltaOrder() {
     Queue<RouteAdvertisement<AbstractRoute>> q = new ConcurrentLinkedQueue<>();
     StaticRoute sr1 =
         StaticRoute.testBuilder()
@@ -687,7 +687,7 @@ public class VirtualRouterTest {
   }
 
   @Test
-  public void testInitQueuesAndDeltaBuilders() {
+  void testInitQueuesAndDeltaBuilders() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -781,7 +781,7 @@ public class VirtualRouterTest {
   }
 
   @Test
-  public void testInitIsisQueuesAndDeltaBuilders() {
+  void testInitIsisQueuesAndDeltaBuilders() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -841,10 +841,7 @@ public class VirtualRouterTest {
                     .build()));
 
     // Assert that queues are empty as there are no OSPF, BGP, nor IS-IS processes
-    vrs.values()
-        .forEach(vr -> {
-          assertThat(vr._isisIncomingRoutes, anEmptyMap());
-        });
+    vrs.values().forEach(vr -> assertThat(vr._isisIncomingRoutes, anEmptyMap()));
 
     // Set IS-IS on interfaces
     i1.setIsis(isisInterfaceSettings);
@@ -880,7 +877,7 @@ public class VirtualRouterTest {
   }
 
   @Test
-  public void testCrossVrfRouteLeaking() {
+  void testCrossVrfRouteLeaking() {
     String vrfWithRoutesName = "VRF1";
     String emptyVrfName = "VRF2";
     String importPolicyName = "IMPORT-POLICY";
@@ -957,7 +954,7 @@ public class VirtualRouterTest {
   }
 
   @Test
-  public void testGenerateConnectedRoute() {
+  void testGenerateConnectedRoute() {
     String nextHopInterface = "Eth0";
     ConcreteInterfaceAddress address = ConcreteInterfaceAddress.parse("1.1.1.1/24");
     Prefix prefix = address.getPrefix();
@@ -982,7 +979,7 @@ public class VirtualRouterTest {
   }
 
   @Test
-  public void testGenerateLocalRoute() {
+  void testGenerateLocalRoute() {
     String nextHopInterface = "Eth0";
     ConcreteInterfaceAddress address = ConcreteInterfaceAddress.parse("1.1.1.1/24");
     Prefix prefix = address.getIp().toPrefix();
@@ -1009,7 +1006,7 @@ public class VirtualRouterTest {
   }
 
   @Test
-  public void testShouldGenerateLocalRoute() {
+  void testShouldGenerateLocalRoute() {
     assertFalse(shouldGenerateLocalRoute(Prefix.MAX_PREFIX_LENGTH, null));
     assertFalse(
         shouldGenerateLocalRoute(
@@ -1034,7 +1031,7 @@ public class VirtualRouterTest {
   }
 
   @Test
-  public void testShouldGenerateLocalNullRouteIfDown() {
+  void testShouldGenerateLocalNullRouteIfDown() {
     ConcreteInterfaceAddress addr = ConcreteInterfaceAddress.parse("1.2.3.5/24");
     LocalRoute lr =
         LocalRoute.builder()
@@ -1066,7 +1063,7 @@ public class VirtualRouterTest {
   }
 
   @Test
-  public void testShouldGenerateConnectedRoute() {
+  void testShouldGenerateConnectedRoute() {
     assertTrue(shouldGenerateConnectedRoute(null));
     assertTrue(shouldGenerateConnectedRoute(ConnectedRouteMetadata.builder().build()));
     assertTrue(
@@ -1078,7 +1075,7 @@ public class VirtualRouterTest {
   }
 
   @Test
-  public void testComputeIterationHashCode_identicalInstances() {
+  void testComputeIterationHashCode_identicalInstances() {
     // Two different but identical VirtualRouter instances should have the same hashcode.
     // This guarantees hashcode is implemented for all objects that factor in.
     VirtualRouter vr1 = makeIosVirtualRouter("c1");
@@ -1092,7 +1089,7 @@ public class VirtualRouterTest {
   }
 
   @Test
-  public void testComputeIterationHashCode_mainRibChange() {
+  void testComputeIterationHashCode_mainRibChange() {
     VirtualRouter vr = makeIosVirtualRouter("c");
     Configuration c = vr.getConfiguration();
     addInterfaces(c, ImmutableMap.of("i", ConcreteInterfaceAddress.parse("1.1.1.1/30")));
@@ -1124,7 +1121,7 @@ public class VirtualRouterTest {
    * of the main RIB for the rest of the computation.
    */
   @Test
-  public void testAutostateChangeDoesNotResurrectConnectedRoutes() {
+  void testAutostateChangeDoesNotResurrectConnectedRoutes() {
     VirtualRouter vr = makeIosVirtualRouter(null);
     Configuration c = vr.getConfiguration();
     addInterfaces(c, ImmutableMap.of("Ethernet1", ConcreteInterfaceAddress.parse("10.1.0.1/16")));

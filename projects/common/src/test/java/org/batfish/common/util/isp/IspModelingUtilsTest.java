@@ -70,8 +70,8 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -132,11 +132,11 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.specifier.InterfaceLinkLocation;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link IspModelingUtils} */
-public class IspModelingUtilsTest {
+class IspModelingUtilsTest {
 
   private static final long _ispAsn = 1L;
   private static final long _snapshotAsn = 2L;
@@ -153,8 +153,8 @@ public class IspModelingUtilsTest {
   private SnapshotConnection _snapshotConnection;
   private IspModel _ispModel;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _logger = new BatfishLogger("output", false);
     _nf = new NetworkFactory();
     _snapshotHost = createBgpNode(_snapshotHostname, _snapshotInterfaceName, _snapshotIp);
@@ -203,7 +203,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testCombineBorderInterfaces_nonExistentNode() {
+  void testCombineBorderInterfaces_nonExistentNode() {
     Warnings warnings = new Warnings(true, true, true);
     combineBorderInterfaces(
         ImmutableMap.of(_snapshotHostname, _snapshotHost),
@@ -217,7 +217,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testCombineBorderInterfaces_nonExistentInterface() {
+  void testCombineBorderInterfaces_nonExistentInterface() {
     Warnings warnings = new Warnings(true, true, true);
 
     combineBorderInterfaces(
@@ -234,7 +234,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testAddBgpPeerToIsp() {
+  void testAddBgpPeerToIsp() {
     BgpProcess bgpProcess = testBgpProcess(Ip.ZERO);
     IspBgpActivePeer ispBgpActivePeer =
         new IspBgpActivePeer(_snapshotIp, _ispIp, _snapshotAsn, _ispAsn, false);
@@ -258,7 +258,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testAddBgpPeerToIsp_Unnumbered() {
+  void testAddBgpPeerToIsp_Unnumbered() {
     BgpProcess bgpProcess = testBgpProcess(Ip.ZERO);
     IspBgpUnnumberedPeer ispBgpUnnumberedPeer =
         new IspBgpUnnumberedPeer("iface", _snapshotAsn, _ispAsn, false);
@@ -281,7 +281,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testAddBgpPeerToIsp_sendCommunity() {
+  void testAddBgpPeerToIsp_sendCommunity() {
     BgpProcess bgpProcess = testBgpProcess(Ip.ZERO);
     IspBgpActivePeer ispBgpActivePeer =
         new IspBgpActivePeer(_snapshotIp, _ispIp, _snapshotAsn, _ispAsn, false);
@@ -310,7 +310,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testIsValidBgpPeerForBorderInterfaceInfo_active() {
+  void testIsValidBgpPeerForBorderInterfaceInfo_active() {
     Set<ConcreteInterfaceAddress> interfaceAddresses =
         ImmutableSet.of(ConcreteInterfaceAddress.parse("3.3.3.1/30"));
     BgpActivePeerConfig.Builder bgpActivePeerConfig =
@@ -362,7 +362,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testIsValidBgpPeerForBorderInterfaceInfo_unnumbered() {
+  void testIsValidBgpPeerForBorderInterfaceInfo_unnumbered() {
     // missing remote ASN
     BgpUnnumberedPeerConfig invalidPeer =
         BgpUnnumberedPeerConfig.builder()
@@ -389,7 +389,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testCreateIspNode() {
+  void testCreateIspNode() {
     Configuration ispConfiguration = createIspNode(_ispModel, _logger).get();
 
     assertThat(
@@ -401,7 +401,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testConnectIspToSnapshot() {
+  void testConnectIspToSnapshot() {
     Configuration ispConfiguration = createIspNode(_ispModel, _logger).get();
 
     Set<Layer1Edge> layer1Edges = connectIspToSnapshot(_ispModel, ispConfiguration, _logger);
@@ -449,7 +449,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testConnectIspToSnapshot_unnumbered() {
+  void testConnectIspToSnapshot_unnumbered() {
     BgpUnnumberedPeerConfig remotePeerConfig =
         BgpUnnumberedPeerConfig.builder()
             .setPeerInterface(_snapshotInterfaceName)
@@ -523,7 +523,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testCreateIspNode_invalid() {
+  void testCreateIspNode_invalid() {
     IspModel ispInfo = IspModel.builder().setAsn(_ispAsn).build();
     BatfishLogger logger = new BatfishLogger("debug", false);
     Optional<Configuration> ispConfiguration = createIspNode(ispInfo, logger);
@@ -537,7 +537,7 @@ public class IspModelingUtilsTest {
 
   /** Basic ISP to Internet connectivity, without additional prefixes */
   @Test
-  public void testConnectIspToInternet() {
+  void testConnectIspToInternet() {
     BatfishLogger logger = new BatfishLogger("output", false);
     Configuration ispConfiguration = createIspNode(_ispModel, logger).get();
     connectIspToSnapshot(_ispModel, ispConfiguration, logger);
@@ -650,7 +650,7 @@ public class IspModelingUtilsTest {
    * Internet.
    */
   @Test
-  public void testConnectIspToInternet_additionalAnnouncements() {
+  void testConnectIspToInternet_additionalAnnouncements() {
     Set<Prefix> additionalPrefixes =
         ImmutableSet.of(Prefix.parse("10.1.1.1/32"), Prefix.parse("20.2.2.2/32"));
     IspModel ispModel =
@@ -689,7 +689,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testConnectIspPeers() {
+  void testConnectIspPeers() {
     IspModel ispModel2 =
         IspModel.builder()
             .setAsn(23)
@@ -727,7 +727,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testGetSnapshotConnectionsForBorderInterface_bgpActive() {
+  void testGetSnapshotConnectionsForBorderInterface_bgpActive() {
     List<SnapshotConnection> snapshotConnections =
         getSnapshotConnectionsForBorderInterface(
             new BorderInterfaceInfo(
@@ -741,7 +741,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testGetSnapshotConnectionsForBorderInterface_bgpUnnumbered() {
+  void testGetSnapshotConnectionsForBorderInterface_bgpUnnumbered() {
     Configuration configuration = createBgpNode("conf", _snapshotInterfaceName, _snapshotIp);
     BgpUnnumberedPeerConfig snapshotPeer =
         BgpUnnumberedPeerConfig.builder()
@@ -778,7 +778,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testGetSnapshotConnectionsForBorderInterface_multiplePeers() {
+  void testGetSnapshotConnectionsForBorderInterface_multiplePeers() {
     Ip ispIp2 = Ip.parse("3.3.3.3");
     BgpActivePeerConfig snapshotPeer2 =
         BgpActivePeerConfig.builder()
@@ -816,7 +816,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testGetSnapshotConnectionForBgpPeerInfo() {
+  void testGetSnapshotConnectionForBgpPeerInfo() {
     Optional<SnapshotConnection> snapshotConnection =
         getSnapshotConnectionForBgpPeerInfo(
             new BgpPeerInfo(
@@ -834,7 +834,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testGetSnapshotConnectionForBgpPeerInfo_noAttachment() {
+  void testGetSnapshotConnectionForBgpPeerInfo_noAttachment() {
     Optional<SnapshotConnection> snapshotConnection =
         getSnapshotConnectionForBgpPeerInfo(
             new BgpPeerInfo(_snapshotHostname, null, _ispIp, null, null),
@@ -851,7 +851,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testGetSnapshotConnectionForBgpPeerInfo_differentAttachmentInterface() {
+  void testGetSnapshotConnectionForBgpPeerInfo_differentAttachmentInterface() {
     Interface attachIface =
         _nf.interfaceBuilder().setName("different").setOwner(_snapshotHost).build();
     Optional<SnapshotConnection> snapshotConnection =
@@ -881,7 +881,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testGetSnapshotConnectionForBgpPeerInfo_differentAttachmentHost() {
+  void testGetSnapshotConnectionForBgpPeerInfo_differentAttachmentHost() {
     Configuration attachHost =
         _nf.configurationBuilder()
             .setHostname("attach")
@@ -916,7 +916,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testGetSnapshotConnectionForBgpPeerInfo_withVlanTag() {
+  void testGetSnapshotConnectionForBgpPeerInfo_withVlanTag() {
     Optional<SnapshotConnection> snapshotConnection =
         getSnapshotConnectionForBgpPeerInfo(
             new BgpPeerInfo(
@@ -944,7 +944,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testGetSnapshotConnectionForBgpPeerInfo_missingBgpHost() {
+  void testGetSnapshotConnectionForBgpPeerInfo_missingBgpHost() {
     Warnings warnings = new Warnings(true, true, true);
     Optional<SnapshotConnection> connection =
         getSnapshotConnectionForBgpPeerInfo(
@@ -961,7 +961,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testGetSnapshotConnectionForBgpPeerInfo_missingBgpPeer() {
+  void testGetSnapshotConnectionForBgpPeerInfo_missingBgpPeer() {
     Warnings warnings = new Warnings(true, true, true);
     Optional<SnapshotConnection> connection =
         getSnapshotConnectionForBgpPeerInfo(
@@ -983,7 +983,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testGetSnapshotConnectionForBgpPeerInfo_invalidBgpPeer() {
+  void testGetSnapshotConnectionForBgpPeerInfo_invalidBgpPeer() {
     // add a peer with missing remote as
     BgpActivePeerConfig bgpPeer =
         BgpActivePeerConfig.builder()
@@ -1028,7 +1028,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testValidateOrExplainProblemCreatingIspConfig() {
+  void testValidateOrExplainProblemCreatingIspConfig() {
     assertThat(
         validateOrExplainProblemCreatingIspConfig(
             correctBuilder().build(), ImmutableSet.of(), ALL_AS_NUMBERS),
@@ -1069,7 +1069,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testGetSnapshotConnectionForBgpPeerInfo_missingAttachmentHost() {
+  void testGetSnapshotConnectionForBgpPeerInfo_missingAttachmentHost() {
     Warnings warnings = new Warnings(true, true, true);
     Optional<SnapshotConnection> connection =
         getSnapshotConnectionForBgpPeerInfo(
@@ -1090,7 +1090,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testGetSnapshotConnectionForBgpPeerInfo_missingAttachmentInterface() {
+  void testGetSnapshotConnectionForBgpPeerInfo_missingAttachmentInterface() {
     Warnings warnings = new Warnings(true, true, true);
     Optional<SnapshotConnection> connection =
         getSnapshotConnectionForBgpPeerInfo(
@@ -1107,7 +1107,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testGetSnapshotConnectionForBgpPeerInfo_badLayer3AttachmentInterface() {
+  void testGetSnapshotConnectionForBgpPeerInfo_badLayer3AttachmentInterface() {
     Interface attachIface =
         _nf.interfaceBuilder()
             .setOwner(_snapshotHost)
@@ -1139,7 +1139,7 @@ public class IspModelingUtilsTest {
 
   /** Test the preference order of inferSnapshotBgpIfaceAddress */
   @Test
-  public void testInferSnapshotBgpIfaceAddress() {
+  void testInferSnapshotBgpIfaceAddress() {
     Ip localIp = Ip.parse("1.1.1.1");
     ConcreteInterfaceAddress addr22 = ConcreteInterfaceAddress.create(localIp, 22);
     ConcreteInterfaceAddress addr23 = ConcreteInterfaceAddress.create(localIp, 23);
@@ -1176,7 +1176,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testToIspModel_customIspName() {
+  void testToIspModel_customIspName() {
     IspModel ispModel =
         toIspModel(
             _ispAsn, ImmutableList.of(), ImmutableList.of(new IspNodeInfo(_ispAsn, "myisp")));
@@ -1184,7 +1184,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testToIspModel_role() {
+  void testToIspModel_role() {
     IspModel ispModel =
         toIspModel(
             _ispAsn,
@@ -1196,7 +1196,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testToIspModel_trafficFiltering() {
+  void testToIspModel_trafficFiltering() {
     IspModel ispModelPrivate =
         toIspModel(
             _ispAsn,
@@ -1218,7 +1218,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testToIspModel_mergeAdditionalPrefixes() {
+  void testToIspModel_mergeAdditionalPrefixes() {
     IspModel ispModel =
         toIspModel(
             _ispAsn,
@@ -1247,12 +1247,12 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testGetAsnOfIspNode() {
+  void testGetAsnOfIspNode() {
     assertThat(getAsnOfIspNode(_snapshotHost), equalTo(2L));
   }
 
   @Test
-  public void testCreateInternetNode() {
+  void testCreateInternetNode() {
     Configuration internet = createInternetNode();
     InterfaceAddress interfaceAddress =
         ConcreteInterfaceAddress.create(
@@ -1303,7 +1303,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testGetInternetAndIspNodes_caseInsensitive() {
+  void testGetInternetAndIspNodes_caseInsensitive() {
     Map<String, Configuration> internetAndIsps =
         getInternetAndIspNodes(
                 ImmutableMap.of(_snapshotHostname, _snapshotHost),
@@ -1322,7 +1322,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testGetInternetAndIspNodes() {
+  void testGetInternetAndIspNodes() {
     ModeledNodes modeledNodes =
         getInternetAndIspNodes(
             ImmutableMap.of(_snapshotHostname, _snapshotHost),
@@ -1342,7 +1342,7 @@ public class IspModelingUtilsTest {
 
   /** Check that the Internet node is not created when all ISPs are PRIVATE_BACKBONES */
   @Test
-  public void testGetInternetAndIspNodes_noInternet() {
+  void testGetInternetAndIspNodes_noInternet() {
     ModeledNodes modeledNodes =
         getInternetAndIspNodes(
             ImmutableMap.of(_snapshotHostname, _snapshotHost),
@@ -1372,7 +1372,7 @@ public class IspModelingUtilsTest {
    * node should be created and only the former ISP should be connected to it.
    */
   @Test
-  public void testGetInternetAndIspNodes_mixedInternet() {
+  void testGetInternetAndIspNodes_mixedInternet() {
     // add another interface and peer to the configuration we already have
     String snapshotInterface2 = "interface2";
     Ip snapshotIp2 = Ip.parse("3.3.3.3");
@@ -1450,7 +1450,7 @@ public class IspModelingUtilsTest {
 
   /** Test that ISP peerings are processed */
   @Test
-  public void testGetInternetAndIspNodes_ispPeerings() {
+  void testGetInternetAndIspNodes_ispPeerings() {
     // add another interface and peer to the configuration we already have
     String snapshotInterface2 = "interface2";
     Ip snapshotIp2 = Ip.parse("3.3.3.3");
@@ -1499,7 +1499,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testGetRoutingPolicyAdvertizeStatic() {
+  void testGetRoutingPolicyAdvertizeStatic() {
     Configuration internet =
         _nf.configurationBuilder()
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
@@ -1534,7 +1534,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testInstallRoutingPolicyForIspToCustomers() {
+  void testInstallRoutingPolicyForIspToCustomers() {
     Configuration isp =
         _nf.configurationBuilder()
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
@@ -1556,7 +1556,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testInstallRoutingPolicyForIspToInternet() {
+  void testInstallRoutingPolicyForIspToInternet() {
     Configuration isp =
         _nf.configurationBuilder()
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
@@ -1577,7 +1577,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testGetInternetAndIspNodes_multipleSessions() {
+  void testGetInternetAndIspNodes_multipleSessions() {
     Ip snapshotIp2 = Ip.parse("3.3.3.3");
     Configuration configuration2 = createBgpNode("conf2", "interface2", snapshotIp2);
     BgpActivePeerConfig.builder()
@@ -1620,7 +1620,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testGetInternetAndIspNodes_unknownBorders() {
+  void testGetInternetAndIspNodes_unknownBorders() {
     // passing non-existent border interfaces
     Map<String, Configuration> internetAndIsps =
         getInternetAndIspNodes(
@@ -1640,7 +1640,7 @@ public class IspModelingUtilsTest {
 
   /** Test that combining ISP configs works when two configs have an ASN in common */
   @Test
-  public void testCombineIspConfigurations_commonAsn() {
+  void testCombineIspConfigurations_commonAsn() {
     Ip ispIp2 = Ip.parse("2.1.1.1");
     Ip snapshotIp2 = Ip.parse("2.1.1.2");
     Configuration c2 = createBgpNode("c2", _snapshotInterfaceName, snapshotIp2);
@@ -1697,7 +1697,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testIspNameConflictsGoodCase() {
+  void testIspNameConflictsGoodCase() {
     Map<Long, IspModel> ispInfoMap =
         ImmutableMap.of(
             1L,
@@ -1714,7 +1714,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testIspNameConflictsIspConflict() {
+  void testIspNameConflictsIspConflict() {
     Map<Long, IspModel> ispInfoMap =
         ImmutableMap.of(
             1L,
@@ -1729,7 +1729,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testIspNameConflictsNodeConflict() {
+  void testIspNameConflictsNodeConflict() {
     Map<Long, IspModel> ispInfoMap =
         ImmutableMap.of(1L, IspModel.builder().setAsn(1).setName("FOO").build());
     Map<String, Configuration> configurationsNoConflict =
@@ -1754,7 +1754,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testCombineIspPeerings() {
+  void testCombineIspPeerings() {
     Map<Long, IspModel> ispModels = ImmutableMap.of(1L, _ispModel, 2L, _ispModel, 3L, _ispModel);
     Set<IspPeering> ispPeerings =
         combineIspPeerings(
@@ -1780,7 +1780,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testCombineIspPeerings_missingAsns() {
+  void testCombineIspPeerings_missingAsns() {
     Map<Long, IspModel> ispModels = ImmutableMap.of(_ispAsn, _ispModel);
     {
       // missing asn1

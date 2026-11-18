@@ -111,12 +111,13 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -216,20 +217,16 @@ import org.batfish.representation.cisco_asa.StandardCommunityList;
 import org.batfish.representation.cisco_asa.StandardCommunityListLine;
 import org.batfish.representation.cisco_asa.SyslogTransportProtocol;
 import org.batfish.representation.cisco_asa.WildcardAddressSpecifier;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests for {@link AsaParser} and {@link AsaControlPlaneExtractor}. */
-public final class CiscoAsaGrammarTest {
+final class CiscoAsaGrammarTest {
 
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/cisco_asa/testconfigs/";
   private static final String SNAPSHOTS_PREFIX = "org/batfish/grammar/cisco_asa/snapshots/";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+  @TempDir public File _folder;
 
   private @Nonnull Bgpv4Route processRouteIn(RoutingPolicy routingPolicy, Bgpv4Route route) {
     Bgpv4Route.Builder builder = route.toBuilder();
@@ -277,19 +274,19 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testHumanName() throws IOException {
+  void testHumanName() throws IOException {
     Configuration c = parseConfig("asa-humanname");
     assertThat(c.getHumanName(), equalTo("ASA-humanname"));
   }
 
   @Test
-  public void testDnsDomainLookupExtraction() {
+  void testDnsDomainLookupExtraction() {
     AsaConfiguration c = parseVendorConfig("asa_dns");
     assertThat(c.getDnsDomainLookupInterfaces(), contains("inside", "management", "outside"));
   }
 
   @Test
-  public void testDnsServerGroupExtraction() {
+  void testDnsServerGroupExtraction() {
     AsaConfiguration c = parseVendorConfig("asa_dns");
     Map<String, DnsServerGroup> groups = c.getDnsServerGroups();
     assertThat(groups.keySet(), containsInAnyOrder("DefaultDNS", "InsideDNS"));
@@ -334,7 +331,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testDnsGroupMapAndDefaultExtraction() {
+  void testDnsGroupMapAndDefaultExtraction() {
     AsaConfiguration c = parseVendorConfig("asa_dns");
     assertThat(c.getDefaultDnsServerGroup(), equalTo("DefaultDNS"));
     assertThat(
@@ -343,7 +340,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testDnsServerGroupBadRanges() {
+  void testDnsServerGroupBadRanges() {
     AsaConfiguration c = parseVendorConfig("asa_dns_bad_ranges");
     DnsServerGroup group = c.getDnsServerGroups().get("DefaultDNS");
     assertThat(group.getTimeoutSeconds(), nullValue());
@@ -353,7 +350,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testDnsServersConversion() throws IOException {
+  void testDnsServersConversion() throws IOException {
     Configuration c = parseConfig("asa_dns");
     assertThat(
         c.getDnsServers(),
@@ -363,7 +360,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testDnsReferences() throws IOException {
+  void testDnsReferences() throws IOException {
     String hostname = "asa_dns";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -382,7 +379,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testLoggingExtraction() {
+  void testLoggingExtraction() {
     AsaConfiguration c = parseVendorConfig("asa-logging");
     Logging logging = c.getAsaLogging();
 
@@ -431,14 +428,14 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testLoggingBadPort() {
+  void testLoggingBadPort() {
     AsaConfiguration c = parseVendorConfig("asa-logging-bad-port");
     // An out-of-range port is warned about, and the host is not stored in the vendor model.
     assertTrue(c.getAsaLogging().getHosts().isEmpty());
   }
 
   @Test
-  public void testLineAuthenticationMethods() throws IOException {
+  void testLineAuthenticationMethods() throws IOException {
     Configuration asaConfiguration = parseConfig("aaaAuthenticationAsa");
     SortedMap<String, Line> asaLines = asaConfiguration.getVendorFamily().getCisco().getLines();
 
@@ -454,7 +451,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAaaAuthenticationLogin() throws IOException {
+  void testAaaAuthenticationLogin() throws IOException {
     Configuration aaaAuthAsaConfiguration = parseConfig("aaaAuthenticationAsa");
     SortedMap<String, Line> asaLines =
         aaaAuthAsaConfiguration.getVendorFamily().getCisco().getLines();
@@ -524,7 +521,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaAclObject() throws IOException {
+  void testAsaAclObject() throws IOException {
     String hostname = "asa-acl-object";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -587,7 +584,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaBanner() throws IOException {
+  void testAsaBanner() throws IOException {
     Configuration c = parseConfig("asa_banner");
     assertThat(
         c.getVendorFamily().getCisco().getBanners().get("exec"),
@@ -595,7 +592,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaEigrpNetwork() {
+  void testAsaEigrpNetwork() {
     AsaConfiguration config = parseVendorConfig("asa-eigrp");
 
     // ASN is 1
@@ -604,7 +601,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaEigrpPassive() throws IOException {
+  void testAsaEigrpPassive() throws IOException {
     Configuration config = parseConfig("asa-eigrp");
 
     assertThat(
@@ -612,7 +609,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaFailoverExtraction() {
+  void testAsaFailoverExtraction() {
     AsaConfiguration config = parseVendorConfig("asa-failover");
     assertThat(config.getFailover(), equalTo(true));
     assertThat(config.getFailoverSecondary(), equalTo(false));
@@ -629,7 +626,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaFailoverConversion() throws IOException {
+  void testAsaFailoverConversion() throws IOException {
     Configuration config = parseConfig("asa-failover");
     assertThat(
         config,
@@ -638,7 +635,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaInterfaceRedundantExtraction() {
+  void testAsaInterfaceRedundantExtraction() {
     AsaConfiguration config = parseVendorConfig("asa-interface-redundant");
 
     assertThat(
@@ -665,7 +662,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaInterfaceRedundantConversion() throws IOException {
+  void testAsaInterfaceRedundantConversion() throws IOException {
     Configuration config = parseConfig("asa-interface-redundant");
 
     assertThat(
@@ -706,7 +703,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaOspfReferenceBandwidth() throws IOException {
+  void testAsaOspfReferenceBandwidth() throws IOException {
     Configuration manual = parseConfig("asaOspfCost");
     assertThat(
         manual.getDefaultVrf().getOspfProcesses().get("1").getReferenceBandwidth(), equalTo(3e6d));
@@ -719,7 +716,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaFilters() throws IOException {
+  void testAsaFilters() throws IOException {
     String hostname = "asa-filters";
     Configuration c = parseConfig(hostname);
 
@@ -746,7 +743,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaFiltersGlobal() throws IOException {
+  void testAsaFiltersGlobal() throws IOException {
     String hostname = "asa-filters-global";
     Configuration c = parseConfig(hostname);
 
@@ -774,7 +771,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaFiltersGlobalReference() throws IOException {
+  void testAsaFiltersGlobalReference() throws IOException {
     String hostname = "asa-filters-global";
     String filename = "configs/" + hostname;
     parseConfig(hostname);
@@ -787,7 +784,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaFiltersReference() throws IOException {
+  void testAsaFiltersReference() throws IOException {
     String hostname = "asa-filters";
     String filename = "configs/" + hostname;
     parseConfig(hostname);
@@ -804,7 +801,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaSecurityLevelAndFilters() throws IOException {
+  void testAsaSecurityLevelAndFilters() throws IOException {
     String hostname = "asa-filters";
     Configuration c = parseConfig(hostname);
 
@@ -859,7 +856,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaGh5875() throws IOException {
+  void testAsaGh5875() throws IOException {
     Configuration c = parseConfig("asa-gh-5875");
     BDDPacket p = new BDDPacket();
     BDDSourceManager srcManager = BDDSourceManager.empty(p);
@@ -891,7 +888,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaGh6042() throws IOException {
+  void testAsaGh6042() throws IOException {
     String hostname = "asa-gh-6042";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
@@ -901,7 +898,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaGh8134() throws IOException {
+  void testAsaGh8134() throws IOException {
     Configuration c = parseConfig("asa-gh-8134");
     assertThat(
         c.getDefaultVrf().getStaticRoutes(),
@@ -914,7 +911,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaServiceObject() throws IOException {
+  void testAsaServiceObject() throws IOException {
     String hostname = "asa-service-object";
     String filename = "configs/" + hostname;
     Configuration c = parseConfig(hostname);
@@ -970,7 +967,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaServiceObjectInline() throws IOException {
+  void testAsaServiceObjectInline() throws IOException {
     String hostname = "asa-service-object-inline";
     Configuration c = parseConfig(hostname);
     assertThat(c, hasConfigurationFormat(ConfigurationFormat.CISCO_ASA));
@@ -991,7 +988,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaNestedIcmpTypeObjectGroup() throws IOException {
+  void testAsaNestedIcmpTypeObjectGroup() throws IOException {
     String hostname = "asa-nested-icmp-type-object-group";
     String filename = "configs/" + hostname;
     String services = computeIcmpObjectGroupAclName("services");
@@ -1028,7 +1025,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaNestedNetworkObjectGroup() throws IOException {
+  void testAsaNestedNetworkObjectGroup() throws IOException {
     String hostname = "asa-nested-network-object-group";
     String filename = "configs/" + hostname;
     Ip engHostIp = Ip.parse("10.1.1.5");
@@ -1062,7 +1059,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaNestedProtocolObjectGroup() throws IOException {
+  void testAsaNestedProtocolObjectGroup() throws IOException {
     String hostname = "asa-nested-protocol-object-group";
     String filename = "configs/" + hostname;
     String protocols = computeProtocolObjectGroupAclName("protocols");
@@ -1101,7 +1098,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaNestedServiceObjectGroup() throws IOException {
+  void testAsaNestedServiceObjectGroup() throws IOException {
     String hostname = "asa-nested-service-object-group";
     String filename = "configs/" + hostname;
     String services = computeServiceObjectGroupAclName("services");
@@ -1140,14 +1137,14 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaSnmp() throws IOException {
+  void testAsaSnmp() throws IOException {
     Configuration c = parseConfig("asa_snmp");
     assertThat(c.getSnmpSourceInterface(), equalTo("inside"));
     assertThat(c.getSnmpTrapServers(), contains("1.2.3.4"));
   }
 
   @Test
-  public void testBgpNetworkStatements() throws IOException {
+  void testBgpNetworkStatements() throws IOException {
     /*
      * Config contains two static routes, 1.1.1.1/32 and 2.2.2.2/32. Both are redistributed into BGP
      * via network statements, but the 1.1.1.1/32 network statement uses a route-map that permits
@@ -1197,7 +1194,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAggregateAddressExtraction() {
+  void testAggregateAddressExtraction() {
     String hostname = "asa-aggregate-address";
     AsaConfiguration vc = parseVendorConfig(hostname);
     Map<Prefix, BgpAggregateIpv4Network> aggs =
@@ -1274,7 +1271,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaAdvertiseInactive() throws IOException {
+  void testAsaAdvertiseInactive() throws IOException {
     Configuration config = parseConfig("asa-advertise-inactive");
     assertTrue(
         config
@@ -1288,7 +1285,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaSuppressInactive() throws IOException {
+  void testAsaSuppressInactive() throws IOException {
     // "bgp suppress-inactive" disables the default advertise-inactive behavior.
     Configuration config = parseConfig("asa-suppress-inactive");
     assertFalse(
@@ -1303,7 +1300,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAggregateAddressConversion() throws IOException {
+  void testAggregateAddressConversion() throws IOException {
     String hostname = "asa-aggregate-address";
     Configuration c = parseConfig(hostname);
 
@@ -1394,7 +1391,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAggregateAddressReferences() throws IOException {
+  void testAggregateAddressReferences() throws IOException {
     String hostname = "asa-aggregate-address";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -1414,7 +1411,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testBgpAggregateWithLocalSuppressedRoutes() throws IOException {
+  void testBgpAggregateWithLocalSuppressedRoutes() throws IOException {
     /*
      * Config has static routes:
      * - 1.1.1.0/24
@@ -1517,7 +1514,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testBgpAggregateWithLearnedSuppressedRoutes() throws IOException {
+  void testBgpAggregateWithLearnedSuppressedRoutes() throws IOException {
     /*
      * Snapshot contains c1, c2, and c3. c1 redistributes static routes 1.1.1.0/16 and 2.2.2.0/16
      * into BGP and advertises them to c2. c2 has aggregates 1.1.0.0/16 (not summary-only) and
@@ -1609,7 +1606,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testNetworkObject() throws IOException {
+  void testNetworkObject() throws IOException {
     String hostname = "network-object";
     String filename = "configs/" + hostname;
     Configuration c = parseConfig(hostname);
@@ -1641,7 +1638,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testCiscoOspfNetworkTypes() {
+  void testCiscoOspfNetworkTypes() {
     AsaConfiguration config = parseVendorConfig("ospf-network-types");
 
     String eth0 = "Ethernet0/0";
@@ -1666,7 +1663,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testCiscoOspfIntervals() {
+  void testCiscoOspfIntervals() {
     AsaConfiguration config = parseVendorConfig("ospf-intervals");
 
     String eth0 = "Ethernet0/0";
@@ -1713,7 +1710,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaInterface() throws IOException {
+  void testAsaInterface() throws IOException {
     String hostname = "asa-interface";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -1737,7 +1734,7 @@ public final class CiscoAsaGrammarTest {
 
   // https://github.com/batfish/batfish/issues/4124
   @Test
-  public void testAsaInterfaceOspfWithInheritance() throws IOException {
+  void testAsaInterfaceOspfWithInheritance() throws IOException {
     String hostname = "asa-interface-ospf";
     Configuration c = parseConfig(hostname);
     assertThat(
@@ -1751,7 +1748,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaInterfaceEncapsulationVlan() throws IOException {
+  void testAsaInterfaceEncapsulationVlan() throws IOException {
     String hostname = "asa_interface_encapsulation_vlan";
     Configuration c = parseConfig(hostname);
 
@@ -1766,7 +1763,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaSecurityLevel() throws IOException {
+  void testAsaSecurityLevel() throws IOException {
     Configuration c = parseConfig("asa-security-level");
     String explicit100Interface = "all-trust";
     String insideInterface = "inside";
@@ -1852,7 +1849,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaSecurityLevel_tracing() throws IOException {
+  void testAsaSecurityLevel_tracing() throws IOException {
     Configuration c = parseConfig("asa-security-level");
     String explicit100Interface = "all-trust";
     String insideInterface = "inside";
@@ -1889,7 +1886,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaSecurityLevelPermitBoth() throws IOException {
+  void testAsaSecurityLevelPermitBoth() throws IOException {
     Configuration c = parseConfig("asa-security-level-permit-both");
     String ifaceAlias1 = "name1";
     String ifaceAlias2 = "name2";
@@ -1917,7 +1914,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaSecurityLevelPermitBoth_tracing() throws IOException {
+  void testAsaSecurityLevelPermitBoth_tracing() throws IOException {
     Configuration c = parseConfig("asa-security-level-permit-both");
     String ifaceAlias1 = "name1";
     String ifaceAlias2 = "name2";
@@ -1951,7 +1948,7 @@ public final class CiscoAsaGrammarTest {
    * permits, and there is an out filter on the out interface.
    */
   @Test
-  public void testAsaSecurityLevelPermitTracing() throws IOException {
+  void testAsaSecurityLevelPermitTracing() throws IOException {
     Configuration c = parseConfig("asa-security-level-permit-tracing");
     String out = "out"; // security-level 50, has out filter
     String inSameLevel = "inSameLevel"; // security-level 50
@@ -2095,7 +2092,7 @@ public final class CiscoAsaGrammarTest {
    * denies
    */
   @Test
-  public void testAsaSecurityLevelDenyTracing() throws IOException {
+  void testAsaSecurityLevelDenyTracing() throws IOException {
     Configuration c = parseConfig("asa-security-level-deny-tracing");
     String out = "out";
     String inSameLevel = "inSameLevel";
@@ -2135,7 +2132,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaSecurityLevelPermitInter() throws IOException {
+  void testAsaSecurityLevelPermitInter() throws IOException {
     Configuration c = parseConfig("asa-security-level-permit-inter");
     String ifaceAlias1 = "name1";
     String ifaceAlias2 = "name2";
@@ -2163,7 +2160,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaSecurityLevelPermitIntra() throws IOException {
+  void testAsaSecurityLevelPermitIntra() throws IOException {
     Configuration c = parseConfig("asa-security-level-permit-intra");
     String ifaceAlias1 = "name1";
     String ifaceAlias2 = "name2";
@@ -2191,13 +2188,13 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaStaticGh5729() throws IOException {
+  void testAsaStaticGh5729() throws IOException {
     AsaConfiguration c = parseVendorConfig("asa-static-gh-5729");
     assertThat(c.getDefaultVrf().getStaticRoutes(), hasSize(4));
   }
 
   @Test
-  public void testAsaStaticRoute() throws IOException {
+  void testAsaStaticRoute() throws IOException {
     Configuration c = parseConfig("asa-static-route");
 
     // Confirm static route is extracted properly
@@ -2223,7 +2220,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaObjectNatDynamic() throws IOException {
+  void testAsaObjectNatDynamic() throws IOException {
     // Test Transformations from ASA dynamic object NATs
     String hostname = "asa-nat-object-dynamic";
     Configuration config = parseConfig(hostname);
@@ -2274,7 +2271,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaObjectNatReferrers() throws IOException {
+  void testAsaObjectNatReferrers() throws IOException {
     String hostname = "asa-nat-object-refs";
     String filename = "configs/" + hostname;
 
@@ -2310,7 +2307,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaObjectNatStatic() throws IOException {
+  void testAsaObjectNatStatic() throws IOException {
     // Test Transformations from ASA static object NATs
     String hostname = "asa-nat-object-static";
     Configuration config = parseConfig(hostname);
@@ -2367,7 +2364,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaNatOrder() {
+  void testAsaNatOrder() {
     String hostname = "asa-nat-mixed";
     AsaConfiguration config = parseVendorConfig(hostname);
 
@@ -2437,7 +2434,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaTwiceNatDynamic() {
+  void testAsaTwiceNatDynamic() {
     // Test vendor-specific parsing of ASA dynamic twice NATs
     String hostname = "asa-nat-twice-dynamic";
     AsaConfiguration config = parseVendorConfig(hostname);
@@ -2503,7 +2500,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaTwiceNatStatic() {
+  void testAsaTwiceNatStatic() {
     // Test vendor-specific parsing of ASA static twice NATs
     String hostname = "asa-nat-twice-static";
     AsaConfiguration config = parseVendorConfig(hostname);
@@ -2542,7 +2539,7 @@ public final class CiscoAsaGrammarTest {
         equalTo(new NetworkObjectGroupAddressSpecifier("source-mapped-group")));
 
     nat = nats.get(3);
-    assertTrue("NAT is active", nat.getInactive());
+    assertTrue(nat.getInactive(), "NAT is active");
     assertThat(nat.getInsideInterface(), equalTo("inside"));
     assertThat(nat.getOutsideInterface(), equalTo(AsaNat.ANY_INTERFACE));
 
@@ -2564,7 +2561,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaTwiceNatStaticSource() {
+  void testAsaTwiceNatStaticSource() {
     // Test ASA twice NAT with source only
     String hostname = "asa-nat-twice-static";
     AsaConfiguration config = parseVendorConfig(hostname);
@@ -2670,7 +2667,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaTwiceNatStaticSourceAndDestination() {
+  void testAsaTwiceNatStaticSourceAndDestination() {
     // Test ASA twice NAT with source and destination
     String hostname = "asa-nat-twice-static";
     AsaConfiguration config = parseVendorConfig(hostname);
@@ -2710,7 +2707,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaTwiceNatReferrers() throws IOException {
+  void testAsaTwiceNatReferrers() throws IOException {
     String hostname = "asa-nat-twice-static";
     String filename = "configs/" + hostname;
 
@@ -2747,7 +2744,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaSession() throws IOException {
+  void testAsaSession() throws IOException {
     Configuration c = parseConfig("asa-session");
     assertThat(c.getAllInterfaces().keySet(), containsInAnyOrder("inside", "outside"));
     FirewallSessionInterfaceInfo inside =
@@ -2769,7 +2766,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testCommunityListExpandedConversion() throws IOException {
+  void testCommunityListExpandedConversion() throws IOException {
     String hostname = "asa-community-list-expanded";
     Configuration c = parseConfig(hostname);
     CommunityContext ctx = CommunityContext.builder().build();
@@ -2808,7 +2805,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testCommunityListExpandedExtraction() {
+  void testCommunityListExpandedExtraction() {
     String hostname = "asa-community-list-expanded";
     AsaConfiguration vc = parseVendorConfig(hostname);
 
@@ -2835,7 +2832,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testCommunityListStandardConversion() throws IOException {
+  void testCommunityListStandardConversion() throws IOException {
     String hostname = "asa-community-list-standard";
     Configuration c = parseConfig(hostname);
     CommunityContext ctx = CommunityContext.builder().build();
@@ -2885,7 +2882,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testCommunityListStandardExtraction() {
+  void testCommunityListStandardExtraction() {
     String hostname = "asa-community-list-standard";
     AsaConfiguration vc = parseVendorConfig(hostname);
 
@@ -2927,7 +2924,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testCommunityRouteMapExtraction() {
+  void testCommunityRouteMapExtraction() {
     String hostname = "asa-community-route-map";
     AsaConfiguration vc = parseVendorConfig(hostname);
     assertThat(
@@ -2981,7 +2978,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testCommunityRouteMapConversion() throws IOException {
+  void testCommunityRouteMapConversion() throws IOException {
     String hostname = "asa-community-route-map";
     Configuration c = parseConfig(hostname);
 
@@ -3059,7 +3056,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaNtpExtraction() {
+  void testAsaNtpExtraction() {
     AsaConfiguration vc = parseVendorConfig("asa-ntp");
 
     assertTrue(vc.getNtpAuthenticate());
@@ -3113,7 +3110,7 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testAsaNtpNoAuthenticateExtraction() {
+  void testAsaNtpNoAuthenticateExtraction() {
     AsaConfiguration vc = parseVendorConfig("asa-ntp-no-authenticate");
 
     assertFalse(vc.getNtpAuthenticate());

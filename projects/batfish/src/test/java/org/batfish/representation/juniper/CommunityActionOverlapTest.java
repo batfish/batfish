@@ -7,10 +7,10 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 
 import org.batfish.datamodel.bgp.community.StandardCommunity;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link CommunityActionOverlap}. */
-public class CommunityActionOverlapTest {
+class CommunityActionOverlapTest {
 
   private static NamedCommunity literalCommunity(String name, StandardCommunity... communities) {
     NamedCommunity nc = new NamedCommunity(name);
@@ -29,42 +29,42 @@ public class CommunityActionOverlapTest {
   }
 
   @Test
-  public void testLiteralVsLiteralExactMatch() {
+  void testLiteralVsLiteralExactMatch() {
     NamedCommunity adder = literalCommunity("ADD", StandardCommunity.of(65000, 1));
     NamedCommunity deleter = literalCommunity("DEL", StandardCommunity.of(65000, 1));
     assertThat(overlappingCommunities(adder, deleter), contains("65000:1"));
   }
 
   @Test
-  public void testLiteralVsLiteralNoMatch() {
+  void testLiteralVsLiteralNoMatch() {
     NamedCommunity adder = literalCommunity("ADD", StandardCommunity.of(65000, 1));
     NamedCommunity deleter = literalCommunity("DEL", StandardCommunity.of(65000, 2));
     assertThat(overlappingCommunities(adder, deleter), empty());
   }
 
   @Test
-  public void testLiteralAddVsRegexDeleteCatchAll() {
+  void testLiteralAddVsRegexDeleteCatchAll() {
     NamedCommunity adder = literalCommunity("ADD", StandardCommunity.of(65000, 1));
     NamedCommunity deleter = regexCommunity("DEL", ".*:.*");
     assertThat(overlappingCommunities(adder, deleter), contains("65000:1"));
   }
 
   @Test
-  public void testLiteralAddVsRegexDeleteSpecific() {
+  void testLiteralAddVsRegexDeleteSpecific() {
     NamedCommunity adder = literalCommunity("ADD", StandardCommunity.of(65000, 1));
     NamedCommunity deleter = regexCommunity("DEL", "^65000:");
     assertThat(overlappingCommunities(adder, deleter), contains("65000:1"));
   }
 
   @Test
-  public void testLiteralAddVsRegexDeleteNoMatch() {
+  void testLiteralAddVsRegexDeleteNoMatch() {
     NamedCommunity adder = literalCommunity("ADD", StandardCommunity.of(65000, 1));
     NamedCommunity deleter = regexCommunity("DEL", "^65001:");
     assertThat(overlappingCommunities(adder, deleter), empty());
   }
 
   @Test
-  public void testMultipleLiteralMembersPartialOverlap() {
+  void testMultipleLiteralMembersPartialOverlap() {
     NamedCommunity adder =
         literalCommunity(
             "ADD",
@@ -76,7 +76,7 @@ public class CommunityActionOverlapTest {
   }
 
   @Test
-  public void testRegexAdderIsIgnored() {
+  void testRegexAdderIsIgnored() {
     // Junos does not contribute regex members on community add/set, so no overlap is reported
     // even if the regexes obviously overlap.
     NamedCommunity adder = regexCommunity("ADD", "^65000:1$");
@@ -85,7 +85,7 @@ public class CommunityActionOverlapTest {
   }
 
   @Test
-  public void testMixedAdder() {
+  void testMixedAdder() {
     // Literal members of a mixed adder are checked against the deleter; regex members are
     // ignored.
     NamedCommunity adder = new NamedCommunity("ADD");
@@ -96,7 +96,7 @@ public class CommunityActionOverlapTest {
   }
 
   @Test
-  public void testEmptyDeleterMembers() {
+  void testEmptyDeleterMembers() {
     NamedCommunity adder = literalCommunity("ADD", StandardCommunity.of(65000, 1));
     NamedCommunity deleter = new NamedCommunity("DEL");
     assertThat(overlappingCommunities(adder, deleter), empty());

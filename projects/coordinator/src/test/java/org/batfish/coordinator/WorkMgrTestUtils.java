@@ -3,6 +3,7 @@ package org.batfish.coordinator;
 import static org.batfish.identifiers.NodeRolesId.DEFAULT_NETWORK_NODE_ROLES_ID;
 
 import com.google.common.collect.ImmutableSortedSet;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,15 +39,14 @@ import org.batfish.identifiers.SnapshotId;
 import org.batfish.role.NodeRolesData;
 import org.batfish.storage.FileBasedStorage;
 import org.batfish.storage.StorageProvider;
-import org.junit.rules.TemporaryFolder;
 
 public final class WorkMgrTestUtils {
 
   private WorkMgrTestUtils() {}
 
-  public static void initWorkManager(TemporaryFolder folder) {
+  public static void initWorkManager(File folder) {
     BatfishLogger logger = new BatfishLogger("debug", false);
-    Main.mainInit(new String[] {"-containerslocation", folder.getRoot().toString()});
+    Main.mainInit(new String[] {"-containerslocation", folder.toString()});
     Main.setLogger(logger);
     Main.initAuthorizer();
     FileBasedStorage fbs = new FileBasedStorage(Main.getSettings().getContainersLocation(), logger);
@@ -99,18 +99,18 @@ public final class WorkMgrTestUtils {
         new WorkMgr(Main.getSettings(), logger, idManager, storage, new TestWorkExecutorCreator()));
   }
 
-  public static boolean uploadTestSnapshot(String network, String snapshot, TemporaryFolder folder)
+  public static boolean uploadTestSnapshot(String network, String snapshot, File folder)
       throws IOException {
     return uploadTestSnapshot(network, snapshot, "c1", folder);
   }
 
   public static boolean uploadTestSnapshot(
-      String network, String snapshot, String fileName, TemporaryFolder folder) throws IOException {
+      String network, String snapshot, String fileName, File folder) throws IOException {
     return uploadTestSnapshot(network, snapshot, fileName, "content", folder);
   }
 
   public static boolean uploadTestSnapshot(
-      String network, String snapshot, String fileName, String content, TemporaryFolder folder)
+      String network, String snapshot, String fileName, String content, File folder)
       throws IOException {
     Path tmpSnapshotZip = createSingleFileSnapshotZip(snapshot, fileName, content, folder);
     try (InputStream inputStream = Files.newInputStream(tmpSnapshotZip)) {
@@ -119,9 +119,8 @@ public final class WorkMgrTestUtils {
   }
 
   /** Creates and returns path to a snapshot dir with the specified config */
-  public static Path createSnapshot(
-      String snapshot, String fileName, String content, TemporaryFolder folder) {
-    Path tmpSnapshotSrcDir = folder.getRoot().toPath().resolve(snapshot);
+  public static Path createSnapshot(String snapshot, String fileName, String content, File folder) {
+    Path tmpSnapshotSrcDir = folder.toPath().resolve(snapshot);
     // intentional duplication of snapshot to provide subdir
     Path tmpSnapshotConfig =
         tmpSnapshotSrcDir
@@ -135,8 +134,8 @@ public final class WorkMgrTestUtils {
 
   /** Creates a snapshot zip with the specified config and returns the path to that zip. */
   public static Path createSingleFileSnapshotZip(
-      String snapshot, String fileName, String content, TemporaryFolder folder) {
-    Path snapshotZipPath = folder.getRoot().toPath().resolve(snapshot + ".zip");
+      String snapshot, String fileName, String content, File folder) {
+    Path snapshotZipPath = folder.toPath().resolve(snapshot + ".zip");
     try (FileOutputStream fos = new FileOutputStream(snapshotZipPath.toFile());
         ZipOutputStream zos = new ZipOutputStream(fos)) {
       String entryName =

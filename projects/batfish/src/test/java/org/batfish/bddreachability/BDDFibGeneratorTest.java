@@ -29,11 +29,11 @@ import org.batfish.symbolic.state.NodeDropNullRoute;
 import org.batfish.symbolic.state.StateExprVisitor;
 import org.batfish.symbolic.state.VrfAccept;
 import org.batfish.symbolic.state.VrfStateExpr;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link BDDFibGenerator}. */
 @ParametersAreNonnullByDefault
-public final class BDDFibGeneratorTest {
+final class BDDFibGeneratorTest {
 
   private static final class TestPostInVrf extends VrfStateExpr {
     public TestPostInVrf(String hostname, String vrf) {
@@ -131,7 +131,7 @@ public final class BDDFibGeneratorTest {
   private final BDD _zero = _pkt.getFactory().zero();
 
   @Test
-  public void testGenerateRules_InterfaceAccept_VrfAccept() {
+  void testGenerateRules_InterfaceAccept_VrfAccept() {
     Map<String, Map<String, Map<String, BDD>>> ifaceAcceptBDDs =
         ImmutableMap.of(
             NODE1,
@@ -190,7 +190,7 @@ public final class BDDFibGeneratorTest {
   }
 
   @Test
-  public void testGenerateRules_PostInVrf_InterfaceAccept() {
+  void testGenerateRules_PostInVrf_InterfaceAccept() {
     Map<String, Map<String, Map<String, BDD>>> ifaceAcceptBDDs =
         ImmutableMap.of(
             NODE1,
@@ -246,7 +246,7 @@ public final class BDDFibGeneratorTest {
   }
 
   @Test
-  public void testGenerateRules_PostInVrf_NodeDropNoRoute() {
+  void testGenerateRules_PostInVrf_NodeDropNoRoute() {
     Map<String, Map<String, Map<String, BDD>>> ifaceAcceptBdds =
         ImmutableMap.of(
             NODE1,
@@ -301,7 +301,7 @@ public final class BDDFibGeneratorTest {
   }
 
   @Test
-  public void testGenerateRules_PostInVrf_PostInVrf() {
+  void testGenerateRules_PostInVrf_PostInVrf() {
     Map<String, Map<String, Map<String, BDD>>> nextVrfBDDs =
         ImmutableMap.of(
             NODE1,
@@ -346,7 +346,7 @@ public final class BDDFibGeneratorTest {
   }
 
   @Test
-  public void testGenerateRules_PostInVrf_PreOutVrf() {
+  void testGenerateRules_PostInVrf_PreOutVrf() {
     // Node1 has 1 vrf, routes dstip1 and 2, and only accepts dstip1. So dstip2 to PreOutVrf
     // Node2 has 2 vrfs
     //    vrf1 routes dstip1 and 2, sends dstip2 to vrf2 -> dstip1 to PreOutVrf
@@ -432,7 +432,7 @@ public final class BDDFibGeneratorTest {
   }
 
   @Test
-  public void testGenerateRules_PreOutVrf_NodeDropNullRoute() {
+  void testGenerateRules_PreOutVrf_NodeDropNullRoute() {
     Map<String, Map<String, BDD>> nullRoutedBDDs =
         ImmutableMap.of(
             NODE1, ImmutableMap.of(VRF1, _dstIp1), NODE2, ImmutableMap.of(VRF1, _dstIp1));
@@ -474,7 +474,7 @@ public final class BDDFibGeneratorTest {
   }
 
   @Test
-  public void testGenerateRules_PreOutVrf_PreOutEdge() {
+  void testGenerateRules_PreOutVrf_PreOutEdge() {
     BDDFiniteDomain<String> domain =
         new BDDFiniteDomain<>(_pkt, "outgoingOrigFilter", ImmutableSet.of(IFACE1, IFACE2));
     Map<String, Map<String, Map<org.batfish.datamodel.Edge, BDD>>> arpTrueEdgeBDDs =
@@ -534,7 +534,7 @@ public final class BDDFibGeneratorTest {
   }
 
   @Test
-  public void testGenerateRules_PreOutVrf_PreOutInterfaceDisposition_all() {
+  void testGenerateRules_PreOutVrf_PreOutInterfaceDisposition_all() {
     BDDFiniteDomain<String> domain =
         new BDDFiniteDomain<>(_pkt, "outgoingOrigFilter", ImmutableSet.of(IFACE1, IFACE2));
     Map<String, Map<String, Map<String, BDD>>> neighborUnreachableBDDs =
@@ -631,7 +631,7 @@ public final class BDDFibGeneratorTest {
   }
 
   @Test
-  public void testGenerateRules_PreOutVrf_PreOutInterfaceDisposition_individual() {
+  void testGenerateRules_PreOutVrf_PreOutInterfaceDisposition_individual() {
     Map<String, Map<String, Map<String, BDD>>> dispositionBddMap =
         ImmutableMap.of(
             NODE1,
@@ -655,7 +655,7 @@ public final class BDDFibGeneratorTest {
   }
 
   @Test
-  public void testGenerateRules_PreOutVrf_BlackHole() {
+  void testGenerateRules_PreOutVrf_BlackHole() {
     BDDFiniteDomain<String> domain =
         new BDDFiniteDomain<>(_pkt, "outgoingOrigFilter", ImmutableSet.of(IFACE1, IFACE2));
     Map<String, Map<String, Map<org.batfish.datamodel.Edge, BDD>>> arpTrueEdgeBDDs =

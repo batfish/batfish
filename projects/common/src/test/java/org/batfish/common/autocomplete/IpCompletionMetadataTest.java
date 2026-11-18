@@ -7,12 +7,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class IpCompletionMetadataTest {
+class IpCompletionMetadataTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     IpCompletionRelevance rel1 = new IpCompletionRelevance("display", ImmutableList.of("tag"));
     IpCompletionRelevance rel2 = new IpCompletionRelevance("display", ImmutableList.of("other"));
     new EqualsTester()
@@ -25,7 +25,7 @@ public class IpCompletionMetadataTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     IpCompletionMetadata metadata = new IpCompletionMetadata(new IpCompletionRelevance("a"));
     assertThat(SerializationUtils.clone(metadata), equalTo(metadata));
   }

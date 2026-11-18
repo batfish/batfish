@@ -7,12 +7,12 @@ import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link OspfNeighborConfigId} */
-public class OspfNeighborConfigIdTest {
+class OspfNeighborConfigIdTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new OspfNeighborConfigId(
@@ -39,7 +39,7 @@ public class OspfNeighborConfigIdTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     OspfNeighborConfigId cid =
         new OspfNeighborConfigId(
             "h", "v", "p", "i", ConcreteInterfaceAddress.parse("192.0.2.2/31"));
@@ -47,7 +47,7 @@ public class OspfNeighborConfigIdTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     OspfNeighborConfigId cid =
         new OspfNeighborConfigId(
             "h", "v", "p", "i", ConcreteInterfaceAddress.parse("192.0.2.2/31"));

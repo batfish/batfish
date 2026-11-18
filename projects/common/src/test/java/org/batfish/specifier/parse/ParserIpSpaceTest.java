@@ -8,7 +8,9 @@ import static org.batfish.specifier.parse.Anchor.Type.IP_SPACE_SET_OP;
 import static org.batfish.specifier.parse.Anchor.Type.IP_WILDCARD;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -20,14 +22,10 @@ import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.Grammar;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link Parser} producing {@link IpSpaceAstNode}. */
-public class ParserIpSpaceTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class ParserIpSpaceTest {
 
   private static Set<ParsedAutoCompleteSuggestion> autoCompleteHelper(
       String query, ReferenceLibrary referenceLibrary) {
@@ -45,7 +43,7 @@ public class ParserIpSpaceTest {
 
   /** This is a complex completion test that exercises a bunch of the grammar */
   @Test
-  public void testIpCompletion() {
+  void testIpCompletion() {
     // should auto complete to 1.1.1.10, '-' (range), ':' (wildcard), and ',' (list)
     String query = "1.1.1.1";
 
@@ -81,7 +79,7 @@ public class ParserIpSpaceTest {
   }
 
   @Test
-  public void testIpSpaceAddressGroup() {
+  void testIpSpaceAddressGroup() {
     IpSpaceAstNode expectedAst = new AddressGroupIpSpaceAstNode("a", "b");
 
     assertThat(
@@ -99,21 +97,23 @@ public class ParserIpSpaceTest {
   }
 
   @Test
-  public void testIpSpaceIpAddress() {
+  void testIpSpaceIpAddress() {
     assertThat(
         SpecifierAstBuilder.getAst(Grammar.IP_SPACE_SPECIFIER, "1.1.1.1"),
         equalTo(new IpAstNode("1.1.1.1")));
   }
 
   @Test
-  public void testIpSpaceIpAddressFail() {
-    _thrown.expectMessage("1111 is an invalid octet");
-    _thrown.expect(IllegalArgumentException.class);
-    SpecifierAstBuilder.getAst(Grammar.IP_SPACE_SPECIFIER, "1.1.1.1111");
+  void testIpSpaceIpAddressFail() {
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> SpecifierAstBuilder.getAst(Grammar.IP_SPACE_SPECIFIER, "1.1.1.1111"));
+    assertThat(exception.getMessage(), containsString("1111 is an invalid octet"));
   }
 
   @Test
-  public void testIpSpaceIpRange() {
+  void testIpSpaceIpRange() {
     IpSpaceAstNode expectedAst = new IpRangeAstNode("1.1.1.1", "2.2.2.2");
 
     assertThat(
@@ -125,14 +125,14 @@ public class ParserIpSpaceTest {
   }
 
   @Test
-  public void testIpSpaceIpWildcard() {
+  void testIpSpaceIpWildcard() {
     assertThat(
         SpecifierAstBuilder.getAst(Grammar.IP_SPACE_SPECIFIER, "1.1.1.1:2.2.2.2"),
         equalTo(new IpWildcardAstNode("1.1.1.1:2.2.2.2")));
   }
 
   @Test
-  public void testIpSpaceLocationNodeDeprecated() {
+  void testIpSpaceLocationNodeDeprecated() {
     IpSpaceAstNode expectedNode =
         new LocationIpSpaceAstNode(
             InterfaceLocationAstNode.createFromNode(new NameRegexNodeAstNode("node.*")));
@@ -142,21 +142,23 @@ public class ParserIpSpaceTest {
   }
 
   @Test
-  public void testIpSpacePrefix() {
+  void testIpSpacePrefix() {
     assertThat(
         SpecifierAstBuilder.getAst(Grammar.IP_SPACE_SPECIFIER, "1.1.1.1/1"),
         equalTo(new PrefixAstNode("1.1.1.1/1")));
   }
 
   @Test
-  public void testIpSpacePrefixFail() {
-    _thrown.expectMessage("Invalid prefix length");
-    _thrown.expect(IllegalArgumentException.class);
-    SpecifierAstBuilder.getAst(Grammar.IP_SPACE_SPECIFIER, "1.1.1.1/33");
+  void testIpSpacePrefixFail() {
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> SpecifierAstBuilder.getAst(Grammar.IP_SPACE_SPECIFIER, "1.1.1.1/33"));
+    assertThat(exception.getMessage(), containsString("Invalid prefix length"));
   }
 
   @Test
-  public void testIpSpaceSeDifference() {
+  void testIpSpaceSeDifference() {
     IpSpaceAstNode expectedNode =
         new DifferenceIpSpaceAstNode(new IpAstNode("1.1.1.1"), new IpAstNode("2.2.2.2"));
 
@@ -169,7 +171,7 @@ public class ParserIpSpaceTest {
   }
 
   @Test
-  public void testIpSpaceSetIntersection() {
+  void testIpSpaceSetIntersection() {
     IpSpaceAstNode expectedNode =
         new IntersectionIpSpaceAstNode(new IpAstNode("1.1.1.1"), new IpAstNode("2.2.2.2"));
 
@@ -182,7 +184,7 @@ public class ParserIpSpaceTest {
   }
 
   @Test
-  public void testIpSpaceSetUnion() {
+  void testIpSpaceSetUnion() {
     IpSpaceAstNode expectedNode =
         new UnionIpSpaceAstNode(new IpAstNode("1.1.1.1"), new IpAstNode("2.2.2.2"));
 
@@ -195,7 +197,7 @@ public class ParserIpSpaceTest {
   }
 
   @Test
-  public void testIpSpaceSetPrecedence() {
+  void testIpSpaceSetPrecedence() {
     IpSpaceAstNode expectedNode =
         new UnionIpSpaceAstNode(
             new IpAstNode("1.1.1.1"),
@@ -208,7 +210,7 @@ public class ParserIpSpaceTest {
 
   /** Test complex terms in set operations */
   @Test
-  public void testIpSpaceSetComplexTerms() {
+  void testIpSpaceSetComplexTerms() {
     IpSpaceAstNode expectedNode2 =
         new UnionIpSpaceAstNode(
             new UnionIpSpaceAstNode(
@@ -225,7 +227,7 @@ public class ParserIpSpaceTest {
    * autocompletion
    */
   @Test
-  public void testContextSensitiveAddressGroup() {
+  void testContextSensitiveAddressGroup() {
     ReferenceLibrary library =
         new ReferenceLibrary(
             ImmutableList.of(

@@ -5,14 +5,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 
 import com.google.common.collect.ImmutableList;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * Multi-region snapshot test for the global Direct Connect Gateway. Reproduces the bug where the
@@ -30,7 +30,7 @@ import org.junit.rules.TemporaryFolder;
  * the wired version, and the TGW conversion of {@code tgw-west} couldn't find the (DXGW↔tgw-west)
  * association in its own region. Now both TGW-facing interfaces appear on the single global DXGW.
  */
-public class AwsConfigurationDirectConnectMultiRegionTest {
+class AwsConfigurationDirectConnectMultiRegionTest {
 
   private static final String TESTCONFIGS_DIR =
       "org/batfish/representation/aws/test-direct-connect-gateway-multi-region";
@@ -52,12 +52,12 @@ public class AwsConfigurationDirectConnectMultiRegionTest {
   private static final String _tgwEast = "tgw-east";
   private static final String _tgwWest = "tgw-west";
 
-  @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public static File _folder;
 
   private static IBatfish _batfish;
 
-  @BeforeClass
-  public static void setup() throws IOException {
+  @BeforeAll
+  static void setup() throws IOException {
     _batfish = testSetup(TESTCONFIGS_DIR, fileNames, _folder);
   }
 
@@ -67,7 +67,7 @@ public class AwsConfigurationDirectConnectMultiRegionTest {
    * the {@code tgw-west} side wouldn't be wired because its region carries no associations.
    */
   @Test
-  public void testDxgwHasInterfacesTowardBothTgws() {
+  void testDxgwHasInterfacesTowardBothTgws() {
     Configuration dxgwCfg = _batfish.loadConfigurations(_batfish.getSnapshot()).get(_dxgw);
     assertThat(
         "DXGW Configuration node should be present", dxgwCfg, org.hamcrest.Matchers.notNullValue());
@@ -84,7 +84,7 @@ public class AwsConfigurationDirectConnectMultiRegionTest {
 
   /** Both TGWs should also have their DXGW-facing interfaces. */
   @Test
-  public void testBothTgwsHaveInterfacesTowardDxgw() {
+  void testBothTgwsHaveInterfacesTowardDxgw() {
     Configuration tgwEast = _batfish.loadConfigurations(_batfish.getSnapshot()).get(_tgwEast);
     Configuration tgwWest = _batfish.loadConfigurations(_batfish.getSnapshot()).get(_tgwWest);
     assertThat(

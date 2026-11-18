@@ -9,13 +9,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link TransitGatewayAttachment} */
-public class TransitGatewayRouteTableTest {
+class TransitGatewayRouteTableTest {
 
   @Test
-  public void testDeserialization() throws IOException {
+  void testDeserialization() throws IOException {
     String text =
         readResource("org/batfish/representation/aws/TransitGatewayRouteTableTest.json", UTF_8);
 

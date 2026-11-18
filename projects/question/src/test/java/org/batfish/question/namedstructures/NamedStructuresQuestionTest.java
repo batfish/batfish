@@ -5,13 +5,13 @@ import static org.hamcrest.Matchers.equalTo;
 
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link NamedStructuresQuestion} */
-public class NamedStructuresQuestionTest {
+class NamedStructuresQuestionTest {
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     NamedStructuresQuestion q =
         new NamedStructuresQuestion(
             "nodes",

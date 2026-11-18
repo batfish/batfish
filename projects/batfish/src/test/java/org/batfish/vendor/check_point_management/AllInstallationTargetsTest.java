@@ -4,13 +4,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link AllInstallationTargets}. */
-public final class AllInstallationTargetsTest {
+final class AllInstallationTargetsTest {
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     assertThat(
         SerializationUtils.clone(AllInstallationTargets.instance()),
         equalTo(AllInstallationTargets.instance()));

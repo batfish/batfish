@@ -1,16 +1,16 @@
 package org.batfish.datamodel;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link FibNullRoute}. */
-public final class FibNullRouteTest {
+final class FibNullRouteTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(FibNullRoute.INSTANCE, FibNullRoute.INSTANCE)
         .addEqualityGroup(new Object())
@@ -18,7 +18,7 @@ public final class FibNullRouteTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     assertEquals(FibNullRoute.INSTANCE, SerializationUtils.clone(FibNullRoute.INSTANCE));
   }
 }

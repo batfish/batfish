@@ -4,12 +4,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import org.batfish.specifier.AllNodesNodeSpecifier;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link BgpSessionQuestion} */
-public class BgpSessionQuestionTest {
+class BgpSessionQuestionTest {
   @Test
-  public void testDefaultParameters() {
+  void testDefaultParameters() {
     BgpSessionStatusQuestion question = new BgpSessionStatusQuestion();
 
     assertThat(question.getDataPlane(), equalTo(true));

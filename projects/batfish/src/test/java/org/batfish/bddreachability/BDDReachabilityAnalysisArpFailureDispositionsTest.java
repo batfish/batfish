@@ -9,11 +9,12 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.main.BatfishTestUtils.getBatfish;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasEntry;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
@@ -39,19 +40,18 @@ import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.Location;
 import org.batfish.symbolic.IngressLocation;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Test the dispostions when ARP failures occur. */
-public class BDDReachabilityAnalysisArpFailureDispositionsTest {
+class BDDReachabilityAnalysisArpFailureDispositionsTest {
   private final BDDPacket _pkt = new BDDPacket();
   private final IpSpaceToBDD _dstToBdd = _pkt.getDstIpSpaceToBDD();
   private static final ImmutableSet<FlowDisposition> DISPOSITIONS =
       ImmutableSet.of(DELIVERED_TO_SUBNET, EXITS_NETWORK, INSUFFICIENT_INFO, NEIGHBOR_UNREACHABLE);
 
-  public @Rule TemporaryFolder temp = new TemporaryFolder();
+  @TempDir public File temp;
 
   private static final Ip DST_IP = Ip.parse("3.3.3.3");
   private static final String NODE1 = "node1";
@@ -116,8 +116,8 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
     return IpSpaceAssignment.builder().assign(locations, UniverseIpSpace.INSTANCE).build();
   }
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _nf = new NetworkFactory();
     _cb = _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     _vb = _nf.vrfBuilder();
@@ -143,9 +143,9 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
             return;
           }
           assertFalse(
+              bdd1.andSat(bdd2),
               String.format(
-                  "dispositions %s and %s should not intersect", disposition1, disposition2),
-              bdd1.andSat(bdd2));
+                  "dispositions %s and %s should not intersect", disposition1, disposition2));
         }));
   }
 
@@ -168,7 +168,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
   }
 
   @Test
-  public void dstInSubnet_dstOwned() throws IOException {
+  void dstInSubnet_dstOwned() throws IOException {
     setup_dstInSubnet_dstOwned();
     checkDispositionsDisjoint();
     BDDReachabilityAnalysis analysis = initAnalysis(NEIGHBOR_UNREACHABLE);
@@ -197,7 +197,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
   }
 
   @Test
-  public void dstInSubnet_dstUnowned() throws IOException {
+  void dstInSubnet_dstUnowned() throws IOException {
     setup_dstInSubnet_dstUnowned();
     checkDispositionsDisjoint();
     BDDReachabilityAnalysis analysis = initAnalysis(DELIVERED_TO_SUBNET);
@@ -231,7 +231,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
   }
 
   @Test
-  public void noNHIp_subnetFull_internalDstIp() throws IOException {
+  void noNHIp_subnetFull_internalDstIp() throws IOException {
     setup_noNHIp_subnetFull_internalDstIp();
     checkDispositionsDisjoint();
     BDDReachabilityAnalysis analysis = initAnalysis(NEIGHBOR_UNREACHABLE);
@@ -255,7 +255,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
   }
 
   @Test
-  public void noNHIp_subnetFull_externalDstIp() throws IOException {
+  void noNHIp_subnetFull_externalDstIp() throws IOException {
     setup_noNHIp_subnetFull_externalDstIp();
     checkDispositionsDisjoint();
     BDDReachabilityAnalysis analysis = initAnalysis(NEIGHBOR_UNREACHABLE);
@@ -289,7 +289,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
   }
 
   @Test
-  public void noNHIp_subnetNotFull_internalDstIp() throws IOException {
+  void noNHIp_subnetNotFull_internalDstIp() throws IOException {
     setup_noNHIp_subnetNotFull_internalDstIp();
     checkDispositionsDisjoint();
     BDDReachabilityAnalysis analysis = initAnalysis(INSUFFICIENT_INFO);
@@ -313,7 +313,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
   }
 
   @Test
-  public void noNHIp_subnetNotFull_externalDstIp() throws IOException {
+  void noNHIp_subnetNotFull_externalDstIp() throws IOException {
     setup_noNHIp_subnetNotFull_externalDstIp();
     checkDispositionsDisjoint();
     BDDReachabilityAnalysis analysis = initAnalysis(EXITS_NETWORK);
@@ -355,7 +355,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
   }
 
   @Test
-  public void externalNHIp_subnetFull_internalDstIp() throws IOException {
+  void externalNHIp_subnetFull_internalDstIp() throws IOException {
     setup_externalNHIp_subnetFull_internalDstIp();
     checkDispositionsDisjoint();
     BDDReachabilityAnalysis analysis = initAnalysis(NEIGHBOR_UNREACHABLE);
@@ -381,7 +381,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
   }
 
   @Test
-  public void externalNHIp_subnetFull_externalDstIp() throws IOException {
+  void externalNHIp_subnetFull_externalDstIp() throws IOException {
     setup_externalNHIp_subnetFull_externalDstIp();
     checkDispositionsDisjoint();
     BDDReachabilityAnalysis analysis = initAnalysis(NEIGHBOR_UNREACHABLE);
@@ -420,7 +420,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
   }
 
   @Test
-  public void externalNHIp_subnetNotFull_internalDstIp() throws IOException {
+  void externalNHIp_subnetNotFull_internalDstIp() throws IOException {
     setup_externalNHIp_subnetNotFull_internalDstIp();
     checkDispositionsDisjoint();
     BDDReachabilityAnalysis analysis = initAnalysis(INSUFFICIENT_INFO);
@@ -446,7 +446,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
   }
 
   @Test
-  public void externalNHIp_subnetNotFull_externalDstIp() throws IOException {
+  void externalNHIp_subnetNotFull_externalDstIp() throws IOException {
     setup_externalNHIp_subnetNotFull_externalDstIp();
     checkDispositionsDisjoint();
     BDDReachabilityAnalysis analysis = initAnalysis(EXITS_NETWORK);
@@ -490,7 +490,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
   }
 
   @Test
-  public void internalNHIp_subnetFull_internalDstIp() throws IOException {
+  void internalNHIp_subnetFull_internalDstIp() throws IOException {
     setup_internalNHIp_subnetFull_internalDstIp();
     checkDispositionsDisjoint();
     BDDReachabilityAnalysis analysis = initAnalysis(NEIGHBOR_UNREACHABLE);
@@ -525,7 +525,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
   }
 
   @Test
-  public void internalNHIp_subnetFull_externalDstIp() throws IOException {
+  void internalNHIp_subnetFull_externalDstIp() throws IOException {
     setup_internalNHIp_subnetFull_externalDstIp();
     checkDispositionsDisjoint();
     BDDReachabilityAnalysis analysis = initAnalysis(NEIGHBOR_UNREACHABLE);
@@ -562,7 +562,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
   }
 
   @Test
-  public void internalNHIp_subnetNotFull_internalDstIp() throws IOException {
+  void internalNHIp_subnetNotFull_internalDstIp() throws IOException {
     setup_internalNHIp_subnetNotFull_internalDstIp();
     checkDispositionsDisjoint();
     BDDReachabilityAnalysis analysis = initAnalysis(INSUFFICIENT_INFO);
@@ -598,7 +598,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
   }
 
   @Test
-  public void internalNHIp_subnetNotFull_externalDstIp() throws IOException {
+  void internalNHIp_subnetNotFull_externalDstIp() throws IOException {
     setup_internalNHIp_subnetNotFull_externalDstIp();
     checkDispositionsDisjoint();
     BDDReachabilityAnalysis analysis = initAnalysis(INSUFFICIENT_INFO);

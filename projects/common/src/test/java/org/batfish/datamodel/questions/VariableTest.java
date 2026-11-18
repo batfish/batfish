@@ -8,7 +8,9 @@ import static org.batfish.datamodel.questions.Variable.Type.NODE_PROPERTY_SPEC;
 import static org.batfish.datamodel.questions.Variable.Type.NODE_SPEC;
 import static org.batfish.datamodel.questions.Variable.Type.OSPF_PROCESS_PROPERTY_SPEC;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -22,20 +24,16 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
 import org.batfish.datamodel.questions.Variable.Type;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-public final class VariableTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+final class VariableTest {
 
   private static Variable clone(Variable variable) {
     return BatfishObjectMapper.clone(variable, Variable.class);
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     Variable variable = new Variable();
     variable.setType(Type.INTEGER);
     Variable initialInstance = clone(variable);
@@ -65,7 +63,7 @@ public final class VariableTest {
   }
 
   @Test
-  public void testSerializationFields()
+  void testSerializationFields()
       throws JsonParseException, JsonMappingException, JsonProcessingException, IOException {
     Variable variable = new Variable();
     String fieldName = "f1";
@@ -84,7 +82,7 @@ public final class VariableTest {
   }
 
   @Test
-  public void testFromStringCompletionTypes() {
+  void testFromStringCompletionTypes() {
     assertThat(
         Variable.Type.fromString(CompletionType.BGP_PEER_PROPERTY.toString()),
         equalTo(BGP_PEER_PROPERTY_SPEC));
@@ -107,18 +105,19 @@ public final class VariableTest {
   }
 
   @Test
-  public void testFromStringInvalid() {
+  void testFromStringInvalid() {
     String name = "blah";
 
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(
-        "No " + Variable.Type.class.getSimpleName() + " with name: '" + name + "'");
+    Throwable exception =
+        assertThrows(BatfishException.class, () -> Variable.Type.fromString(name));
 
-    Variable.Type.fromString(name);
+    assertThat(
+        exception.getMessage(),
+        containsString("No " + Variable.Type.class.getSimpleName() + " with name: '" + name + "'"));
   }
 
   @Test
-  public void testFromStringValid() {
+  void testFromStringValid() {
     for (Variable.Type type : Variable.Type.values()) {
       assertThat(type, equalTo(Variable.Type.fromString(type.getName())));
     }

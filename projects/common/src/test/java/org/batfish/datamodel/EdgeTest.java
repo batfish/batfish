@@ -5,19 +5,16 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.testing.EqualsTester;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link Edge} */
-@RunWith(JUnit4.class)
-public class EdgeTest {
+class EdgeTest {
 
   private static final Edge EDGE =
       new Edge(NodeInterfacePair.of("tail", "tailInt"), NodeInterfacePair.of("head", "headInt"));
 
   @Test
-  public void testGetterEquivalence() {
+  void testGetterEquivalence() {
     assertThat(EDGE.getNode1(), equalTo(EDGE.getTail().getHostname()));
     assertThat(EDGE.getNode2(), equalTo(EDGE.getHead().getHostname()));
     assertThat(EDGE.getInt1(), equalTo(EDGE.getTail().getInterface()));
@@ -25,12 +22,12 @@ public class EdgeTest {
   }
 
   @Test
-  public void testToString() {
+  void testToString() {
     assertThat(EDGE.toString(), equalTo("<tail:tailInt, head:headInt>"));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             EDGE,
@@ -49,7 +46,7 @@ public class EdgeTest {
   }
 
   @Test
-  public void testReverse() {
+  void testReverse() {
     assertThat(
         EDGE.reverse(),
         equalTo(

@@ -4,12 +4,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import java.util.Optional;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class Ieee8021pUtilTest {
+class Ieee8021pUtilTest {
 
   @Test
-  public void testDefaultValue() {
+  void testDefaultValue() {
     // Test all standard aliases
     assertThat(Ieee8021pUtil.defaultValue("be"), equalTo(Optional.of(0)));
     assertThat(Ieee8021pUtil.defaultValue("be1"), equalTo(Optional.of(1)));

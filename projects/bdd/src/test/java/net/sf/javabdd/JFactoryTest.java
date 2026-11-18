@@ -8,11 +8,11 @@ import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.hash.HashFunction;
@@ -21,18 +21,15 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashSet;
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link JFactory}. */
-public class JFactoryTest {
-  @Rule public ExpectedException _exception = ExpectedException.none();
+class JFactoryTest {
 
   private JFactory _factory = (JFactory) JFactory.init(10000, 10000);
 
   @Test
-  public void testRandomSatDoesntSuck() {
+  void testRandomSatDoesntSuck() {
     _factory.setVarNum(64);
     HashSet<BitSet> differentAssignments = new HashSet<>();
     BDD one = _factory.one();
@@ -47,7 +44,7 @@ public class JFactoryTest {
 
   /** {@code exist} as the first operation on a new factory must initialize the caches it uses. */
   @Test
-  public void testExistOnNewFactory() {
+  void testExistOnNewFactory() {
     BDDFactory f = JFactory.init(1000, 1000);
     f.setVarNum(4);
     // x0 & x2 | x1 & x3 | !x0 & !x1 & !x2: quantifying x0 and x1 ORs more than two cofactors.
@@ -61,7 +58,7 @@ public class JFactoryTest {
   }
 
   @Test
-  public void testIsConstant() {
+  void testIsConstant() {
     _factory.setVarNum(3);
     assertTrue(_factory.zero().isConstant());
     assertTrue(_factory.one().isConstant());
@@ -72,7 +69,7 @@ public class JFactoryTest {
   }
 
   @Test
-  public void testAnd() {
+  void testAnd() {
     _factory.setVarNum(10);
     BDD x = _factory.ithVar(0);
     BDD notx = _factory.nithVar(0);
@@ -106,7 +103,7 @@ public class JFactoryTest {
   }
 
   @Test
-  public void testXor() {
+  void testXor() {
     _factory.setVarNum(10);
     BDD x = _factory.ithVar(0);
     BDD notx = _factory.nithVar(0);
@@ -141,7 +138,7 @@ public class JFactoryTest {
   }
 
   @Test
-  public void testOr() {
+  void testOr() {
     _factory.setVarNum(10);
     BDD x = _factory.ithVar(0);
     BDD notx = _factory.nithVar(0);
@@ -176,7 +173,7 @@ public class JFactoryTest {
   }
 
   @Test
-  public void testOrAll() {
+  void testOrAll() {
     _factory.setVarNum(10);
     BDD x = _factory.ithVar(0);
     BDD noty = _factory.nithVar(1);
@@ -185,7 +182,7 @@ public class JFactoryTest {
   }
 
   @Test
-  public void testOrAll_free() {
+  void testOrAll_free() {
     _factory.setVarNum(10);
     BDD[] vars = new BDD[10];
     for (int i = 0; i < 10; ++i) {
@@ -202,7 +199,7 @@ public class JFactoryTest {
   }
 
   @Test
-  public void testNand() {
+  void testNand() {
     _factory.setVarNum(10);
     BDD x = _factory.ithVar(0);
     BDD notx = _factory.nithVar(0);
@@ -237,7 +234,7 @@ public class JFactoryTest {
   }
 
   @Test
-  public void testNor() {
+  void testNor() {
     _factory.setVarNum(10);
     BDD x = _factory.ithVar(0);
     BDD notx = _factory.nithVar(0);
@@ -272,7 +269,7 @@ public class JFactoryTest {
   }
 
   @Test
-  public void testImp() {
+  void testImp() {
     _factory.setVarNum(10);
     BDD x = _factory.ithVar(0);
     BDD notx = _factory.nithVar(0);
@@ -318,7 +315,7 @@ public class JFactoryTest {
   }
 
   @Test
-  public void testBiimp() {
+  void testBiimp() {
     _factory.setVarNum(10);
     BDD x = _factory.ithVar(0);
     BDD notx = _factory.nithVar(0);
@@ -353,7 +350,7 @@ public class JFactoryTest {
   }
 
   @Test
-  public void testDiff() {
+  void testDiff() {
     _factory.setVarNum(10);
     BDD x = _factory.ithVar(0);
     BDD notx = _factory.nithVar(0);
@@ -399,7 +396,7 @@ public class JFactoryTest {
   }
 
   @Test
-  public void testLess() {
+  void testLess() {
     _factory.setVarNum(10);
     BDD x = _factory.ithVar(0);
     BDD notx = _factory.nithVar(0);
@@ -445,7 +442,7 @@ public class JFactoryTest {
   }
 
   @Test
-  public void testInvimp() {
+  void testInvimp() {
     _factory.setVarNum(10);
     BDD x = _factory.ithVar(0);
     BDD notx = _factory.nithVar(0);
@@ -491,7 +488,7 @@ public class JFactoryTest {
   }
 
   @Test
-  public void testIte() {
+  void testIte() {
     _factory.setVarNum(10);
     BDD x = _factory.ithVar(0);
     BDD notx = _factory.nithVar(0);
@@ -518,7 +515,7 @@ public class JFactoryTest {
   }
 
   @Test
-  public void testDedupSorted() {
+  void testDedupSorted() {
     int[] a1 = {1, 1, 2, 2, 3, 3};
     int[] a2 = {1, 2, 3};
     assertTrue(Arrays.equals(JFactory.dedupSorted(a1, a1.length), a2));
@@ -532,7 +529,7 @@ public class JFactoryTest {
   }
 
   @Test
-  public void testTestsVars() {
+  void testTestsVars() {
     _factory.setVarNum(10);
     BDD var0 = _factory.ithVar(0);
     BDD var1 = _factory.ithVar(1);
@@ -567,7 +564,7 @@ public class JFactoryTest {
   }
 
   @Test
-  public void testProject() {
+  void testProject() {
     _factory.setVarNum(10);
     BDD one = _factory.one();
     BDD zero = _factory.zero();
@@ -608,7 +605,7 @@ public class JFactoryTest {
   }
 
   @Test
-  public void testAndLiterals() {
+  void testAndLiterals() {
     _factory.setVarNum(4);
     BDD v0 = _factory.ithVar(0);
     BDD v1 = _factory.ithVar(1);
@@ -634,37 +631,34 @@ public class JFactoryTest {
   }
 
   @Test
-  public void testAndLiterals_varOrder() {
+  void testAndLiterals_varOrder() {
     _factory.setVarNum(4);
     BDD v0 = _factory.ithVar(0);
     BDD v1 = _factory.ithVar(1);
 
-    _exception.expect(IllegalArgumentException.class);
-    _factory.andLiterals(v1, v0);
+    assertThrows(IllegalArgumentException.class, () -> _factory.andLiterals(v1, v0));
   }
 
   @Test
-  public void testAndLiterals_constants() {
+  void testAndLiterals_constants() {
     _factory.setVarNum(4);
     BDD v1 = _factory.ithVar(1);
 
-    _exception.expect(IllegalArgumentException.class);
-    _factory.andLiterals(v1, _factory.zero());
+    assertThrows(IllegalArgumentException.class, () -> _factory.andLiterals(v1, _factory.zero()));
   }
 
   @Test
-  public void testAndLiterals_complex() {
+  void testAndLiterals_complex() {
     _factory.setVarNum(4);
     BDD v0 = _factory.ithVar(0);
     BDD v1 = _factory.ithVar(1);
     BDD v2 = _factory.ithVar(2);
 
-    _exception.expect(IllegalArgumentException.class);
-    _factory.andLiterals(v0.and(v1), v2);
+    assertThrows(IllegalArgumentException.class, () -> _factory.andLiterals(v0.and(v1), v2));
   }
 
   @Test
-  public void testOnehot() {
+  void testOnehot() {
     _factory.setVarNum(3);
     BDD a = _factory.ithVar(0);
     BDD b = _factory.ithVar(1);
@@ -680,7 +674,7 @@ public class JFactoryTest {
   }
 
   @Test
-  public void testOnehotVars() {
+  void testOnehotVars() {
     _factory.setVarNum(3);
     BDD a = _factory.ithVar(0);
     BDD b = _factory.ithVar(1);
@@ -700,7 +694,7 @@ public class JFactoryTest {
   }
 
   @Test
-  public void testToIntOperands() {
+  void testToIntOperands() {
     _factory.setVarNum(2);
     BDD v0 = _factory.ithVar(0);
     BDD v1 = _factory.ithVar(1);
@@ -732,7 +726,7 @@ public class JFactoryTest {
   }
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     _factory.setVarNum(10);
     BDD bdd1 = _factory.ithVar(1);
     BDD bdd2 = _factory.ithVar(2);
@@ -744,7 +738,7 @@ public class JFactoryTest {
   }
 
   @Test
-  public void testIteWith() {
+  void testIteWith() {
     _factory.setVarNum(3);
     long startBDDs = _factory.numOutstandingBDDs();
     BDD v0 = _factory.ithVar(0);
@@ -761,7 +755,7 @@ public class JFactoryTest {
   }
 
   @Test
-  public void testIteWithSameObjectAsCondition() {
+  void testIteWithSameObjectAsCondition() {
     _factory.setVarNum(3);
     BDD v0 = _factory.ithVar(0);
     BDD v1 = _factory.ithVar(1);
@@ -773,7 +767,7 @@ public class JFactoryTest {
   }
 
   @Test
-  public void testIteWithSameThenAndElse() {
+  void testIteWithSameThenAndElse() {
     _factory.setVarNum(3);
     BDD v0 = _factory.ithVar(0);
     BDD v1 = _factory.ithVar(1);
@@ -786,7 +780,7 @@ public class JFactoryTest {
 
   /** Verify that BDD node state (var, low, high) is preserved across a node table resize. */
   @Test
-  public void testResize_nodeStatePreserved() {
+  void testResize_nodeStatePreserved() {
     // Use a small factory so we can easily reason about sizes.
     JFactory factory = (JFactory) JFactory.init(16, 16);
     factory.setVarNum(4);
@@ -839,7 +833,7 @@ public class JFactoryTest {
 
   /** Verify that operation cache entries survive a resize and produce correct results. */
   @Test
-  public void testResize_applyCacheHitsAfterResize() {
+  void testResize_applyCacheHitsAfterResize() {
     // Small factory with a cache ratio so caches resize with the node table.
     JFactory factory = (JFactory) JFactory.init(16, 16);
     factory.setCacheRatio(2);
@@ -890,7 +884,7 @@ public class JFactoryTest {
    * and triggering automatic resize).
    */
   @Test
-  public void testResize_organicGrowth() {
+  void testResize_organicGrowth() {
     // Create a very small factory (16 nodes, 2 reserved for 0/1 = 14 free).
     // With 8 variables, ithVar creates nodes, and operations will exhaust the table quickly.
     JFactory factory = (JFactory) JFactory.init(16, 16);
@@ -936,7 +930,7 @@ public class JFactoryTest {
 
   /** Verify multiple sequential resizes don't corrupt BDD state. */
   @Test
-  public void testResize_multipleResizes() {
+  void testResize_multipleResizes() {
     JFactory factory = (JFactory) JFactory.init(16, 16);
     factory.setVarNum(4);
 

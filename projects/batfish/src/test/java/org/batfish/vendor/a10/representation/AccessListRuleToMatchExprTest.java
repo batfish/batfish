@@ -15,14 +15,14 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.TrueExpr;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link AccessListRuleToMatchExpr}. */
-public class AccessListRuleToMatchExprTest {
+class AccessListRuleToMatchExprTest {
   private final BddTestbed _tb = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
 
   @Test
-  public void testSourceAddrConstraint() {
+  void testSourceAddrConstraint() {
     Ip src = Ip.parse("10.9.8.7");
     AccessListRule ruleSrc =
         new AccessListRuleIp(
@@ -35,7 +35,7 @@ public class AccessListRuleToMatchExprTest {
   }
 
   @Test
-  public void testDestAddrConstraint() {
+  void testDestAddrConstraint() {
     Ip dest = Ip.parse("10.11.12.13");
     AccessListRule ruleDest =
         new AccessListRuleIp(
@@ -48,7 +48,7 @@ public class AccessListRuleToMatchExprTest {
   }
 
   @Test
-  public void testPrefixConstraint() {
+  void testPrefixConstraint() {
     Prefix src = Prefix.parse("1.1.1.0/24");
     AccessListRule ruleDest =
         new AccessListRuleIp(
@@ -61,7 +61,7 @@ public class AccessListRuleToMatchExprTest {
   }
 
   @Test
-  public void testWildcardConstraint() {
+  void testWildcardConstraint() {
     IpWildcard src = IpWildcard.ipWithWildcardMask(Ip.parse("1.1.1.1"), Ip.parse("0.255.0.255"));
     AccessListRule ruleDest =
         new AccessListRuleIp(
@@ -74,7 +74,7 @@ public class AccessListRuleToMatchExprTest {
   }
 
   @Test
-  public void testIp() {
+  void testIp() {
     AccessListRule ruleIp =
         new AccessListRuleIp(
             AccessListRule.Action.DENY,
@@ -86,7 +86,7 @@ public class AccessListRuleToMatchExprTest {
   }
 
   @Test
-  public void testIcmp() {
+  void testIcmp() {
     AccessListRule ruleIcmp =
         new AccessListRuleIcmp(
             AccessListRule.Action.DENY,
@@ -100,7 +100,7 @@ public class AccessListRuleToMatchExprTest {
   }
 
   @Test
-  public void testTcp() {
+  void testTcp() {
     AccessListRuleTcp ruleTcp =
         new AccessListRuleTcp(
             AccessListRule.Action.DENY,
@@ -130,7 +130,7 @@ public class AccessListRuleToMatchExprTest {
   }
 
   @Test
-  public void testUdp() {
+  void testUdp() {
     AccessListRuleUdp ruleUdp =
         new AccessListRuleUdp(
             AccessListRule.Action.DENY,

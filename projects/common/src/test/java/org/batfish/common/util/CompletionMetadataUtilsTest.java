@@ -19,8 +19,8 @@ import static org.batfish.common.util.CompletionMetadataUtils.unownedSubnetHostI
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -73,9 +73,9 @@ import org.batfish.specifier.InterfaceLinkLocation;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class CompletionMetadataUtilsTest {
+final class CompletionMetadataUtilsTest {
 
   private static Configuration createTestConfiguration(
       String nodeName, ConfigurationFormat configFormat, String... interfaceNames) {
@@ -101,7 +101,7 @@ public final class CompletionMetadataUtilsTest {
   }
 
   @Test
-  public void testAddressGroupDisplayString() {
+  void testAddressGroupDisplayString() {
     Configuration cfg = new Configuration("host", ConfigurationFormat.CISCO_IOS);
     Configuration cfgHuman = new Configuration("host", ConfigurationFormat.CISCO_IOS);
     cfgHuman.setHumanName("human");
@@ -113,7 +113,7 @@ public final class CompletionMetadataUtilsTest {
   }
 
   @Test
-  public void testInterfaceDisplayString() {
+  void testInterfaceDisplayString() {
     Configuration cfg = new Configuration("host", ConfigurationFormat.CISCO_IOS);
     Configuration cfgHuman = new Configuration("host", ConfigurationFormat.CISCO_IOS);
     cfgHuman.setHumanName("human");
@@ -125,7 +125,7 @@ public final class CompletionMetadataUtilsTest {
   }
 
   @Test
-  public void testGetFilterNames() {
+  void testGetFilterNames() {
     String filter1 = "filter1";
     String filter2 = "filter2";
 
@@ -141,7 +141,7 @@ public final class CompletionMetadataUtilsTest {
   }
 
   @Test
-  public void testGetInterfaces() {
+  void testGetInterfaces() {
     String nodeName = "nodeName";
 
     String int1 = "int1";
@@ -159,7 +159,7 @@ public final class CompletionMetadataUtilsTest {
   }
 
   @Test
-  public void testGetIps() {
+  void testGetIps() {
     String nodeName = "nodeName";
 
     String int1 = "int1";
@@ -237,7 +237,7 @@ public final class CompletionMetadataUtilsTest {
   }
 
   @Test
-  public void testGetIpsGeneratedReferenceBooks() {
+  void testGetIpsGeneratedReferenceBooks() {
     ReferenceBook book1 =
         ReferenceBook.builder("book1")
             .setAddressGroups(
@@ -313,9 +313,9 @@ public final class CompletionMetadataUtilsTest {
 
   /** Test that the well-known IPs are added only if they otherwise don't exist in the snapshot */
   @Test
-  public void testGetIpsNoInterference() {
+  void testGetIpsNoInterference() {
     Ip ip1 = Ip.parse("8.8.8.8");
-    assertTrue("Test assumes that 8.8.8.8 is a well-known IP", WELL_KNOWN_IPS.containsKey(ip1));
+    assertTrue(WELL_KNOWN_IPS.containsKey(ip1), "Test assumes that 8.8.8.8 is a well-known IP");
     String nodeName = "nodeName";
     String int1 = "int1";
     String address1 = ip1 + "/24";
@@ -357,7 +357,7 @@ public final class CompletionMetadataUtilsTest {
   }
 
   @Test
-  public void testGetMlags() {
+  void testGetMlags() {
     String mlag1 = "mlag1";
     String mlag2 = "mlag2";
 
@@ -377,7 +377,7 @@ public final class CompletionMetadataUtilsTest {
   }
 
   @Test
-  public void testGetNodes() {
+  void testGetNodes() {
     String node1 = "node1";
     String node2 = "node2";
     String humanName2 = "humanName2";
@@ -399,7 +399,7 @@ public final class CompletionMetadataUtilsTest {
   }
 
   @Test
-  public void testGetPrefixes() {
+  void testGetPrefixes() {
     String nodeName = "nodeName";
 
     String int1 = "int1";
@@ -437,7 +437,7 @@ public final class CompletionMetadataUtilsTest {
   }
 
   @Test
-  public void testGetPrefixesGeneratedReferenceBooks() {
+  void testGetPrefixesGeneratedReferenceBooks() {
     ReferenceBook book1 =
         ReferenceBook.builder("book1")
             .setAddressGroups(
@@ -466,7 +466,7 @@ public final class CompletionMetadataUtilsTest {
   }
 
   @Test
-  public void testGetRoutingPolicyNames() {
+  void testGetRoutingPolicyNames() {
     String policy1 = "policy1";
     String policy2 = "policy2";
 
@@ -483,7 +483,7 @@ public final class CompletionMetadataUtilsTest {
   }
 
   @Test
-  public void testGetStructureNames() {
+  void testGetStructureNames() {
     String nodeName = "nodeName";
 
     String asPathAccessListName = "asPathAccessList";
@@ -558,7 +558,7 @@ public final class CompletionMetadataUtilsTest {
   }
 
   @Test
-  public void testGetVrfs() {
+  void testGetVrfs() {
     String vrf1 = "vrf1";
     String vrf2 = "vrf2";
     Configuration config = createTestConfiguration("config1", ConfigurationFormat.HOST);
@@ -569,7 +569,7 @@ public final class CompletionMetadataUtilsTest {
   }
 
   @Test
-  public void testGetZones() {
+  void testGetZones() {
     String zone1 = "zone1";
     String zone2 = "zone2";
 
@@ -584,7 +584,7 @@ public final class CompletionMetadataUtilsTest {
   }
 
   @Test
-  public void testGetLocationCompletionMetadata() {
+  void testGetLocationCompletionMetadata() {
     // included
     Location loc1 = new InterfaceLocation("n1", "i1");
     LocationInfo info1 = new LocationInfo(true, UniverseIpSpace.INSTANCE, EmptyIpSpace.INSTANCE);
@@ -644,7 +644,7 @@ public final class CompletionMetadataUtilsTest {
   }
 
   @Test
-  public void testIsTracerouteSource() {
+  void testIsTracerouteSource() {
     Configuration c =
         Configuration.builder()
             .setHostname("n1")

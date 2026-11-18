@@ -1,7 +1,9 @@
 package org.batfish.question.filtertable;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -12,16 +14,12 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.question.filtertable.Filter.Operand;
 import org.batfish.question.filtertable.Filter.Operand.Type;
 import org.batfish.question.filtertable.Filter.Operator;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-public class FilterTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class FilterTest {
 
   @Test
-  public void constructorOperators() {
+  void constructorOperators() {
     // check that we map the operator correctly
     assertThat(new Filter("col == 42").getOperator(), equalTo(Operator.EQ));
     assertThat(new Filter("col >= 42").getOperator(), equalTo(Operator.GE));
@@ -35,7 +33,7 @@ public class FilterTest {
   }
 
   @Test
-  public void constructorOperands() {
+  void constructorOperands() {
     // check that we parsed the type correctly
     assertThat(
         new Filter("col == true").getRightOperand(), equalTo(new Operand(Type.BOOLEAN, true)));
@@ -62,13 +60,17 @@ public class FilterTest {
         equalTo(new Operand(Type.STRING, "forty two")));
 
     // one negative example of malformed column spec
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("Invalid table column");
-    new Filter("42 == a[b]]");
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> {
+              new Filter("42 == a[b]]");
+            });
+    assertThat(exception.getMessage(), containsString("Invalid table column"));
   }
 
   @Test
-  public void extractValueBaseCase() {
+  void extractValueBaseCase() {
     // check extraction of constants in the filter
     assertThat(
         Filter.extractValue(new Operand(Type.NULL, null), Row.builder().build()), equalTo(null));
@@ -77,7 +79,7 @@ public class FilterTest {
   }
 
   @Test
-  public void extractValueColumnCase() {
+  void extractValueColumnCase() {
     // non-nested cases
     assertThat(
         Filter.extractValue(
@@ -106,25 +108,28 @@ public class FilterTest {
         equalTo(42));
 
     // one negative example of malformed column spec -- c4 does not exist
-    _thrown.expect(NoSuchElementException.class);
-    _thrown.expectMessage("Could not extract");
-    Filter.extractValue(
-        new Operand(Type.COLUMN, Arrays.asList("c1", "c2", "c4")),
-        Row.builder().put("c1", object).build());
+    Throwable exception =
+        assertThrows(
+            NoSuchElementException.class,
+            () ->
+                Filter.extractValue(
+                    new Operand(Type.COLUMN, Arrays.asList("c1", "c2", "c4")),
+                    Row.builder().put("c1", object).build()));
+    assertThat(exception.getMessage(), containsString("Could not extract"));
   }
 
   @Test
-  public void matchesDifferentTypes() {
+  void matchesDifferentTypes() {
     // throw an exception when objects are different types
-
-    _thrown.expect(ClassCastException.class);
-    _thrown.expectMessage("cannot be cast");
-
-    new Filter("col != true").matches(Row.builder().put("col", 42).build());
+    Throwable exception =
+        assertThrows(
+            ClassCastException.class,
+            () -> new Filter("col != true").matches(Row.builder().put("col", 42).build()));
+    assertThat(exception.getMessage(), containsString("cannot be cast"));
   }
 
   @Test
-  public void matchesNull() {
+  void matchesNull() {
     // null matches null and does not match non-null
     assertThat(
         new Filter("col IS null").matches(Row.builder().put("col", null).build()), equalTo(true));
@@ -144,7 +149,7 @@ public class FilterTest {
   }
 
   @Test
-  public void matchesOperatorArithmeticTest() {
+  void matchesOperatorArithmeticTest() {
     Filter filter = new Filter("col >= 42");
 
     // integer compare match should be good and shouldn't match null

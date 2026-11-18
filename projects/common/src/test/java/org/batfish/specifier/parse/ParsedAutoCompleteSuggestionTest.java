@@ -11,20 +11,20 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import org.batfish.specifier.parse.Anchor.Type;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link ParsedAutoCompleteSuggestion} */
-public class ParsedAutoCompleteSuggestionTest {
+class ParsedAutoCompleteSuggestionTest {
 
   @Test
-  public void testCompleteDescriptionIfNeededNonSet() {
+  void testCompleteDescriptionIfNeededNonSet() {
     assertThat(
         completeDescriptionIfNeeded(new ParsedAutoCompleteSuggestion(",", 0, Type.IP_ADDRESS)),
         equalTo(Type.IP_ADDRESS.getDescription()));
   }
 
   @Test
-  public void testCompleteDescriptionIfNeededSetDifference() {
+  void testCompleteDescriptionIfNeededSetDifference() {
     assertThat(
         completeDescriptionIfNeeded(
             new ParsedAutoCompleteSuggestion(SET_OP_DIFFERENCE, 0, Type.NODE_SET_OP)),
@@ -32,7 +32,7 @@ public class ParsedAutoCompleteSuggestionTest {
   }
 
   @Test
-  public void testCompleteDescriptionIfNeededSetIntersection() {
+  void testCompleteDescriptionIfNeededSetIntersection() {
     assertThat(
         completeDescriptionIfNeeded(
             new ParsedAutoCompleteSuggestion(SET_OP_INTERSECTION, 0, Type.NODE_SET_OP)),
@@ -40,7 +40,7 @@ public class ParsedAutoCompleteSuggestionTest {
   }
 
   @Test
-  public void testCompleteDescriptionIfNeededSetUnion() {
+  void testCompleteDescriptionIfNeededSetUnion() {
     assertThat(
         completeDescriptionIfNeeded(
             new ParsedAutoCompleteSuggestion(SET_OP_UNION, 0, Type.NODE_SET_OP)),
@@ -48,7 +48,7 @@ public class ParsedAutoCompleteSuggestionTest {
   }
 
   @Test
-  public void testCompleteDescriptionIfNeededSetUnknownOp() {
+  void testCompleteDescriptionIfNeededSetUnknownOp() {
     assertThat(
         // '.' is not a set operator
         completeDescriptionIfNeeded(new ParsedAutoCompleteSuggestion(".", 0, Type.NODE_SET_OP)),

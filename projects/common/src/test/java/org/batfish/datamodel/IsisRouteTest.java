@@ -2,12 +2,12 @@ package org.batfish.datamodel;
 
 import com.google.common.testing.EqualsTester;
 import org.batfish.datamodel.isis.IsisLevel;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link IsisRoute} */
-public class IsisRouteTest {
+class IsisRouteTest {
   @Test
-  public void testEqualsAndToBuilder() {
+  void testEqualsAndToBuilder() {
     IsisRoute.Builder b =
         new IsisRoute.Builder()
             .setNetwork(Prefix.parse("1.1.1.1/32"))

@@ -5,15 +5,15 @@ import static org.batfish.representation.aws.AwsConfigurationTestUtils.testSetup
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testTrace;
 
 import com.google.common.collect.ImmutableList;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * E2e tests for transit gateway peering. The test deployment is spread across two accounts, called
@@ -36,7 +36,7 @@ import org.junit.rules.TemporaryFolder;
  * <p>The configuration was pulled after deployment using the setup.tf file in {@link
  * #TESTCONFIGS_DIR}.
  */
-public class AwsConfigurationTransitGatewayPeeringTest {
+class AwsConfigurationTransitGatewayPeeringTest {
 
   private static final String TESTCONFIGS_DIR =
       "org/batfish/representation/aws/test-transit-gateway-peering";
@@ -94,12 +94,12 @@ public class AwsConfigurationTransitGatewayPeeringTest {
   private static Ip _instanceBat2Ip = Ip.parse("10.20.1.100");
   private static Ip _instanceFishIp = Ip.parse("192.168.1.100");
 
-  @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public static File _folder;
 
   private static IBatfish _batfish;
 
-  @BeforeClass
-  public static void setup() throws IOException {
+  @BeforeAll
+  static void setup() throws IOException {
     _batfish = testSetup(TESTCONFIGS_DIR, fileNames, _folder);
   }
 
@@ -108,7 +108,7 @@ public class AwsConfigurationTransitGatewayPeeringTest {
    * to VPC fish's prefix.
    */
   @Test
-  public void testBatToFish() {
+  void testBatToFish() {
     testTrace(
         getAnyFlow(_instanceBat, _instanceFishIp, _batfish),
         FlowDisposition.NO_ROUTE,
@@ -121,7 +121,7 @@ public class AwsConfigurationTransitGatewayPeeringTest {
    * groups).
    */
   @Test
-  public void testBat2ToFish() {
+  void testBat2ToFish() {
     testTrace(
         getAnyFlow(_instanceBat2, _instanceFishIp, _batfish),
         FlowDisposition.DENIED_IN,
@@ -141,7 +141,7 @@ public class AwsConfigurationTransitGatewayPeeringTest {
    * Traces from instance fish to bat must stop at the TGW fish because of the missing static route.
    */
   @Test
-  public void testFishToBat() {
+  void testFishToBat() {
     testTrace(
         getAnyFlow(_instanceFish, _instanceBatIp, _batfish),
         FlowDisposition.NO_ROUTE,
@@ -155,7 +155,7 @@ public class AwsConfigurationTransitGatewayPeeringTest {
    * attachment.
    */
   @Test
-  public void testFishToBat2() {
+  void testFishToBat2() {
     testTrace(
         getAnyFlow(_instanceFish, _instanceBat2Ip, _batfish),
         FlowDisposition.NO_ROUTE,

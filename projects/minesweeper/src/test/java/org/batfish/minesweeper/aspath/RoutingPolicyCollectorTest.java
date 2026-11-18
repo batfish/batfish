@@ -2,7 +2,7 @@ package org.batfish.minesweeper.aspath;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -33,11 +33,11 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.batfish.minesweeper.utils.Tuple;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link RoutingPolicyCollector}. */
-public class RoutingPolicyCollectorTest {
+class RoutingPolicyCollectorTest {
   private static final String HOSTNAME = "hostname";
   private Configuration _baseConfig;
   private NetworkFactory _nf;
@@ -53,8 +53,8 @@ public class RoutingPolicyCollectorTest {
         AsPathMatchAny.of(regexes.stream().map(AsPathMatchRegex::of).collect(Collectors.toList())));
   }
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _nf = new NetworkFactory();
     Configuration.Builder cb =
         _nf.configurationBuilder()
@@ -67,7 +67,7 @@ public class RoutingPolicyCollectorTest {
   }
 
   @Test
-  public void testVisitIf() {
+  void testVisitIf() {
     If ifstmt =
         new If(
             makeMatchAsPath(ImmutableList.of(ASPATH1)),
@@ -87,7 +87,7 @@ public class RoutingPolicyCollectorTest {
   }
 
   @Test
-  public void testVisitSetOriginatorIp() {
+  void testVisitSetOriginatorIp() {
     assertEquals(
         _asPathCollector.visitSetOriginatorIp(
             SetOriginatorIp.of(NextHopIp.instance()), new Tuple<>(new HashSet<>(), _baseConfig)),
@@ -95,7 +95,7 @@ public class RoutingPolicyCollectorTest {
   }
 
   @Test
-  public void testVisitTraceableStatement() {
+  void testVisitTraceableStatement() {
     TraceableStatement traceableStatement =
         new TraceableStatement(
             TraceElement.of("statement"),
@@ -112,7 +112,7 @@ public class RoutingPolicyCollectorTest {
   }
 
   @Test
-  public void testVisitExcludeAsPath() {
+  void testVisitExcludeAsPath() {
     ExcludeAsPath excludeAsPath =
         new ExcludeAsPath(new LiteralAsList(ImmutableList.of(new ExplicitAs(1L))));
 
@@ -123,7 +123,7 @@ public class RoutingPolicyCollectorTest {
   }
 
   @Test
-  public void testVisitCallStatement() {
+  void testVisitCallStatement() {
     String calledPolicyName = "calledPolicy";
 
     If iff =
@@ -157,7 +157,7 @@ public class RoutingPolicyCollectorTest {
   }
 
   @Test
-  public void testVisitCallMissingPolicy() {
+  void testVisitCallMissingPolicy() {
     assertThat(
         _asPathCollector.visitCallExpr(
             new CallExpr("foo"), new Tuple<>(new HashSet<>(), _baseConfig)),

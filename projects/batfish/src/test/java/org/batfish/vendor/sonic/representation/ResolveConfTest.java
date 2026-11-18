@@ -1,8 +1,8 @@
 package org.batfish.vendor.sonic.representation;
 
 import static org.batfish.common.Warnings.TAG_RED_FLAG;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
@@ -11,12 +11,12 @@ import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ResolveConfTest {
+class ResolveConfTest {
 
   @Test
-  public void testDeserialize_validIps() {
+  void testDeserialize_validIps() {
     List<String> lines =
         ImmutableList.of(
             "garbage garbage",
@@ -38,7 +38,7 @@ public class ResolveConfTest {
   }
 
   @Test
-  public void testDeserialize_invalidIp() {
+  void testDeserialize_invalidIp() {
     List<String> lines = ImmutableList.of("nameserver garbage");
 
     Warnings warnings = new Warnings(true, true, true);
@@ -53,7 +53,7 @@ public class ResolveConfTest {
   }
 
   @Test
-  public void testDeserialize_noNameserverLine() {
+  void testDeserialize_noNameserverLine() {
     List<String> lines = ImmutableList.of("garbage garbage");
 
     Warnings warnings = new Warnings(true, true, true);
@@ -67,7 +67,7 @@ public class ResolveConfTest {
   }
 
   @Test
-  public void testDeserialize_extraWhitespaceAndComments() {
+  void testDeserialize_extraWhitespaceAndComments() {
     // leading space; tabs; training space
     List<String> lines = ImmutableList.of(" nameserver      1.1.1.1   # comment");
 

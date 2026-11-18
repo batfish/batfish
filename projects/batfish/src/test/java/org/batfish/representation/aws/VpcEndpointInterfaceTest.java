@@ -14,8 +14,8 @@ import static org.batfish.specifier.Location.interfaceLocation;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -33,12 +33,12 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class VpcEndpointInterfaceTest {
+class VpcEndpointInterfaceTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new VpcEndpointInterface(
@@ -92,7 +92,7 @@ public class VpcEndpointInterfaceTest {
   }
 
   @Test
-  public void testToConfigurationNodes() {
+  void testToConfigurationNodes() {
     VpcEndpointInterface vpcEndpointInterface =
         new VpcEndpointInterface(
             "endpoint",
@@ -115,7 +115,7 @@ public class VpcEndpointInterfaceTest {
   }
 
   @Test
-  public void testToConfigurationNode() {
+  void testToConfigurationNode() {
     Subnet subnet = getTestSubnet(Prefix.parse("1.1.1.0/24"), "subnet", "vpc");
     NetworkInterface networkInterface =
         new NetworkInterface(

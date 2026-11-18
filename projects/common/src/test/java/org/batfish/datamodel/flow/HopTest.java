@@ -8,14 +8,14 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.testing.EqualsTester;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link Hop}. */
 @ParametersAreNonnullByDefault
-public final class HopTest {
+final class HopTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new Object())
         .addEqualityGroup(acceptedHop("n"), acceptedHop("n"))
@@ -25,7 +25,7 @@ public final class HopTest {
   }
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     Hop hop = acceptedHop("n");
     assertThat(hop, equalTo(BatfishObjectMapper.clone(acceptedHop("n"), Hop.class)));
   }

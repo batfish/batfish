@@ -11,6 +11,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.sameInstance;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
@@ -35,13 +36,11 @@ import org.batfish.datamodel.bgp.NextHopIpTieBreaker;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link AbstractRib} */
-public class AbstractRibTest {
+class AbstractRibTest {
   /**
    * A RIB that considers every route equally preferable, so nothing is ever evicted and the tests
    * below exercise {@link AbstractRib}'s storage rather than preference comparison.
@@ -56,22 +55,21 @@ public class AbstractRibTest {
   private AbstractRib<StaticRoute> _rib;
   private static final StaticRoute _mostGeneralRoute =
       StaticRoute.testBuilder().setNetwork(Prefix.ZERO).setMetric(0L).setTag(0L).build();
-  @Rule public ExpectedException _expectedException = ExpectedException.none();
 
-  @Before
-  public void setupEmptyRib() {
+  @BeforeEach
+  void setupEmptyRib() {
     _rib = new TestRib();
   }
 
   @Test
-  public void testRibConstructor() {
+  void testRibConstructor() {
     // Assertions: Ensure that a new rib is empty upon construction
     assertThat(_rib.getRoutes(), empty());
     assertThat(_rib.getRoutes(), not(hasItem(_mostGeneralRoute)));
   }
 
   @Test
-  public void testSingleRouteAdd() {
+  void testSingleRouteAdd() {
     // Test: Adding one route
     _rib.mergeRouteGetDelta(_mostGeneralRoute);
     assertThat(_rib.getRoutes(), contains(_mostGeneralRoute));
@@ -96,7 +94,7 @@ public class AbstractRibTest {
 
   /** Ensure that only one copy of a route is stored, regardless of how many times we add it */
   @Test
-  public void testRepeatedAdd() {
+  void testRepeatedAdd() {
     StaticRoute route =
         StaticRoute.testBuilder()
             .setNetwork(Prefix.parse("10.0.0.0/11"))
@@ -114,7 +112,7 @@ public class AbstractRibTest {
    * non-overlapping routes in the RIB
    */
   @Test
-  public void testNonOverlappingRouteAdd() {
+  void testNonOverlappingRouteAdd() {
     StaticRoute.Builder srb = StaticRoute.testBuilder().setMetric(0L).setTag(0L);
     StaticRoute r1 = srb.setNetwork(Prefix.parse("1.1.1.1/32")).build();
     StaticRoute r2 = srb.setNetwork(Prefix.parse("128.1.1.1/32")).build();
@@ -130,7 +128,7 @@ public class AbstractRibTest {
    * routes in the RIB
    */
   @Test
-  public void testMultiOverlappingRouteAdd() {
+  void testMultiOverlappingRouteAdd() {
     // Setup/Test: Add multiple routes with overlapping prefixes
     List<StaticRoute> routes = setupOverlappingRoutes();
     assertThat(_rib.getRoutes(), containsInAnyOrder(routes.toArray()));
@@ -138,14 +136,14 @@ public class AbstractRibTest {
 
   /** Ensure that empty RIB doesn't have any prefix matches */
   @Test
-  public void testLongestPrefixMatchWhenEmpty() {
+  void testLongestPrefixMatchWhenEmpty() {
     assertThat(_rib.longestPrefixMatch(Ip.parse("1.1.1.1"), alwaysTrue()), empty());
     assertThat(_rib.longestPrefixMatch(Ip.parse("0.0.0.0"), alwaysTrue()), empty());
   }
 
   /** Ensure that longestPrefixMatch finds route in root (guarantee no off-by-one length error) */
   @Test
-  public void testLongestPrefixMatchWhenInRoot() {
+  void testLongestPrefixMatchWhenInRoot() {
     StaticRoute r =
         StaticRoute.testBuilder()
             .setNetwork(Prefix.parse("0.0.0.0/0"))
@@ -160,7 +158,7 @@ public class AbstractRibTest {
    * org.batfish.datamodel.ResolutionRestriction)} returns correct routes when the RIB is non-empty
    */
   @Test
-  public void testLongestPrefixMatch() {
+  void testLongestPrefixMatch() {
     List<StaticRoute> routes = setupOverlappingRoutes();
 
     Set<StaticRoute> match = _rib.longestPrefixMatch(Ip.parse("10.1.1.1"), alwaysTrue());
@@ -179,7 +177,7 @@ public class AbstractRibTest {
    * and restriction is applied.
    */
   @Test
-  public void testLongestPrefixMatchRestriction() {
+  void testLongestPrefixMatchRestriction() {
     ResolutionRestriction<StaticRoute> restriction = r -> r.getNetwork().getPrefixLength() < 32;
 
     List<StaticRoute> routes = setupOverlappingRoutes();
@@ -199,7 +197,7 @@ public class AbstractRibTest {
    * non-forwarding or fail the restriction, and a partly usable match is filtered.
    */
   @Test
-  public void testLongestPrefixMatchSkipsUnusableMatches() {
+  void testLongestPrefixMatchSkipsUnusableMatches() {
     StaticRoute.Builder srb = StaticRoute.testBuilder().setMetric(0L).setTag(0L);
     StaticRoute slash8 = srb.setNetwork(Prefix.parse("10.0.0.0/8")).build();
     StaticRoute slash16 = srb.setNetwork(Prefix.parse("10.1.0.0/16")).build();
@@ -235,7 +233,7 @@ public class AbstractRibTest {
    * org.batfish.datamodel.ResolutionRestriction)} returns correct routes when the RIB is non-empty
    */
   @Test
-  public void testLongestPrefixMatchConstrained() {
+  void testLongestPrefixMatchConstrained() {
     List<StaticRoute> routes = setupOverlappingRoutes();
 
     // Only the first route matches with prefix len of <= 8
@@ -245,7 +243,7 @@ public class AbstractRibTest {
 
   /** Test equality across different RIB instances */
   @Test
-  public void testHasSameRoutes() {
+  void testHasSameRoutes() {
     // And create a new different RIB
     AbstractRib<StaticRoute> rib2 = new TestRib();
     assertThat(rib2, equalTo(_rib));
@@ -268,7 +266,7 @@ public class AbstractRibTest {
    * preference
    */
   @Test
-  public void testGetRoutesWithReplacement() {
+  void testGetRoutesWithReplacement() {
     // Use OSPF RIBs for this, as routes with better metric can replace other routes
     OspfIntraAreaRib rib = new OspfIntraAreaRib();
     Prefix prefix = Prefix.parse("1.1.1.1/32");
@@ -296,7 +294,7 @@ public class AbstractRibTest {
 
   /** Test that routes obtained from getRoutes() cannot be modified */
   @Test
-  public void testGetRoutesCannotBeModified() {
+  void testGetRoutesCannotBeModified() {
     _rib.mergeRouteGetDelta(_mostGeneralRoute);
     Set<StaticRoute> routes = _rib.getRoutes();
     StaticRoute r1 =
@@ -307,13 +305,12 @@ public class AbstractRibTest {
             .build();
 
     // Exception because ImmutableSet
-    _expectedException.expect(UnsupportedOperationException.class);
-    routes.add(r1);
+    assertThrows(UnsupportedOperationException.class, () -> routes.add(r1));
   }
 
   /** Test that routes obtained from getRoutes() do NOT reflect subsequent changes to the RIB */
   @Test
-  public void testGetRoutesIsNotAView() {
+  void testGetRoutesIsNotAView() {
     _rib.mergeRouteGetDelta(_mostGeneralRoute);
     Set<StaticRoute> routes = _rib.getRoutes();
     StaticRoute r1 =
@@ -333,7 +330,7 @@ public class AbstractRibTest {
    * modified
    */
   @Test
-  public void testGetRoutesCaches() {
+  void testGetRoutesCaches() {
     _rib.mergeRouteGetDelta(_mostGeneralRoute);
 
     Set<StaticRoute> routes = _rib.getRoutes();
@@ -342,7 +339,7 @@ public class AbstractRibTest {
 
   /** Test that correct delta is returned when adding a new route. */
   @Test
-  public void testAddRouteGetDelta() {
+  void testAddRouteGetDelta() {
     AbstractRib<RipInternalRoute> rib = new RipInternalRib();
     int admin = RoutingProtocol.RIP.getDefaultAdministrativeCost(ConfigurationFormat.CISCO_IOS);
     Prefix prefix = Prefix.create(Ip.parse("10.0.0.0"), 8);
@@ -386,7 +383,7 @@ public class AbstractRibTest {
    * RibDelta}
    */
   @Test
-  public void testRemoveRoute() {
+  void testRemoveRoute() {
     StaticRoute r =
         StaticRoute.testBuilder()
             .setNetwork(Ip.parse("1.1.1.1").toPrefix())
@@ -416,7 +413,7 @@ public class AbstractRibTest {
    * if multiple routes have the same preference, but only one of them is getting removed
    */
   @Test
-  public void testRemoveRouteSamePreference() {
+  void testRemoveRouteSamePreference() {
     // Two routes for same prefix,
     StaticRoute r1 =
         StaticRoute.testBuilder()
@@ -445,7 +442,7 @@ public class AbstractRibTest {
   }
 
   @Test
-  public void testLengthLimit() {
+  void testLengthLimit() {
     StaticRoute.Builder builder =
         StaticRoute.testBuilder().setAdministrativeCost(1).setMetric(0L).setTag(1L);
 
@@ -463,7 +460,7 @@ public class AbstractRibTest {
   }
 
   @Test
-  public void testNonForwarding() {
+  void testNonForwarding() {
     StaticRoute.Builder b = StaticRoute.testBuilder().setMetric(0L).setTag(0L);
     // Non forwarding 1.2.3.4/32
     _rib.mergeRouteGetDelta(
@@ -485,7 +482,7 @@ public class AbstractRibTest {
   }
 
   @Test
-  public void testClear() {
+  void testClear() {
     // Setup: just merge in a bunch of routes
     StaticRoute.Builder b = StaticRoute.testBuilder().setMetric(0L).setTag(0L);
     _rib.mergeRouteGetDelta(
@@ -506,7 +503,7 @@ public class AbstractRibTest {
   }
 
   @Test
-  public void testBackupLogic() {
+  void testBackupLogic() {
     // Use concrete BGP rib, BGP has easy preference knobs
     Bgpv4Rib bestPathRib =
         new Bgpv4Rib(

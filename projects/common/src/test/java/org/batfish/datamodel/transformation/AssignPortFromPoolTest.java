@@ -6,11 +6,11 @@ import static org.batfish.datamodel.transformation.PortField.DESTINATION;
 import static org.batfish.datamodel.transformation.PortField.SOURCE;
 
 import com.google.common.testing.EqualsTester;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class AssignPortFromPoolTest {
+class AssignPortFromPoolTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new AssignPortFromPool(DEST_NAT, DESTINATION, 3000, 4000),

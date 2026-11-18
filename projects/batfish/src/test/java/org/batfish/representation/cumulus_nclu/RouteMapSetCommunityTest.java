@@ -13,12 +13,12 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetUnion;
 import org.batfish.datamodel.routing_policy.communities.InputCommunities;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class RouteMapSetCommunityTest {
+class RouteMapSetCommunityTest {
 
   @Test
-  public void toStatements() {
+  void toStatements() {
     List<StandardCommunity> communities =
         ImmutableList.of(StandardCommunity.parse("65000:1"), StandardCommunity.parse("65000:2"));
     RouteMapSetCommunity set = new RouteMapSetCommunity(communities, false);

@@ -5,17 +5,17 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class BatfishUUIDTest {
+class BatfishUUIDTest {
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     BatfishUUID uuid = new BatfishUUID(1);
     assertThat(SerializationUtils.clone(uuid), equalTo(uuid));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new BatfishUUID(1), new BatfishUUID(1))
         .addEqualityGroup(new BatfishUUID(2))

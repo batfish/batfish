@@ -10,12 +10,12 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.isp_configuration.IspNodeInfo.Role;
 import org.batfish.datamodel.isp_configuration.traffic_filtering.IspTrafficFiltering;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link IspNodeInfo} */
-public class IspNodeInfoTest {
+class IspNodeInfoTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     List<IspAnnouncement> prefixList =
         ImmutableList.of(new IspAnnouncement(Prefix.parse("1.1.1.1/32")));
     new EqualsTester()
@@ -39,7 +39,7 @@ public class IspNodeInfoTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     IspNodeInfo ispNodeInfo =
         new IspNodeInfo(
             42,

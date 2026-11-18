@@ -19,7 +19,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -48,10 +48,10 @@ import org.batfish.vendor.check_point_management.ServiceTcp;
 import org.batfish.vendor.check_point_management.ServiceUdp;
 import org.batfish.vendor.check_point_management.SimpleGateway;
 import org.batfish.vendor.check_point_management.Uid;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link CheckpointManagementParser}. */
-public final class CheckpointManagementParserTest {
+final class CheckpointManagementParserTest {
 
   private static final String DOMAIN_NAME = "domain1";
   private static final String PACKAGE_NAME = "package1";
@@ -72,7 +72,7 @@ public final class CheckpointManagementParserTest {
   }
 
   @Test
-  public void testReadNatRulebaseNatPolicyFalse() {
+  void testReadNatRulebaseNatPolicyFalse() {
     ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
     Package pakij = testPackage(false);
     String natRulebaseInput =
@@ -114,7 +114,7 @@ public final class CheckpointManagementParserTest {
   }
 
   @Test
-  public void testReadNatRulebaseEmpty() {
+  void testReadNatRulebaseEmpty() {
     ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
     Package pakij = testPackage(true);
     String natRulebaseInput = "[]"; // show-nat-rulebase
@@ -130,7 +130,7 @@ public final class CheckpointManagementParserTest {
   }
 
   @Test
-  public void testReadNatRulebaseMissingFile() {
+  void testReadNatRulebaseMissingFile() {
     ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
     Package pakij = testPackage(true);
 
@@ -139,7 +139,7 @@ public final class CheckpointManagementParserTest {
   }
 
   @Test
-  public void testReadNatRulebaseSinglePage() {
+  void testReadNatRulebaseSinglePage() {
     ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
     Package pakij = testPackage(true);
     String natRulebaseInput =
@@ -200,7 +200,7 @@ public final class CheckpointManagementParserTest {
   }
 
   @Test
-  public void testReadNatRulebaseTwoPages() {
+  void testReadNatRulebaseTwoPages() {
     ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
     Package pakij = testPackage(true);
     String natRulebaseInput =
@@ -313,7 +313,7 @@ public final class CheckpointManagementParserTest {
   }
 
   @Test
-  public void testMergeNatRulebasePagesChildSplitAcrossTwoPages() {
+  void testMergeNatRulebasePagesChildSplitAcrossTwoPages() {
     ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
     CpmiAnyObject anyObject = new CpmiAnyObject(UID_ANY);
     // rulebase contains section1 with two rules (rule1, rule2) & a rule at the top level (rule3)
@@ -388,7 +388,7 @@ public final class CheckpointManagementParserTest {
   }
 
   @Test
-  public void testReadNatRulebaseTwoUids() {
+  void testReadNatRulebaseTwoUids() {
     ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
     Package pakij = testPackage(true);
     String natRulebaseInput =
@@ -485,7 +485,7 @@ public final class CheckpointManagementParserTest {
   }
 
   @Test
-  public void testMergeNatRuleOrSectionWarning() {
+  void testMergeNatRuleOrSectionWarning() {
     ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
     NatRule rule1 =
         new NatRule(
@@ -512,7 +512,7 @@ public final class CheckpointManagementParserTest {
   }
 
   @Test
-  public void testMergeAccessLayers() {
+  void testMergeAccessLayers() {
     ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
     Uid uidAny = Uid.of("0");
     Uid uid1 = Uid.of("1");
@@ -574,7 +574,7 @@ public final class CheckpointManagementParserTest {
 
   /** Test merging AccessLayers when their children (AccessSections) are split across pages. */
   @Test
-  public void testMergeAccessLayersAccessSectionSplit() {
+  void testMergeAccessLayersAccessSectionSplit() {
     ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
     Uid uidAny = Uid.of("0");
     Uid uid2 = Uid.of("2");
@@ -633,7 +633,7 @@ public final class CheckpointManagementParserTest {
   }
 
   @Test
-  public void testMergeAccessLayersWarning() {
+  void testMergeAccessLayersWarning() {
     ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
     Uid uidAny = Uid.of("0");
     Uid uid1 = Uid.of("1");
@@ -666,7 +666,7 @@ public final class CheckpointManagementParserTest {
   }
 
   @Test
-  public void testBuildObjectsList() {
+  void testBuildObjectsList() {
     String serviceGroupJson =
         "{\"type\": \"service-group\", \"name\": \"serviceGroup\", \"uid\": \"1\", \"members\":"
             + " [\"2\"]}";
@@ -703,7 +703,7 @@ public final class CheckpointManagementParserTest {
   }
 
   @Test
-  public void testReadGatewaysAndServersEmpty() {
+  void testReadGatewaysAndServersEmpty() {
     ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
     String sgasInput = "[]"; // show-gateways-and-servers
 
@@ -721,7 +721,7 @@ public final class CheckpointManagementParserTest {
   }
 
   @Test
-  public void testReadGatewaysAndServersMissingFile() {
+  void testReadGatewaysAndServersMissingFile() {
     ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
 
     // GatewaysAndServers should be null since the file is missing.
@@ -734,7 +734,7 @@ public final class CheckpointManagementParserTest {
   }
 
   @Test
-  public void testReadGatewaysAndServersSinglePage() {
+  void testReadGatewaysAndServersSinglePage() {
     ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
     String sgasInput =
         "[" // show-gateways-and-servers
@@ -783,7 +783,7 @@ public final class CheckpointManagementParserTest {
   }
 
   @Test
-  public void testReadGatewaysAndServersTwoPages() {
+  void testReadGatewaysAndServersTwoPages() {
     ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
     String sgasInput =
         "[" // show-gateways-and-servers

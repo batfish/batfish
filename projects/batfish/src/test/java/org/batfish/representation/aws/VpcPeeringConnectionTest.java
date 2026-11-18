@@ -24,13 +24,13 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link VpcPeeringConnection} */
-public class VpcPeeringConnectionTest {
+class VpcPeeringConnectionTest {
 
   @Test
-  public void testDeserialization() throws IOException {
+  void testDeserialization() throws IOException {
     String text =
         readResource("org/batfish/representation/aws/VpcPeeringConnectionsTest.json", UTF_8);
 
@@ -57,7 +57,7 @@ public class VpcPeeringConnectionTest {
   }
 
   @Test
-  public void testIgnoreNonActive() throws IOException {
+  void testIgnoreNonActive() throws IOException {
     String text =
         readResource(
             "org/batfish/representation/aws/VpcPeeringConnectionsTestIgnoreNonActive.json", UTF_8);
@@ -76,7 +76,7 @@ public class VpcPeeringConnectionTest {
   }
 
   @Test
-  public void testCreateConnection() {
+  void testCreateConnection() {
     Vpc vpc1 = getTestVpc("vpc1");
     Configuration vpc1Cfg = Utils.newAwsConfiguration(vpc1.getId(), "awstest");
     Prefix vpc1Prefix = Prefix.parse("10.10.10.0/24");
@@ -125,7 +125,7 @@ public class VpcPeeringConnectionTest {
   }
 
   @Test
-  public void testCreateConnectionDifferentAccount() {
+  void testCreateConnectionDifferentAccount() {
     Vpc vpc1 = getTestVpc("vpc1");
     Configuration vpc1Cfg = Utils.newAwsConfiguration(vpc1.getId(), "awstest");
     Prefix vpc1Prefix = Prefix.parse("10.10.10.0/24");

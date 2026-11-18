@@ -28,11 +28,13 @@
  */
 package net.sf.javabdd.highlevel;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.bdd.BDDTestCase;
-import org.junit.internal.runners.JUnit38ClassRunner;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * NQueensTest
@@ -40,12 +42,7 @@ import org.junit.runner.RunWith;
  * @author John Whaley
  * @version $Id: NQueensTest.java,v 1.1 2004/10/19 11:46:29 joewhaley Exp $
  */
-@RunWith(JUnit38ClassRunner.class)
 public class NQueensTest extends BDDTestCase {
-  public static void main(String[] args) {
-    junit.textui.TestRunner.run(NQueensTest.class);
-  }
-
   public static final int CHECK = 10;
   public static final double[] ANSWERS = {
     1.,
@@ -73,7 +70,8 @@ public class NQueensTest extends BDDTestCase {
     24233937684440.
   };
 
-  public void testNQueens() {
+  @Test
+  void testNQueens() {
     assertTrue(hasNext());
     int numberOfNodes = (int) (Math.pow(4.42, CHECK - 6)) * 1000;
     while (hasNext()) {

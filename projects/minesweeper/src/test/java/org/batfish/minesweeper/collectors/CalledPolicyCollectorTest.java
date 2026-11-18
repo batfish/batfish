@@ -2,7 +2,7 @@ package org.batfish.minesweeper.collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -29,11 +29,11 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.minesweeper.utils.Tuple;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link CalledPolicyCollector}. */
-public class CalledPolicyCollectorTest {
+class CalledPolicyCollectorTest {
   private static final String HOSTNAME = "hostname";
   private static final String RM1 = "RM1";
   private static final String RM2 = "RM2";
@@ -43,8 +43,8 @@ public class CalledPolicyCollectorTest {
   private NetworkFactory _nf;
   private CalledPolicyCollector _collector;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _nf = new NetworkFactory();
     Configuration.Builder cb =
         _nf.configurationBuilder()
@@ -57,7 +57,7 @@ public class CalledPolicyCollectorTest {
   }
 
   @Test
-  public void testVisitIf() {
+  void testVisitIf() {
     If ifstmt = new If(new CallExpr(RM2), ImmutableList.of(new CallStatement(RM1)));
     Set<String> result = _collector.visitIf(ifstmt, new Tuple<>(new HashSet<>(), _baseConfig));
 
@@ -65,7 +65,7 @@ public class CalledPolicyCollectorTest {
   }
 
   @Test
-  public void testVisitTraceableStatement() {
+  void testVisitTraceableStatement() {
     TraceableStatement traceableStatement =
         new TraceableStatement(
             TraceElement.of("statement"), ImmutableList.of(new CallStatement(RM2)));
@@ -77,7 +77,7 @@ public class CalledPolicyCollectorTest {
   }
 
   @Test
-  public void testVisitCallStatement() {
+  void testVisitCallStatement() {
 
     RoutingPolicy rm2 =
         _nf.routingPolicyBuilder()
@@ -97,7 +97,7 @@ public class CalledPolicyCollectorTest {
   }
 
   @Test
-  public void testVisitConjunction() {
+  void testVisitConjunction() {
 
     Conjunction c = new Conjunction(ImmutableList.of(new CallExpr(RM2), new CallExpr(RM3)));
 
@@ -107,7 +107,7 @@ public class CalledPolicyCollectorTest {
   }
 
   @Test
-  public void testVisitConjunctionChain() {
+  void testVisitConjunctionChain() {
 
     ConjunctionChain cc =
         new ConjunctionChain(ImmutableList.of(new CallExpr(RM2), new CallExpr(RM3)));
@@ -119,7 +119,7 @@ public class CalledPolicyCollectorTest {
   }
 
   @Test
-  public void testVisitDisjunction() {
+  void testVisitDisjunction() {
 
     Disjunction d = new Disjunction(ImmutableList.of(new CallExpr(RM2), new CallExpr(RM3)));
 
@@ -129,7 +129,7 @@ public class CalledPolicyCollectorTest {
   }
 
   @Test
-  public void testVisitFirstMatchChain() {
+  void testVisitFirstMatchChain() {
 
     FirstMatchChain fmc =
         new FirstMatchChain(ImmutableList.of(new CallExpr(RM2), new CallExpr(RM3)));
@@ -141,7 +141,7 @@ public class CalledPolicyCollectorTest {
   }
 
   @Test
-  public void testVisitTrackSucceeded() {
+  void testVisitTrackSucceeded() {
     assertThat(
         _collector.visitTrackSucceeded(
             new TrackSucceeded("foo"), new Tuple<>(new HashSet<>(), _baseConfig)),
@@ -149,7 +149,7 @@ public class CalledPolicyCollectorTest {
   }
 
   @Test
-  public void testVisitNot() {
+  void testVisitNot() {
 
     Not n = new Not(new CallExpr(RM1));
 
@@ -159,7 +159,7 @@ public class CalledPolicyCollectorTest {
   }
 
   @Test
-  public void testVisitWithEnvironmentExpr() {
+  void testVisitWithEnvironmentExpr() {
 
     WithEnvironmentExpr wee = new WithEnvironmentExpr();
     wee.setExpr(new CallExpr(RM1));
@@ -174,7 +174,7 @@ public class CalledPolicyCollectorTest {
   }
 
   @Test
-  public void testCallExprNested() {
+  void testCallExprNested() {
     Map<String, RoutingPolicy> routingPolicies = new HashMap<>();
     _baseConfig.setRoutingPolicies(routingPolicies);
     RoutingPolicy rm1 =

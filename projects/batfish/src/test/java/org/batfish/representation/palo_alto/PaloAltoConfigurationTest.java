@@ -39,9 +39,9 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -62,12 +62,12 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.representation.palo_alto.SecurityRule.RuleType;
 import org.batfish.representation.palo_alto.Zone.Type;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link PaloAltoConfiguration}. */
 @ParametersAreNonnullByDefault
-public final class PaloAltoConfigurationTest {
+final class PaloAltoConfigurationTest {
 
   private static final Ip DST_IP = Ip.parse("10.0.2.2");
   private static final String EXTERNAL_FROM_ZONE_NAME = "externalFromZone";
@@ -133,13 +133,13 @@ public final class PaloAltoConfigurationTest {
     return ImmutableMap.of(crossZoneFilterName, crossZoneFilter);
   }
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _nf = new NetworkFactory();
   }
 
   @Test
-  public void testGenerateCrossZoneCallsExternal() {
+  void testGenerateCrossZoneCallsExternal() {
     Vsys vsys = new Vsys(VSYS_NAME);
     Zone fromZone = new Zone(FROM_ZONE_NAME, vsys);
     fromZone.setType(Type.EXTERNAL);
@@ -178,7 +178,7 @@ public final class PaloAltoConfigurationTest {
   }
 
   @Test
-  public void testGenerateCrossZoneCallsFromExternal() {
+  void testGenerateCrossZoneCallsFromExternal() {
     Vsys vsys = new Vsys(VSYS_NAME);
     Zone fromZone = new Zone(FROM_ZONE_NAME, vsys);
     fromZone.setType(Type.EXTERNAL);
@@ -217,7 +217,7 @@ public final class PaloAltoConfigurationTest {
   }
 
   @Test
-  public void testGenerateCrossZoneCallsFromExternalMisconfiguredExternal() {
+  void testGenerateCrossZoneCallsFromExternalMisconfiguredExternal() {
     Vsys vsys = new Vsys(VSYS_NAME);
     Zone fromZone = new Zone(FROM_ZONE_NAME, vsys);
     fromZone.setType(Type.EXTERNAL);
@@ -246,7 +246,7 @@ public final class PaloAltoConfigurationTest {
   }
 
   @Test
-  public void testGenerateCrossZoneCallsFromLayer3() {
+  void testGenerateCrossZoneCallsFromLayer3() {
     Vsys vsys = new Vsys(VSYS_NAME);
     Zone fromZone = new Zone(FROM_ZONE_NAME, vsys);
     fromZone.setType(Type.LAYER3);
@@ -286,7 +286,7 @@ public final class PaloAltoConfigurationTest {
   }
 
   @Test
-  public void testGenerateCrossZoneCallsLayer2() {
+  void testGenerateCrossZoneCallsLayer2() {
     Vsys vsys = new Vsys(VSYS_NAME);
     Zone fromZone = new Zone(FROM_ZONE_NAME, vsys);
     fromZone.setType(Type.LAYER2);
@@ -302,7 +302,7 @@ public final class PaloAltoConfigurationTest {
   }
 
   @Test
-  public void testGenerateCrossZoneCallsLayer3() {
+  void testGenerateCrossZoneCallsLayer3() {
     Vsys vsys = new Vsys(VSYS_NAME);
     Zone fromZone = new Zone(FROM_ZONE_NAME, vsys);
     fromZone.setType(Type.LAYER3);
@@ -331,7 +331,7 @@ public final class PaloAltoConfigurationTest {
   }
 
   @Test
-  public void testGenerateDoubleCrossZoneCalls() {
+  void testGenerateDoubleCrossZoneCalls() {
     Map<String, IpAccessList> crossZoneFilters = createInterVsysCrossZoneFilters();
     Vsys vsys = new Vsys(VSYS_NAME);
 
@@ -380,7 +380,7 @@ public final class PaloAltoConfigurationTest {
   }
 
   @Test
-  public void testGenerateInterVsysCrossZoneCalls() {
+  void testGenerateInterVsysCrossZoneCalls() {
     Vsys vsys = new Vsys(VSYS_NAME);
 
     Vsys externalVsys = new Vsys(EXTERNAL_VSYS_NAME);
@@ -412,7 +412,7 @@ public final class PaloAltoConfigurationTest {
   }
 
   @Test
-  public void testGenerateInterVsysCrossZoneCallsNoExternal() {
+  void testGenerateInterVsysCrossZoneCallsNoExternal() {
     Vsys vsys = new Vsys(VSYS_NAME);
 
     Vsys externalVsys = new Vsys(EXTERNAL_VSYS_NAME);
@@ -429,7 +429,7 @@ public final class PaloAltoConfigurationTest {
   }
 
   @Test
-  public void testGenerateInterVsysCrossZoneCallsNoMatchingExternal() {
+  void testGenerateInterVsysCrossZoneCallsNoMatchingExternal() {
     Vsys vsys = new Vsys(VSYS_NAME);
 
     Vsys externalVsys = new Vsys(EXTERNAL_VSYS_NAME);
@@ -450,7 +450,7 @@ public final class PaloAltoConfigurationTest {
   }
 
   @Test
-  public void testGenerateOutgoingFilter() {
+  void testGenerateOutgoingFilter() {
     Vsys vsys = new Vsys(VSYS_NAME);
     Zone fromZone = new Zone(FROM_ZONE_NAME, vsys);
     fromZone.setType(Type.LAYER3);
@@ -481,7 +481,7 @@ public final class PaloAltoConfigurationTest {
   }
 
   @Test
-  public void testGenerateSgSglines() {
+  void testGenerateSgSglines() {
     Vsys sharedGateway = new Vsys(VSYS_NAME);
     Vsys ingressSharedGateway = new Vsys(EXTERNAL_VSYS_NAME);
     ingressSharedGateway.getImportedInterfaces().add(SRC_INTERFACE_NAME);
@@ -504,7 +504,7 @@ public final class PaloAltoConfigurationTest {
   }
 
   @Test
-  public void testGenerateSgSglinesEmptyIngress() {
+  void testGenerateSgSglinesEmptyIngress() {
     Vsys sharedGateway = new Vsys(VSYS_NAME);
     Vsys ingressSharedGateway = new Vsys(EXTERNAL_VSYS_NAME);
 
@@ -513,7 +513,7 @@ public final class PaloAltoConfigurationTest {
   }
 
   @Test
-  public void testGenerateSharedGatewayOutgoingFilterInterSg() {
+  void testGenerateSharedGatewayOutgoingFilterInterSg() {
     Vsys sharedGateway = new Vsys(VSYS_NAME);
     Vsys ingressSharedGateway = new Vsys(EXTERNAL_VSYS_NAME);
     ingressSharedGateway.getImportedInterfaces().add(SRC_INTERFACE_NAME);
@@ -532,7 +532,7 @@ public final class PaloAltoConfigurationTest {
   }
 
   @Test
-  public void testGenerateSharedGatewayOutgoingFilterIntraSg() {
+  void testGenerateSharedGatewayOutgoingFilterIntraSg() {
     Vsys sharedGateway = new Vsys(VSYS_NAME);
     sharedGateway.getImportedInterfaces().add(SRC_INTERFACE_NAME);
 
@@ -548,7 +548,7 @@ public final class PaloAltoConfigurationTest {
   }
 
   @Test
-  public void testGenerateSharedGatewayOutgoingFilterVsys() {
+  void testGenerateSharedGatewayOutgoingFilterVsys() {
     Vsys sharedGateway = new Vsys(VSYS_NAME);
 
     Vsys vsys = new Vsys(EXTERNAL_VSYS_NAME);
@@ -573,7 +573,7 @@ public final class PaloAltoConfigurationTest {
   }
 
   @Test
-  public void testGenerateVsysSharedGatewayCalls() {
+  void testGenerateVsysSharedGatewayCalls() {
     Vsys sharedGateway = new Vsys(VSYS_NAME);
 
     Vsys vsys = new Vsys(EXTERNAL_VSYS_NAME);
@@ -604,7 +604,7 @@ public final class PaloAltoConfigurationTest {
   }
 
   @Test
-  public void testGenerateVsysSharedGatewayCallsMisconfiguredExternal() {
+  void testGenerateVsysSharedGatewayCallsMisconfiguredExternal() {
     Vsys sharedGateway = new Vsys(VSYS_NAME);
 
     Vsys vsys = new Vsys(EXTERNAL_VSYS_NAME);
@@ -622,7 +622,7 @@ public final class PaloAltoConfigurationTest {
   }
 
   @Test
-  public void testGenerateVsysSharedGatewayCallsMissingExternal() {
+  void testGenerateVsysSharedGatewayCallsMissingExternal() {
     Vsys sharedGateway = new Vsys(VSYS_NAME);
 
     Vsys vsys = new Vsys(EXTERNAL_VSYS_NAME);
@@ -637,7 +637,7 @@ public final class PaloAltoConfigurationTest {
   }
 
   @Test
-  public void testGenerateVsysSharedGatewayCallsMissingLayer3() {
+  void testGenerateVsysSharedGatewayCallsMissingLayer3() {
     Vsys sharedGateway = new Vsys(VSYS_NAME);
 
     Vsys vsys = new Vsys(EXTERNAL_VSYS_NAME);
@@ -652,7 +652,7 @@ public final class PaloAltoConfigurationTest {
 
   /** Covers universal and default case of no rule-type */
   @Test
-  public void testSecurityRuleAppliesRuleTypeUniversal() {
+  void testSecurityRuleAppliesRuleTypeUniversal() {
     SecurityRule rule = new SecurityRule("rule", new Vsys(VSYS_NAME));
     rule.getFrom().addAll(ImmutableList.of("A", "B"));
     rule.getTo().addAll(ImmutableList.of("C", "B"));
@@ -669,7 +669,7 @@ public final class PaloAltoConfigurationTest {
   }
 
   @Test
-  public void testSecurityRuleAppliesRuleTypeInterzone() {
+  void testSecurityRuleAppliesRuleTypeInterzone() {
     SecurityRule rule = new SecurityRule("rule", new Vsys(VSYS_NAME));
     rule.getFrom().addAll(ImmutableList.of("A", "B"));
     rule.getTo().addAll(ImmutableList.of("C", "B"));
@@ -686,7 +686,7 @@ public final class PaloAltoConfigurationTest {
   }
 
   @Test
-  public void testSecurityRuleAppliesRuleTypeIntrazone() {
+  void testSecurityRuleAppliesRuleTypeIntrazone() {
     SecurityRule rule = new SecurityRule("rule", new Vsys(VSYS_NAME));
     rule.getFrom().addAll(ImmutableList.of("A", "B"));
     rule.getTo().addAll(ImmutableList.of("A", "B"));
@@ -700,7 +700,7 @@ public final class PaloAltoConfigurationTest {
   }
 
   @Test
-  public void testCheckIntrazoneValidityAndWarn() {
+  void testCheckIntrazoneValidityAndWarn() {
     SecurityRule rule = new SecurityRule("rule", new Vsys(VSYS_NAME));
     rule.getFrom().addAll(ImmutableList.of("A", "B"));
     rule.getTo().addAll(ImmutableList.of("A", "B"));
@@ -722,7 +722,7 @@ public final class PaloAltoConfigurationTest {
   }
 
   @Test
-  public void testDeviceBindingAndIdCompatible() {
+  void testDeviceBindingAndIdCompatible() {
     // Both applies to any device id
     assertTrue(deviceBindingAndIdCompatible(NatRule.ActiveActiveDeviceBinding.BOTH, 0));
     assertTrue(deviceBindingAndIdCompatible(NatRule.ActiveActiveDeviceBinding.BOTH, 1));
@@ -739,7 +739,7 @@ public final class PaloAltoConfigurationTest {
   }
 
   @Test
-  public void testReferenceInVsys() {
+  void testReferenceInVsys() {
     String objName = "objName";
     // Service or service-group
     {
@@ -785,7 +785,7 @@ public final class PaloAltoConfigurationTest {
   }
 
   @Test
-  public void testUnexpectedUnboundedCustomUrlWildcard() {
+  void testUnexpectedUnboundedCustomUrlWildcard() {
     // Unexpected and unbounded
     assertTrue(unexpectedUnboundedCustomUrlWildcard("*.github.com"));
     assertTrue(unexpectedUnboundedCustomUrlWildcard("www.*.github.com"));
@@ -801,7 +801,7 @@ public final class PaloAltoConfigurationTest {
   }
 
   @Test
-  public void testApplyVsysObjects() {
+  void testApplyVsysObjects() {
     Vsys source = new Vsys("source");
     source.getApplications().put("app", Application.builder("app").build());
     source.getApplicationGroups().put("appGroup", new ApplicationGroup("appGroup"));
@@ -826,7 +826,7 @@ public final class PaloAltoConfigurationTest {
   }
 
   @Test
-  public void testGetTraceElementForAppReferenceValidApp() {
+  void testGetTraceElementForAppReferenceValidApp() {
     Vsys vsys = new Vsys(DEFAULT_VSYS_NAME);
     String filename = "config";
     String appName = "appName";
@@ -839,7 +839,7 @@ public final class PaloAltoConfigurationTest {
   }
 
   @Test
-  public void testGetTraceElementForAppReferenceValidAppGroup() {
+  void testGetTraceElementForAppReferenceValidAppGroup() {
     Vsys vsys = new Vsys(DEFAULT_VSYS_NAME);
     String filename = "config";
     String appGroupName = "appGroupName";
@@ -854,7 +854,7 @@ public final class PaloAltoConfigurationTest {
   }
 
   @Test
-  public void testGetTraceElementForAppReferenceValidBuiltIn() {
+  void testGetTraceElementForAppReferenceValidBuiltIn() {
     String filename = "config";
     assertThat(
         getTraceElementForAppReference(
@@ -864,7 +864,7 @@ public final class PaloAltoConfigurationTest {
   }
 
   @Test
-  public void testGetTraceElementForAppReferenceInvalid() {
+  void testGetTraceElementForAppReferenceInvalid() {
     String filename = "config";
     assertThat(
         getTraceElementForAppReference(
@@ -873,7 +873,7 @@ public final class PaloAltoConfigurationTest {
   }
 
   @Test
-  public void testToVendorIndependentConfigurations_InterfaceAddressResolvesFromOwningVsys()
+  void testToVendorIndependentConfigurations_InterfaceAddressResolvesFromOwningVsys()
       throws Exception {
     PaloAltoConfiguration c = makeBaseMultiVsysConfig();
     c.getVirtualSystems()
@@ -900,7 +900,7 @@ public final class PaloAltoConfigurationTest {
   }
 
   @Test
-  public void testToVendorIndependentConfigurations_BgpPeerAddressResolvesFromOwningVsys()
+  void testToVendorIndependentConfigurations_BgpPeerAddressResolvesFromOwningVsys()
       throws Exception {
     PaloAltoConfiguration c = makeBaseMultiVsysConfig();
     c.getVirtualSystems()
@@ -936,7 +936,7 @@ public final class PaloAltoConfigurationTest {
   }
 
   @Test
-  public void testToVendorIndependentConfigurations_StaticRouteNextHopResolvesFromOwningVsys()
+  void testToVendorIndependentConfigurations_StaticRouteNextHopResolvesFromOwningVsys()
       throws Exception {
     PaloAltoConfiguration c = makeBaseMultiVsysConfig();
     c.getVirtualSystems().get(DEFAULT_VSYS_NAME).getAddressObjects().put("nhObj", ipObj("1.1.1.1"));

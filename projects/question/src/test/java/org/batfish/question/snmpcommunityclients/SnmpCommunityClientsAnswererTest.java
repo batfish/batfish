@@ -3,9 +3,10 @@ package org.batfish.question.snmpcommunityclients;
 import static org.batfish.question.snmpcommunityclients.SnmpCommunityClientsAnswerer.COL_COMMUNITY;
 import static org.batfish.question.snmpcommunityclients.SnmpCommunityClientsAnswerer.COL_NODE;
 import static org.batfish.question.snmpcommunityclients.SnmpCommunityClientsAnswerer.COL_REASON;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -19,14 +20,13 @@ import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.Row;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public class SnmpCommunityClientsAnswererTest {
+class SnmpCommunityClientsAnswererTest {
   private static final String TESTCONFIGS_DIR = "org/batfish/question/snmpcommunityclients";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   public IBatfish getBatfish(List<String> filenames) throws IOException {
     return BatfishTestUtils.getBatfishFromTestrigText(
@@ -34,7 +34,7 @@ public class SnmpCommunityClientsAnswererTest {
   }
 
   @Test
-  public void testPasses() throws IOException {
+  void testPasses() throws IOException {
     IpSpace expectedIps = Prefix.parse("1.2.3.4/32").toIpSpace();
     BDDPacket bddPacket = new BDDPacket();
     BDD expectedBDD = bddPacket.getDstIpSpaceToBDD().visit(expectedIps);
@@ -47,7 +47,7 @@ public class SnmpCommunityClientsAnswererTest {
   }
 
   @Test
-  public void testMissingCommunity() throws IOException {
+  void testMissingCommunity() throws IOException {
     IpSpace expectedIps = Prefix.parse("1.2.3.4/32").toIpSpace();
     BDDPacket bddPacket = new BDDPacket();
     BDD expectedBDD = bddPacket.getDstIpSpaceToBDD().visit(expectedIps);
@@ -68,7 +68,7 @@ public class SnmpCommunityClientsAnswererTest {
   }
 
   @Test
-  public void testUnexpectedClients() throws IOException {
+  void testUnexpectedClients() throws IOException {
     IpSpace expectedIps = Prefix.parse("10.20.30.40/32").toIpSpace();
     BDDPacket bddPacket = new BDDPacket();
     BDD expectedBDD = bddPacket.getDstIpSpaceToBDD().visit(expectedIps);
@@ -89,7 +89,7 @@ public class SnmpCommunityClientsAnswererTest {
   }
 
   @Test
-  public void testUnsupportedDevice() throws IOException {
+  void testUnsupportedDevice() throws IOException {
     IpSpace expectedIps = Prefix.parse("10.20.30.40/32").toIpSpace();
     BDDPacket bddPacket = new BDDPacket();
     BDD expectedBDD = bddPacket.getDstIpSpaceToBDD().visit(expectedIps);

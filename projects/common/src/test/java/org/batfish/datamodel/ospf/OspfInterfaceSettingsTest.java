@@ -10,11 +10,11 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class OspfInterfaceSettingsTest {
+class OspfInterfaceSettingsTest {
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     OspfInterfaceSettings s =
         OspfInterfaceSettings.builder()
             .setProcess("proc")
@@ -37,7 +37,7 @@ public class OspfInterfaceSettingsTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     OspfInterfaceSettings s =
         OspfInterfaceSettings.builder()
             .setProcess("proc")
@@ -59,7 +59,7 @@ public class OspfInterfaceSettingsTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     OspfInterfaceSettings.Builder s =
         OspfInterfaceSettings.builder().setHelloInterval(0).setDeadInterval(0).setPassive(true);
     new EqualsTester()

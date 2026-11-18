@@ -20,10 +20,11 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.io.FileMatchers.anExistingDirectory;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -109,35 +110,28 @@ import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.vendor.ConversionContext;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-@RunWith(JUnit4.class)
-public final class FileBasedStorageTest {
+final class FileBasedStorageTest {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+  @TempDir public File _folder;
 
   private Path _containerDir;
   private BatfishLogger _logger;
   private FileBasedStorage _storage;
 
-  @Before
-  public void before() throws IOException {
-    _containerDir = _folder.newFolder("container").toPath();
+  @BeforeEach
+  void before() throws IOException {
+    _containerDir = newFolder(_folder, "container").toPath();
     _logger = new BatfishLogger(BatfishLogger.LEVELSTR_DEBUG, false);
     _storage =
         new FileBasedStorage(_containerDir.getParent(), _logger, (m, n) -> new AtomicInteger());
   }
 
   @Test
-  public void roundTripConfigurationsSucceeds() throws IOException {
+  void roundTripConfigurationsSucceeds() throws IOException {
     NetworkId network = new NetworkId("network");
     SnapshotId snapshot = new SnapshotId("snapshot");
 
@@ -152,14 +146,14 @@ public final class FileBasedStorageTest {
   }
 
   @Test
-  public void loadMissingConfigurationsReturnsNull() {
+  void loadMissingConfigurationsReturnsNull() {
     assertThat(
         _storage.loadConfigurations(new NetworkId("nonexistent"), new SnapshotId("nonexistent")),
         nullValue());
   }
 
   @Test
-  public void testStoreAndLoadConversionContext() throws IOException {
+  void testStoreAndLoadConversionContext() throws IOException {
     NetworkSnapshot snapshot =
         new NetworkSnapshot(new NetworkId("network"), new SnapshotId("snapshot"));
 
@@ -171,14 +165,16 @@ public final class FileBasedStorageTest {
   }
 
   @Test
-  public void testLoadConversionContext_fileNotFound() throws IOException {
-    _thrown.expect(FileNotFoundException.class);
-    _storage.loadConversionContext(
-        new NetworkSnapshot(new NetworkId("network"), new SnapshotId("snapshot")));
+  void testLoadConversionContext_fileNotFound() {
+    assertThrows(
+        FileNotFoundException.class,
+        () ->
+            _storage.loadConversionContext(
+                new NetworkSnapshot(new NetworkId("network"), new SnapshotId("snapshot"))));
   }
 
   @Test
-  public void testLoadConversionContext_deserializationFailure() throws IOException {
+  void testLoadConversionContext_deserializationFailure() {
     NetworkId networkId = new NetworkId("network");
     SnapshotId snapshotId = new SnapshotId("snapshot");
 
@@ -186,13 +182,15 @@ public final class FileBasedStorageTest {
     Path conversionContextPath = _storage.getConversionContextPath(networkId, snapshotId);
     _storage.serializeObject(fooString, conversionContextPath);
 
-    _thrown.expect(IOException.class);
-    _thrown.expectMessage(containsString("Failed to deserialize ConversionContext"));
-    _storage.loadConversionContext(new NetworkSnapshot(networkId, snapshotId));
+    Throwable exception =
+        assertThrows(
+            IOException.class,
+            () -> _storage.loadConversionContext(new NetworkSnapshot(networkId, snapshotId)));
+    assertThat(exception.getMessage(), containsString("Failed to deserialize ConversionContext"));
   }
 
   @Test
-  public void testLoadIspConfiguration() throws IOException {
+  void testLoadIspConfiguration() throws IOException {
     NetworkId networkId = new NetworkId("network");
     SnapshotId snapshotId = new SnapshotId("snapshot");
 
@@ -213,7 +211,7 @@ public final class FileBasedStorageTest {
   }
 
   @Test
-  public void testCheckNetworkExistsTrue() {
+  void testCheckNetworkExistsTrue() {
     NetworkId network = new NetworkId("network");
     _storage.getNetworkDir(network).toFile().mkdirs();
 
@@ -221,32 +219,30 @@ public final class FileBasedStorageTest {
   }
 
   @Test
-  public void testCheckNetworkExistsFalse() {
+  void testCheckNetworkExistsFalse() {
     NetworkId network = new NetworkId("network");
 
     assertThat(_storage.checkNetworkExists(network), equalTo(false));
   }
 
   @Test
-  public void testObjectKeyToRelativePathRejectsAbsolute() {
-    _thrown.expect(IllegalArgumentException.class);
-    objectKeyToRelativePath("/foo/bar");
+  void testObjectKeyToRelativePathRejectsAbsolute() {
+    assertThrows(IllegalArgumentException.class, () -> objectKeyToRelativePath("/foo/bar"));
   }
 
   @Test
-  public void testObjectKeyToRelativePathRejectsNonNormalized() {
-    _thrown.expect(IllegalArgumentException.class);
-    objectKeyToRelativePath("foo/../../bar");
+  void testObjectKeyToRelativePathRejectsNonNormalized() {
+    assertThrows(IllegalArgumentException.class, () -> objectKeyToRelativePath("foo/../../bar"));
   }
 
   @Test
-  public void testObjectKeyToRelativePathValid() {
+  void testObjectKeyToRelativePathValid() {
     // no exception should be thrown
     objectKeyToRelativePath("foo/bar");
   }
 
   @Test
-  public void testLoadWorkLog() throws IOException {
+  void testLoadWorkLog() throws IOException {
     // setup: pretend a worker logger has written a file
     NetworkId network = new NetworkId("network");
     SnapshotId snapshot = new SnapshotId("snapshot");
@@ -261,29 +257,29 @@ public final class FileBasedStorageTest {
   }
 
   @Test
-  public void testLoadWorkLogMissing() throws IOException {
+  void testLoadWorkLogMissing() {
     // setup: pretend a worker logger has written a file
     NetworkId network = new NetworkId("network");
     SnapshotId snapshot = new SnapshotId("snapshot");
 
-    _thrown.expect(FileNotFoundException.class);
-    assertThat(_storage.loadWorkLog(network, snapshot, "workid"), equalTo("testoutput"));
+    assertThrows(
+        FileNotFoundException.class,
+        () -> assertThat(_storage.loadWorkLog(network, snapshot, "workid"), equalTo("testoutput")));
   }
 
   @Test
-  public void testValidatePath() {
+  void testValidatePath() {
     Path validPath = _containerDir.resolve("foo");
 
     _storage.validatePath(_containerDir);
     _storage.validatePath(validPath);
 
     Path invalidPath = Paths.get("/dev/null");
-    _thrown.expect(IllegalArgumentException.class);
-    _storage.validatePath(invalidPath);
+    assertThrows(IllegalArgumentException.class, () -> _storage.validatePath(invalidPath));
   }
 
   @Test
-  public void testMkdirs() throws IOException {
+  void testMkdirs() throws IOException {
     Path dir = _containerDir.resolve("parentDir").resolve("subDir");
 
     // Confirm mkdirs creates the non-existent dir
@@ -296,7 +292,7 @@ public final class FileBasedStorageTest {
    * throw an exception.
    */
   @Test
-  public void testMkdirsConcurrency() throws Exception {
+  void testMkdirsConcurrency() throws Exception {
     int numThreads = 2;
     // Try many times, since false negatives are possible
     int numTries = 100;
@@ -334,7 +330,7 @@ public final class FileBasedStorageTest {
   }
 
   @Test
-  public void testMkdirsExists() throws IOException {
+  void testMkdirsExists() throws IOException {
     Path dir = _containerDir;
 
     // Confirm mkdirs succeeds when the dir already exists
@@ -343,18 +339,19 @@ public final class FileBasedStorageTest {
   }
 
   @Test
-  public void testMkdirsFail() throws IOException {
+  void testMkdirsFail() {
     File parentDir = _containerDir.toFile();
     parentDir.setReadOnly();
     Path dir = parentDir.toPath().resolve("testDir");
 
+    Throwable exception = assertThrows(Exception.class, () -> _storage.mkdirs(dir));
+
     // Confirm mkdirs throws when creating a dir within a read-only dir
-    _thrown.expectMessage(containsString("Unable to create directory"));
-    _storage.mkdirs(dir);
+    assertThat(exception.getMessage(), containsString("Unable to create directory"));
   }
 
   @Test
-  public void testNetworkBlobRoundTrip() throws IOException {
+  void testNetworkBlobRoundTrip() throws IOException {
     NetworkId network = new NetworkId("network");
     String id = "heresanid";
 
@@ -366,7 +363,7 @@ public final class FileBasedStorageTest {
       found = false;
     }
     assertThat("Should have been set", found, notNullValue());
-    assertFalse("Should not have been found", found);
+    assertFalse(found, "Should not have been found");
 
     byte[] content = "here's some content".getBytes(UTF_8);
     _storage.storeNetworkBlob(new ByteArrayInputStream(content), network, id);
@@ -380,7 +377,7 @@ public final class FileBasedStorageTest {
    * location
    */
   @Test
-  public void testLoadNodeRoles_old() throws IOException {
+  void testLoadNodeRoles_old() throws IOException {
     NetworkId networkId = new NetworkId("network");
     NodeRolesId nodeRolesId = new NodeRolesId("nodeRoles");
     String nodeRolesData = "stringData";
@@ -391,13 +388,14 @@ public final class FileBasedStorageTest {
 
     assertThat(_storage.loadNodeRoles(networkId, nodeRolesId), equalTo(nodeRolesData));
 
-    _thrown.expect(FileNotFoundException.class);
-    _storage.loadNodeRoles(networkId, new NodeRolesId("missing"));
+    assertThrows(
+        FileNotFoundException.class,
+        () -> _storage.loadNodeRoles(networkId, new NodeRolesId("missing")));
   }
 
   /** Test that the response considers the old location of node roles */
   @Test
-  public void testHasLoadNodeRoles_old() throws IOException {
+  void testHasLoadNodeRoles_old() throws IOException {
     NetworkId networkId = new NetworkId("network");
     NodeRolesId nodeRolesId = new NodeRolesId("nodeRoles");
     String nodeRolesData = "stringData";
@@ -411,7 +409,7 @@ public final class FileBasedStorageTest {
   }
 
   @Test
-  public void testLoadSnapshotInputObjectFile() throws IOException {
+  void testLoadSnapshotInputObjectFile() throws IOException {
     NetworkId network = new NetworkId("network");
     SnapshotId snapshot = new SnapshotId("snapshot");
     String testSting = "what is life";
@@ -426,7 +424,7 @@ public final class FileBasedStorageTest {
   }
 
   @Test
-  public void testLoadSnapshotInputObjectDirectory() throws IOException {
+  void testLoadSnapshotInputObjectDirectory() throws IOException {
     NetworkId network = new NetworkId("network");
     SnapshotId snapshot = new SnapshotId("snapshot");
     String testSting = "this is life";
@@ -435,12 +433,12 @@ public final class FileBasedStorageTest {
     testdir.toFile().mkdirs();
     Files.write(testdir.resolve("testfile"), testSting.getBytes());
 
-    Path tmpzip = _folder.getRoot().toPath().resolve("tmp.zip");
+    Path tmpzip = _folder.toPath().resolve("tmp.zip");
     try (InputStream inputStream = _storage.loadSnapshotInputObject(network, snapshot, "testkey")) {
       FileUtils.copyInputStreamToFile(inputStream, tmpzip.toFile());
     }
 
-    Path unzipDir = _folder.getRoot().toPath().resolve("tmp");
+    Path unzipDir = _folder.toPath().resolve("tmp");
     unzipDir.toFile().mkdirs();
     UnzipUtility.unzip(tmpzip, unzipDir);
 
@@ -460,15 +458,16 @@ public final class FileBasedStorageTest {
   }
 
   @Test
-  public void testGetSnapshotInputKeysNonExistentInput() throws IOException {
+  void testGetSnapshotInputKeysNonExistentInput() {
     NetworkId network = new NetworkId("network");
     SnapshotId snapshot = new SnapshotId("snapshot");
-    _thrown.expect(FileNotFoundException.class);
-    _storage.getSnapshotInputObjectsMetadata(network, snapshot);
+    assertThrows(
+        FileNotFoundException.class,
+        () -> _storage.getSnapshotInputObjectsMetadata(network, snapshot));
   }
 
   @Test
-  public void testGetSnapshotInputKeys() throws IOException {
+  void testGetSnapshotInputKeys() throws IOException {
     NetworkId network = new NetworkId("network");
     SnapshotId snapshot = new SnapshotId("snapshot");
 
@@ -499,15 +498,16 @@ public final class FileBasedStorageTest {
   }
 
   @Test
-  public void testGetSnapshotExtendedObjectsMetadataNonExistentInput() throws IOException {
+  void testGetSnapshotExtendedObjectsMetadataNonExistentInput() {
     NetworkId network = new NetworkId("network");
     SnapshotId snapshot = new SnapshotId("snapshot");
-    _thrown.expect(FileNotFoundException.class);
-    _storage.getSnapshotExtendedObjectsMetadata(network, snapshot);
+    assertThrows(
+        FileNotFoundException.class,
+        () -> _storage.getSnapshotExtendedObjectsMetadata(network, snapshot));
   }
 
   @Test
-  public void testGetSnapshotExtendedObjectsMetadata() throws IOException {
+  void testGetSnapshotExtendedObjectsMetadata() throws IOException {
     NetworkId network = new NetworkId("network");
     SnapshotId snapshot = new SnapshotId("snapshot");
 
@@ -536,7 +536,7 @@ public final class FileBasedStorageTest {
    * location
    */
   @Test
-  public void testLoadAnswer_old() throws IOException {
+  void testLoadAnswer_old() throws IOException {
     NetworkId networkId = new NetworkId("network");
     SnapshotId snapshotId = new SnapshotId("snapshot");
     AnswerId answerId = new AnswerId("answerId");
@@ -548,8 +548,9 @@ public final class FileBasedStorageTest {
 
     assertThat(_storage.loadAnswer(networkId, snapshotId, answerId), equalTo(answerStr));
 
-    _thrown.expect(FileNotFoundException.class);
-    _storage.loadAnswer(networkId, snapshotId, new AnswerId("missing"));
+    assertThrows(
+        FileNotFoundException.class,
+        () -> _storage.loadAnswer(networkId, snapshotId, new AnswerId("missing")));
   }
 
   /**
@@ -557,7 +558,7 @@ public final class FileBasedStorageTest {
    * primary location
    */
   @Test
-  public void testLoadAnswerMetadata_old() throws IOException {
+  void testLoadAnswerMetadata_old() throws IOException {
     NetworkId networkId = new NetworkId("network");
     SnapshotId snapshotId = new SnapshotId("snapshot");
     AnswerId answerId = new AnswerId("answerId");
@@ -572,8 +573,9 @@ public final class FileBasedStorageTest {
     assertThat(
         _storage.loadAnswerMetadata(networkId, snapshotId, answerId), equalTo(answerMetadata));
 
-    _thrown.expect(FileNotFoundException.class);
-    _storage.loadAnswerMetadata(networkId, snapshotId, new AnswerId("missing"));
+    assertThrows(
+        FileNotFoundException.class,
+        () -> _storage.loadAnswerMetadata(networkId, snapshotId, new AnswerId("missing")));
   }
 
   /**
@@ -581,7 +583,7 @@ public final class FileBasedStorageTest {
    * the metadata
    */
   @Test
-  public void testHasAnswerMetadata_old() throws IOException {
+  void testHasAnswerMetadata_old() throws IOException {
     NetworkId networkId = new NetworkId("network");
     SnapshotId snapshotId = new SnapshotId("snapshot");
     AnswerId answerId = new AnswerId("answerId");
@@ -599,7 +601,7 @@ public final class FileBasedStorageTest {
   }
 
   @Test
-  public void testCompletionMetadataRoundtrip() throws IOException {
+  void testCompletionMetadataRoundtrip() throws IOException {
     NetworkId networkId = new NetworkId("network");
     SnapshotId snapshotId = new SnapshotId("snapshot");
 
@@ -627,7 +629,7 @@ public final class FileBasedStorageTest {
   }
 
   @Test
-  public void testLoadCompletionMetadataMissing() throws IOException {
+  void testLoadCompletionMetadataMissing() throws IOException {
     NetworkId networkId = new NetworkId("network");
     SnapshotId snapshotId = new SnapshotId("snapshot");
 
@@ -638,7 +640,7 @@ public final class FileBasedStorageTest {
   }
 
   @Test
-  public void testStoreL3Adjacencies() throws IOException {
+  void testStoreL3Adjacencies() throws IOException {
     NetworkSnapshot networkSnapshot =
         new NetworkSnapshot(new NetworkId("network"), new SnapshotId("snapshot"));
 
@@ -656,7 +658,7 @@ public final class FileBasedStorageTest {
   }
 
   @Test
-  public void testStoreSynthesizedLayer1TopologyFileMissing() throws IOException {
+  void testStoreSynthesizedLayer1TopologyFileMissing() throws IOException {
     NetworkSnapshot networkSnapshot =
         new NetworkSnapshot(new NetworkId("network"), new SnapshotId("snapshot"));
 
@@ -664,7 +666,7 @@ public final class FileBasedStorageTest {
   }
 
   @Test
-  public void testStoreSynthesizedLayer1TopologyPresent() throws IOException {
+  void testStoreSynthesizedLayer1TopologyPresent() throws IOException {
     NetworkSnapshot networkSnapshot =
         new NetworkSnapshot(new NetworkId("network"), new SnapshotId("snapshot"));
     _storage.storeSynthesizedLayer1Topology(
@@ -675,7 +677,7 @@ public final class FileBasedStorageTest {
   }
 
   @Test
-  public void testReadId() throws IOException {
+  void testReadId() throws IOException {
     _storage.writeId(new NetworkId("network1_id"), "network1");
     assertThat(_storage.readId(NetworkId.class, "network1"), equalTo(Optional.of("network1_id")));
 
@@ -683,7 +685,7 @@ public final class FileBasedStorageTest {
   }
 
   @Test
-  public void testHasId() throws IOException {
+  void testHasId() throws IOException {
     assertFalse(_storage.hasId(SnapshotId.class, "snapshot1"));
     assertFalse(_storage.hasId(SnapshotId.class, "snapshot1", new NetworkId("net1_id")));
 
@@ -698,7 +700,7 @@ public final class FileBasedStorageTest {
   }
 
   @Test
-  public void testListResolvableNames() throws IOException {
+  void testListResolvableNames() throws IOException {
     _storage.writeId(new SnapshotId("snapshot1_id"), "snapshot1", new NetworkId("net1_id"));
     _storage.writeId(new SnapshotId("snapshot2_id"), "snapshot2", new NetworkId("net1_id"));
 
@@ -712,7 +714,7 @@ public final class FileBasedStorageTest {
 
   /** Deleting a network puts its data out of reach at once; the trash reclaims it later. */
   @Test
-  public void testDeleteNetwork() throws IOException {
+  void testDeleteNetwork() throws IOException {
     NetworkId networkId = new NetworkId("network-id");
     NetworkId otherNetworkId = new NetworkId("other-network-id");
     _storage.storeNetworkBlob(new ByteArrayInputStream("blob".getBytes()), networkId, "key");
@@ -730,14 +732,14 @@ public final class FileBasedStorageTest {
   }
 
   @Test
-  public void testDeleteNetworkAbsent() throws IOException {
+  void testDeleteNetworkAbsent() throws IOException {
     _storage.deleteNetwork(new NetworkId("network-id"));
 
     assertThat(listTrash(), empty());
   }
 
   @Test
-  public void testDeleteSnapshot() throws IOException {
+  void testDeleteSnapshot() throws IOException {
     NetworkId networkId = new NetworkId("network-id");
     SnapshotId snapshotId = new SnapshotId("snapshot-id");
     SnapshotId otherSnapshotId = new SnapshotId("other-snapshot-id");
@@ -756,7 +758,7 @@ public final class FileBasedStorageTest {
 
   /** Data that could not be moved into the trash is named by a tombstone and deleted in place. */
   @Test
-  public void testDrainTrashTombstone() throws IOException {
+  void testDrainTrashTombstone() throws IOException {
     NetworkId networkId = new NetworkId("network-id");
     _storage.storeNetworkBlob(new ByteArrayInputStream("blob".getBytes()), networkId, "key");
     Path tombstone = _storage.getTrashDir().resolve("entry.path");
@@ -770,7 +772,7 @@ public final class FileBasedStorageTest {
 
   /** A stray file in the trash is deleted rather than retried forever. */
   @Test
-  public void testDrainTrashStrayFile() throws IOException {
+  void testDrainTrashStrayFile() throws IOException {
     Path stray = _storage.getTrashDir().resolve("stray");
     _storage.mkdirs(_storage.getTrashDir());
     _storage.writeStringToFile(stray, "stray", UTF_8);
@@ -781,7 +783,7 @@ public final class FileBasedStorageTest {
 
   /** An entry that cannot be deleted is counted and left for the next pass. */
   @Test
-  public void testDrainTrashKeepsFailures() throws IOException {
+  void testDrainTrashKeepsFailures() throws IOException {
     Path tombstone = _storage.getTrashDir().resolve("entry.path");
     _storage.mkdirs(_storage.getTrashDir());
     // outside the base dir: refused rather than deleted
@@ -792,7 +794,7 @@ public final class FileBasedStorageTest {
   }
 
   @Test
-  public void testRecoverOrphansNetwork() throws IOException {
+  void testRecoverOrphansNetwork() throws IOException {
     NetworkId extantNetworkId = new NetworkId("network-id");
     NetworkId orphanedNetworkId = new NetworkId("orphaned-network-id");
     _storage.writeId(extantNetworkId, "network"); // make the network extant
@@ -807,7 +809,7 @@ public final class FileBasedStorageTest {
   }
 
   @Test
-  public void testRecoverOrphansSnapshot() throws IOException {
+  void testRecoverOrphansSnapshot() throws IOException {
     NetworkId networkId = new NetworkId("network-id");
     SnapshotId extantSnapshotId = new SnapshotId("snapshot-id");
     SnapshotId orphanedSnapshotId = new SnapshotId("orphaned-snapshot-id");
@@ -826,7 +828,7 @@ public final class FileBasedStorageTest {
   }
 
   @Test
-  public void testRecoverOrphansQuestion() throws IOException {
+  void testRecoverOrphansQuestion() throws IOException {
     NetworkId networkId = new NetworkId("network-id");
     QuestionId extantQuestionId = new QuestionId("question-id");
     QuestionId orphanedQuestionId = new QuestionId("orphaned-question-id");
@@ -843,14 +845,14 @@ public final class FileBasedStorageTest {
   }
 
   @Test
-  public void testRecoverOrphansFreshStartup() throws IOException {
+  void testRecoverOrphansFreshStartup() throws IOException {
     // Should not throw
     _storage.recoverOrphans();
   }
 
   /** Maintenance reclaims deleted data without anything else prompting it. */
   @Test
-  public void testMaintenanceReclaimsDeletedData() throws IOException, InterruptedException {
+  void testMaintenanceReclaimsDeletedData() throws IOException, InterruptedException {
     NetworkId networkId = new NetworkId("network-id");
     _storage.writeId(networkId, "network"); // extant, so startup recovery leaves it alone
     _storage.storeNetworkBlob(new ByteArrayInputStream("blob".getBytes()), networkId, "key");
@@ -871,7 +873,7 @@ public final class FileBasedStorageTest {
 
   /** Check that stale parse cache entries are evicted */
   @Test
-  public void testEvictStaleBlobs() throws IOException {
+  void testEvictStaleBlobs() throws IOException {
     NetworkId networkId = new NetworkId("network-id");
     SnapshotId snapshotId = new SnapshotId("snapshot-id");
 
@@ -900,7 +902,7 @@ public final class FileBasedStorageTest {
    * Deleting a network takes the mappings of everything inside it, which nothing else can reach.
    */
   @Test
-  public void testDeleteNetworkDeletesItsIdMappings() throws IOException {
+  void testDeleteNetworkDeletesItsIdMappings() throws IOException {
     NetworkId networkId = new NetworkId("network-id");
     SnapshotId snapshotId = new SnapshotId("snapshot-id");
     _storage.writeId(networkId, "network");
@@ -916,7 +918,7 @@ public final class FileBasedStorageTest {
   }
 
   @Test
-  public void testRecoverOrphansIdMappings() throws IOException {
+  void testRecoverOrphansIdMappings() throws IOException {
     NetworkId extantNetworkId = new NetworkId("network-id");
     NetworkId orphanedNetworkId = new NetworkId("orphaned-network-id");
     _storage.writeId(extantNetworkId, "network"); // make the network extant
@@ -937,7 +939,7 @@ public final class FileBasedStorageTest {
    * that nothing can reach, which the next startup reclaims.
    */
   @Test
-  public void testRecoverAfterCrashBeforeDeletingData() throws IOException {
+  void testRecoverAfterCrashBeforeDeletingData() throws IOException {
     NetworkId networkId = new NetworkId("network-id");
     SnapshotId deletedSnapshotId = new SnapshotId("deleted-snapshot-id");
     SnapshotId liveSnapshotId = new SnapshotId("live-snapshot-id");
@@ -962,7 +964,7 @@ public final class FileBasedStorageTest {
    * the snapshot never existed as far as any client saw.
    */
   @Test
-  public void testRecoverAfterCrashDuringCreate() throws IOException {
+  void testRecoverAfterCrashDuringCreate() throws IOException {
     NetworkId networkId = new NetworkId("network-id");
     SnapshotId snapshotId = new SnapshotId("snapshot-id");
     _storage.writeId(networkId, "network");
@@ -980,7 +982,7 @@ public final class FileBasedStorageTest {
 
   /** Data already in the trash when the process died is reclaimed by the next startup. */
   @Test
-  public void testRecoverDrainsTrashLeftByCrash() throws IOException {
+  void testRecoverDrainsTrashLeftByCrash() throws IOException {
     NetworkId networkId = new NetworkId("network-id");
     storeSnapshot(networkId, new SnapshotId("snapshot-id"));
 
@@ -998,7 +1000,7 @@ public final class FileBasedStorageTest {
    * name-to-ID mapping must survive, and everything else must be reclaimed.
    */
   @Test
-  public void testConcurrentCreateAndDeleteWithMaintenance() throws Exception {
+  void testConcurrentCreateAndDeleteWithMaintenance() throws Exception {
     int numThreads = 4;
     int numOpsPerThread = 150;
 
@@ -1221,7 +1223,7 @@ public final class FileBasedStorageTest {
   }
 
   @Test
-  public void testGetOldestSnapshotCreationTime() throws IOException {
+  void testGetOldestSnapshotCreationTime() throws IOException {
     NetworkId networkId = new NetworkId("network-id");
     SnapshotId extantSnapshotId = new SnapshotId("snapshot-id");
     SnapshotId orphanedSnapshotId = new SnapshotId("orphaned-snapshot-id");
@@ -1245,18 +1247,21 @@ public final class FileBasedStorageTest {
   }
 
   @Test
-  public void testListSnapshotInputObjectKeysMissingSnapshot() throws IOException {
-    _thrown.expect(FileNotFoundException.class);
-    try (Stream<String> keys =
-        _storage.listSnapshotInputObjectKeys(
-            new NetworkSnapshot(new NetworkId("n1"), new SnapshotId("s1")))) {
-      // silence warning; shouldn't be hit because of expected exception
-      assertThat(keys, notNullValue());
-    }
+  void testListSnapshotInputObjectKeysMissingSnapshot() {
+    assertThrows(
+        FileNotFoundException.class,
+        () -> {
+          try (Stream<String> keys =
+              _storage.listSnapshotInputObjectKeys(
+                  new NetworkSnapshot(new NetworkId("n1"), new SnapshotId("s1")))) {
+            // silence warning; shouldn't be hit because of expected exception
+            assertThat(keys, notNullValue());
+          }
+        });
   }
 
   @Test
-  public void testListSnapshotInputObjectKeysNoInputs() throws IOException {
+  void testListSnapshotInputObjectKeysNoInputs() throws IOException {
     NetworkId networkId = new NetworkId("n1");
     SnapshotId snapshotId = new SnapshotId("s1");
     Files.createDirectories(_storage.getSnapshotInputObjectsDir(networkId, snapshotId).getParent());
@@ -1267,7 +1272,7 @@ public final class FileBasedStorageTest {
   }
 
   @Test
-  public void testListSnapshotInputObjectKeys() throws IOException {
+  void testListSnapshotInputObjectKeys() throws IOException {
     NetworkId networkId = new NetworkId("n1");
     SnapshotId snapshotId = new SnapshotId("s1");
     NetworkSnapshot snapshot = new NetworkSnapshot(networkId, snapshotId);
@@ -1280,14 +1285,14 @@ public final class FileBasedStorageTest {
   }
 
   @Test
-  public void testKeyInDir() {
+  void testKeyInDir() {
     assertTrue(keyInDir("configs/rtr.cfg", "configs"));
     assertFalse(keyInDir("configs.ignore", "configs"));
   }
 
   /** Test that the dataplane serializes and deserializes successfully. */
   @Test
-  public void testDataplane() throws IOException {
+  void testDataplane() throws IOException {
     NetworkSnapshot snapshot =
         new NetworkSnapshot(new NetworkId("network"), new SnapshotId("snapshot"));
 
@@ -1362,5 +1367,14 @@ public final class FileBasedStorageTest {
     assertThat(dp2.getLayer3Vnis().rowMap(), hasEntry(equalTo("n"), hasKey("v3")));
     assertThat(dp2.getPrefixTracingInfoSummary(), hasEntry(equalTo("n"), hasKey("vp")));
     assertThat(dp2.getRibs().rowMap(), hasEntry(equalTo("n"), hasKey("vr")));
+  }
+
+  private static File newFolder(File root, String... subDirs) throws IOException {
+    String subFolder = String.join("/", subDirs);
+    File result = new File(root, subFolder);
+    if (!result.mkdirs()) {
+      throw new IOException("Couldn't create folders " + root);
+    }
+    return result;
   }
 }

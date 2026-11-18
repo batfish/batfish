@@ -1,8 +1,8 @@
 package org.batfish.datamodel.questions;
 
 import static org.batfish.datamodel.questions.BgpProcessPropertySpecifier.isIpv4UnicastRouteReflector;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableSortedMap;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -13,17 +13,14 @@ import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link BgpProcessPropertySpecifier}. */
-@RunWith(JUnit4.class)
-public class BgpProcessPropertySpecifierTest {
+class BgpProcessPropertySpecifierTest {
   @Test
-  public void testIsRouteReflector() {
+  void testIsRouteReflector() {
     BgpProcess emptyProcess = BgpProcess.testBgpProcess(Ip.ZERO);
-    assertFalse("no rr clients", isIpv4UnicastRouteReflector(emptyProcess));
+    assertFalse(isIpv4UnicastRouteReflector(emptyProcess), "no rr clients");
 
     Ipv4UnicastAddressFamily.Builder v4afBuilder = Ipv4UnicastAddressFamily.builder();
     Builder builder = BgpActivePeerConfig.builder();
@@ -57,18 +54,18 @@ public class BgpProcessPropertySpecifierTest {
     // One active peer RRC
     BgpProcess hasActiveNeighbor = BgpProcess.testBgpProcess(Ip.ZERO);
     hasActiveNeighbor.setNeighbors(ImmutableSortedMap.of(ipA, activePeerWithRRC));
-    assertTrue("has active rr client", isIpv4UnicastRouteReflector(hasActiveNeighbor));
+    assertTrue(isIpv4UnicastRouteReflector(hasActiveNeighbor), "has active rr client");
 
     // One passive peer RRC
     BgpProcess hasPassiveNeighbor = BgpProcess.testBgpProcess(Ip.ZERO);
     hasPassiveNeighbor.setPassiveNeighbors(ImmutableSortedMap.of(p30a, passivePeerWithRRC));
-    assertTrue("has passive rr client", isIpv4UnicastRouteReflector(hasPassiveNeighbor));
+    assertTrue(isIpv4UnicastRouteReflector(hasPassiveNeighbor), "has passive rr client");
 
     // One unnumbered peer RRC
     BgpProcess hasUnnumberedNeighbor = BgpProcess.testBgpProcess(Ip.ZERO);
     hasUnnumberedNeighbor.setInterfaceNeighbors(
         ImmutableSortedMap.of(peerInterface, unnumberedPeerWithRRC));
-    assertTrue("has unnumbered rr client", isIpv4UnicastRouteReflector(hasUnnumberedNeighbor));
+    assertTrue(isIpv4UnicastRouteReflector(hasUnnumberedNeighbor), "has unnumbered rr client");
 
     // Mix
     BgpProcess hasNeighborMix = BgpProcess.testBgpProcess(Ip.ZERO);
@@ -77,12 +74,12 @@ public class BgpProcessPropertySpecifierTest {
     hasNeighborMix.setPassiveNeighbors(
         ImmutableSortedMap.of(p30a, passivePeerWithoutRRC, p30b, passivePeerWithRRC));
     assertTrue(
-        "has mix of active and inactive rr client", isIpv4UnicastRouteReflector(hasNeighborMix));
+        isIpv4UnicastRouteReflector(hasNeighborMix), "has mix of active and inactive rr client");
 
     // Both inactive
     BgpProcess hasAllInactive = BgpProcess.testBgpProcess(Ip.ZERO);
     hasAllInactive.setNeighbors(ImmutableSortedMap.of(ipA, activePeerWithoutRRC));
     hasAllInactive.setPassiveNeighbors(ImmutableSortedMap.of(p30a, passivePeerWithoutRRC));
-    assertFalse("has multiple inactive rr clients", isIpv4UnicastRouteReflector(hasAllInactive));
+    assertFalse(isIpv4UnicastRouteReflector(hasAllInactive), "has multiple inactive rr clients");
   }
 }

@@ -1,6 +1,6 @@
 package org.batfish.minesweeper.communities;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -33,11 +33,11 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.utils.Tuple;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link RoutePolicyStatementVarCollector}. */
-public class RoutePolicyStatementVarCollectorTest {
+class RoutePolicyStatementVarCollectorTest {
   private static final String HOSTNAME = "hostname";
   private Configuration _baseConfig;
   private RoutePolicyStatementVarCollector _varCollector;
@@ -47,8 +47,8 @@ public class RoutePolicyStatementVarCollectorTest {
   private static final Community COMM1 = StandardCommunity.parse("20:30");
   private static final Community COMM2 = StandardCommunity.parse("21:30");
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _nf = new NetworkFactory();
     Configuration.Builder cb =
         _nf.configurationBuilder()
@@ -61,7 +61,7 @@ public class RoutePolicyStatementVarCollectorTest {
   }
 
   @Test
-  public void testVisitIf() {
+  void testVisitIf() {
     If ifStmt =
         new If(
             new MatchCommunities(
@@ -82,7 +82,7 @@ public class RoutePolicyStatementVarCollectorTest {
   }
 
   @Test
-  public void testVisitSetCommunities() {
+  void testVisitSetCommunities() {
     SetCommunities sc = new SetCommunities(new LiteralCommunitySet(CommunitySet.of(COMM1)));
 
     Set<CommunityVar> result =
@@ -92,7 +92,7 @@ public class RoutePolicyStatementVarCollectorTest {
   }
 
   @Test
-  public void testVisitSetOriginatorIp() {
+  void testVisitSetOriginatorIp() {
     assertEquals(
         _varCollector.visitSetOriginatorIp(
             SetOriginatorIp.of(NextHopIp.instance()), new Tuple<>(new HashSet<>(), _baseConfig)),
@@ -100,7 +100,7 @@ public class RoutePolicyStatementVarCollectorTest {
   }
 
   @Test
-  public void testVisitTraceableStatement() {
+  void testVisitTraceableStatement() {
     TraceableStatement traceableStatement =
         new TraceableStatement(
             TraceElement.of("statement"),
@@ -113,7 +113,7 @@ public class RoutePolicyStatementVarCollectorTest {
   }
 
   @Test
-  public void testVisitCallStatement() {
+  void testVisitCallStatement() {
     String calledPolicyName = "calledPolicy";
 
     SetCommunities sc = new SetCommunities(new LiteralCommunitySet(CommunitySet.of(COMM1)));
@@ -142,7 +142,7 @@ public class RoutePolicyStatementVarCollectorTest {
   }
 
   @Test
-  public void testVisitExcludeAsPath() {
+  void testVisitExcludeAsPath() {
     ExcludeAsPath excludeAsPath =
         new ExcludeAsPath(new LiteralAsList(ImmutableList.of(new ExplicitAs(1L))));
 

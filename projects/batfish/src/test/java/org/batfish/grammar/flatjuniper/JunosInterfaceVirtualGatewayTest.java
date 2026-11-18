@@ -10,6 +10,7 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.MacAddress;
@@ -17,18 +18,17 @@ import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.representation.juniper.Interface;
 import org.batfish.representation.juniper.JuniperConfiguration;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosInterfaceVirtualGatewayTest {
+final class JunosInterfaceVirtualGatewayTest {
 
   private static final String HOSTNAME = "junos-interface-virtual-gateway";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testVirtualGateway() throws IOException {
+  void testVirtualGateway() throws IOException {
     Batfish batfish = getBatfish(_folder, HOSTNAME);
     JuniperConfiguration jc = getVendorConfiguration(batfish, HOSTNAME);
     Interface iface =

@@ -44,11 +44,11 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.batfish.minesweeper.bdd.BDDTunnelEncapsulationAttribute.Value;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ModelGenerationTest {
+class ModelGenerationTest {
   @Test
-  public void testSatAssignmentToTunnelEncapsulationAttribute() {
+  void testSatAssignmentToTunnelEncapsulationAttribute() {
     TunnelEncapsulationAttribute attr =
         new TunnelEncapsulationAttribute(Ip.FIRST_CLASS_A_PRIVATE_IP);
     Configuration c =
@@ -145,7 +145,7 @@ public class ModelGenerationTest {
   }
 
   @Test
-  public void testSatAssignmentToInputRouteLocalAttributes() {
+  void testSatAssignmentToInputRouteLocalAttributes() {
     RoutingPolicy policy =
         acceptingPolicy(
             new If(
@@ -172,7 +172,7 @@ public class ModelGenerationTest {
   }
 
   @Test
-  public void testSatAssignmentToInputRouteLocalAttributesDefaultToUnset() {
+  void testSatAssignmentToInputRouteLocalAttributesDefaultToUnset() {
     RoutingPolicy policy = acceptingPolicy(new SetTag2(new LiteralLong(5)));
     ConfigAtomicPredicates configAPs = configAPsFor(policy);
     TransferBDD tbdd = new TransferBDD(configAPs);
@@ -186,7 +186,7 @@ public class ModelGenerationTest {
   }
 
   @Test
-  public void testSatAssignmentToInputRouteOtherTag2() {
+  void testSatAssignmentToInputRouteOtherTag2() {
     RoutingPolicy policy = acceptingPolicy(new SetTag2(new LiteralLong(1)));
     ConfigAtomicPredicates configAPs = configAPsFor(policy);
     TransferBDD tbdd = new TransferBDD(configAPs);
@@ -206,7 +206,7 @@ public class ModelGenerationTest {
   }
 
   @Test
-  public void testSatAssignmentToOutputRouteLocalAttributes() {
+  void testSatAssignmentToOutputRouteLocalAttributes() {
     RoutingPolicy policy =
         acceptingPolicy(
             new SetTag2(new LiteralLong(5)),

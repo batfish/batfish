@@ -6,13 +6,13 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link Pruner}. */
-public class PrunerTest {
+class PrunerTest {
 
   @Test
-  public void testString() {
+  void testString() {
     Pruner<String> pruner =
         Pruner.<String>builder()
             .addProperty(s -> s.charAt(0))

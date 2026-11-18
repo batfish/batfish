@@ -10,7 +10,8 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
@@ -37,19 +38,16 @@ import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.NoNodesNodeSpecifier;
 import org.batfish.specifier.SpecifierFactories;
 import org.batfish.specifier.SpecifierFactories.Version;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test how {@link SpecifiersReachabilityQuestion} constructs different fields of its {@link
  * org.batfish.question.ReachabilityParameters parameters} (defaults, etc).
  */
-public class SpecifiersReachabilityQuestionTest {
-  @Rule public final ExpectedException exception = ExpectedException.none();
+class SpecifiersReachabilityQuestionTest {
 
   @Test
-  public void testQuestionDefaults() {
+  void testQuestionDefaults() {
     SpecifiersReachabilityQuestion question = new SpecifiersReachabilityQuestion();
     assertThat(
         question.getActions().getDispositions(),
@@ -70,7 +68,7 @@ public class SpecifiersReachabilityQuestionTest {
   }
 
   @Test
-  public void testDestinationIpSpaceSpecification() {
+  void testDestinationIpSpaceSpecification() {
     SpecifiersReachabilityQuestion question =
         SpecifiersReachabilityQuestion.builder()
             .setHeaderConstraints(
@@ -99,7 +97,7 @@ public class SpecifiersReachabilityQuestionTest {
   }
 
   @Test
-  public void testApplicationsSpecification() {
+  void testApplicationsSpecification() {
     SpecifiersReachabilityQuestion question =
         SpecifiersReachabilityQuestion.builder()
             .setHeaderConstraints(PacketHeaderConstraints.builder().setApplications("dns").build())
@@ -115,18 +113,23 @@ public class SpecifiersReachabilityQuestionTest {
   }
 
   @Test
-  public void testInvalidApplicationsSpecification() {
+  void testInvalidApplicationsSpecification() {
     IntegerSpace dstPorts = IntegerSpace.of(new SubRange(1, 2));
 
-    exception.expect(IllegalArgumentException.class);
-    SpecifiersReachabilityQuestion.builder()
-        .setHeaderConstraints(
-            PacketHeaderConstraints.builder().setDstPorts(dstPorts).setApplications("dns").build())
-        .build();
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            SpecifiersReachabilityQuestion.builder()
+                .setHeaderConstraints(
+                    PacketHeaderConstraints.builder()
+                        .setDstPorts(dstPorts)
+                        .setApplications("dns")
+                        .build())
+                .build());
   }
 
   @Test
-  public void testSourceIpWildcardDifferenceAccepted() {
+  void testSourceIpWildcardDifferenceAccepted() {
     SpecifiersReachabilityQuestion question =
         SpecifiersReachabilityQuestion.builder()
             .setHeaderConstraints(
@@ -154,7 +157,7 @@ public class SpecifiersReachabilityQuestionTest {
   }
 
   @Test
-  public void testTransitAndForbiddenNodesSpecification() {
+  void testTransitAndForbiddenNodesSpecification() {
     SpecifiersReachabilityQuestion question =
         SpecifiersReachabilityQuestion.builder()
             .setPathConstraints(
@@ -174,14 +177,14 @@ public class SpecifiersReachabilityQuestionTest {
   }
 
   @Test
-  public void testIgnoreFilters() {
+  void testIgnoreFilters() {
     SpecifiersReachabilityQuestion q =
         SpecifiersReachabilityQuestion.builder().setIgnoreFilters(true).build();
     assertThat(q.getReachabilityParameters().getIgnoreFilters(), equalTo(true));
   }
 
   @Test
-  public void testInvertSearch() {
+  void testInvertSearch() {
     SpecifiersReachabilityQuestion q =
         SpecifiersReachabilityQuestion.builder().setInvertSearch(true).build();
     assertThat(q.getReachabilityParameters().getInvertSearch(), equalTo(true));

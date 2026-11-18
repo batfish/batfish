@@ -9,10 +9,10 @@ import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.Grammar;
 import org.batfish.specifier.parse.Anchor.Type;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link Parser} producing {@link NameSetAstNode}. */
-public class ParserNameSetTest {
+class ParserNameSetTest {
 
   private static CompletionMetadata mockCompletionMetadata =
       CompletionMetadata.builder().setMlagIds(ImmutableSet.of("mlag1", "mlag2", "other")).build();
@@ -30,7 +30,7 @@ public class ParserNameSetTest {
   }
 
   @Test
-  public void testAutoCompleteEmpty() {
+  void testAutoCompleteEmpty() {
     assertThat(
         getPAC("").run(),
         equalTo(
@@ -42,7 +42,7 @@ public class ParserNameSetTest {
   }
 
   @Test
-  public void testAutocompletePartialName() {
+  void testAutocompletePartialName() {
     String query = "lag";
 
     assertThat(
@@ -55,7 +55,7 @@ public class ParserNameSetTest {
   }
 
   @Test
-  public void testParseName() {
+  void testParseName() {
     String query = "mla";
     NameSetAstNode expectedAst = new SingletonNameSetAstNode(query);
 
@@ -66,7 +66,7 @@ public class ParserNameSetTest {
   }
 
   @Test
-  public void testParseNameRegex() {
+  void testParseNameRegex() {
     String query = "/IP/";
     RegexNameSetAstNode expectedAst = new RegexNameSetAstNode("IP");
 
@@ -77,7 +77,7 @@ public class ParserNameSetTest {
   }
 
   @Test
-  public void testParseNameRegexDeprecated() {
+  void testParseNameRegexDeprecated() {
     String query = "ip.*";
     RegexNameSetAstNode expectedAst = new RegexNameSetAstNode("ip.*");
 
@@ -88,7 +88,7 @@ public class ParserNameSetTest {
   }
 
   @Test
-  public void testParseUnion() {
+  void testParseUnion() {
     String name = "n1";
     String regex = "re1";
     UnionNameSetAstNode expectedNode =

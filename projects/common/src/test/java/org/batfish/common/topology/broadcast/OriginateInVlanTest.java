@@ -5,11 +5,11 @@ import static org.hamcrest.Matchers.equalTo;
 
 import java.util.Optional;
 import org.batfish.common.topology.broadcast.L3Interface.Unit;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class OriginateInVlanTest {
+class OriginateInVlanTest {
   @Test
-  public void testOriginateInVlan() {
+  void testOriginateInVlan() {
     OriginateInVlan testing = new OriginateInVlan(5);
     assertThat(testing.traverse(Unit.VALUE), equalTo(Optional.of(5)));
   }

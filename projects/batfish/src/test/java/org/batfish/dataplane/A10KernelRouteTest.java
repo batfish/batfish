@@ -13,6 +13,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableSet;
+import java.io.File;
 import java.io.IOException;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPath;
@@ -24,16 +25,15 @@ import org.batfish.dataplane.ibdp.IncrementalDataPlane;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Test of A10 kernel routes, vrrp-a, and BGP. */
-public final class A10KernelRouteTest {
+final class A10KernelRouteTest {
   private static final String SNAPSHOT_FOLDER = "org/batfish/dataplane/testrigs/a10-kernel-routes";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private static final Ip FLOATING_IP = Ip.parse("10.0.1.10");
   private static final Prefix KERNEL_PREFIX = Prefix.create(FLOATING_IP, MAX_PREFIX_LENGTH);
@@ -60,8 +60,8 @@ public final class A10KernelRouteTest {
    *   - 10.0.1.10/32 should appear in r1's BGP RIB as a local route
    *   - 10.0.1.10/32 should appear in r2's BGP RIB as a received route route
    */
-  @Before
-  public void setup() throws IOException {
+  @BeforeEach
+  void setup() throws IOException {
     String r1Filename = "r1";
     String r2Filename = "r2";
     _batfish =
@@ -75,7 +75,7 @@ public final class A10KernelRouteTest {
   }
 
   @Test
-  public void testMainRibRoutes() {
+  void testMainRibRoutes() {
     IncrementalDataPlane dp = (IncrementalDataPlane) _batfish.loadDataPlane(_batfish.getSnapshot());
 
     assertThat(
@@ -96,7 +96,7 @@ public final class A10KernelRouteTest {
   }
 
   @Test
-  public void testBgpRibRoutes() {
+  void testBgpRibRoutes() {
     DataPlane dp = _batfish.loadDataPlane(_batfish.getSnapshot());
 
     assertThat(

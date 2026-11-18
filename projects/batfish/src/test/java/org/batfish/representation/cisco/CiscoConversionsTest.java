@@ -20,7 +20,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -42,27 +42,24 @@ import org.batfish.datamodel.matchers.IkePhase1KeyMatchers;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetAclLine;
 import org.batfish.representation.cisco.DistributeList.DistributeListFilterType;
 import org.batfish.vendor.VendorStructureId;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link CiscoConversions} class */
-@RunWith(JUnit4.class)
-public class CiscoConversionsTest {
+class CiscoConversionsTest {
 
   private static final String IKE_PHASE1_KEY = "IKE_Phase1_Key";
   private NetworkFactory _nf;
   private Warnings _warnings;
 
-  @Before
-  public void before() {
+  @BeforeEach
+  void before() {
     _warnings = new Warnings(true, true, true);
     _nf = new NetworkFactory();
   }
 
   @Test
-  public void testSanityCheckEigrpDistributeListAbsentFilter() {
+  void testSanityCheckEigrpDistributeListAbsentFilter() {
     Configuration c =
         _nf.configurationBuilder()
             .setHostname("conf")
@@ -82,7 +79,7 @@ public class CiscoConversionsTest {
   }
 
   @Test
-  public void testCreateAclWithSymmetricalLines() {
+  void testCreateAclWithSymmetricalLines() {
     IpAccessList ipAccessList =
         _nf.aclBuilder()
             .setLines(
@@ -105,7 +102,7 @@ public class CiscoConversionsTest {
   }
 
   @Test
-  public void testGetMatchingPskInvalidLocalIface() {
+  void testGetMatchingPskInvalidLocalIface() {
     IsakmpProfile isakmpProfile = new IsakmpProfile("Missing_Local_Interface");
     // Empty interfaceName value represents incorrect local-address value
     isakmpProfile.setLocalInterfaceName(INVALID_LOCAL_INTERFACE);
@@ -128,7 +125,7 @@ public class CiscoConversionsTest {
   }
 
   @Test
-  public void testGetMatchingPskNullKeyring() {
+  void testGetMatchingPskNullKeyring() {
     IsakmpProfile isakmpProfile = new IsakmpProfile("Null_Keyring");
     // Empty interfaceName value represents incorrect local-address value
     isakmpProfile.setLocalInterfaceName("local_interface");
@@ -148,7 +145,7 @@ public class CiscoConversionsTest {
   }
 
   @Test
-  public void testGetMatchingPskMissingKeyring() {
+  void testGetMatchingPskMissingKeyring() {
     IsakmpProfile isakmpProfile = new IsakmpProfile("Missing_Keyring");
     // Empty interfaceName value represents incorrect local-address value
     isakmpProfile.setLocalInterfaceName("local_interface");
@@ -169,7 +166,7 @@ public class CiscoConversionsTest {
   }
 
   @Test
-  public void testGetMatchingPskInvalidLocalIfaceKr() {
+  void testGetMatchingPskInvalidLocalIfaceKr() {
     IsakmpProfile isakmpProfile = new IsakmpProfile("Invalid_Iface_Local_Address");
     // Empty interfaceName value represents incorrect local-address value
     isakmpProfile.setLocalInterfaceName("local_interface");
@@ -190,7 +187,7 @@ public class CiscoConversionsTest {
   }
 
   @Test
-  public void testGetMatchingPskValidKeyring() {
+  void testGetMatchingPskValidKeyring() {
     IsakmpProfile isakmpProfile = new IsakmpProfile("Valid_Keyring");
     // Empty interfaceName value represents incorrect local-address value
     isakmpProfile.setLocalInterfaceName("local_interface");
@@ -210,7 +207,7 @@ public class CiscoConversionsTest {
   }
 
   @Test
-  public void testGetMatchingPskInvalidKeyring() {
+  void testGetMatchingPskInvalidKeyring() {
     IsakmpProfile isakmpProfile = new IsakmpProfile("Invalid_Keyring");
     // Empty interfaceName value represents incorrect local-address value
     isakmpProfile.setLocalInterfaceName("local_interface");
@@ -230,7 +227,7 @@ public class CiscoConversionsTest {
   }
 
   @Test
-  public void testSanityCheckDistributeListFilterType() {
+  void testSanityCheckDistributeListFilterType() {
     CiscoConfiguration oldConfig = new CiscoConfiguration();
     oldConfig.setHostname("cisco_conf");
     oldConfig.setWarnings(new Warnings(false, true, false));
@@ -253,7 +250,7 @@ public class CiscoConversionsTest {
   }
 
   @Test
-  public void testSanityCheckDistributeListPrefixList() {
+  void testSanityCheckDistributeListPrefixList() {
     CiscoConfiguration oldConfig = new CiscoConfiguration();
     oldConfig.setHostname("cisco_conf");
     oldConfig.setWarnings(new Warnings(false, true, false));
@@ -276,7 +273,7 @@ public class CiscoConversionsTest {
   }
 
   @Test
-  public void testToCommunitySetAclLine() {
+  void testToCommunitySetAclLine() {
     ExpandedCommunityListLine l0 = new ExpandedCommunityListLine(LineAction.PERMIT, "34");
     ExpandedCommunityListLine l1 = new ExpandedCommunityListLine(LineAction.DENY, "^34:567_");
 
@@ -296,7 +293,7 @@ public class CiscoConversionsTest {
   }
 
   @Test
-  public void testToOspfDeadIntervalExplicit() {
+  void testToOspfDeadIntervalExplicit() {
     CiscoConfiguration c = basicCiscoConfig();
     Interface iface = new Interface("FastEthernet0/0", c);
     iface.setOspfDeadInterval(7);
@@ -307,7 +304,7 @@ public class CiscoConversionsTest {
   }
 
   @Test
-  public void testToOspfDeadIntervalFromHello() {
+  void testToOspfDeadIntervalFromHello() {
     CiscoConfiguration c = basicCiscoConfig();
     Interface iface = new Interface("FastEthernet0/0", c);
 
@@ -320,7 +317,7 @@ public class CiscoConversionsTest {
   }
 
   @Test
-  public void testToOspfDeadIntervalFromType() {
+  void testToOspfDeadIntervalFromType() {
     CiscoConfiguration c = basicCiscoConfig();
     Interface iface = new Interface("FastEthernet0/0", c);
 
@@ -336,7 +333,7 @@ public class CiscoConversionsTest {
   }
 
   @Test
-  public void testToOspfHelloIntervalExplicit() {
+  void testToOspfHelloIntervalExplicit() {
     CiscoConfiguration c = basicCiscoConfig();
     Interface iface = new Interface("FastEthernet0/0", c);
 
@@ -348,7 +345,7 @@ public class CiscoConversionsTest {
   }
 
   @Test
-  public void testToOspfHelloIntervalFromType() {
+  void testToOspfHelloIntervalFromType() {
     CiscoConfiguration c = basicCiscoConfig();
     Interface iface = new Interface("FastEthernet0/0", c);
 
@@ -363,7 +360,7 @@ public class CiscoConversionsTest {
   }
 
   @Test
-  public void testToOspfNetworkType() {
+  void testToOspfNetworkType() {
     assertThat(
         CiscoConversions.toOspfNetworkType(null, new Warnings()),
         equalTo(org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST));
@@ -371,7 +368,7 @@ public class CiscoConversionsTest {
 
   /** Check that vendorStructureId is set when extended ACL is converted to route filter list */
   @Test
-  public void testToRouterFilterList_extendedAccessList_vendorStructureId() {
+  void testToRouterFilterList_extendedAccessList_vendorStructureId() {
     ExtendedAccessList acl = new ExtendedAccessList("name");
     RouteFilterList rfl = toRouteFilterList(acl, "file");
     assertThat(
@@ -383,7 +380,7 @@ public class CiscoConversionsTest {
 
   /** Check that vendorStructureId is set when standard ACL is converted to route filter list */
   @Test
-  public void testToRouterFilterList_standardAccessList_vendorStructureId() {
+  void testToRouterFilterList_standardAccessList_vendorStructureId() {
     StandardAccessList acl = new StandardAccessList("name");
     RouteFilterList rfl = toRouteFilterList(acl, "file");
     assertThat(
@@ -395,7 +392,7 @@ public class CiscoConversionsTest {
 
   /** Check that vendorStructureId is set when prefix list is converted to route filter list */
   @Test
-  public void testToRouterFilterList_prefixList_vendorStructureId() {
+  void testToRouterFilterList_prefixList_vendorStructureId() {
     PrefixList plist = new PrefixList("name");
     RouteFilterList rfl = toRouteFilterList(plist, "file");
     assertThat(

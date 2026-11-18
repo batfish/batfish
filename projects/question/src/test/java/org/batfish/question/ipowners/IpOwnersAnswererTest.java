@@ -36,11 +36,11 @@ import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link IpOwnersAnswerer} */
-public class IpOwnersAnswererTest {
+class IpOwnersAnswererTest {
   private static final Ip _uniqueIp = Ip.parse("1.1.1.1");
   private static final Ip _duplicateIp = Ip.parse("2.2.2.2");
   private static final Ip _noOwnersIp = Ip.parse("3.3.3.3");
@@ -49,8 +49,8 @@ public class IpOwnersAnswererTest {
   private Map<String, Set<Interface>> _interfaceMap;
 
   /** Setup the maps that the answerer processes, with mix of active and inactive interfaces */
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
     Interface.Builder ib = TestInterface.builder().setVrf(vrf);
     ConcreteInterfaceAddress uniqueAddr =
@@ -86,7 +86,7 @@ public class IpOwnersAnswererTest {
 
   /** Test that rows show up correctly if duplicatesOnly is false, and we can handle empty maps */
   @Test
-  public void testRowGenerationAllIps() {
+  void testRowGenerationAllIps() {
     // Generate rows with no IP owners, no Interface Ips
     Multiset<Row> rows =
         IpOwnersAnswerer.generateRows(
@@ -130,7 +130,7 @@ public class IpOwnersAnswererTest {
   }
 
   @Test
-  public void testRowGenerationDuplicatesOnly() {
+  void testRowGenerationDuplicatesOnly() {
 
     // Expect two rows for _duplicateIp only
     Multiset<Row> rows =
@@ -142,7 +142,7 @@ public class IpOwnersAnswererTest {
   }
 
   @Test
-  public void testRowGenerationIpSpace() {
+  void testRowGenerationIpSpace() {
     // expect one row for _uniqueIp
     Multiset<Row> rows =
         IpOwnersAnswerer.generateRows(_ownersMap, _interfaceMap, _uniqueIp.toIpSpace(), false);
@@ -150,7 +150,7 @@ public class IpOwnersAnswererTest {
   }
 
   @Test
-  public void testColumnPresence() {
+  void testColumnPresence() {
     assertThat(
         IpOwnersAnswerer.getColumnMetadata().stream()
             .map(ColumnMetadata::getName)

@@ -1,20 +1,18 @@
 package org.batfish.datamodel.table;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-public class RowTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class RowTest {
 
   private Row initRowThree() {
     return Row.builder().put("col1", "value1").put("col2", "value2").put("col3", "value3").build();
@@ -34,7 +32,7 @@ public class RowTest {
   }
 
   @Test
-  public void get() {
+  void get() {
     // check that non-list values are same after put and get
     assertThat(Row.builder().put("col", 42).build().get("col", Schema.INTEGER), equalTo(42));
     assertThat(
@@ -57,7 +55,7 @@ public class RowTest {
   }
 
   @Test
-  public void getKey() {
+  void getKey() {
     Row row = initRowThree();
     List<ColumnMetadata> metadataNoKeys =
         initMetadataThree(false, false, false, false, false, false);
@@ -72,7 +70,7 @@ public class RowTest {
   }
 
   @Test
-  public void getValue() {
+  void getValue() {
     Row row = initRowThree();
     List<ColumnMetadata> metadataNoValues =
         initMetadataThree(false, false, false, false, false, false);
@@ -87,17 +85,21 @@ public class RowTest {
   }
 
   @Test
-  public void ofUntyped() {
+  void ofUntyped() {
     assertThat(Row.of("a", 5), equalTo(Row.builder().put("a", 5).build()));
   }
 
   @Test
-  public void ofTyped() {
+  void ofTyped() {
     assertThat(
         Row.of(ImmutableMap.of("a", new ColumnMetadata("a", Schema.INTEGER, "desc")), "a", 5),
         equalTo(Row.builder().put("a", 5).build()));
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("Column 'b' is not present");
-    Row.of(ImmutableMap.of("a", new ColumnMetadata("a", Schema.INTEGER, "desc")), "b", 5);
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () ->
+                Row.of(
+                    ImmutableMap.of("a", new ColumnMetadata("a", Schema.INTEGER, "desc")), "b", 5));
+    assertThat(exception.getMessage(), containsString("Column 'b' is not present"));
   }
 }

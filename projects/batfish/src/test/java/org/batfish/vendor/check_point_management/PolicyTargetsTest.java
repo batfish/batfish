@@ -7,13 +7,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link PolicyTargets}. */
-public final class PolicyTargetsTest {
+final class PolicyTargetsTest {
 
   @Test
-  public void testJacksonDeserialization() throws JsonProcessingException {
+  void testJacksonDeserialization() throws JsonProcessingException {
     String input =
         "{"
             + "\"GARBAGE\":0,"
@@ -27,13 +27,13 @@ public final class PolicyTargetsTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     PolicyTargets obj = new PolicyTargets(Uid.of("1"));
     assertThat(SerializationUtils.clone(obj), equalTo(obj));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     PolicyTargets obj = new PolicyTargets(Uid.of("1"));
     new EqualsTester()
         .addEqualityGroup(obj, new PolicyTargets(Uid.of("1")))

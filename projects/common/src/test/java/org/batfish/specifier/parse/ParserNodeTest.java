@@ -17,17 +17,13 @@ import org.batfish.common.CompletionMetadata;
 import org.batfish.common.autocomplete.NodeCompletionMetadata;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.specifier.Grammar;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link Parser} producing {@link NodeAstNode}. */
-public class ParserNodeTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class ParserNodeTest {
 
   @Test
-  public void testCompletionEmpty() {
+  void testCompletionEmpty() {
     String query = "";
 
     CompletionMetadata completionMetadata =
@@ -58,7 +54,7 @@ public class ParserNodeTest {
   }
 
   @Test
-  public void testCompletionPartialName() {
+  void testCompletionPartialName() {
     String query = "node1"; // this could be a complete term or a partial name
 
     CompletionMetadata completionMetadata =
@@ -88,7 +84,7 @@ public class ParserNodeTest {
   }
 
   @Test
-  public void testParseNodeRole() {
+  void testParseNodeRole() {
     RoleNodeAstNode expectedAst = new RoleNodeAstNode("a", "b");
 
     assertThat(
@@ -101,7 +97,7 @@ public class ParserNodeTest {
   }
 
   @Test
-  public void testParseNodeName() {
+  void testParseNodeName() {
     String name = "node.com-011";
     NameNodeAstNode expectedAst = new NameNodeAstNode(name);
 
@@ -111,7 +107,7 @@ public class ParserNodeTest {
   }
 
   @Test
-  public void testParseNodeNameRegex() {
+  void testParseNodeNameRegex() {
     String regex = "^node-0.1\\/0.*.?$";
     String regexWithSlashes = "/" + regex + "/";
     NameRegexNodeAstNode expectedAst = new NameRegexNodeAstNode(regex);
@@ -124,7 +120,7 @@ public class ParserNodeTest {
   }
 
   @Test
-  public void testParseNodeNameRegexDeprecated() {
+  void testParseNodeNameRegexDeprecated() {
     String regex = "node.*";
     NameRegexNodeAstNode expectedAst = new NameRegexNodeAstNode(regex);
 
@@ -135,7 +131,7 @@ public class ParserNodeTest {
   }
 
   @Test
-  public void testParseNodeNameRegexDeprecated2() {
+  void testParseNodeNameRegexDeprecated2() {
     String regex = ".*node.*";
     NameRegexNodeAstNode expectedAst = new NameRegexNodeAstNode(regex);
 
@@ -146,7 +142,7 @@ public class ParserNodeTest {
   }
 
   @Test
-  public void testParseNodeParens() {
+  void testParseNodeParens() {
     String ifaceName = "node-lhr";
     NameNodeAstNode expectedAst = new NameNodeAstNode(ifaceName);
 
@@ -159,7 +155,7 @@ public class ParserNodeTest {
   }
 
   @Test
-  public void testParseNodeType() {
+  void testParseNodeType() {
     TypeNodeAstNode expectedAst =
         new TypeNodeAstNode(new StringAstNode(DeviceType.ROUTER.toString()));
 
@@ -175,7 +171,7 @@ public class ParserNodeTest {
   }
 
   @Test
-  public void testParseNodeDifference() {
+  void testParseNodeDifference() {
     DifferenceNodeAstNode expectedNode =
         new DifferenceNodeAstNode(new NameNodeAstNode("node0"), new NameNodeAstNode("node1"));
 
@@ -187,7 +183,7 @@ public class ParserNodeTest {
   }
 
   @Test
-  public void testParseNodeIntersection() {
+  void testParseNodeIntersection() {
     IntersectionNodeAstNode expectedNode =
         new IntersectionNodeAstNode(new NameNodeAstNode("node0"), new NameNodeAstNode("node1"));
 
@@ -199,7 +195,7 @@ public class ParserNodeTest {
   }
 
   @Test
-  public void testParseNodeUnion() {
+  void testParseNodeUnion() {
     UnionNodeAstNode expectedNode =
         new UnionNodeAstNode(new NameNodeAstNode("node0"), new NameNodeAstNode("node1"));
 
@@ -215,7 +211,7 @@ public class ParserNodeTest {
 
   /** Test if we got the precedence of set operators right. Intersection is higher priority. */
   @Test
-  public void testParseNodeSetOpPrecedence() {
+  void testParseNodeSetOpPrecedence() {
     assertThat(
         SpecifierAstBuilder.getAst(Grammar.NODE_SPECIFIER, "node0\\node1&eth1"),
         equalTo(

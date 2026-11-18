@@ -18,8 +18,9 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -83,14 +84,10 @@ import org.batfish.representation.cisco.CiscoStructureType;
 import org.batfish.vendor.StructureType;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.VendorStructureId;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link ConvertConfigurationJob}. */
-public final class ConvertConfigurationJobTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+final class ConvertConfigurationJobTest {
 
   private VendorConfiguration baseVendorConfig() {
     VendorConfiguration vc = new CiscoConfiguration();
@@ -99,7 +96,7 @@ public final class ConvertConfigurationJobTest {
   }
 
   @Test
-  public void testCollectIpSpaceReferences() {
+  void testCollectIpSpaceReferences() {
     Configuration c = new Configuration("c", ConfigurationFormat.CISCO_IOS);
     c.getIpSpaces().put("ref", new IpSpaceReference("InIpSpaces"));
     c.getIpSpaces().put("SelfRefInIpSpaces", new IpSpaceReference("SelfRefInIpSpaces"));
@@ -184,7 +181,7 @@ public final class ConvertConfigurationJobTest {
   }
 
   @Test
-  public void testFinalizeConfigurationVerifyCommunityStructures() {
+  void testFinalizeConfigurationVerifyCommunityStructures() {
     Configuration c = new Configuration("c", ConfigurationFormat.CISCO_IOS);
     VendorConfiguration vc = baseVendorConfig();
     c.setDefaultCrossZoneAction(LineAction.PERMIT);
@@ -192,13 +189,14 @@ public final class ConvertConfigurationJobTest {
     c.setCommunityMatchExprs(
         ImmutableMap.of("referenceToUndefined", new CommunityMatchExprReference("undefined")));
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    finalizeConfiguration(c, vc, new Warnings());
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class, () -> finalizeConfiguration(c, vc, new Warnings()));
+    assertThat(exception.getMessage(), containsString("Undefined reference"));
   }
 
   @Test
-  public void testFinalizeConfigurationVerifyVrrpGroups() {
+  void testFinalizeConfigurationVerifyVrrpGroups() {
     {
       // Test that undefined interface is removed from VrrpGroup, and warning is added.
       Configuration c = new Configuration("c", ConfigurationFormat.CISCO_IOS);
@@ -255,7 +253,7 @@ public final class ConvertConfigurationJobTest {
   }
 
   @Test
-  public void testRemoveInvalidStaticRoutes() {
+  void testRemoveInvalidStaticRoutes() {
     Configuration c =
         Configuration.builder()
             .setHostname("foo")
@@ -323,7 +321,7 @@ public final class ConvertConfigurationJobTest {
   }
 
   @Test
-  public void testRemoveInvalidTrackReferences() {
+  void testRemoveInvalidTrackReferences() {
     Configuration c =
         Configuration.builder()
             .setHostname("foo")
@@ -380,7 +378,7 @@ public final class ConvertConfigurationJobTest {
   }
 
   @Test
-  public void testVerifyInterfaces() {
+  void testVerifyInterfaces() {
     InterfaceAddress address = ConcreteInterfaceAddress.parse("1.1.1.1/24");
 
     Configuration c =
@@ -526,7 +524,7 @@ public final class ConvertConfigurationJobTest {
   }
 
   @Test
-  public void testVerifyOspfAreas() {
+  void testVerifyOspfAreas() {
     Configuration c =
         Configuration.builder()
             .setHostname("c")
@@ -566,7 +564,7 @@ public final class ConvertConfigurationJobTest {
   }
 
   @Test
-  public void testRemoveInvalidVendorStructureIds() {
+  void testRemoveInvalidVendorStructureIds() {
     String filename = "configs/config";
     StructureType type = CiscoStructureType.AAA_SERVER_GROUP;
     String structureType = type.getDescription();
@@ -614,7 +612,7 @@ public final class ConvertConfigurationJobTest {
   }
 
   @Test
-  public void testAssertVendorStructureIdsValidNoAnswerElement() {
+  void testAssertVendorStructureIdsValidNoAnswerElement() {
     String filename = "configs/config";
     String structureType = "structureType";
     String validStructureName = "validStructureName";
@@ -641,7 +639,7 @@ public final class ConvertConfigurationJobTest {
   }
 
   @Test
-  public void testAssertVendorStructureIdsValidInvalid() {
+  void testAssertVendorStructureIdsValidInvalid() {
     String filename = "configs/config";
     String structureType = "structureType";
     String validStructureName = "validStructureName";
@@ -668,7 +666,7 @@ public final class ConvertConfigurationJobTest {
   }
 
   @Test
-  public void testAssertVendorStructureIdsValidValid() {
+  void testAssertVendorStructureIdsValidValid() {
     String filename = "configs/config";
     StructureType type = CiscoStructureType.AAA_SERVER_GROUP;
     String structureType = type.getDescription();
@@ -740,7 +738,7 @@ public final class ConvertConfigurationJobTest {
   }
 
   @Test
-  public void testSaveStructureInfo() {
+  void testSaveStructureInfo() {
     String file1 = "configs/f1";
     String file2 = "configs/f2";
     StructureType structureType = CiscoStructureType.AAA_SERVER_GROUP;
@@ -783,7 +781,7 @@ public final class ConvertConfigurationJobTest {
   }
 
   @Test
-  public void testRemoveUndefinedTrackReferences() {
+  void testRemoveUndefinedTrackReferences() {
     Configuration c =
         Configuration.builder()
             .setHostname("c")
@@ -820,7 +818,7 @@ public final class ConvertConfigurationJobTest {
   }
 
   @Test
-  public void testRemoveUndefinedRoutingPolicyReferences() {
+  void testRemoveUndefinedRoutingPolicyReferences() {
     Configuration c =
         Configuration.builder()
             .setHostname("c")

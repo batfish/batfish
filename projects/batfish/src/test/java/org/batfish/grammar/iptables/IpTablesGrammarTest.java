@@ -18,9 +18,9 @@ import org.batfish.config.Settings;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class IpTablesGrammarTest {
+class IpTablesGrammarTest {
 
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/iptables/testconfigs/";
 
@@ -45,7 +45,7 @@ public class IpTablesGrammarTest {
   }
 
   @Test
-  public void testUnsupportedCommand() {
+  void testUnsupportedCommand() {
     IptablesVendorConfiguration c = parseVendorConfig("unsupported_command");
     // warnings for unsupported commands
     assertThat(c.getWarnings(), hasParseWarning(hasComment("Check command is not supported")));
@@ -63,7 +63,7 @@ public class IpTablesGrammarTest {
   }
 
   @Test
-  public void testUnsupportedRuleSpecOptions() {
+  void testUnsupportedRuleSpecOptions() {
     IptablesVendorConfiguration c = parseVendorConfig("unsupported_rule_spec_options");
     // warnings about unknown options
     assertThat(c.getWarnings().getParseWarnings().size(), equalTo(3));

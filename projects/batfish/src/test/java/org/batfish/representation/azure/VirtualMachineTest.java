@@ -2,8 +2,8 @@ package org.batfish.representation.azure;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.io.IOException;
@@ -16,12 +16,12 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class VirtualMachineTest {
+class VirtualMachineTest {
 
   @Test
-  public void testDeserialization() throws IOException {
+  void testDeserialization() throws IOException {
     String text = readResource("org/batfish/representation/azure/VirtualMachineTest.json", UTF_8);
     JsonNode node = BatfishObjectMapper.mapper().readTree(text);
 
@@ -50,7 +50,7 @@ public class VirtualMachineTest {
   }
 
   @Test
-  public void testToConfigurationNode() throws IOException {
+  void testToConfigurationNode() throws IOException {
 
     ConvertedConfiguration convertedConfiguration = new ConvertedConfiguration();
     Region region = new Region("test");

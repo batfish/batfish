@@ -21,28 +21,28 @@ import org.batfish.common.BatfishException.BatfishStackTrace;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.DefinedStructureInfo;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link ConvertConfigurationAnswerElement} */
-public class ConvertConfigurationAnswerElementTest {
+class ConvertConfigurationAnswerElementTest {
 
   ConvertConfigurationAnswerElement _element;
 
   @Test
-  public void checkEmptyErrors() {
+  void checkEmptyErrors() {
     assertThat(_element.getErrors().size(), is(0));
   }
 
   @Test
-  public void checkNonEmptyErrors() {
+  void checkNonEmptyErrors() {
     BatfishException exception = new BatfishException("sample exception");
     _element.getErrors().put("error", new BatfishStackTrace(exception));
     assertThat(_element.getErrors().size(), is(1));
   }
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
     _element = new ConvertConfigurationAnswerElement();
   }
 
@@ -50,7 +50,7 @@ public class ConvertConfigurationAnswerElementTest {
    * Defined and referenced structures take a hand-written serialized form; they must round-trip.
    */
   @Test
-  public void testJavaSerializationOfStructures() throws Exception {
+  void testJavaSerializationOfStructures() throws Exception {
     ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
     SortedMap<String, SortedMap<String, DefinedStructureInfo>> definedInF1 = new TreeMap<>();
     definedInF1.put(
@@ -94,14 +94,14 @@ public class ConvertConfigurationAnswerElementTest {
   }
 
   @Test
-  public void testConvertStatus() {
+  void testConvertStatus() {
     assertThat(_element.getConvertStatusProp(), anEmptyMap());
     _element.getConvertStatus().put("node", ConvertStatus.PASSED);
     assertThat(_element.getConvertStatusProp(), hasEntry("node", ConvertStatus.PASSED));
   }
 
   @Test
-  public void testConvertStatusFromFailed() {
+  void testConvertStatusFromFailed() {
     Set<String> set = new TreeSet<>();
     _element.setFailed(set);
     _element.setConvertStatus(null);
@@ -114,7 +114,7 @@ public class ConvertConfigurationAnswerElementTest {
   }
 
   @Test
-  public void testGetErrors() {
+  void testGetErrors() {
     BatfishException exception = new BatfishException("sample exception");
     BatfishStackTrace stackTrace = new BatfishStackTrace(exception);
     _element.getErrors().put("error", stackTrace);
@@ -122,7 +122,7 @@ public class ConvertConfigurationAnswerElementTest {
   }
 
   @Test
-  public void testSetErrors() {
+  void testSetErrors() {
     BatfishException exception = new BatfishException("sample exception");
     BatfishStackTrace stackTrace = new BatfishStackTrace(exception);
     SortedMap<String, BatfishStackTrace> errors = new TreeMap<>();

@@ -5,20 +5,20 @@ import static org.batfish.grammar.JunosGrammarTestUtils.getParseWarnings;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.main.Batfish;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosChassisAlarmTest {
+final class JunosChassisAlarmTest {
 
   private static final String HOSTNAME = "chassis-alarm";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testParseWarnings() throws IOException {
+  void testParseWarnings() throws IOException {
     Batfish batfish = getBatfish(_folder, HOSTNAME);
 
     assertThat(getParseWarnings(batfish, HOSTNAME), empty());

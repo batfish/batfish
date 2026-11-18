@@ -9,18 +9,18 @@ import com.google.common.collect.ImmutableSet;
 import java.util.regex.Pattern;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class NameRegexNodeSpecifierTest {
+class NameRegexNodeSpecifierTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     NameRegexNodeSpecifier specifier = new NameRegexNodeSpecifier(Pattern.compile("hey"));
     assertThat(specifier, equalTo(specifier));
     assertThat(specifier, not(equalTo(AllNodesNodeSpecifier.INSTANCE)));
   }
 
   @Test
-  public void testResolve() {
+  void testResolve() {
     MockSpecifierContext ctxt =
         MockSpecifierContext.builder()
             .setConfigs(

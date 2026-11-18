@@ -19,12 +19,12 @@ import org.batfish.vendor.sonic.representation.AclRule.PacketAction;
 import org.batfish.vendor.sonic.representation.AclTable.Stage;
 import org.batfish.vendor.sonic.representation.AclTable.Type;
 import org.batfish.vendor.sonic.representation.VlanMember.TaggingMode;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ConfigDbTest {
+class ConfigDbTest {
 
   @Test
-  public void testJacksonDeserialization() throws JsonProcessingException {
+  void testJacksonDeserialization() throws JsonProcessingException {
     String input = "{ \"GARBAGE\": 1, \"INTERFACE\": {\"Ethernet0\": {}}}";
     Warnings warnings = new Warnings(true, true, true);
     assertThat(
@@ -36,7 +36,7 @@ public class ConfigDbTest {
   }
 
   @Test
-  public void testDeserializationAclTable() throws JsonProcessingException {
+  void testDeserializationAclTable() throws JsonProcessingException {
     String input =
         "{\"ACL_TABLE\": {"
             + "        \"ctrl-plane-snmp-acl\": {"
@@ -60,7 +60,7 @@ public class ConfigDbTest {
   }
 
   @Test
-  public void testDeserializationAclRule() throws JsonProcessingException {
+  void testDeserializationAclRule() throws JsonProcessingException {
     String input =
         "{\"ACL_RULE\": {\n"
             + "        \"ctrl-plane-snmp-acl|RULE_10\": {\n"
@@ -85,7 +85,7 @@ public class ConfigDbTest {
   }
 
   @Test
-  public void testDeserializationDeviceMetadata() throws JsonProcessingException {
+  void testDeserializationDeviceMetadata() throws JsonProcessingException {
     String input = "{ \"DEVICE_METADATA\": {\"localhost\": {\"hostname\": \"name\"}}}";
     assertThat(
         deserialize(input, new Warnings()).getDeviceMetadata(),
@@ -93,7 +93,7 @@ public class ConfigDbTest {
   }
 
   @Test
-  public void testDeserializationInterface() throws JsonProcessingException {
+  void testDeserializationInterface() throws JsonProcessingException {
     String input =
         "{ \"INTERFACE\": {"
             + "\"Ethernet136\": {},"
@@ -118,14 +118,14 @@ public class ConfigDbTest {
   }
 
   @Test
-  public void testDeserializationLoopback() throws JsonProcessingException {
+  void testDeserializationLoopback() throws JsonProcessingException {
     String input = "{ \"LOOPBACK\": {\"Loopback0\": {}}}";
     assertThat(
         deserialize(input, new Warnings()).getLoopbacks(), equalTo(ImmutableSet.of("Loopback0")));
   }
 
   @Test
-  public void testDeserializationLoopbackInterface() throws JsonProcessingException {
+  void testDeserializationLoopbackInterface() throws JsonProcessingException {
     String input = "{ \"LOOPBACK_INTERFACE\": {\"Loopback0\": {}}}";
     assertThat(
         deserialize(input, new Warnings()).getLoopbackInterfaces(),
@@ -133,7 +133,7 @@ public class ConfigDbTest {
   }
 
   @Test
-  public void testDeserializationMgmtInterface() throws JsonProcessingException {
+  void testDeserializationMgmtInterface() throws JsonProcessingException {
     String input = "{ \"MGMT_INTERFACE\": {\"eth0|10.11.150.11/16\": {\"gwaddr\": \"10.11.0.1\"}}}";
     Warnings warnings = new Warnings(true, true, true);
     assertThat(
@@ -148,7 +148,7 @@ public class ConfigDbTest {
   }
 
   @Test
-  public void testJacksonDeserializationMgmtPort() throws JsonProcessingException {
+  void testJacksonDeserializationMgmtPort() throws JsonProcessingException {
     String input =
         "{\"MGMT_PORT\" :{"
             + "        \"eth0\": {"
@@ -164,7 +164,7 @@ public class ConfigDbTest {
   }
 
   @Test
-  public void testJacksonDeserializationMgmtVrfConfig() throws JsonProcessingException {
+  void testJacksonDeserializationMgmtVrfConfig() throws JsonProcessingException {
     String input =
         "{\"MGMT_VRF_CONFIG\" :{"
             + "        \"vrf_global\": {"
@@ -177,7 +177,7 @@ public class ConfigDbTest {
   }
 
   @Test
-  public void testDeserializationNtpServer() throws JsonProcessingException {
+  void testDeserializationNtpServer() throws JsonProcessingException {
     String input = "{ \"NTP_SERVER\": {\"23.92.29.245\": {}, \"2.debian.pool.ntp.org\": {}}}";
     assertThat(
         deserialize(input, new Warnings()).getNtpServers(),
@@ -185,7 +185,7 @@ public class ConfigDbTest {
   }
 
   @Test
-  public void testJacksonDeserializationPort() throws JsonProcessingException {
+  void testJacksonDeserializationPort() throws JsonProcessingException {
     String input =
         "{\"PORT\" :{"
             + "        \"Ethernet0\": {"
@@ -206,7 +206,7 @@ public class ConfigDbTest {
   }
 
   @Test
-  public void testDeserializationSyslogServer() throws JsonProcessingException {
+  void testDeserializationSyslogServer() throws JsonProcessingException {
     String input = "{ \"SYSLOG_SERVER\": {\"23.92.29.245\": {}, \"10.11.150.5\": {}}}";
     assertThat(
         deserialize(input, new Warnings()).getSyslogServers(),
@@ -214,7 +214,7 @@ public class ConfigDbTest {
   }
 
   @Test
-  public void testDeserializationTacplus() throws JsonProcessingException {
+  void testDeserializationTacplus() throws JsonProcessingException {
     String input =
         "{ \"TACPLUS\": {\"global\": {"
             + "    \"auth_type\": \"login\","
@@ -226,7 +226,7 @@ public class ConfigDbTest {
   }
 
   @Test
-  public void testDeserializationTacplusServer() throws JsonProcessingException {
+  void testDeserializationTacplusServer() throws JsonProcessingException {
     String input =
         "{ \"TACPLUS_SERVER\": {\"23.92.29.245\": {"
             + "    \"auth_type\": \"pap\","
@@ -241,7 +241,7 @@ public class ConfigDbTest {
   }
 
   @Test
-  public void testDeserializationVlan() throws JsonProcessingException {
+  void testDeserializationVlan() throws JsonProcessingException {
     String input =
         "{ \"VLAN\": { \"Vlan2\": {\"dhcp_servers\": [\"1.1.1.1\"], \"members\": [\"Ethernet0\"],"
             + " \"vlanid\": \"2\"}}}";
@@ -258,7 +258,7 @@ public class ConfigDbTest {
   }
 
   @Test
-  public void testDeserializationVlanList() throws JsonProcessingException {
+  void testDeserializationVlanList() throws JsonProcessingException {
     String input =
         "{ \"VLAN\": { \"Vlan2\": {\"dhcp_servers\": [\"1.1.1.1\"], \"members\": [\"Ethernet0\"],"
             + " \"vlanid\": [\"2\"]}}}";
@@ -275,7 +275,7 @@ public class ConfigDbTest {
   }
 
   @Test
-  public void testDeserializationVlanInterface() throws JsonProcessingException {
+  void testDeserializationVlanInterface() throws JsonProcessingException {
     String input = "{ \"VLAN_INTERFACE\": {\"Vlan2|10.11.150.11/16\": {}}}";
     assertThat(
         deserialize(input, new Warnings()).getVlanInterfaces(),
@@ -289,7 +289,7 @@ public class ConfigDbTest {
   }
 
   @Test
-  public void testJacksonDeserializationVlanMember() throws JsonProcessingException {
+  void testJacksonDeserializationVlanMember() throws JsonProcessingException {
     String input =
         "{\"VLAN_MEMBER\" :{"
             + "        \"Vlan2|Ethernet2\": {"
@@ -305,7 +305,7 @@ public class ConfigDbTest {
   }
 
   @Test
-  public void testCreateInterfaces() {
+  void testCreateInterfaces() {
     Warnings warnings = new Warnings(true, true, true);
     assertThat(
         createInterfaces(

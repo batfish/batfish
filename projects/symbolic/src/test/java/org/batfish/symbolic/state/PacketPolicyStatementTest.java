@@ -1,11 +1,11 @@
 package org.batfish.symbolic.state;
 
 import com.google.common.testing.EqualsTester;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class PacketPolicyStatementTest {
+final class PacketPolicyStatementTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     String h1 = "h1";
     String h2 = "h2";
     String v1 = "v1";

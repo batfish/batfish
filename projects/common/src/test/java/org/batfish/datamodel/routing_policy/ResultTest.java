@@ -1,15 +1,12 @@
 package org.batfish.datamodel.routing_policy;
 
 import com.google.common.testing.EqualsTester;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link Result} */
-@RunWith(JUnit4.class)
-public class ResultTest {
+class ResultTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new Result(), new Result())
         .addEqualityGroup(new Result(true, false, false, false))

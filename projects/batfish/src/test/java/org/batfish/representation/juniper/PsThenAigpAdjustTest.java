@@ -13,12 +13,12 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.routing_policy.statement.Statement;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class PsThenAigpAdjustTest {
+final class PsThenAigpAdjustTest {
 
   @Test
-  public void testAccessors() {
+  void testAccessors() {
     PsThenAigpAdjust aigpAdjust =
         new PsThenAigpAdjust(PsThenAigpAdjust.Operator.ADD, BigInteger.ONE);
 
@@ -27,7 +27,7 @@ public final class PsThenAigpAdjustTest {
   }
 
   @Test
-  public void testConversion() {
+  void testConversion() {
     List<Statement> statements = new ArrayList<>();
     new PsThenAigpAdjust(PsThenAigpAdjust.Operator.ADD, null)
         .applyTo(
@@ -42,7 +42,7 @@ public final class PsThenAigpAdjustTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new PsThenAigpAdjust(PsThenAigpAdjust.Operator.ADD, null),
@@ -53,7 +53,7 @@ public final class PsThenAigpAdjustTest {
   }
 
   @Test
-  public void testLastWins() {
+  void testLastWins() {
     PsThens thens = new PsThens();
     thens.addPsThen(new PsThenAigpAdjust(PsThenAigpAdjust.Operator.ADD, BigInteger.ONE));
     assertThat(

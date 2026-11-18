@@ -10,25 +10,25 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.routing_policy.expr.IntComparison;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link HasAsPathLength}. */
-public final class HasAsPathLengthTest {
+final class HasAsPathLengthTest {
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     HasAsPathLength obj = HasAsPathLength.of(new IntComparison(EQ, new LiteralInt(1)));
     assertThat(SerializationUtils.clone(obj), equalTo(obj));
   }
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     HasAsPathLength obj = HasAsPathLength.of(new IntComparison(EQ, new LiteralInt(1)));
     assertThat(BatfishObjectMapper.clone(obj, HasAsPathLength.class), equalTo(obj));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     HasAsPathLength obj = HasAsPathLength.of(new IntComparison(EQ, new LiteralInt(1)));
     new EqualsTester()
         .addEqualityGroup(obj, HasAsPathLength.of(new IntComparison(EQ, new LiteralInt(1))))

@@ -8,12 +8,12 @@ import static org.hamcrest.Matchers.lessThan;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import org.batfish.datamodel.Prefix;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class CiscoIosStaticNatTest {
+class CiscoIosStaticNatTest {
 
   @Test
-  public void testNatCompare() {
+  void testNatCompare() {
     CiscoIosStaticNat nat16 = natWithLocalNetwork("1.2.0.0/16");
     CiscoIosStaticNat nat24_1 = natWithLocalNetwork("1.2.3.0/24");
     CiscoIosStaticNat nat24_2 = natWithLocalNetwork("4.5.6.0/24");

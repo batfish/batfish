@@ -2,8 +2,8 @@ package org.batfish.representation.cumulus_nclu;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -32,11 +32,11 @@ import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link RouteMapConvertor} */
-public class RouteMapConvertorTest {
+class RouteMapConvertorTest {
 
   //  private static final String FILENAME = "";
   private static final String HOSTNAME = "host";
@@ -78,8 +78,8 @@ public class RouteMapConvertorTest {
                 30, ENTRY3));
   }
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     W = new Warnings();
     VC = new CumulusNcluConfiguration();
     VC.setHostname(HOSTNAME);
@@ -97,7 +97,7 @@ public class RouteMapConvertorTest {
   }
 
   @Test
-  public void testToRouteMap_MatchContinueNext() {
+  void testToRouteMap_MatchContinueNext() {
     // match entry1 then continue to next (i.e., entry2)
     ENTRY1.setContinue(new RouteMapContinue(null));
     ENTRY2.setMatchTag(new RouteMapMatchTag(1));
@@ -118,7 +118,7 @@ public class RouteMapConvertorTest {
   }
 
   @Test
-  public void testToRouteMap_MatchContinue() {
+  void testToRouteMap_MatchContinue() {
     // match entry1 then continue to entry3
     RouteMapConvertor convertor = new RouteMapConvertor(C, VC, ROUTEMAP, W);
     RoutingPolicy policy = convertor.toRouteMap();
@@ -136,7 +136,7 @@ public class RouteMapConvertorTest {
   }
 
   @Test
-  public void testToRouteMap_NotMatchContinue() {
+  void testToRouteMap_NotMatchContinue() {
     // match entry2
     RouteMapConvertor convertor = new RouteMapConvertor(C, VC, ROUTEMAP, W);
     RoutingPolicy policy = convertor.toRouteMap();
@@ -153,7 +153,7 @@ public class RouteMapConvertorTest {
   }
 
   @Test
-  public void testToStatement_ContinueEntry() {
+  void testToStatement_ContinueEntry() {
     RouteMapConvertor convertor = new RouteMapConvertor(C, VC, ROUTEMAP, W);
     Statement statement = convertor.toStatement(ENTRY1);
 
@@ -177,7 +177,7 @@ public class RouteMapConvertorTest {
   }
 
   @Test
-  public void testToStatement_FalseToNewPolicyEntry() {
+  void testToStatement_FalseToNewPolicyEntry() {
     RouteMapConvertor convertor = new RouteMapConvertor(C, VC, ROUTEMAP, W);
     Statement statement = convertor.toStatement(ENTRY2);
 
@@ -206,7 +206,7 @@ public class RouteMapConvertorTest {
   }
 
   @Test
-  public void testToStatement_TargetEntry() {
+  void testToStatement_TargetEntry() {
     RouteMapConvertor convertor = new RouteMapConvertor(C, VC, ROUTEMAP, W);
     Statement statement = convertor.toStatement(ENTRY3);
 
@@ -230,7 +230,7 @@ public class RouteMapConvertorTest {
   }
 
   @Test
-  public void testToRouteMapSetLocalPref() {
+  void testToRouteMapSetLocalPref() {
     RouteMap rm = new RouteMap("RM");
     RouteMapEntry rme = new RouteMapEntry(10, LineAction.PERMIT);
     rme.setSetLocalPreference(new RouteMapSetLocalPreference(200L));
@@ -245,7 +245,7 @@ public class RouteMapConvertorTest {
   }
 
   @Test
-  public void testToRouteMapSetTag() {
+  void testToRouteMapSetTag() {
     RouteMap rm = new RouteMap("RM");
     RouteMapEntry rme = new RouteMapEntry(10, LineAction.PERMIT);
     rme.setSetTag(new RouteMapSetTag(999));
@@ -261,7 +261,7 @@ public class RouteMapConvertorTest {
 
   // Call route map that permits -- accept route, both maps modify route.
   @Test
-  public void testToRouteMapCall_Permit() {
+  void testToRouteMapCall_Permit() {
     String subMapName = "SUB-MAP";
 
     // Real value of VS submap does not matter; Actual policy semantics placed in VI
@@ -298,7 +298,7 @@ public class RouteMapConvertorTest {
 
   // Call route map that denies -- route denied.
   @Test
-  public void testToRouteMapCall_Reject() {
+  void testToRouteMapCall_Reject() {
     String subMapName = "SUB-MAP";
     // Real value of VS submap does not matter; Actual policy semantics placed in VI
     VC.getRouteMaps().put(subMapName, new RouteMap(subMapName));
@@ -329,7 +329,7 @@ public class RouteMapConvertorTest {
 
   // Call route map that does not exist -- route permitted (?)
   @Test
-  public void testToRouteMapCall_NoSubMap() {
+  void testToRouteMapCall_NoSubMap() {
     String subMapName = "SUB-MAP";
     RouteMap rm = new RouteMap("RM");
     RouteMapEntry rme = new RouteMapEntry(10, LineAction.PERMIT);

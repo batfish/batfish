@@ -3,13 +3,13 @@ package org.batfish.datamodel.tracking;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link PriorityEvaluator} */
-public class PriorityEvaluatorTest {
+class PriorityEvaluatorTest {
 
   @Test
-  public void testVisitDecrementPriority() {
+  void testVisitDecrementPriority() {
     DecrementPriority decrement25 = new DecrementPriority(25);
     DecrementPriority decrement125 = new DecrementPriority(125);
     DecrementPriority decrementNegative200 = new DecrementPriority(-200);
@@ -34,7 +34,7 @@ public class PriorityEvaluatorTest {
   }
 
   @Test
-  public void testVisitDecrementPriorityCumulative() {
+  void testVisitDecrementPriorityCumulative() {
     PriorityEvaluator evaluator = new PriorityEvaluator(250);
     DecrementPriority decrement25 = new DecrementPriority(25);
     DecrementPriority decrement125 = new DecrementPriority(125);

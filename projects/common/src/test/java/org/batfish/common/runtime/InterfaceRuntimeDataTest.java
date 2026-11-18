@@ -6,13 +6,13 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link InterfaceRuntimeData} */
-public class InterfaceRuntimeDataTest {
+class InterfaceRuntimeDataTest {
 
   @Test
-  public void testInterfaceRuntimeDataEquals() {
+  void testInterfaceRuntimeDataEquals() {
     ConcreteInterfaceAddress address = ConcreteInterfaceAddress.parse("1.2.3.4/24");
     double bandwidth = 1;
     boolean lineUp = true;
@@ -39,7 +39,7 @@ public class InterfaceRuntimeDataTest {
   }
 
   @Test
-  public void testInterfaceRuntimeDataJsonSerialization() {
+  void testInterfaceRuntimeDataJsonSerialization() {
     InterfaceRuntimeData.Builder irdBuilder =
         InterfaceRuntimeData.builder()
             .setAddress(ConcreteInterfaceAddress.parse("1.2.3.4/24"))

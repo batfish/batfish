@@ -1,16 +1,14 @@
 package org.batfish.datamodel;
 
-import static junit.framework.TestCase.assertEquals;
-// import static junit.framework.TestCase.assertFalse;
-// import static junit.framework.TestCase.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.testing.EqualsTester;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class Ip6SpaceReferenceTest {
+class Ip6SpaceReferenceTest {
 
   @Test
-  public void testCompareSameClass() {
+  void testCompareSameClass() {
     Ip6SpaceReference ip6SR1 = new Ip6SpaceReference("s1", "d1");
     Ip6SpaceReference ip6SR2 = new Ip6SpaceReference("s1", "d1");
     Ip6SpaceReference ip6SR3 = new Ip6SpaceReference("s2", "d1");
@@ -20,7 +18,7 @@ public class Ip6SpaceReferenceTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new Ip6SpaceReference("s1", "d1"), new Ip6SpaceReference("s1", "d1"))
         .addEqualityGroup(new Ip6SpaceReference("s1", "d2"))

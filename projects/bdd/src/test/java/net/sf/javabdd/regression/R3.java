@@ -28,11 +28,13 @@
  */
 package net.sf.javabdd.regression;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.bdd.BDDTestCase;
-import org.junit.internal.runners.JUnit38ClassRunner;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * unique() and applyUni() bug
@@ -40,13 +42,9 @@ import org.junit.runner.RunWith;
  * @author John Whaley
  * @version $Id: R3.java,v 1.2 2005/04/18 12:00:00 joewhaley Exp $
  */
-@RunWith(JUnit38ClassRunner.class)
-public class R3 extends BDDTestCase {
-  public static void main(String[] args) {
-    junit.textui.TestRunner.run(R3.class);
-  }
-
-  public void testR3() {
+class R3 extends BDDTestCase {
+  @Test
+  void testR3() {
     assertTrue(hasNext());
     while (hasNext()) {
 
@@ -60,26 +58,26 @@ public class R3 extends BDDTestCase {
 
       z0 = or.unique(x0);
       t = x1.not();
-      assertEquals(z0.toReprString(), z0, t);
+      assertEquals(z0, t, z0.toReprString());
       t.free();
 
       z1 = or.unique(x1);
       t = x0.not();
-      assertEquals(z1.toReprString(), z1, t);
+      assertEquals(z1, t, z1.toReprString());
       t.free();
 
       t = one.unique(x0);
-      assertTrue(t.toReprString(), t.isZero());
+      assertTrue(t.isZero(), t.toReprString());
       t.free();
 
       y0 = x0.applyUni(x1, BDDFactory.or, x0);
       t = x1.not();
-      assertEquals(y0.toReprString(), y0, t);
+      assertEquals(y0, t, y0.toReprString());
       t.free();
 
       y1 = x0.applyUni(x1, BDDFactory.or, x1);
       t = x0.not();
-      assertEquals(y1.toReprString(), y1, t);
+      assertEquals(y1, t, y1.toReprString());
       t.free();
 
       x0.free();

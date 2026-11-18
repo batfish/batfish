@@ -14,18 +14,14 @@ import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceAssignmentSpecifier;
 import org.batfish.specifier.SpecifierFactories;
 import org.batfish.specifier.SpecifierFactories.Version;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-public final class SpecifiersQuestionTest {
-
-  @Rule public final ExpectedException exception = ExpectedException.none();
+final class SpecifiersQuestionTest {
 
   /** Test that we get default specifiers when the input is null */
   @Test
-  public void testGetSpecifierNullInput() {
+  void testGetSpecifierNullInput() {
     // query type is filter for everything because it is immaterial to which specifier is used
     SpecifiersQuestion question = new SpecifiersQuestion(QueryType.FILTER);
     assertThat(question.getFilterSpecifier(), equalTo(AllFiltersFilterSpecifier.INSTANCE));
@@ -42,7 +38,7 @@ public final class SpecifiersQuestionTest {
 
   /** Test that we get specifiers based on active version when the version is not programmed */
   @Test
-  public void testGetSpecifierNonNullInput() {
+  void testGetSpecifierNonNullInput() {
     // query type is filter in all these because it is immaterial to which specifier is used
     SpecifiersQuestion question = new SpecifiersQuestion(QueryType.FILTER);
 
@@ -78,9 +74,9 @@ public final class SpecifiersQuestionTest {
    * Ignore this test because we have only one valid version (V2) at the moment. V1 throws
    * exceptions.
    */
-  @Ignore
+  @Disabled
   @Test
-  public void testGetSpecifierVersionOverride() {
+  void testGetSpecifierVersionOverride() {
     Version otherVersion =
         SpecifierFactories.ACTIVE_VERSION == Version.V1 ? Version.V2 : Version.V1;
 

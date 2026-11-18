@@ -117,9 +117,10 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -129,6 +130,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
 import com.google.common.collect.Table;
 import com.google.common.graph.ValueGraph;
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -289,17 +291,16 @@ import org.batfish.vendor.arista.representation.eos.AristaBgpVrfIpv6UnicastAddre
 import org.batfish.vendor.arista.representation.eos.AristaEosVxlan;
 import org.batfish.vendor.arista.representation.eos.AristaRedistributeType;
 import org.hamcrest.Matchers;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 @ParametersAreNonnullByDefault
-public class AristaGrammarTest {
+class AristaGrammarTest {
   private static final String DEFAULT_VRF_NAME = "default";
   private static final String TESTCONFIGS_PREFIX = "org/batfish/vendor/arista/grammar/testconfigs/";
   private static final String SNAPSHOTS_PREFIX = "org/batfish/vendor/arista/grammar/snapshots/";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private static @Nonnull AristaConfiguration parseVendorConfig(String hostname) {
     String src = readResource(TESTCONFIGS_PREFIX + hostname, UTF_8);
@@ -359,7 +360,7 @@ public class AristaGrammarTest {
 
   /** Tests out-of-order lines, remarks, auto-numbering first and later lines. */
   @Test
-  public void testStandardAccessList() {
+  void testStandardAccessList() {
     AristaConfiguration c = parseVendorConfig("standard-access-list");
     assertThat(c.getStandardAcls(), hasKeys("LIST1"));
     StandardAccessList list = c.getStandardAcls().get("LIST1");
@@ -379,7 +380,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testOspfNetworkExtraction() {
+  void testOspfNetworkExtraction() {
     String hostname = "arista_ospf_network";
     AristaConfiguration vc = parseVendorConfig(hostname);
     assertThat(
@@ -390,7 +391,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testVxlanVniNewSyntax() {
+  void testVxlanVniNewSyntax() {
     {
       AristaConfiguration config = parseVendorConfig("arista_vxlan_new_syntax_1_to_1");
       assertThat(
@@ -449,7 +450,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testOspfNetworkConversion() {
+  void testOspfNetworkConversion() {
     String hostname = "arista_ospf_network";
     Configuration c = parseConfig(hostname);
     // https://github.com/batfish/batfish/issues/1644
@@ -457,7 +458,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testOspfNetworkWarning() throws IOException {
+  void testOspfNetworkWarning() throws IOException {
     String hostname = "arista_ospf_network";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ParseVendorConfigurationAnswerElement pvcae =
@@ -472,14 +473,14 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testIpVirtualRouterParsing() {
+  void testIpVirtualRouterParsing() {
     // TODO: change to extraction and conversion tests for the two cases
     parseVendorConfig("arista_ip_virtual_router");
     parseVendorConfig("arista_ip_virtual_router_no_mac");
   }
 
   @Test
-  public void testTopLevelBgpExtraction() {
+  void testTopLevelBgpExtraction() {
     AristaConfiguration config = parseVendorConfig("arista_bgp");
     // Basic VRF config
     {
@@ -522,7 +523,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testBgpNeighborInterfaceExtraction() {
+  void testBgpNeighborInterfaceExtraction() {
     AristaConfiguration config = parseVendorConfig("arista_bgp_neighbor_interface");
     AristaBgpVrf vrf = config.getAristaBgp().getDefaultVrf();
     // Et99 was removed by `no neighbor interface`; Et50-51 added then removed by range;
@@ -568,7 +569,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testBgpNeighborInterfaceConversion() throws IOException {
+  void testBgpNeighborInterfaceConversion() throws IOException {
     String hostname = "arista_bgp_neighbor_interface";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
@@ -627,7 +628,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testBgpNeighborInterfaceReferences() throws IOException {
+  void testBgpNeighborInterfaceReferences() throws IOException {
     String hostname = "arista_bgp_neighbor_interface";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -638,7 +639,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testBgpNeighborPrefixListIpv6AddressFamily() throws IOException {
+  void testBgpNeighborPrefixListIpv6AddressFamily() throws IOException {
     String hostname = "arista_bgp_neighbor_prefix_list_ipv6_af";
     AristaConfiguration vc = parseVendorConfig(hostname);
     assertThat(vc.getWarnings().getParseWarnings(), empty());
@@ -650,7 +651,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testAristaOspfReferenceBandwidth() throws IOException {
+  void testAristaOspfReferenceBandwidth() throws IOException {
     Configuration manual = parseConfig("aristaOspfCost");
     assertThat(
         manual.getDefaultVrf().getOspfProcesses().get("1").getReferenceBandwidth(), equalTo(3e6d));
@@ -662,7 +663,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testAristaOspfDefaultInterfaceCost() throws IOException {
+  void testAristaOspfDefaultInterfaceCost() throws IOException {
     // When auto-cost reference-bandwidth is not configured, EOS uses a flat default cost of 10
     // for all interfaces, including loopbacks.
     Configuration c = parseConfig("arista_ospf_default_cost");
@@ -676,7 +677,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testIsisInterfaceEnable() throws IOException {
+  void testIsisInterfaceEnable() throws IOException {
     // Interface-level "isis enable" makes the interface an active IS-IS interface, and
     // "isis passive" models it as passive. Both were previously dropped by the extractor.
     Configuration c = parseConfig("arista-isis");
@@ -687,7 +688,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testAristaOspfAutoCostInterfaceCost() throws IOException {
+  void testAristaOspfAutoCostInterfaceCost() throws IOException {
     // When auto-cost reference-bandwidth is configured, cost is computed from reference bandwidth.
     Configuration c = parseConfig("arista_ospf_auto_cost");
     assertThat(
@@ -700,7 +701,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testAristaVsIosOspfRedistributeBgpSyntax() throws IOException {
+  void testAristaVsIosOspfRedistributeBgpSyntax() throws IOException {
     // Both an Arista and an IOS config contain these "redistribute bgp" lines in their OSPF setups:
     String l1 = "redistribute bgp";
     String l2 = "redistribute bgp route-map MAP";
@@ -740,7 +741,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testAristaBgpDefaultOriginatePolicy() throws IOException {
+  void testAristaBgpDefaultOriginatePolicy() throws IOException {
     /*
       Snapshot contains two devices, arista-originator and ios-listener, configured with
       multiple BGP peerings between them. The peers in ios-listener are all in separate VRFs
@@ -842,7 +843,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testBgpLocalAs() throws IOException {
+  void testBgpLocalAs() throws IOException {
     String testrigName = "arista-bgp-local-as";
     List<String> configurationNames = ImmutableList.of("r1", "r2");
 
@@ -880,7 +881,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testBgpMultipathRelax() throws IOException {
+  void testBgpMultipathRelax() throws IOException {
     String testrigName = "arista-bgp-multipath-relax";
     List<String> configurationNames = ImmutableList.of("arista_disabled", "arista_enabled");
 
@@ -908,7 +909,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testBgpRedistribution() throws IOException {
+  void testBgpRedistribution() throws IOException {
     /*
      * Config contains three VRFs:
      * - Default VRF has connected route 5.5.5.0/24 and redistributes connected into BGP unconditionally
@@ -985,7 +986,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testBgpRemovePrivateAs() throws IOException {
+  void testBgpRemovePrivateAs() throws IOException {
     String testrigName = "arista-bgp-remove-private-as";
     List<String> configurationNames = ImmutableList.of("r1", "r2", "r3");
 
@@ -1030,7 +1031,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testAristaAdvertiseInactive() throws IOException {
+  void testAristaAdvertiseInactive() throws IOException {
     Configuration config = parseConfig("arista-advertise-inactive");
     assertTrue(
         config
@@ -1044,7 +1045,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testAristaNoAdvertiseInactive() throws IOException {
+  void testAristaNoAdvertiseInactive() throws IOException {
     Configuration config = parseConfig("arista-no-advertise-inactive");
     assertFalse(
         config
@@ -1062,7 +1063,7 @@ public class AristaGrammarTest {
    * explicitly specified in the config
    */
   @Test
-  public void testAristaDefaultRouteRedistribution() throws IOException {
+  void testAristaDefaultRouteRedistribution() throws IOException {
     final String receiver = "ios_receiver";
     final String advertiser = "arista_advertiser";
     Batfish batfish =
@@ -1095,7 +1096,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testAristaDefaultSwitchPort() throws IOException {
+  void testAristaDefaultSwitchPort() throws IOException {
     Configuration cUndeclared = parseConfig("eos_switchport_default_mode_undeclared");
     Configuration cDefaultAccess = parseConfig("eos_switchport_default_mode_access");
     Configuration cDefaultRouted = parseConfig("eos_switchport_default_mode_routed");
@@ -1179,7 +1180,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testIpAddressBeforeNoSwitchport() throws IOException {
+  void testIpAddressBeforeNoSwitchport() throws IOException {
     // IP address should be accepted on interfaces that ultimately have `no switchport`,
     // regardless of whether ip address appears before or after `no switchport` in the config.
     String hostname = "eos_ip_before_no_switchport";
@@ -1229,7 +1230,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testAristaDynamicSourceNat() throws IOException {
+  void testAristaDynamicSourceNat() throws IOException {
     Configuration c = parseConfig("arista-dynamic-source-nat");
     Interface iface = c.getAllInterfaces().get("Ethernet1");
     assertThat(iface.getIncomingTransformation(), nullValue());
@@ -1287,7 +1288,7 @@ public class AristaGrammarTest {
    * in, rewritten to 8.8.8.8 at r1[Ethernet1], and then accepted.
    */
   @Test
-  public void testStaticSourceNatE2e() throws IOException {
+  void testStaticSourceNatE2e() throws IOException {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
@@ -1327,7 +1328,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testStaticRouteExtraction() throws IOException {
+  void testStaticRouteExtraction() throws IOException {
     AristaConfiguration c = parseVendorConfig("static_route");
     assertThat(c.getVrfs(), hasKeys(DEFAULT_VRF_NAME, "VRF"));
     Map<Prefix, StaticRouteManager> statics = c.getVrfs().get(DEFAULT_VRF_NAME).getStaticRoutes();
@@ -1430,7 +1431,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testStaticRouteConversion() throws IOException {
+  void testStaticRouteConversion() throws IOException {
     Configuration c = parseConfig("static_route");
     assertThat(c.getVrfs(), hasKeys(DEFAULT_VRF_NAME, "VRF"));
     Set<org.batfish.datamodel.StaticRoute> statics =
@@ -1510,7 +1511,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testAristaBanner() throws IOException {
+  void testAristaBanner() throws IOException {
     Configuration c = parseConfig("eos_banner");
     Map<String, String> banners = c.getVendorFamily().getCisco().getBanners();
     assertThat(banners.get("login"), equalTo("Some text\nEOF not alone\n"));
@@ -1519,7 +1520,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testArista100gfullInterface() throws IOException {
+  void testArista100gfullInterface() throws IOException {
     Configuration c = parseConfig("arista100gfull");
     assertThat(
         c,
@@ -1529,14 +1530,14 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testAristaSubinterfaceMtu() throws IOException {
+  void testAristaSubinterfaceMtu() throws IOException {
     Configuration c = parseConfig("aristaInterface");
 
     assertThat(c, hasInterface("Ethernet3/2/1.4", hasMtu(9000)));
   }
 
   @Test
-  public void testAggregateAddressExtraction() {
+  void testAggregateAddressExtraction() {
     AristaConfiguration config = parseVendorConfig("arista_bgp_aggregate_address");
     {
       AristaBgpAggregateNetwork agg =
@@ -1601,7 +1602,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testAggregateAddressConversion() {
+  void testAggregateAddressConversion() {
     Configuration c = parseConfig("arista_bgp_aggregate_address");
 
     // default vrf
@@ -1661,7 +1662,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testBgpAggregateGeneration() throws IOException {
+  void testBgpAggregateGeneration() throws IOException {
     /*
      * Config has static routes:
      * - 10.10.1.0/24
@@ -1699,7 +1700,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testBgpAggregateWithLocalSuppressedRoutes() throws IOException {
+  void testBgpAggregateWithLocalSuppressedRoutes() throws IOException {
     /*
      * Config has static routes:
      * - 1.1.1.0/24
@@ -1806,7 +1807,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testBgpAggregateAdvertiseOnly() throws IOException {
+  void testBgpAggregateAdvertiseOnly() throws IOException {
     /*
      * Config has static routes 1.1.1.0/24 and 2.2.2.0/24 redistributed into BGP, and aggregates:
      * - 1.1.0.0/16 advertise-only
@@ -1836,7 +1837,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testBgpAggregateWithLearnedSuppressedRoutes() throws IOException {
+  void testBgpAggregateWithLearnedSuppressedRoutes() throws IOException {
     /*
      * Snapshot contains c1, c2, and c3. c1 redistributes static routes 1.1.1.0/16 and 2.2.2.0/16
      * into BGP and advertises them to c2. c2 has aggregates 1.1.0.0/16 (not summary-only) and
@@ -1928,7 +1929,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testBgpAggregateVrfSummaryOnly() throws IOException {
+  void testBgpAggregateVrfSummaryOnly() throws IOException {
     /*
      * Snapshot contains c1, c2, and c3. All BGP sessions on c2 live in vrf vxlan_public under
      * router bgp with an asdot AS (65166.10010 = 4270728986; c1 peers with it in asdot notation,
@@ -1969,7 +1970,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testAllowedVlans() throws IOException {
+  void testAllowedVlans() throws IOException {
     Configuration c = parseConfig("eos-allowed-vlans");
 
     assertThat(
@@ -1997,7 +1998,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testAsPathAccessListExtraction() {
+  void testAsPathAccessListExtraction() {
     AristaConfiguration c = parseVendorConfig("as-path-access-list");
     assertThat(c.getAsPathAccessLists(), hasKeys("list1"));
 
@@ -2036,7 +2037,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testEosMlagExtraction() {
+  void testEosMlagExtraction() {
     AristaConfiguration c = parseVendorConfig("eos-mlag");
     MlagConfiguration mlag = c.getEosMlagConfiguration();
     assertThat(mlag, notNullValue());
@@ -2048,7 +2049,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testEosMlagExtraction_heartbeatVrf() {
+  void testEosMlagExtraction_heartbeatVrf() {
     AristaConfiguration c = parseVendorConfig("eos-mlag-peer-address-heartbeat-vrf");
     MlagConfiguration mlag = c.getEosMlagConfiguration();
     assertThat(mlag, notNullValue());
@@ -2058,7 +2059,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testEosMlagExtraction_newInterfaceNames() {
+  void testEosMlagExtraction_newInterfaceNames() {
     AristaConfiguration c = parseVendorConfig("eos-mlag-new-interface-names");
     MlagConfiguration mlag = c.getEosMlagConfiguration();
     assertThat(mlag, notNullValue());
@@ -2067,7 +2068,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testEosMlagConversion() throws IOException {
+  void testEosMlagConversion() throws IOException {
     Configuration c = parseConfig("eos-mlag");
 
     final String mlagName = "MLAG_DOMAIN_ID";
@@ -2081,7 +2082,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testEosBgpPeers() throws IOException {
+  void testEosBgpPeers() throws IOException {
     String hostname = "eos-bgp-peers";
     Ip neighborWithRemoteAs = Ip.parse("1.1.1.1");
     Ip neighborWithoutRemoteAs = Ip.parse("2.2.2.2");
@@ -2138,7 +2139,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testEosInterfaceSpeedBreakout() throws IOException {
+  void testEosInterfaceSpeedBreakout() throws IOException {
     Configuration c = parseConfig("arista_interface_speed_breakout");
     assertThat(c, hasInterface("Ethernet1/1", hasSpeed(400E9D)));
     assertThat(c, hasInterface("Ethernet1/1", hasBandwidth(400E9D)));
@@ -2159,7 +2160,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testEosPortChannel() throws IOException {
+  void testEosPortChannel() throws IOException {
     String hostname = "eos-port-channel";
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -2186,7 +2187,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testEosVxlan() throws IOException {
+  void testEosVxlan() throws IOException {
     String hostnameBase = "eos-vxlan";
     String hostnameNoLoopbackAddr = "eos-vxlan-no-loopback-address";
     String hostnameNoSourceIface = "eos-vxlan-no-source-interface";
@@ -2240,7 +2241,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testEosVxlanMisconfig() throws IOException {
+  void testEosVxlanMisconfig() throws IOException {
     String hostname = "eos-vxlan-misconfig";
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -2261,7 +2262,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testEosTrunkGroup() throws IOException {
+  void testEosTrunkGroup() throws IOException {
     String hostname = "eos_trunk_group";
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -2279,7 +2280,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testEosVxlanCiscoConfig() {
+  void testEosVxlanCiscoConfig() {
     String hostname = "eos-vxlan";
 
     AristaConfiguration config = parseVendorConfig(hostname);
@@ -2304,7 +2305,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testEosVxlanReference() throws IOException {
+  void testEosVxlanReference() throws IOException {
     String hostname = "eos-vxlan";
     String filename = "configs/" + hostname;
 
@@ -2317,7 +2318,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testBgpVlansExtraction() {
+  void testBgpVlansExtraction() {
     AristaConfiguration config = parseVendorConfig("arista_bgp_vlans");
     {
       AristaBgpVlanAwareBundle bundle = config.getAristaBgp().getVlanAwareBundles().get("Tenant_A");
@@ -2389,13 +2390,13 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testCommunityListExtraction() {
+  void testCommunityListExtraction() {
     testCommunityListExtraction("arista_community_list_421");
     testCommunityListExtraction("arista_community_list_423");
   }
 
   @Test
-  public void testBgpNeighborRefs() throws IOException {
+  void testBgpNeighborRefs() throws IOException {
     String hostname = "arista_bgp_neighbor_refs";
     String filename = "configs/" + hostname;
 
@@ -2420,7 +2421,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testNeighborExtraction() {
+  void testNeighborExtraction() {
     AristaConfiguration config = parseVendorConfig("arista_bgp_neighbors");
     // Can test BGP inheritance by grabbing peers from postConversionWork.
     AristaConfiguration postConversionWork = SerializationUtils.clone(config);
@@ -2561,7 +2562,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testNeighborConversion() {
+  void testNeighborConversion() {
     Configuration c = parseConfig("arista_bgp_neighbors");
     assertThat(c.getDefaultVrf(), notNullValue());
     BgpProcess proc = c.getDefaultVrf().getBgpProcess();
@@ -2618,7 +2619,7 @@ public class AristaGrammarTest {
 
   /** Test that we convert properly when v4 family is completely absent */
   @Test
-  public void testNeighborConversion_no_v4() {
+  void testNeighborConversion_no_v4() {
     Configuration c = parseConfig("arista_bgp_neighbors_no_v4");
     assertThat(c.getDefaultVrf(), notNullValue());
     BgpProcess proc = c.getDefaultVrf().getBgpProcess();
@@ -2631,7 +2632,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testVrfExtraction() {
+  void testVrfExtraction() {
     AristaConfiguration config = parseVendorConfig("arista_bgp_vrf");
     assertThat(config.getAristaBgp(), notNullValue());
     assertThat(
@@ -2676,7 +2677,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testVrfConversion() {
+  void testVrfConversion() {
     Configuration c = parseConfig("arista_bgp_vrf");
     assertThat(c.getVrfs().keySet(), containsInAnyOrder(DEFAULT_VRF, "FOO", "BAR", "MULTI"));
     {
@@ -2730,8 +2731,8 @@ public class AristaGrammarTest {
                 .setCommunities(CommunitySet.of(rt))
                 .build();
         assertTrue(
-            "import policy should accept a route carrying " + rt,
-            importPolicy.process(route, route.toBuilder(), Direction.IN));
+            importPolicy.process(route, route.toBuilder(), Direction.IN),
+            "import policy should accept a route carrying " + rt);
       }
       Bgpv4Route unmatched =
           Bgpv4Route.testBuilder()
@@ -2743,7 +2744,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testAddressFamilyExtraction() {
+  void testAddressFamilyExtraction() {
     AristaConfiguration config = parseVendorConfig("arista_bgp_af");
     AristaBgpVrf vrf = config.getAristaBgp().getDefaultVrf();
     AristaBgpVrfIpv4UnicastAddressFamily ipv4af = vrf.getV4UnicastAf();
@@ -2791,7 +2792,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testNetworkExtraction() {
+  void testNetworkExtraction() {
     AristaConfiguration config = parseVendorConfig("arista_bgp_network");
     {
       Prefix prefix = Prefix.parse("1.1.1.0/24");
@@ -2821,7 +2822,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testVxlanExtraction() {
+  void testVxlanExtraction() {
     AristaConfiguration config = parseVendorConfig("arista_vxlan");
     assertThat(config.getEosVxlan().getArpReplyRelay(), equalTo(true));
     assertThat(config.getEosVxlan().getVrfToVni(), hasEntry("TENANT", 10000));
@@ -2829,7 +2830,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testVxlanConversion() {
+  void testVxlanConversion() {
     Configuration config = parseConfig("arista_vxlan");
     {
       Layer3Vni vniSettings = config.getVrfs().get("TENANT").getLayer3Vnis().get(10000);
@@ -2851,15 +2852,19 @@ public class AristaGrammarTest {
   }
 
   // xfail until we support activating Vlan interfaces via VXLAN
-  @Test(expected = AssertionError.class)
-  public void testVxlanVlanActivationConversion() {
-    Configuration config = parseConfig("arista_vxlan_vlan_activation");
-    assertThat(config, hasInterface("Vlan6", isActive(false)));
-    assertThat(config, hasInterface("Vlan5", isActive()));
+  @Test
+  void testVxlanVlanActivationConversion() {
+    assertThrows(
+        AssertionError.class,
+        () -> {
+          Configuration config = parseConfig("arista_vxlan_vlan_activation");
+          assertThat(config, hasInterface("Vlan6", isActive(false)));
+          assertThat(config, hasInterface("Vlan5", isActive()));
+        });
   }
 
   @Test
-  public void testRedistributeExtraction() {
+  void testRedistributeExtraction() {
     AristaConfiguration config = parseVendorConfig("arista_bgp_redistribute");
     {
       Map<AristaRedistributeType, AristaBgpRedistributionPolicy> redistributionPolicies =
@@ -2882,7 +2887,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testRedistributeOspfExtraction() {
+  void testRedistributeOspfExtraction() {
     AristaConfiguration config = parseVendorConfig("arista_bgp_redistribute_ospf");
     {
       AristaBgpVrf vrf = config.getAristaBgp().getVrfs().get("vrf1");
@@ -2923,7 +2928,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testRedistributeOspfConversion() {
+  void testRedistributeOspfConversion() {
     Configuration config = parseConfig("arista_bgp_redistribute_ospf");
     Prefix prefix = Prefix.parse("10.1.1.0/24");
     OspfIntraAreaRoute intra =
@@ -2986,13 +2991,13 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testHumanName() {
+  void testHumanName() {
     Configuration c = parseConfig("arista-humanname");
     assertThat(c.getHumanName(), equalTo("ARISTA-HUMANNAME"));
   }
 
   @Test
-  public void testInterfaceConversion() {
+  void testInterfaceConversion() {
     Configuration c = parseConfig("arista_interface", true);
     assertThat(
         c,
@@ -3055,7 +3060,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testInterfaceIpUnnumberedExtraction() {
+  void testInterfaceIpUnnumberedExtraction() {
     AristaConfiguration config = parseVendorConfig("arista_interface_ip_unnumbered");
     org.batfish.vendor.arista.representation.Interface eth1 =
         config.getInterfaces().get("Ethernet1");
@@ -3070,7 +3075,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testInterfaceIpUnnumberedConversion() {
+  void testInterfaceIpUnnumberedConversion() {
     Configuration c = parseConfig("arista_interface_ip_unnumbered", true);
     ConcreteInterfaceAddress loopbackAddr = ConcreteInterfaceAddress.parse("10.0.0.1/32");
     UnnumberedAddress unnumberedAddr = UnnumberedAddress.of("Loopback0", Ip.parse("10.0.0.1"));
@@ -3088,7 +3093,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testInterfaceIpUnnumberedReferences() throws IOException {
+  void testInterfaceIpUnnumberedReferences() throws IOException {
     String hostname = "arista_interface_ip_unnumbered";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -3099,7 +3104,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testMacAccessList() throws IOException {
+  void testMacAccessList() throws IOException {
     String hostname = "arista_mac_access_list";
     String filename = "configs/" + hostname;
 
@@ -3117,13 +3122,13 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testMulticastParsing() {
+  void testMulticastParsing() {
     // doesn't crash.
     parseVendorConfig("arista_multicast");
   }
 
   @Test
-  public void testVrrpConversion() {
+  void testVrrpConversion() {
     Configuration c = parseConfig("arista_vrrp");
     assertThat(c.getAllInterfaces(), hasKey("Vlan20"));
     Interface i = c.getAllInterfaces().get("Vlan20");
@@ -3140,7 +3145,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testVrrpExtraction() {
+  void testVrrpExtraction() {
     AristaConfiguration c = parseVendorConfig("arista_vrrp");
     assertThat(c.getInterfaces(), hasKey("Vlan20"));
     assertThat(c.getVrrpGroups(), hasKey("Vlan20"));
@@ -3159,7 +3164,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testEvpnConversion() {
+  void testEvpnConversion() {
     Configuration c = parseConfig("arista_evpn");
     Ip[] neighborIPs = {Ip.parse("192.168.255.1"), Ip.parse("192.168.255.2")};
     for (Ip ip : neighborIPs) {
@@ -3215,14 +3220,14 @@ public class AristaGrammarTest {
    * for non-default VRF.
    */
   @Test
-  public void testEvpnConversionL2VnisOnly() {
+  void testEvpnConversionL2VnisOnly() {
     Configuration c = parseConfig("arista_evpn_l2_vni_only");
     assertThat(c, ConfigurationMatchers.hasVrf("vrf1", hasBgpProcess(nullValue())));
     assertThat(c.getDefaultVrf().getLayer2Vnis(), hasKey(10030));
   }
 
   @Test
-  public void testBgpSendCommunityExtraction() {
+  void testBgpSendCommunityExtraction() {
     AristaConfiguration config = parseVendorConfig("arista_bgp_send_community");
     AristaBgpVrf vrf = config.getAristaBgp().getDefaultVrf();
     {
@@ -3283,7 +3288,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testBgpSendCommunityConversion() {
+  void testBgpSendCommunityConversion() {
     Configuration config = parseConfig("arista_bgp_send_community");
     BgpProcess proc = config.getDefaultVrf().getBgpProcess();
     {
@@ -3407,7 +3412,7 @@ public class AristaGrammarTest {
    * communities are stripped on EVPN export.
    */
   @Test
-  public void testEvpnSendExtendedCommunityConversion() {
+  void testEvpnSendExtendedCommunityConversion() {
     Configuration config = parseConfig("arista_evpn_send_extended_community");
     AddressFamilyCapabilities caps =
         config
@@ -3422,13 +3427,13 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testAllowasInExtraction() {
+  void testAllowasInExtraction() {
     AristaConfiguration config = parseVendorConfig("arista_bgp_allowas_in");
     assertThat(config.getAristaBgp().getDefaultVrf().getAllowAsIn(), equalTo(2));
   }
 
   @Test
-  public void testAllowasInConversion() {
+  void testAllowasInConversion() {
     Configuration c = parseConfig("arista_bgp_allowas_in");
     {
       BgpActivePeerConfig peerConfig =
@@ -3453,49 +3458,49 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testParseCvx() {
+  void testParseCvx() {
     parseVendorConfig("arista_cvx");
     // don't crash.
   }
 
   @Test
-  public void testParseEmail() {
+  void testParseEmail() {
     parseVendorConfig("arista_email");
     // don't crash.
   }
 
   @Test
-  public void testParseErrdisable() {
+  void testParseErrdisable() {
     parseVendorConfig("arista_errdisable");
     // don't crash.
   }
 
   @Test
-  public void testParseHardware() {
+  void testParseHardware() {
     parseVendorConfig("arista_hardware");
     // don't crash.
   }
 
   @Test
-  public void testParseIgmp() {
+  void testParseIgmp() {
     parseVendorConfig("arista_igmp");
     // don't crash.
   }
 
   @Test
-  public void testNatParse() {
+  void testNatParse() {
     parseVendorConfig("arista_nat");
     // don't crash.
   }
 
   @Test
-  public void testNatConvert() {
+  void testNatConvert() {
     parseConfig("arista_nat");
     // don't crash.
   }
 
   @Test
-  public void testParseAclShowRunAll() {
+  void testParseAclShowRunAll() {
     String hostname = "arista_acl_show_run_all";
     String filename = "configs/" + hostname;
     Configuration c = parseConfig(hostname);
@@ -3526,7 +3531,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testParseBgpShowRunAll() {
+  void testParseBgpShowRunAll() {
     AristaConfiguration c = parseVendorConfig("arista_bgp_show_run_all");
     // Test relies on route-maps configured as the last line of specific address families.
     assertThat(c.getAristaBgp().getPeerGroups().keySet(), containsInAnyOrder("SOME_GROUP"));
@@ -3551,7 +3556,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testParseBgpShowRunAll2() {
+  void testParseBgpShowRunAll2() {
     AristaConfiguration c = parseVendorConfig("arista_bgp_show_run_all_2");
     // Test relies on route-maps configured as the last line of specific address families.
     assertThat(
@@ -3629,7 +3634,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testParseBgpShowRunAll3() {
+  void testParseBgpShowRunAll3() {
     AristaConfiguration c = parseVendorConfig("arista_bgp_show_run_all_3");
     // Test relies on route-maps configured as the last line of specific address families.
     assertThat(c.getAristaBgp().getVrfs().keySet(), containsInAnyOrder("default", "a"));
@@ -3731,7 +3736,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testParseBgpShowRunAll4() {
+  void testParseBgpShowRunAll4() {
     AristaConfiguration c = parseVendorConfig("arista_bgp_show_run_all_4");
     assertThat(c.getAristaBgp().getVrfs().keySet(), containsInAnyOrder("default", "VRF10"));
     AristaBgpVrf defaultVrf = c.getAristaBgp().getDefaultVrf();
@@ -3751,7 +3756,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testParseInterfaceShowRunAll() {
+  void testParseInterfaceShowRunAll() {
     Configuration c = parseConfig("arista_interface_show_run_all", true);
     // Test relies on the last line in each interface being this description.
     assertThat(c, hasInterface("Ethernet1/1", hasDescription("Made it to the end of Ethernet1/1")));
@@ -3761,7 +3766,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testParseInterfaceShowRunAll2() {
+  void testParseInterfaceShowRunAll2() {
     Configuration c = parseConfig("arista_interface_show_run_all_2", true);
     // Test relies on the last line in each interface being this description.
     assertThat(c, hasInterface("Ethernet1/1", hasDescription("Made it to the end of Ethernet1/1")));
@@ -3771,7 +3776,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testParseInterfaceShowRunAll3() {
+  void testParseInterfaceShowRunAll3() {
     Configuration c = parseConfig("arista_interface_show_run_all_3", true);
     // Test relies on the last line in each interface being this description.
     assertThat(c, hasInterface("Ethernet1/1", hasDescription("Made it to the end of Ethernet1/1")));
@@ -3781,7 +3786,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testParseLoggingShowRunAll() {
+  void testParseLoggingShowRunAll() {
     Configuration c = parseConfig("arista_logging_show_run_all");
     assertThat(
         c.getLoggingServers(),
@@ -3790,36 +3795,36 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testPimV20() {
+  void testPimV20() {
     Configuration c = parseConfig("pim_v20");
     assertThat(c, hasInterface("Ethernet1", hasDescription("interface has pim")));
   }
 
   @Test
-  public void testPimV24() {
+  void testPimV24() {
     Configuration c = parseConfig("pim_v24");
     assertThat(c, hasInterface("Ethernet1", hasDescription("interface has pim")));
   }
 
   @Test
-  public void testManagementV20() {
+  void testManagementV20() {
     parseConfig("management_v20");
   }
 
   @Test
-  public void testManagementV24() {
+  void testManagementV24() {
     parseConfig("management_v24");
   }
 
   @Test
-  public void testPtp() {
+  void testPtp() {
     Configuration c = parseConfig("ptp");
     assertThat(
         c, hasInterface("Port-Channel2", hasDescription("made it to the end of Port-Channel2")));
   }
 
   @Test
-  public void testVlanExtraction() {
+  void testVlanExtraction() {
     AristaConfiguration c = parseVendorConfig("vlan");
     {
       Vlan vlan1 = c.getVlan(1);
@@ -3867,13 +3872,13 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testEnforceFirstAsExtraction() {
+  void testEnforceFirstAsExtraction() {
     AristaConfiguration config = parseVendorConfig("arista_bgp_enforce_first_as");
     assertThat(config.getAristaBgp().getDefaultVrf().getEnforceFirstAs(), equalTo(Boolean.TRUE));
   }
 
   @Test
-  public void testEnforceFirstAsConversion() {
+  void testEnforceFirstAsConversion() {
     Configuration c = parseConfig("arista_bgp_enforce_first_as");
     BgpActivePeerConfig peerConfig =
         c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Ip.parse("1.1.1.1"));
@@ -3881,7 +3886,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testNeighborPrefixListExtraction() {
+  void testNeighborPrefixListExtraction() {
     AristaConfiguration config = parseVendorConfig("arista_bgp_neighbor_prefix_list");
     assertThat(
         config
@@ -3904,7 +3909,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testNeighborPrefixListConversion() {
+  void testNeighborPrefixListConversion() {
     Configuration c = parseConfig("arista_bgp_neighbor_prefix_list");
 
     RoutingPolicy exportPolicy =
@@ -3981,7 +3986,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testNextHopUnchangedExtraction() {
+  void testNextHopUnchangedExtraction() {
     AristaConfiguration config = parseVendorConfig("arista_bgp_nexthop_unchanged");
     {
       AristaBgpVrf vrf = config.getAristaBgp().getDefaultVrf();
@@ -4010,7 +4015,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testNextHopUnchangedConversion() {
+  void testNextHopUnchangedConversion() {
     Configuration c = parseConfig("arista_bgp_nexthop_unchanged");
     Ip nextHopIp = Ip.parse("42.42.42.42");
     Bgpv4Route originalRoute =
@@ -4099,7 +4104,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testBgpClientToClientReflectionExtraction() {
+  void testBgpClientToClientReflectionExtraction() {
     AristaConfiguration c = parseVendorConfig("arista_bgp_reflection");
     Map<String, AristaBgpVrf> bgpVrfs = c.getAristaBgp().getVrfs();
     assertThat(bgpVrfs, hasKeys("default", "vrf2", "vrf3"));
@@ -4109,7 +4114,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testBgpClientToClientReflectionConversion() {
+  void testBgpClientToClientReflectionConversion() {
     Configuration c = parseConfig("arista_bgp_reflection");
     Map<String, Vrf> vrfs = c.getVrfs();
     assertThat(vrfs, hasKeys("default", "vrf2", "vrf3"));
@@ -4119,7 +4124,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testConfederationExtraction() {
+  void testConfederationExtraction() {
     AristaConfiguration config = parseVendorConfig("arista_bgp_confederations");
     {
       AristaBgpVrf vrf = config.getAristaBgp().getDefaultVrf();
@@ -4140,7 +4145,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testConfederationConversion() {
+  void testConfederationConversion() {
     Configuration c = parseConfig("arista_bgp_confederations");
     {
       BgpConfederation confederation = c.getDefaultVrf().getBgpProcess().getConfederation();
@@ -4158,7 +4163,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testEvpnImportPolicyExtraction() {
+  void testEvpnImportPolicyExtraction() {
     AristaConfiguration config = parseVendorConfig("arista_bgp_evpn_import_policy");
     AristaBgpNeighborAddressFamily neighbor =
         config.getAristaBgp().getDefaultVrf().getEvpnAf().getNeighbor(Ip.parse("2.2.2.2"));
@@ -4166,7 +4171,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testEvpnImportPolicyConversion() {
+  void testEvpnImportPolicyConversion() {
     Configuration config = parseConfig("arista_bgp_evpn_import_policy");
     String policyName =
         config
@@ -4195,7 +4200,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testIpNatDestinationStatic() {
+  void testIpNatDestinationStatic() {
     AristaConfiguration c = parseVendorConfig("ip-nat-destination");
     assertThat(c.getInterfaces(), hasKeys("Ethernet1"));
     List<AristaDestinationStaticNat> nats =
@@ -4223,7 +4228,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testIpNatDestinationStaticConversion() {
+  void testIpNatDestinationStaticConversion() {
     Configuration c = parseConfig("ip-nat-destination");
     assertThat(c, hasInterface("Ethernet1"));
     Interface e1 = c.getAllInterfaces().get("Ethernet1");
@@ -4242,7 +4247,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testIpNatSourceStaticExtraction() {
+  void testIpNatSourceStaticExtraction() {
     AristaConfiguration c = parseVendorConfig("ip-nat-source-static");
     assertThat(c.getExtendedAcls(), hasKeys("ACL", "INVALID_ACL"));
     assertThat(c.getInterfaces(), hasKeys("Ethernet1", "Ethernet2"));
@@ -4297,7 +4302,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testIpNatSourceStaticConversion() {
+  void testIpNatSourceStaticConversion() {
     AristaConfiguration vendor = parseVendorConfig("ip-nat-source-static");
     Warnings w = new Warnings(true, true, true);
     vendor.setWarnings(w);
@@ -4371,19 +4376,19 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testIpv6AccessListParsing() {
+  void testIpv6AccessListParsing() {
     // Don't crash or warn
     parseConfig("ipv6_acl");
   }
 
   @Test
-  public void testIpv6RouteParsing() {
+  void testIpv6RouteParsing() {
     // Don't crash
     parseConfig("ipv6_route");
   }
 
   @Test
-  public void testQos() throws IOException {
+  void testQos() throws IOException {
     String hostname = "qos";
     String filename = "configs/" + hostname;
 
@@ -4401,7 +4406,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testRouteMapExtraction() {
+  void testRouteMapExtraction() {
     AristaConfiguration c = parseVendorConfig("route_map");
     assertThat(c.getRouteMaps(), hasKeys("map1", "DANAIL_PETROV_20201103", "ACTION_CHANGES"));
     {
@@ -4425,7 +4430,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testRouteMapParsing() {
+  void testRouteMapParsing() {
     // Don't crash
     parseConfig("route_map");
   }
@@ -4443,7 +4448,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testRouteMapExhaustive() {
+  void testRouteMapExhaustive() {
     Configuration c = parseConfig("arista_route_map_exhaustive");
     assertThat(c.getRoutingPolicies(), hasKey("RM"));
     RoutingPolicy rm = c.getRoutingPolicies().get("RM");
@@ -4536,7 +4541,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testRouteMapNakedContinue() {
+  void testRouteMapNakedContinue() {
     Configuration c = parseConfig("arista_route_map_naked_continue");
     assertThat(c.getRoutingPolicies(), hasKey("RM"));
     RoutingPolicy rm = c.getRoutingPolicies().get("RM");
@@ -4558,7 +4563,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testSnmpExtraction() {
+  void testSnmpExtraction() {
     Configuration config = parseConfig("arista_snmp");
     assertThat(config.getSnmpTrapServers(), containsInAnyOrder("10.1.2.3"));
     SnmpServer server = config.getDefaultVrf().getSnmpServer();
@@ -4580,7 +4585,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testPeerFilterExtraction() {
+  void testPeerFilterExtraction() {
     AristaConfiguration config = parseVendorConfig("arista_bgp_peer_filter");
     assertThat(config.getPeerFilters().keySet(), containsInAnyOrder("PF", "EMPTY"));
     assertThat(
@@ -4610,7 +4615,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testPeerFilterConversion() {
+  void testPeerFilterConversion() {
     Configuration config = parseConfig("arista_bgp_peer_filter");
     assertThat(
         config
@@ -4643,7 +4648,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testPrefixListSeq() {
+  void testPrefixListSeq() {
     AristaConfiguration c = parseVendorConfig("prefix-list-seq");
     assertThat(
         c.getPrefixLists(), hasKeys("NOSEQ", "NOSEQ_THEN_SEQ", "SEQ_NO_SEQ", "OUT_OF_ORDER"));
@@ -4688,7 +4693,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testIpCommunityListExpandedConversion() throws IOException {
+  void testIpCommunityListExpandedConversion() throws IOException {
     String hostname = "arista_ip_community_list_expanded";
     Configuration c = parseConfig(hostname);
     CommunityContext ctx = CommunityContext.builder().build();
@@ -4752,7 +4757,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testIpCommunityListExpandedExtraction() {
+  void testIpCommunityListExpandedExtraction() {
     String hostname = "arista_ip_community_list_expanded";
     AristaConfiguration vc = parseVendorConfig(hostname);
 
@@ -4779,7 +4784,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testIpCommunityListStandardConversion() throws IOException {
+  void testIpCommunityListStandardConversion() throws IOException {
     String hostname = "arista_ip_community_list_standard";
     Configuration c = parseConfig(hostname);
     CommunityContext ctx = CommunityContext.builder().build();
@@ -4881,7 +4886,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testIpCommunityListStandardExtraction() {
+  void testIpCommunityListStandardExtraction() {
     String hostname = "arista_ip_community_list_standard";
     AristaConfiguration vc = parseVendorConfig(hostname);
 
@@ -4923,7 +4928,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testRouteMapCommunityExtraction() {
+  void testRouteMapCommunityExtraction() {
     String hostname = "arista_route_map_community";
     AristaConfiguration vc = parseVendorConfig(hostname);
     assertThat(
@@ -5118,7 +5123,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testRouteMapCommunityConversion() {
+  void testRouteMapCommunityConversion() {
     String hostname = "arista_route_map_community";
     Configuration c = parseConfig(hostname);
     Set<String> topLevelPolicies =
@@ -5387,7 +5392,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testNoRouterOspf() {
+  void testNoRouterOspf() {
     String hostname = "arista_no_router_ospf";
     AristaConfiguration vendorConfiguration = parseVendorConfig(hostname);
 
@@ -5401,7 +5406,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testNoRouteMap() {
+  void testNoRouteMap() {
     String hostname = "arista_no_route_map";
     AristaConfiguration vc = parseVendorConfig(hostname);
 
@@ -5412,7 +5417,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testNoIpPrefixList() {
+  void testNoIpPrefixList() {
     String hostname = "arista_no_ip_prefix_list";
     AristaConfiguration vc = parseVendorConfig(hostname);
 
@@ -5437,7 +5442,7 @@ public class AristaGrammarTest {
    * deletion actually happens
    */
   @Test
-  public void testBgpNoRedistribute() {
+  void testBgpNoRedistribute() {
     String hostname = "arista_bgp_no_redistribute";
     AristaConfiguration vc = parseVendorConfig(hostname);
 
@@ -5445,7 +5450,7 @@ public class AristaGrammarTest {
   }
 
   @Test
-  public void testIpv6UnicastRoutingParsing() {
+  void testIpv6UnicastRoutingParsing() {
     // Ensure "ipv6 unicast-routing" (bare and vrf-qualified) parses without warnings.
     AristaConfiguration vc = parseVendorConfig("arista_ipv6_unicast_routing");
     assertThat(vc.getWarnings().getParseWarnings(), empty());

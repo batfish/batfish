@@ -21,6 +21,7 @@ import static org.hamcrest.Matchers.hasEntry;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
@@ -47,15 +48,14 @@ import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests of {@link PrefixTracer} */
-public class PrefixTracerTest {
+class PrefixTracerTest {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
   private static Prefix _staticRoutePrefix = Prefix.parse("3.3.3.3/32");
 
   /**
@@ -146,7 +146,7 @@ public class PrefixTracerTest {
 
   /** Test initialization */
   @Test
-  public void testConstructor() {
+  void testConstructor() {
     PrefixSpace allPrefixes = new PrefixSpace();
     allPrefixes.addPrefixRange(PrefixRange.ALL);
     PrefixTracer pt = new PrefixTracer(allPrefixes);
@@ -158,7 +158,7 @@ public class PrefixTracerTest {
 
   /** Test basic setters */
   @Test
-  public void testSimpleSetters() {
+  void testSimpleSetters() {
     PrefixSpace allPrefixes = new PrefixSpace();
     allPrefixes.addPrefixRange(PrefixRange.ALL);
     PrefixTracer pt = new PrefixTracer(allPrefixes);
@@ -195,9 +195,9 @@ public class PrefixTracerTest {
    * Test that all prefixes are marked as allowed (according to policy) by the prefix tracer during
    * dataplane computation
    */
-  @Ignore("TODO: plumbing to control the PrefixSpace passed into PrefixTracer")
+  @Disabled("TODO: plumbing to control the PrefixSpace passed into PrefixTracer")
   @Test
-  public void testPrefixExportAllowed() throws IOException {
+  void testPrefixExportAllowed() throws IOException {
 
     Batfish batfish = BatfishTestUtils.getBatfish(twoNodeNetwork(false), _folder);
     batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
@@ -224,9 +224,9 @@ public class PrefixTracerTest {
    * Test that all prefixes are marked as filtered (according to policy) by the prefix tracer during
    * dataplane computation
    */
-  @Ignore("TODO: plumbing to control the PrefixSpace passed into PrefixTracer")
+  @Disabled("TODO: plumbing to control the PrefixSpace passed into PrefixTracer")
   @Test
-  public void testPrefixExportDenied() throws IOException {
+  void testPrefixExportDenied() throws IOException {
 
     Batfish batfish = BatfishTestUtils.getBatfish(twoNodeNetwork(true), _folder);
     batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
@@ -244,13 +244,13 @@ public class PrefixTracerTest {
   }
 
   @Test
-  public void testSummarizeEmpty() {
+  void testSummarizeEmpty() {
     assertThat(new PrefixTracer().summarize(), anEmptyMap());
   }
 
-  @Ignore("TODO: plumbing to control the PrefixSpace passed into PrefixTracer")
+  @Disabled("TODO: plumbing to control the PrefixSpace passed into PrefixTracer")
   @Test
-  public void testSummarize() throws IOException {
+  void testSummarize() throws IOException {
     //    Batfish batfish = BatfishTestUtils.getBatfish(twoNodeNetwork(false), _folder);
     // TODO: dp.getPrefixTracingInfo() no longer exists. munge data from ibdpResult.
     //    IncrementalDataPlane dp =
@@ -267,9 +267,9 @@ public class PrefixTracerTest {
     // contains("n2"))));
   }
 
-  @Ignore("TODO: plumbing to control the PrefixSpace passed into PrefixTracer")
+  @Disabled("TODO: plumbing to control the PrefixSpace passed into PrefixTracer")
   @Test
-  public void testSummarizeDataplaneAccess() throws IOException {
+  void testSummarizeDataplaneAccess() throws IOException {
     Batfish batfish = BatfishTestUtils.getBatfish(twoNodeNetwork(false), _folder);
     IncrementalDataPlane dp =
         (IncrementalDataPlane)

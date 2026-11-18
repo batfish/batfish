@@ -12,22 +12,22 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.main.Batfish;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosPolicyInterfaceNameTest {
+final class JunosPolicyInterfaceNameTest {
 
   private static final String HOSTNAME = "policy-statement-from-generic-interface-name";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testReferencesAndConversion() throws IOException {
+  void testReferencesAndConversion() throws IOException {
     Batfish batfish = getBatfish(_folder, HOSTNAME);
     assertThat(getParseWarnings(batfish, HOSTNAME), empty());
 

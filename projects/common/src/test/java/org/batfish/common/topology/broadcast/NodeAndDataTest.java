@@ -1,11 +1,11 @@
 package org.batfish.common.topology.broadcast;
 
 import com.google.common.testing.EqualsTester;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class NodeAndDataTest {
+class NodeAndDataTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new NodeAndData<>(new EthernetHub("1"), EthernetTag.untagged()),

@@ -16,12 +16,12 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.bgp.TunnelEncapsulationAttribute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.expr.LiteralTunnelEncapsulationAttribute;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link SetTunnelEncapsulationAttribute} */
-public class SetTunnelEncapsulationAttributeTest {
+class SetTunnelEncapsulationAttributeTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     LiteralTunnelEncapsulationAttribute tunnelEncapAttrExpr =
         new LiteralTunnelEncapsulationAttribute(
             new TunnelEncapsulationAttribute(Ip.parse("1.1.1.1")));
@@ -36,7 +36,7 @@ public class SetTunnelEncapsulationAttributeTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     LiteralTunnelEncapsulationAttribute tunnelEncapAttrExpr =
         new LiteralTunnelEncapsulationAttribute(
             new TunnelEncapsulationAttribute(Ip.parse("1.1.1.1")));
@@ -45,7 +45,7 @@ public class SetTunnelEncapsulationAttributeTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     LiteralTunnelEncapsulationAttribute tunnelEncapAttrExpr =
         new LiteralTunnelEncapsulationAttribute(
             new TunnelEncapsulationAttribute(Ip.parse("1.1.1.1")));
@@ -54,7 +54,7 @@ public class SetTunnelEncapsulationAttributeTest {
   }
 
   @Test
-  public void testExecute() {
+  void testExecute() {
     TunnelEncapsulationAttribute tunnelEncapAttr =
         new TunnelEncapsulationAttribute(Ip.parse("1.1.1.1"));
     LiteralTunnelEncapsulationAttribute tunnelEncapAttrExpr =

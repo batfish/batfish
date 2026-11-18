@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
@@ -22,15 +23,14 @@ import org.batfish.representation.juniper.JuniperConfiguration;
 import org.batfish.representation.juniper.PsFromColor;
 import org.batfish.representation.juniper.PsFromColor2;
 import org.batfish.representation.juniper.PsFroms;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosPolicyColorTest {
+final class JunosPolicyColorTest {
 
   private static final String HOSTNAME = "policy-statement-color";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private static Bgpv4Route route(long color, long color2) {
     return Bgpv4Route.testBuilder()
@@ -53,7 +53,7 @@ public final class JunosPolicyColorTest {
   }
 
   @Test
-  public void testExtraction() throws IOException {
+  void testExtraction() throws IOException {
     Batfish batfish = getBatfish(_folder, HOSTNAME);
     JuniperConfiguration jc = getVendorConfiguration(batfish, HOSTNAME);
     PsFroms color =
@@ -79,7 +79,7 @@ public final class JunosPolicyColorTest {
   }
 
   @Test
-  public void testThenColorSetsBoth() throws IOException {
+  void testThenColorSetsBoth() throws IOException {
     RoutingPolicy set = config().getRoutingPolicies().get("SET-COLOR");
     Bgpv4Route.Builder out = route(0, 0).toBuilder();
     assertThat(set.process(route(0, 0), out, Direction.IN), equalTo(true));
@@ -88,7 +88,7 @@ public final class JunosPolicyColorTest {
   }
 
   @Test
-  public void testFromColor() throws IOException {
+  void testFromColor() throws IOException {
     RoutingPolicy match = config().getRoutingPolicies().get("MATCH-COLOR");
     assertThat(accepts(match, route(10, 0)), equalTo(true));
     assertThat(accepts(match, route(9, 0)), equalTo(false));
@@ -97,7 +97,7 @@ public final class JunosPolicyColorTest {
   }
 
   @Test
-  public void testFromColor2() throws IOException {
+  void testFromColor2() throws IOException {
     RoutingPolicy match = config().getRoutingPolicies().get("MATCH-COLOR2");
     assertThat(accepts(match, route(0, 20)), equalTo(true));
     assertThat(accepts(match, route(20, 0)), equalTo(false));

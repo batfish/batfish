@@ -8,12 +8,12 @@ import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link OspfAddresses}. */
-public final class OspfAddressesTest {
+final class OspfAddressesTest {
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     OspfAddresses obj =
         OspfAddresses.of(ImmutableList.of(ConcreteInterfaceAddress.parse("1.1.1.1/32")));
 
@@ -22,7 +22,7 @@ public final class OspfAddressesTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     OspfAddresses obj =
         OspfAddresses.of(ImmutableList.of(ConcreteInterfaceAddress.parse("1.1.1.1/32")));
 
@@ -30,7 +30,7 @@ public final class OspfAddressesTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             OspfAddresses.of(ImmutableList.of()), OspfAddresses.of(ImmutableList.of()))

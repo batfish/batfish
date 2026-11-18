@@ -18,10 +18,10 @@ import org.batfish.datamodel.flow.LoopStep;
 import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.pojo.Node;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link TracePruner}. */
-public class TracePrunerTest {
+class TracePrunerTest {
   private static final Hop HOP_A =
       new Hop(
           new Node("A"),
@@ -54,24 +54,24 @@ public class TracePrunerTest {
   private static final Trace TRACE_C_ACCEPTED = new Trace(ACCEPTED, ImmutableList.of(HOP_C));
 
   @Test
-  public void testEmpty() {
+  void testEmpty() {
     assertThat(prune(ImmutableList.of(), 5), empty());
   }
 
   @Test
-  public void testPickNone() {
+  void testPickNone() {
     assertThat(prune(ImmutableList.of(TRACE_A_ACCEPTED), 0), empty());
   }
 
   @Test
-  public void testPreferDispositionOverNode() {
+  void testPreferDispositionOverNode() {
     assertThat(
         prune(ImmutableList.of(TRACE_A_ACCEPTED, TRACE_B_ACCEPTED, TRACE_A_DENIED_IN), 2),
         equalTo(ImmutableList.of(TRACE_A_ACCEPTED, TRACE_A_DENIED_IN)));
   }
 
   @Test
-  public void testPickByNode() {
+  void testPickByNode() {
     assertThat(
         prune(
             ImmutableList.of(
@@ -81,7 +81,7 @@ public class TracePrunerTest {
   }
 
   @Test
-  public void testPickFill() {
+  void testPickFill() {
     // once we've covered all dispositions and flows, fill with unused traces in input order
     assertThat(
         prune(

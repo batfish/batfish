@@ -25,6 +25,7 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.hamcrest.Matchers.nullValue;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import org.batfish.common.Warnings;
@@ -33,18 +34,17 @@ import org.batfish.main.Batfish;
 import org.batfish.representation.juniper.Interface;
 import org.batfish.representation.juniper.LogicalSystem;
 import org.batfish.representation.juniper.MacsecConnectivityAssociation;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosMacsecConnectivityAssociationTest {
+final class JunosMacsecConnectivityAssociationTest {
 
   private static final String CONFIG_NAME = "macsec-connectivity-associations";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testExtractionAndWarnings() throws IOException {
+  void testExtractionAndWarnings() throws IOException {
     Batfish batfish = getBatfish(_folder, CONFIG_NAME);
     LogicalSystem logicalSystem =
         getVendorConfiguration(batfish, CONFIG_NAME).getMasterLogicalSystem();

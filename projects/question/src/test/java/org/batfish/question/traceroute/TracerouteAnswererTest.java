@@ -36,16 +36,12 @@ import org.batfish.datamodel.matchers.TraceMatchers;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-public class TracerouteAnswererTest {
-
-  @Rule public ExpectedException thrown = ExpectedException.none();
+class TracerouteAnswererTest {
 
   @Test
-  public void testDiffFlowTracesToRows() {
+  void testDiffFlowTracesToRows() {
     Flow flow = Flow.builder().setIngressNode("node").setDstIp(Ip.parse("1.1.1.1")).build();
 
     Map<Flow, List<Trace>> baseFlowTraces =
@@ -78,7 +74,7 @@ public class TracerouteAnswererTest {
   }
 
   @Test
-  public void testFlowTracesToRowsMaxTraces() {
+  void testFlowTracesToRowsMaxTraces() {
     Flow flow = Flow.builder().setIngressNode("node").setDstIp(Ip.parse("1.1.1.1")).build();
     SortedMap<Flow, List<Trace>> flowTraces =
         ImmutableSortedMap.of(
@@ -100,7 +96,7 @@ public class TracerouteAnswererTest {
   }
 
   @Test
-  public void testDiffFlowTracesToRowsMaxTraces() {
+  void testDiffFlowTracesToRowsMaxTraces() {
     Flow flow = Flow.builder().setIngressNode("node").setDstIp(Ip.parse("1.1.1.1")).build();
 
     SortedMap<Flow, List<Trace>> baseflowTraces =
@@ -139,7 +135,7 @@ public class TracerouteAnswererTest {
   }
 
   @Test
-  public void testMetadata() {
+  void testMetadata() {
     List<ColumnMetadata> columnMetadata = metadata(false).getColumnMetadata();
     assertThat(
         columnMetadata.stream()

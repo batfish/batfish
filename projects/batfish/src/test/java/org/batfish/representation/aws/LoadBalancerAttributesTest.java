@@ -5,8 +5,8 @@ import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.representation.aws.LoadBalancerAttributes.CROSS_ZONE_KEY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
@@ -14,12 +14,12 @@ import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.representation.aws.LoadBalancerAttributes.Attribute;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class LoadBalancerAttributesTest {
+class LoadBalancerAttributesTest {
 
   @Test
-  public void testDeserialization() throws IOException {
+  void testDeserialization() throws IOException {
     String text =
         readResource("org/batfish/representation/aws/LoadBalancerAttributesTest.json", UTF_8);
 
@@ -40,7 +40,7 @@ public class LoadBalancerAttributesTest {
   }
 
   @Test
-  public void testGetCrossZoneLoadBalancing() {
+  void testGetCrossZoneLoadBalancing() {
     // key does not exist
     assertFalse(new LoadBalancerAttributes("arn", ImmutableList.of()).getCrossZoneLoadBalancing());
 

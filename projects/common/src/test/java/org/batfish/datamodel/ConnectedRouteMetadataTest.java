@@ -7,12 +7,12 @@ import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.ConnectedRouteMetadata.Builder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link ConnectedRouteMetadata} */
-public class ConnectedRouteMetadataTest {
+class ConnectedRouteMetadataTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     Builder builder = ConnectedRouteMetadata.builder();
     new EqualsTester()
         .addEqualityGroup(new Object())
@@ -29,7 +29,7 @@ public class ConnectedRouteMetadataTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     ConnectedRouteMetadata crm =
         ConnectedRouteMetadata.builder()
             .setAdmin(2)
@@ -41,7 +41,7 @@ public class ConnectedRouteMetadataTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     ConnectedRouteMetadata crm =
         ConnectedRouteMetadata.builder()
             .setAdmin(2)

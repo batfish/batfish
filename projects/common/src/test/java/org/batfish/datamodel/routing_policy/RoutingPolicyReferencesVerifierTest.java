@@ -2,7 +2,9 @@ package org.batfish.datamodel.routing_policy;
 
 import static org.batfish.datamodel.routing_policy.RoutingPolicyReferencesVerifier.BOOLEAN_EXPR_VERIFIER;
 import static org.batfish.datamodel.routing_policy.RoutingPolicyReferencesVerifier.STATEMENT_VERIFIER;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -15,17 +17,13 @@ import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statements;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link RoutingPolicyReferencesVerifier}. */
-public final class RoutingPolicyReferencesVerifierTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+final class RoutingPolicyReferencesVerifierTest {
 
   @Test
-  public void testVerifyCallExprDefined() {
+  void testVerifyCallExprDefined() {
     Configuration c =
         Configuration.builder()
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
@@ -45,7 +43,7 @@ public final class RoutingPolicyReferencesVerifierTest {
   }
 
   @Test
-  public void testVerifyCallExprUndefined() {
+  void testVerifyCallExprUndefined() {
     Configuration c =
         Configuration.builder()
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
@@ -60,13 +58,16 @@ public final class RoutingPolicyReferencesVerifierTest {
                 ImmutableList.of())));
     c.setRoutingPolicies(ImmutableMap.of("policy", policy));
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference to routing policy in CallExpr"));
-    RoutingPolicyReferencesVerifier.verify(c);
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class, () -> RoutingPolicyReferencesVerifier.verify(c));
+    assertThat(
+        exception.getMessage(),
+        containsString("Undefined reference to routing policy in CallExpr"));
   }
 
   @Test
-  public void testVerifyCallStatementDefined() {
+  void testVerifyCallStatementDefined() {
     Configuration c =
         Configuration.builder()
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
@@ -81,7 +82,7 @@ public final class RoutingPolicyReferencesVerifierTest {
   }
 
   @Test
-  public void testVerifyCallStatementUndefined() {
+  void testVerifyCallStatementUndefined() {
     Configuration c =
         Configuration.builder()
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
@@ -91,13 +92,16 @@ public final class RoutingPolicyReferencesVerifierTest {
     policy.setStatements(ImmutableList.of(new CallStatement("nonexistentPolicy")));
     c.setRoutingPolicies(ImmutableMap.of("policy", policy));
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference to routing policy in CallStatement"));
-    RoutingPolicyReferencesVerifier.verify(c);
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class, () -> RoutingPolicyReferencesVerifier.verify(c));
+    assertThat(
+        exception.getMessage(),
+        containsString("Undefined reference to routing policy in CallStatement"));
   }
 
   @Test
-  public void testVisitCallExprDefined() {
+  void testVisitCallExprDefined() {
     Configuration c =
         Configuration.builder()
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
@@ -113,7 +117,7 @@ public final class RoutingPolicyReferencesVerifierTest {
   }
 
   @Test
-  public void testVisitCallExprUndefined() {
+  void testVisitCallExprUndefined() {
     Configuration c =
         Configuration.builder()
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
@@ -123,13 +127,17 @@ public final class RoutingPolicyReferencesVerifierTest {
     RoutingPolicyReferencesVerifierContext ctx =
         RoutingPolicyReferencesVerifierContext.fromConfiguration(c);
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference to routing policy in CallExpr"));
-    new CallExpr("nonexistentPolicy").accept(BOOLEAN_EXPR_VERIFIER, ctx);
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () -> new CallExpr("nonexistentPolicy").accept(BOOLEAN_EXPR_VERIFIER, ctx));
+    assertThat(
+        exception.getMessage(),
+        containsString("Undefined reference to routing policy in CallExpr"));
   }
 
   @Test
-  public void testVisitCallStatementDefined() {
+  void testVisitCallStatementDefined() {
     Configuration c =
         Configuration.builder()
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
@@ -145,7 +153,7 @@ public final class RoutingPolicyReferencesVerifierTest {
   }
 
   @Test
-  public void testVisitCallStatementUndefined() {
+  void testVisitCallStatementUndefined() {
     Configuration c =
         Configuration.builder()
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
@@ -155,13 +163,17 @@ public final class RoutingPolicyReferencesVerifierTest {
     RoutingPolicyReferencesVerifierContext ctx =
         RoutingPolicyReferencesVerifierContext.fromConfiguration(c);
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference to routing policy in CallStatement"));
-    new CallStatement("nonexistentPolicy").accept(STATEMENT_VERIFIER, ctx);
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class,
+            () -> new CallStatement("nonexistentPolicy").accept(STATEMENT_VERIFIER, ctx));
+    assertThat(
+        exception.getMessage(),
+        containsString("Undefined reference to routing policy in CallStatement"));
   }
 
   @Test
-  public void testVerifyNestedCallExprUndefined() {
+  void testVerifyNestedCallExprUndefined() {
     Configuration c =
         Configuration.builder()
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
@@ -180,8 +192,11 @@ public final class RoutingPolicyReferencesVerifierTest {
                 ImmutableList.of())));
     c.setRoutingPolicies(ImmutableMap.of("policy", policy));
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference to routing policy in CallExpr"));
-    RoutingPolicyReferencesVerifier.verify(c);
+    Throwable exception =
+        assertThrows(
+            VendorConversionException.class, () -> RoutingPolicyReferencesVerifier.verify(c));
+    assertThat(
+        exception.getMessage(),
+        containsString("Undefined reference to routing policy in CallExpr"));
   }
 }

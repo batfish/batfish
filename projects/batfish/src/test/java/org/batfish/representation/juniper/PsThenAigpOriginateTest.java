@@ -5,12 +5,12 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class PsThenAigpOriginateTest {
+class PsThenAigpOriginateTest {
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     PsThenAigpOriginate objWithNull = new PsThenAigpOriginate(null);
     assertThat(SerializationUtils.clone(objWithNull), equalTo(objWithNull));
 
@@ -19,7 +19,7 @@ public class PsThenAigpOriginateTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(5)
         .addEqualityGroup(new PsThenAigpOriginate(null), new PsThenAigpOriginate(null))

@@ -20,13 +20,13 @@ import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Rows;
 import org.batfish.datamodel.table.TableAnswerElement;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link FileParseStatusAnswerer}. */
-public class FileParseStatusAnswererTest {
+class FileParseStatusAnswererTest {
 
   @Test
-  public void testGetRowWithoutHost() {
+  void testGetRowWithoutHost() {
     Row expected =
         Row.of(
             COL_FILENAME,
@@ -45,7 +45,7 @@ public class FileParseStatusAnswererTest {
   }
 
   @Test
-  public void testGetRowWithHost() {
+  void testGetRowWithHost() {
     Row expected =
         Row.of(
             COL_FILENAME,
@@ -64,7 +64,7 @@ public class FileParseStatusAnswererTest {
   }
 
   @Test
-  public void testAnswererFlow() {
+  void testAnswererFlow() {
     TestBatfish batfish = new TestBatfish();
     FileParseStatusAnswerer answerer =
         new FileParseStatusAnswerer(new FileParseStatusQuestion(), batfish);

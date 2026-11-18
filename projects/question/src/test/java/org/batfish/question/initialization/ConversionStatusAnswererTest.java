@@ -12,11 +12,11 @@ import org.batfish.datamodel.answers.ConvertStatus;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Rows;
 import org.batfish.datamodel.table.TableAnswerElement;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ConversionStatusAnswererTest {
+class ConversionStatusAnswererTest {
   @Test
-  public void testAnswer() {
+  void testAnswer() {
     TestBatfish batfish = new TestBatfish();
     ConversionStatusAnswerer answerer =
         new ConversionStatusAnswerer(new ConversionStatusQuestion(), batfish);

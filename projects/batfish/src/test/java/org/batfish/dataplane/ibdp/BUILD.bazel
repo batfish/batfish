@@ -15,7 +15,6 @@ java_library(
         "//projects/common/src/test/java/org/batfish/datamodel:testlib",
         "//projects/common/src/test/java/org/batfish/datamodel/matchers",
         "@maven//:com_google_code_findbugs_jsr305",
-        "@maven//:junit_junit",
         "@maven//:org_hamcrest_hamcrest",
     ],
 )
@@ -48,8 +47,9 @@ junit_tests(
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",
         "@maven//:com_google_guava_guava_testlib",
-        "@maven//:junit_junit",
         "@maven//:org_apache_commons_commons_lang3",
         "@maven//:org_hamcrest_hamcrest",
+        "@maven//:org_junit_jupiter_junit_jupiter_api",
+        "@maven//:org_junit_jupiter_junit_jupiter_params",
     ],
 )

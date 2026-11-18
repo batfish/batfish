@@ -41,14 +41,14 @@ import org.batfish.minesweeper.bdd.BDDRoute;
 import org.batfish.minesweeper.bdd.TransferReturn;
 import org.batfish.minesweeper.utils.Tuple;
 import org.batfish.question.testroutepolicies.Result;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link
  * org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesUtils}.
  */
-public class CompareRoutePoliciesUtilsTest {
+class CompareRoutePoliciesUtilsTest {
 
   ConfigAtomicPredicates _configAPs;
   BDDFactory _factory;
@@ -58,8 +58,8 @@ public class CompareRoutePoliciesUtilsTest {
   RoutingPolicy.Builder _policyBuilderRef;
   RoutingPolicy.Builder _policyBuilderOther;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _configAPs =
         new ConfigAtomicPredicates(
             ImmutableList.of(),
@@ -80,7 +80,7 @@ public class CompareRoutePoliciesUtilsTest {
   }
 
   @Test
-  public void testRelevantInputAttributesFor() {
+  void testRelevantInputAttributesFor() {
     BDD none = _factory.one();
     BDD localPref = _bddRoute.getLocalPref().value(300);
     BDD commOrMed = _bddRoute.getCommunityAtomicPredicates()[0].or(_bddRoute.getMed().leq(10));
@@ -117,7 +117,7 @@ public class CompareRoutePoliciesUtilsTest {
   }
 
   @Test
-  public void testRelevantInputAttributesForLocalAttributes() {
+  void testRelevantInputAttributesForLocalAttributes() {
     // the policy-free ConfigAtomicPredicates tracks no literals, so each attribute is {0, OTHER}
     BDD tag2 = _bddRoute.getTag2().value(0);
     BDD colorOrColor2 = _bddRoute.getColor().value(0).or(_bddRoute.getColor2().value(0).not());
@@ -127,7 +127,7 @@ public class CompareRoutePoliciesUtilsTest {
   }
 
   @Test
-  public void testRelevantInputAttributesForDifferenceNone() {
+  void testRelevantInputAttributesForDifferenceNone() {
     TransferReturn path = new TransferReturn(new BDDRoute(_bddRoute), _factory.one(), true);
     TransferReturn otherPath = new TransferReturn(new BDDRoute(_bddRoute), _factory.one(), false);
     Tuple<Result<BgpRoute, BgpRoute>, Result<BgpRoute, BgpRoute>> res =
@@ -148,7 +148,7 @@ public class CompareRoutePoliciesUtilsTest {
   }
 
   @Test
-  public void testRelevantInputAttributesForDifferenceTwo() {
+  void testRelevantInputAttributesForDifferenceTwo() {
     TransferReturn path =
         new TransferReturn(
             new BDDRoute(_bddRoute),
@@ -175,7 +175,7 @@ public class CompareRoutePoliciesUtilsTest {
   }
 
   @Test
-  public void testRelevantInputAttributesForDifferenceIntersect() {
+  void testRelevantInputAttributesForDifferenceIntersect() {
     TransferReturn path =
         new TransferReturn(
             new BDDRoute(_bddRoute),
@@ -201,7 +201,7 @@ public class CompareRoutePoliciesUtilsTest {
   }
 
   @Test
-  public void testRelevantInputAttributesForDifferenceOutput() {
+  void testRelevantInputAttributesForDifferenceOutput() {
     BDDRoute pathRoute = new BDDRoute(_bddRoute);
     pathRoute.getLocalPref().setValue(300);
     TransferReturn path = new TransferReturn(pathRoute, _factory.one(), true);

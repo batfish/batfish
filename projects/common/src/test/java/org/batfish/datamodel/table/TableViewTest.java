@@ -8,9 +8,9 @@ import com.google.common.collect.ImmutableSet;
 import org.batfish.common.AnswerRowsOptions;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.answers.Schema;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class TableViewTest {
+final class TableViewTest {
 
   private static final AnswerRowsOptions OPTIONS =
       new AnswerRowsOptions(
@@ -20,7 +20,7 @@ public final class TableViewTest {
       new TableMetadata(ImmutableList.of(new ColumnMetadata("c1", Schema.STRING, "desc")));
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     Row row1 = Row.builder().put("key1", "v1").build();
     Row row2 = Row.builder().put("key1", "v2").build();
     TableView tableView =

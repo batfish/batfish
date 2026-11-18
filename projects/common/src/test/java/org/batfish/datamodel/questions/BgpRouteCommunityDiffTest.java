@@ -7,18 +7,18 @@ import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.lessThan;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Set;
 import java.util.SortedSet;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link BgpRouteCommunityDiff}. */
-public class BgpRouteCommunityDiffTest {
+class BgpRouteCommunityDiffTest {
 
   private static SortedSet<Community> makeCommSet(int... comms) {
     checkArgument(comms.length % 2 == 0, "expecting even number of community parts");
@@ -31,7 +31,7 @@ public class BgpRouteCommunityDiffTest {
 
   /** Test that the added/removed sets are computed correctly. */
   @Test
-  public void testSetsConstruction() {
+  void testSetsConstruction() {
     // [0:0, 1:1] -> [1:1, 2:2]
     SortedSet<Community> oldComms1 = makeCommSet(0, 0, 1, 1);
     SortedSet<Community> newComms1 = makeCommSet(1, 1, 2, 2);
@@ -43,7 +43,7 @@ public class BgpRouteCommunityDiffTest {
   }
 
   @Test
-  public void testProjection() {
+  void testProjection() {
     SortedSet<Community> oldComms = makeCommSet(0, 0);
     SortedSet<Community> newComms = makeCommSet(1, 1);
     assertEquals(
@@ -52,7 +52,7 @@ public class BgpRouteCommunityDiffTest {
   }
 
   @Test
-  public void testDeltaEquals() {
+  void testDeltaEquals() {
     // [0:0, 1:1] -> [1:1, 2:2]
     SortedSet<Community> oldComms1 = makeCommSet(0, 0, 1, 1);
     SortedSet<Community> newComms1 = makeCommSet(1, 1, 2, 2);
@@ -70,7 +70,7 @@ public class BgpRouteCommunityDiffTest {
   }
 
   @Test
-  public void testDeltaCompareTo() {
+  void testDeltaCompareTo() {
     // [0:0, 1:1] -> [1:1, 2:2]
     SortedSet<Community> oldComms1 = makeCommSet(0, 0, 1, 1);
     SortedSet<Community> newComms1 = makeCommSet(1, 1, 2, 2);

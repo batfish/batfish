@@ -16,10 +16,10 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link SetColor2}. */
-public final class SetColor2Test {
+final class SetColor2Test {
   private static final Configuration C =
       new NetworkFactory()
           .configurationBuilder()
@@ -28,7 +28,7 @@ public final class SetColor2Test {
   private static final SetColor2 SET_7 = new SetColor2(new LiteralLong(7L));
 
   @Test
-  public void testExecute() {
+  void testExecute() {
     Bgpv4Route route =
         Bgpv4Route.testBuilder()
             .setNetwork(Prefix.parse("10.0.0.0/8"))
@@ -43,7 +43,7 @@ public final class SetColor2Test {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(SET_7, new SetColor2(new LiteralLong(7L)))
         .addEqualityGroup(new SetColor2(new LiteralLong(8L)))
@@ -52,7 +52,7 @@ public final class SetColor2Test {
   }
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     assertThat(BatfishObjectMapper.clone(SET_7, Statement.class), equalTo(SET_7));
     assertThat(SerializationUtils.clone(SET_7), equalTo(SET_7));
   }

@@ -8,12 +8,12 @@ import com.google.common.collect.ImmutableSet;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class TypesNodeSpecifierTest {
+class TypesNodeSpecifierTest {
 
   @Test
-  public void testResolve() {
+  void testResolve() {
     Configuration c1 = new Configuration("node1", ConfigurationFormat.CISCO_IOS);
     c1.setDeviceType(DeviceType.HOST);
 

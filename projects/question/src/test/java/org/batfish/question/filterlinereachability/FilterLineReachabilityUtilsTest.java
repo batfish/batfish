@@ -14,12 +14,12 @@ import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class FilterLineReachabilityUtilsTest {
+class FilterLineReachabilityUtilsTest {
 
   @Test
-  public void testReferencedAcls() {
+  void testReferencedAcls() {
     String aclName = "acl";
     PermittedByAcl permittedByAcl = new PermittedByAcl(aclName);
     ExprAclLine.Builder lineBuilder = ExprAclLine.builder().setAction(LineAction.PERMIT);
@@ -43,7 +43,7 @@ public class FilterLineReachabilityUtilsTest {
   }
 
   @Test
-  public void testReferencedInterfaces() {
+  void testReferencedInterfaces() {
     Set<String> interfaces = ImmutableSet.of("iface1", "iface2");
     MatchSrcInterface matchSrcInterface = new MatchSrcInterface(interfaces);
     ExprAclLine.Builder lineBuilder = ExprAclLine.builder().setAction(LineAction.PERMIT);

@@ -4,12 +4,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class RouteMapMatchCommunityTest {
+class RouteMapMatchCommunityTest {
 
   @Test
-  public void testGetNames() {
+  void testGetNames() {
     RouteMapMatchCommunity match = new RouteMapMatchCommunity(ImmutableList.of("M1", "M2", "M3"));
     assertThat(match.getNames(), equalTo(ImmutableList.of("M1", "M2", "M3")));
   }

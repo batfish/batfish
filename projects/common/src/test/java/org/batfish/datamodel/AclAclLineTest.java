@@ -4,8 +4,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -14,12 +14,12 @@ import java.util.Collections;
 import java.util.Map;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.vendor.VendorStructureId;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link AclAclLine} */
-public class AclAclLineTest {
+class AclAclLineTest {
   @Test
-  public void testExplicitActions() {
+  void testExplicitActions() {
     Ip ip1234 = Ip.parse("1.2.3.4");
     Ip ip2345 = Ip.parse("2.3.4.5");
     ExprAclLine block1234 =
@@ -71,12 +71,12 @@ public class AclAclLineTest {
   }
 
   @Test
-  public void testDefaultTraceElement() {
+  void testDefaultTraceElement() {
     assertNull(new AclAclLine("n", "a").getTraceElement());
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     TraceElement traceElement1 = TraceElement.builder().add("a").build();
     TraceElement traceElement2 = TraceElement.builder().add("b").build();
 
@@ -96,7 +96,7 @@ public class AclAclLineTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     {
       AclAclLine aclAclLine = new AclAclLine("lineName", "aclName");
       AclAclLine clone = (AclAclLine) BatfishObjectMapper.clone(aclAclLine, AclLine.class);

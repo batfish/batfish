@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 
 import com.google.common.collect.ImmutableSet;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -18,16 +19,15 @@ import org.batfish.datamodel.flow.Trace;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.question.multipath.MultipathConsistencyParameters;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 public class BDDMultipathInonsistencyWithLoop {
 
-  @Rule public TemporaryFolder temp = new TemporaryFolder();
+  @TempDir public File temp;
 
   @Test
-  public void testLoopInMultipathConsistency() throws IOException {
+  void testLoopInMultipathConsistency() throws IOException {
     Batfish batfish =
         BatfishTestUtils.getBatfish(MPIWithLoopNetwork.testMPIWithLoopNetwork(), temp);
     NetworkSnapshot snapshot = batfish.getSnapshot();

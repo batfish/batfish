@@ -8,25 +8,25 @@ import com.google.common.collect.Range;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link AsSetsMatchingRanges}. */
-public final class AsSetsMatchingRangesTest {
+final class AsSetsMatchingRangesTest {
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     AsSetsMatchingRanges obj = AsSetsMatchingRanges.of(false, false, ImmutableList.of());
     assertThat(SerializationUtils.clone(obj), equalTo(obj));
   }
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     AsSetsMatchingRanges obj = AsSetsMatchingRanges.of(false, false, ImmutableList.of());
     assertThat(BatfishObjectMapper.clone(obj, AsSetsMatchingRanges.class), equalTo(obj));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     AsSetsMatchingRanges obj = AsSetsMatchingRanges.of(false, false, ImmutableList.of());
     new EqualsTester()
         .addEqualityGroup(obj, AsSetsMatchingRanges.of(false, false, ImmutableList.of()))

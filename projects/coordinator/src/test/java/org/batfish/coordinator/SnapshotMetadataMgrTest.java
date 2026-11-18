@@ -18,16 +18,16 @@ import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.storage.StorageProvider;
 import org.batfish.storage.TestStorageProvider;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link SnapshotMetadataMgr}. */
-public class SnapshotMetadataMgrTest {
+class SnapshotMetadataMgrTest {
   /**
    * Test that a reader running concurrently with many writes never encounters a missing or stale
    * snapshot metadata.
    */
   @Test
-  public void testThreadSafety() throws IOException, ExecutionException, InterruptedException {
+  void testThreadSafety() throws IOException, ExecutionException, InterruptedException {
     final int writes = 10000;
     NetworkId net = new NetworkId("net");
     SnapshotId ss = new SnapshotId("ss");

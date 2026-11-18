@@ -9,22 +9,22 @@ import java.nio.file.Paths;
 import org.batfish.common.BfConsts;
 import org.batfish.common.Warning;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class AwsParseWarningsTest {
+class AwsParseWarningsTest {
 
   private ParseVendorConfigurationAnswerElement _pvcae;
   private String _key =
       Paths.get(BfConsts.RELPATH_AWS_CONFIGS_DIR, "region", "file.json").toString();
 
-  @Before
-  public void initializeAnswerElement() {
+  @BeforeEach
+  void initializeAnswerElement() {
     _pvcae = new ParseVendorConfigurationAnswerElement();
   }
 
   @Test
-  public void testBadJsonWarning() {
+  void testBadJsonWarning() {
     Batfish.parseAwsConfigurations(ImmutableMap.of(_key, "{"), _pvcae);
     assertThat(
         _pvcae.getWarnings().get(RELPATH_AWS_CONFIGS_FILE).getRedFlagWarnings(),
@@ -32,7 +32,7 @@ public class AwsParseWarningsTest {
   }
 
   @Test
-  public void testInvalidKeyWarning() {
+  void testInvalidKeyWarning() {
     Batfish.parseAwsConfigurations(ImmutableMap.of(_key, "{ \"invalidKey\": [1] }"), _pvcae);
     assertThat(
         _pvcae.getWarnings().get(RELPATH_AWS_CONFIGS_FILE).getUnimplementedWarnings(),

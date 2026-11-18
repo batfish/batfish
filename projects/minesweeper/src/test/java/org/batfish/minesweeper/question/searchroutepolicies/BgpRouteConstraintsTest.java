@@ -1,9 +1,9 @@
 package org.batfish.minesweeper.question.searchroutepolicies;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -13,13 +13,13 @@ import java.util.Set;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.LongSpace.Builder;
 import org.batfish.datamodel.RoutingProtocol;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link BgpRouteConstraints}. */
-public class BgpRouteConstraintsTest {
+class BgpRouteConstraintsTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     BgpRouteConstraints c1 = BgpRouteConstraints.builder().build();
     BgpRouteConstraints c2 =
         BgpRouteConstraints.builder().setLocalPreference(LongSpace.of(3)).build();
@@ -47,7 +47,7 @@ public class BgpRouteConstraintsTest {
   }
 
   @Test
-  public void testProcessBuilder() {
+  void testProcessBuilder() {
 
     Range<Long> include = Range.closed(4L, 44L);
     Range<Long> exclude = Range.singleton(43L);
@@ -68,7 +68,7 @@ public class BgpRouteConstraintsTest {
   }
 
   @Test
-  public void testIs32BitRange() {
+  void testIs32BitRange() {
     LongSpace s1 = LongSpace.builder().including(Range.closed(4L, 44L)).build();
     // negative numbers are not allowed
     LongSpace s2 = LongSpace.builder().including(Range.closed(-4L, 44L)).build();
@@ -81,7 +81,7 @@ public class BgpRouteConstraintsTest {
   }
 
   @Test
-  public void testIsAllowedProtocolSet() {
+  void testIsAllowedProtocolSet() {
     Set<RoutingProtocol> s1 = ImmutableSet.of();
     Set<RoutingProtocol> s2 =
         ImmutableSet.of(RoutingProtocol.AGGREGATE, RoutingProtocol.BGP, RoutingProtocol.IBGP);

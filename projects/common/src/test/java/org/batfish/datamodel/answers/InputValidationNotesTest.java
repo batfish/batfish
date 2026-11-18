@@ -9,12 +9,12 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class InputValidationNotesTest {
+class InputValidationNotesTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     InputValidationNotes notes = new InputValidationNotes(VALID, null, -1, null);
 
     new EqualsTester()
@@ -36,7 +36,7 @@ public class InputValidationNotesTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     InputValidationNotes validationNotes =
         new InputValidationNotes(
             VALID, "some description", 3, ImmutableList.of("expansion1", "expansion2"));

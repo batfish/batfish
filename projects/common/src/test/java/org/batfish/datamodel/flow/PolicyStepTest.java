@@ -3,19 +3,19 @@ package org.batfish.datamodel.flow;
 import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.flow.PolicyStep.PolicyStepDetail;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link PolicyStep} */
-public class PolicyStepTest {
+class PolicyStepTest {
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     PolicyStep ps = new PolicyStep(new PolicyStepDetail("pol"), StepAction.PERMITTED);
     // Don't trow
     BatfishObjectMapper.clone(ps, PolicyStep.class);
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new Object())
         .addEqualityGroup(

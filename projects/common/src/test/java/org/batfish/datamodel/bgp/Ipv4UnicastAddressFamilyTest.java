@@ -10,12 +10,12 @@ import java.util.List;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily.Builder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link Ipv4UnicastAddressFamily} */
-public class Ipv4UnicastAddressFamilyTest {
+class Ipv4UnicastAddressFamilyTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     Builder builder = Ipv4UnicastAddressFamily.builder();
     Ipv4UnicastAddressFamily af =
         builder
@@ -58,7 +58,7 @@ public class Ipv4UnicastAddressFamilyTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     Ipv4UnicastAddressFamily af =
         Ipv4UnicastAddressFamily.builder()
             .setExportPolicy("export")
@@ -70,7 +70,7 @@ public class Ipv4UnicastAddressFamilyTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     Ipv4UnicastAddressFamily af =
         Ipv4UnicastAddressFamily.builder()
             .setExportPolicy("export")

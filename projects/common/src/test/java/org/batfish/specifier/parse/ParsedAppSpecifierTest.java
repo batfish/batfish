@@ -1,7 +1,9 @@
 package org.batfish.specifier.parse;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -15,35 +17,33 @@ import org.batfish.datamodel.applications.IcmpTypesApplication;
 import org.batfish.datamodel.applications.NamedApplication;
 import org.batfish.datamodel.applications.TcpApplication;
 import org.batfish.datamodel.applications.UdpApplication;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-public class ParsedAppSpecifierTest {
+class ParsedAppSpecifierTest {
 
   @Test
-  public void testResolveIcmpAll() {
+  void testResolveIcmpAll() {
     assertThat(
         new ParsedAppSpecifier(new IcmpAllAppAstNode()).resolve(),
         equalTo(ImmutableSet.of(IcmpTypesApplication.ALL)));
   }
 
   @Test
-  public void testResolveIcmpType() {
+  void testResolveIcmpType() {
     assertThat(
         new ParsedAppSpecifier(new IcmpTypeAppAstNode(8)).resolve(),
         equalTo(ImmutableSet.of(new IcmpTypesApplication(8))));
   }
 
   @Test
-  public void testResolveIcmpTypeCode() {
+  void testResolveIcmpTypeCode() {
     assertThat(
         new ParsedAppSpecifier(new IcmpTypeCodeAppAstNode(8, 0)).resolve(),
         equalTo(ImmutableSet.of(new IcmpTypeCodesApplication(8, 0))));
   }
 
   @Test
-  public void testResolveRegex() {
+  void testResolveRegex() {
     assertThat(
         new ParsedAppSpecifier(new RegexAppAstNode("htt")).resolve(),
         equalTo(
@@ -57,7 +57,7 @@ public class ParsedAppSpecifierTest {
   }
 
   @Test
-  public void testResolveRegex_all() {
+  void testResolveRegex_all() {
     assertThat(
         new ParsedAppSpecifier(new RegexAppAstNode(".*")).resolve(),
         equalTo(
@@ -67,14 +67,14 @@ public class ParsedAppSpecifierTest {
   }
 
   @Test
-  public void testResolveName() {
+  void testResolveName() {
     assertThat(
         new ParsedAppSpecifier(new NameAppAstNode("http")).resolve(),
         equalTo(ImmutableSet.of(NamedApplication.HTTP.getApplication())));
   }
 
   @Test
-  public void testResolveTcp() {
+  void testResolveTcp() {
     assertThat(
         new ParsedAppSpecifier(new TcpAppAstNode()).resolve(),
         equalTo(ImmutableSet.of(TcpApplication.ALL)));
@@ -86,7 +86,7 @@ public class ParsedAppSpecifierTest {
   }
 
   @Test
-  public void testResolveUdp() {
+  void testResolveUdp() {
     assertThat(
         new ParsedAppSpecifier(new UdpAppAstNode()).resolve(),
         equalTo(ImmutableSet.of(UdpApplication.ALL)));
@@ -98,24 +98,22 @@ public class ParsedAppSpecifierTest {
   }
 
   @Test
-  public void testResolveUnion() {
+  void testResolveUnion() {
     assertThat(
         new ParsedAppSpecifier(new UnionAppAstNode(new IcmpAllAppAstNode(), new TcpAppAstNode()))
             .resolve(),
         equalTo(ImmutableSet.of(IcmpTypesApplication.ALL, TcpApplication.ALL)));
   }
 
-  @Rule public ExpectedException _thrown = ExpectedException.none();
-
   @Test
-  public void testParseBadInput() {
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("Error parsing");
-    ParsedAppSpecifier.parse("connected");
+  void testParseBadInput() {
+    Throwable exception =
+        assertThrows(IllegalArgumentException.class, () -> ParsedAppSpecifier.parse("connected"));
+    assertThat(exception.getMessage(), containsString("Error parsing"));
   }
 
   @Test
-  public void testParseGoodInput() {
+  void testParseGoodInput() {
     assertThat(
         ParsedAppSpecifier.parse("tcp"), equalTo(new ParsedAppSpecifier(new TcpAppAstNode())));
   }

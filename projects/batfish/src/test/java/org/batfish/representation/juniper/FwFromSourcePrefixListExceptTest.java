@@ -1,6 +1,6 @@
 package org.batfish.representation.juniper;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
@@ -10,11 +10,11 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link FwFromSourcePrefixListExcept} */
-public class FwFromSourcePrefixListExceptTest {
+class FwFromSourcePrefixListExceptTest {
   private JuniperConfiguration _jc;
   private Warnings _w;
   private Configuration _c;
@@ -22,8 +22,8 @@ public class FwFromSourcePrefixListExceptTest {
   private static final String BASE_PREFIX_LIST_NAME = "prefixList";
   private static final Prefix BASE_IP_PREFIX = Prefix.parse("1.2.3.4/32");
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _jc = new JuniperConfiguration();
     PrefixList pl = new PrefixList(BASE_PREFIX_LIST_NAME);
     pl.getPrefixes().add(BASE_IP_PREFIX);
@@ -33,7 +33,7 @@ public class FwFromSourcePrefixListExceptTest {
   }
 
   @Test
-  public void testToHeaderSpace() {
+  void testToHeaderSpace() {
     FwFromSourcePrefixListExcept fwFrom = new FwFromSourcePrefixListExcept(BASE_PREFIX_LIST_NAME);
 
     // Apply base IP prefix to headerSpace with null IpSpace
@@ -43,7 +43,7 @@ public class FwFromSourcePrefixListExceptTest {
   }
 
   @Test
-  public void testToHeaderSpace_notExist() {
+  void testToHeaderSpace_notExist() {
     FwFromSourcePrefixListExcept fwFrom = new FwFromSourcePrefixListExcept("noName");
 
     assertEquals(
@@ -52,7 +52,7 @@ public class FwFromSourcePrefixListExceptTest {
   }
 
   @Test
-  public void testToAclLineMatchExpr() {
+  void testToAclLineMatchExpr() {
     FwFromSourcePrefixListExcept fwFrom = new FwFromSourcePrefixListExcept(BASE_PREFIX_LIST_NAME);
 
     assertEquals(

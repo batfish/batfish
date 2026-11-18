@@ -19,7 +19,7 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchRegex;
 import org.batfish.datamodel.routing_policy.as_path.InputAsPath;
 import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests of {@link AsPathRegex}.
@@ -29,7 +29,7 @@ import org.junit.Test;
  * documentation</a>. Since the documentation only provides positive examples, negative examples are
  * home brewed.
  */
-public class AsPathRegexTest {
+class AsPathRegexTest {
   private static Environment buildEnvironment(AsPath path) {
     NetworkFactory nf = new NetworkFactory();
     Builder cb = nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.JUNIPER);
@@ -70,7 +70,7 @@ public class AsPathRegexTest {
   }
 
   @Test
-  public void testMatchingSingleNumber() {
+  void testMatchingSingleNumber() {
     String regex = "1234";
     assertMatches(regex, 1234L);
     assertDoesNotMatch(regex);
@@ -81,7 +81,7 @@ public class AsPathRegexTest {
   }
 
   @Test
-  public void testMatchingZeroOrMore() {
+  void testMatchingZeroOrMore() {
     String regex = "1234*";
     assertMatches(regex, 1234L);
     assertMatches(regex, 1234L, 1234L);
@@ -95,7 +95,7 @@ public class AsPathRegexTest {
   }
 
   @Test
-  public void testMatchingZeroOrOne() {
+  void testMatchingZeroOrOne() {
     for (String regex : new String[] {"1234?", "1234{0,1}"}) {
       assertMatches(regex);
       assertMatches(regex, 1234L);
@@ -109,7 +109,7 @@ public class AsPathRegexTest {
   }
 
   @Test
-  public void testMatchingExactCount() {
+  void testMatchingExactCount() {
     String regex = "1234{2}";
     assertMatches(regex, 1234L, 1234L);
     assertDoesNotMatch(regex);
@@ -120,7 +120,7 @@ public class AsPathRegexTest {
   }
 
   @Test
-  public void testMatchingOneThroughFour() {
+  void testMatchingOneThroughFour() {
     String regex = "1234{1,4}";
     assertMatches(regex, 1234L);
     assertMatches(regex, 1234L, 1234L);
@@ -135,7 +135,7 @@ public class AsPathRegexTest {
   }
 
   @Test
-  public void testMatchingOneThroughFourPlusConcrete() {
+  void testMatchingOneThroughFourPlusConcrete() {
     String regex = "12{1,4} 34";
     assertMatches(regex, 12L, 34L);
     assertMatches(regex, 12L, 12L, 34L);
@@ -148,7 +148,7 @@ public class AsPathRegexTest {
   }
 
   @Test
-  public void testMatchingRangeSingleAsNumber() {
+  void testMatchingRangeSingleAsNumber() {
     String regex = "123-125";
     assertMatches(regex, 123L);
     assertMatches(regex, 124L);
@@ -160,7 +160,7 @@ public class AsPathRegexTest {
   }
 
   @Test
-  public void testMatchingRangeSingleAsNumberRepeated() {
+  void testMatchingRangeSingleAsNumberRepeated() {
     String regex = "[123-125]*";
     assertMatches(regex);
     assertMatches(regex, 123L);
@@ -173,7 +173,7 @@ public class AsPathRegexTest {
   }
 
   @Test
-  public void testMatchingPathSecondAsNumberMustBe56Or78() {
+  void testMatchingPathSecondAsNumberMustBe56Or78() {
     for (String regex : new String[] {"(. 56) | (. 78)", ". (56 | 78)"}) {
       assertMatches(regex, 1234L, 56L);
       assertMatches(regex, 1234L, 78L);
@@ -194,7 +194,7 @@ public class AsPathRegexTest {
    * regular expressions have an implicit {@code ^} and {@code $}.
    */
   @Test
-  public void testMatchingPathSecondAsMightBe56Or78() {
+  void testMatchingPathSecondAsMightBe56Or78() {
     String regex = "123 (56 | 78)?";
     assertMatches(regex, 123L);
     assertMatches(regex, 123L, 56L);
@@ -207,7 +207,7 @@ public class AsPathRegexTest {
   }
 
   @Test
-  public void testMatchingPathFirstAsFixedSecondMustBe56Or78() {
+  void testMatchingPathFirstAsFixedSecondMustBe56Or78() {
     String regex = "123 (56 | 78)";
     assertMatches(regex, 123L, 56L);
     assertMatches(regex, 123L, 78L);
@@ -220,7 +220,7 @@ public class AsPathRegexTest {
   }
 
   @Test
-  public void testMatchingPathLengthAtLeastOne() {
+  void testMatchingPathLengthAtLeastOne() {
     for (String regex : new String[] {".+", ". .*", ". .{0,}", ".{1,}"}) {
       assertMatches(regex, 123L);
       assertMatches(regex, 123L, 123L);
@@ -230,7 +230,7 @@ public class AsPathRegexTest {
   }
 
   @Test
-  public void testSimplePath() {
+  void testSimplePath() {
     String regex = "1 2 3";
     assertMatches(regex, 1L, 2L, 3L);
     assertDoesNotMatch(regex);
@@ -241,7 +241,7 @@ public class AsPathRegexTest {
   }
 
   @Test
-  public void testSimplePathWithPlus() {
+  void testSimplePathWithPlus() {
     String regex = "1 2 3+";
     assertMatches(regex, 1L, 2L, 3L);
     assertMatches(regex, 1L, 2L, 3L, 3L);
@@ -255,7 +255,7 @@ public class AsPathRegexTest {
   }
 
   @Test
-  public void testSimplePathWithAllPlus() {
+  void testSimplePathWithAllPlus() {
     String regex = "1+ 2+ 3+";
     assertMatches(regex, 1L, 2L, 3L);
     assertMatches(regex, 1L, 1L, 2L, 3L);
@@ -270,7 +270,7 @@ public class AsPathRegexTest {
   }
 
   @Test
-  public void testAnyLengthWithPrefix() {
+  void testAnyLengthWithPrefix() {
     String regex = "1 2 3 .*";
     assertMatches(regex, 1L, 2L, 3L);
     assertMatches(regex, 1L, 2L, 3L, 3L);
@@ -282,7 +282,7 @@ public class AsPathRegexTest {
   }
 
   @Test
-  public void testAnyLengthWithSuffix() {
+  void testAnyLengthWithSuffix() {
     String regex = ".* 1 2 3";
     assertMatches(regex, 1L, 2L, 3L);
     assertMatches(regex, 1L, 1L, 2L, 3L);
@@ -294,7 +294,7 @@ public class AsPathRegexTest {
   }
 
   @Test
-  public void testBaldOr() {
+  void testBaldOr() {
     String regex = "5 | 12 | 18";
     assertMatches(regex, 5L);
     assertMatches(regex, 12L);
@@ -306,7 +306,7 @@ public class AsPathRegexTest {
   }
 
   @Test
-  public void testGroupRepeatedWithRange() {
+  void testGroupRepeatedWithRange() {
     String regex = "(1 2 3)* 4-6";
     assertMatches(regex, 4L);
     assertMatches(regex, 5L);
@@ -322,7 +322,7 @@ public class AsPathRegexTest {
   }
 
   @Test
-  public void testRangeInGroup() {
+  void testRangeInGroup() {
     String regex = "1 3-4";
     assertMatches(regex, 1L, 3L);
     assertMatches(regex, 1L, 4L);
@@ -333,7 +333,7 @@ public class AsPathRegexTest {
   }
 
   @Test
-  public void testSpaceIsOptional_afterOperator() {
+  void testSpaceIsOptional_afterOperator() {
     String regex = ".*1";
     assertMatches(regex, 1L);
     assertMatches(regex, 3L, 1L);
@@ -344,7 +344,7 @@ public class AsPathRegexTest {
   }
 
   @Test
-  public void testSpaceIsOptional_beforeOperator() {
+  void testSpaceIsOptional_beforeOperator() {
     String regex = "1.*";
     assertMatches(regex, 1L);
     assertMatches(regex, 1L, 3L);

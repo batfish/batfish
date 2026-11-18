@@ -1,15 +1,15 @@
 package net.sf.javabdd;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests that {@link JFactory#setVarOrder} leaves no stale operator-cache entries behind. */
-public class JFactoryReorderTest {
+class JFactoryReorderTest {
   private static final int VARS = 10;
 
   private static BDD randomBdd(BDDFactory f, Random r) {
@@ -31,7 +31,7 @@ public class JFactoryReorderTest {
 
   /** Applies the same operations before and after a reorder; results must not change. */
   @Test
-  public void testOperationsAgreeAcrossReorder() {
+  void testOperationsAgreeAcrossReorder() {
     for (int seed = 0; seed < 200; seed++) {
       Random r = new Random(seed);
       BDDFactory f = JFactory.init(500, 100);
@@ -60,11 +60,11 @@ public class JFactoryReorderTest {
       f.setVarOrder(order.stream().mapToInt(Integer::intValue).toArray());
       int k = 0;
       for (int i = 0; i + 1 < inputs.size(); i++) {
-        assertEquals("seed " + seed, before.get(k++), inputs.get(i).and(inputs.get(i + 1)));
-        assertEquals("seed " + seed, before.get(k++), inputs.get(i).or(inputs.get(i + 1)));
+        assertEquals(before.get(k++), inputs.get(i).and(inputs.get(i + 1)), "seed " + seed);
+        assertEquals(before.get(k++), inputs.get(i).or(inputs.get(i + 1)), "seed " + seed);
         assertEquals(
-            "seed " + seed, before.get(k++), inputs.get(i).relprod(inputs.get(i + 1), cube));
-        assertEquals("seed " + seed, before.get(k++), inputs.get(i).exist(cube));
+            before.get(k++), inputs.get(i).relprod(inputs.get(i + 1), cube), "seed " + seed);
+        assertEquals(before.get(k++), inputs.get(i).exist(cube), "seed " + seed);
       }
     }
   }

@@ -3,24 +3,24 @@ package org.batfish.vendor.check_point_management;
 import static org.batfish.vendor.check_point_management.TestSharedInstances.NAT_SETTINGS_TEST_INSTANCE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link NatSettings}. */
-public final class NatSettingsTest {
+final class NatSettingsTest {
   /** Another test instance, that is not-equal to the previous instance. */
   public static final NatSettings TEST_INSTANCE_DIFFERENT =
       new NatSettings(
           true, NatHideBehindGateway.INSTANCE, "All", Ip.parse("2.3.4.5"), NatMethod.HIDE);
 
   @Test
-  public void testJacksonDeserialization() throws JsonProcessingException {
+  void testJacksonDeserialization() throws JsonProcessingException {
     String input =
         "{"
             + "\"GARBAGE\":0,"
@@ -36,13 +36,13 @@ public final class NatSettingsTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     NatSettings obj = NAT_SETTINGS_TEST_INSTANCE;
     assertEquals(obj, SerializationUtils.clone(obj));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     NatSettings obj =
         new NatSettings(true, NatHideBehindGateway.INSTANCE, "All", null, NatMethod.HIDE);
     new EqualsTester()

@@ -8,12 +8,12 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class PsFromNlriRouteTypeTest {
+final class PsFromNlriRouteTypeTest {
 
   @Test
-  public void testConversion() {
+  void testConversion() {
     assertThat(
         new PsFromNlriRouteType(5)
             .toBooleanExpr(
@@ -27,7 +27,7 @@ public final class PsFromNlriRouteTypeTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new PsFromNlriRouteType(3), new PsFromNlriRouteType(3))
         .addEqualityGroup(new PsFromNlriRouteType(5))
@@ -35,7 +35,7 @@ public final class PsFromNlriRouteTypeTest {
   }
 
   @Test
-  public void testGetRouteType() {
+  void testGetRouteType() {
     assertThat(new PsFromNlriRouteType(5).getRouteType(), equalTo(5));
   }
 }

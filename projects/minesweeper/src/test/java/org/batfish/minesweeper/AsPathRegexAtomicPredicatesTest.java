@@ -4,7 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasValue;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -14,13 +14,13 @@ import java.util.Map;
 import java.util.Set;
 import org.batfish.minesweeper.question.searchroutepolicies.RegexConstraint;
 import org.batfish.minesweeper.question.searchroutepolicies.RegexConstraints;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for the {@link AsPathRegexAtomicPredicates} class. */
-public class AsPathRegexAtomicPredicatesTest {
+class AsPathRegexAtomicPredicatesTest {
 
   @Test
-  public void testInitAtomicPredicatesAsPath() {
+  void testInitAtomicPredicatesAsPath() {
     Set<SymbolicAsPathRegex> asPathRegexes =
         ImmutableSet.of(
             new SymbolicAsPathRegex("^$"),
@@ -38,7 +38,7 @@ public class AsPathRegexAtomicPredicatesTest {
   }
 
   @Test
-  public void testCopyConstructor() {
+  void testCopyConstructor() {
     Set<SymbolicAsPathRegex> asPathRegexes =
         ImmutableSet.of(
             new SymbolicAsPathRegex("^$"),
@@ -56,7 +56,7 @@ public class AsPathRegexAtomicPredicatesTest {
   }
 
   @Test
-  public void testPrependAPs() {
+  void testPrependAPs() {
     AsPathRegexAtomicPredicates oneAP = new AsPathRegexAtomicPredicates(ImmutableSet.of());
     oneAP.prependAPs(ImmutableList.of(10L, 20L));
     Map<Integer, Automaton> automataMap = oneAP.getAtomicPredicateAutomata();
@@ -93,7 +93,7 @@ public class AsPathRegexAtomicPredicatesTest {
   }
 
   @Test
-  public void testConstrainAPs() {
+  void testConstrainAPs() {
     Set<SymbolicAsPathRegex> asPathRegexes = ImmutableSet.of(new SymbolicAsPathRegex("^$"));
     AsPathRegexAtomicPredicates twoAPs = new AsPathRegexAtomicPredicates(asPathRegexes);
 

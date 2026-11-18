@@ -6,9 +6,9 @@ import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
 import static org.batfish.symbolic.IngressLocation.interfaceLink;
 import static org.batfish.symbolic.IngressLocation.vrf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -16,6 +16,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
@@ -47,12 +48,11 @@ import org.batfish.specifier.LocationSpecifier;
 import org.batfish.symbolic.IngressLocation;
 import org.batfish.symbolic.state.OriginateVrf;
 import org.batfish.symbolic.state.StateExpr;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Test for {@link BDDLoopDetectionAnalysis}. */
-public final class BDDLoopDetectionAnalysisTest {
+final class BDDLoopDetectionAnalysisTest {
   private static final String DST_NODE = "dest";
   private static final String SRC_NODE = "src";
   private static final Prefix DST_PREFIX_1 = Prefix.parse("1.1.0.0/32");
@@ -62,10 +62,10 @@ public final class BDDLoopDetectionAnalysisTest {
   private final IpSpaceToBDD _dst = _pkt.getDstIpSpaceToBDD();
   private final BDD _zero = _pkt.getFactory().zero();
 
-  public @Rule TemporaryFolder _temporaryFolder = new TemporaryFolder();
+  @TempDir public File _temporaryFolder;
 
   @Test
-  public void testDetectLoopsEndToEnd() throws IOException {
+  void testDetectLoopsEndToEnd() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Builder cb = nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Interface.Builder ib = nf.interfaceBuilder().setBandwidth(1E9d);
@@ -158,7 +158,7 @@ public final class BDDLoopDetectionAnalysisTest {
   }
 
   @Test
-  public void testNoFalsePositives() {
+  void testNoFalsePositives() {
     StateExpr state1 = new OriginateVrf("node1", "vrf1");
     StateExpr state2 = new OriginateVrf("node2", "vrf2");
 
@@ -184,7 +184,7 @@ public final class BDDLoopDetectionAnalysisTest {
    * net.sf.javabdd.BDD)} correctly confirms a self-loop on its input state.
    */
   @Test
-  public void testConfirmLoop_selfLoop() {
+  void testConfirmLoop_selfLoop() {
     StateExpr state1 = new OriginateVrf("node1", "vrf1");
     StateExpr state2 = new OriginateVrf("node2", "vrf2");
 
@@ -199,7 +199,7 @@ public final class BDDLoopDetectionAnalysisTest {
   }
 
   @Test
-  public void testSelfLoop() {
+  void testSelfLoop() {
     StateExpr state1 = new OriginateVrf("node1", "vrf1");
     StateExpr state2 = new OriginateVrf("node2", "vrf2");
 
@@ -214,7 +214,7 @@ public final class BDDLoopDetectionAnalysisTest {
   }
 
   @Test
-  public void testIngressLocationHeaderConstraint() {
+  void testIngressLocationHeaderConstraint() {
     StateExpr state1 = new OriginateVrf("node1", "vrf1");
     StateExpr state2 = new OriginateVrf("node2", "vrf2");
 
@@ -246,7 +246,7 @@ public final class BDDLoopDetectionAnalysisTest {
 
   /** Loop detection frees every BDD it creates except the ones it returns. */
   @Test
-  public void testNoLeaks() {
+  void testNoLeaks() {
     StateExpr state1 = new OriginateVrf("node1", "vrf1");
     StateExpr state2 = new OriginateVrf("node2", "vrf2");
     StateExpr state3 = new OriginateVrf("node3", "vrf3");

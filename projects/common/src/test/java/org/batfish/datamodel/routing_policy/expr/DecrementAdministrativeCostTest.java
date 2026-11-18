@@ -3,6 +3,7 @@ package org.batfish.datamodel.routing_policy.expr;
 import static org.batfish.datamodel.AbstractRoute.MAX_ADMIN_DISTANCE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
@@ -13,11 +14,11 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class DecrementAdministrativeCostTest {
+class DecrementAdministrativeCostTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new DecrementAdministrativeCost(5, 0), new DecrementAdministrativeCost(5, 0))
@@ -27,14 +28,14 @@ public class DecrementAdministrativeCostTest {
   }
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     DecrementAdministrativeCost obj = new DecrementAdministrativeCost(50, 0);
     assertThat(SerializationUtils.clone(obj), equalTo(obj));
     assertThat(BatfishObjectMapper.clone(obj, AdministrativeCostExpr.class), equalTo(obj));
   }
 
   @Test
-  public void testEvaluate() {
+  void testEvaluate() {
     Configuration c =
         Configuration.builder()
             .setHostname("c")
@@ -63,7 +64,7 @@ public class DecrementAdministrativeCostTest {
   }
 
   @Test
-  public void testEvaluate_customMin() {
+  void testEvaluate_customMin() {
     Configuration c =
         Configuration.builder()
             .setHostname("c")
@@ -91,13 +92,21 @@ public class DecrementAdministrativeCostTest {
         equalTo(50L));
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void testConstructor_negative() {
-    new DecrementAdministrativeCost(-1, 0);
+  @Test
+  void testConstructor_negative() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> {
+          new DecrementAdministrativeCost(-1, 0);
+        });
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void testConstructor_tooLarge() {
-    new DecrementAdministrativeCost(MAX_ADMIN_DISTANCE + 1, 0);
+  @Test
+  void testConstructor_tooLarge() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> {
+          new DecrementAdministrativeCost(MAX_ADMIN_DISTANCE + 1, 0);
+        });
   }
 }

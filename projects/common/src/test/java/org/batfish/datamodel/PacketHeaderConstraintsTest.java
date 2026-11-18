@@ -21,7 +21,8 @@ import static org.batfish.datamodel.Protocol.TELNET;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableSet;
@@ -36,21 +37,14 @@ import org.batfish.datamodel.applications.Application;
 import org.batfish.datamodel.applications.IcmpTypesApplication;
 import org.batfish.datamodel.applications.TcpApplication;
 import org.batfish.datamodel.applications.UdpApplication;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link org.batfish.datamodel.PacketHeaderConstraints} */
-@RunWith(JUnit4.class)
-public class PacketHeaderConstraintsTest {
-
-  @Rule public ExpectedException thrown = ExpectedException.none();
+class PacketHeaderConstraintsTest {
 
   /** Test boundary values for ECN */
   @Test
-  public void testIsValidEcn() {
+  void testIsValidEcn() {
     assertThat(isValidEcn(IntegerSpace.of(new SubRange(0, 3))), equalTo(true));
     assertThat(isValidEcn(IntegerSpace.of(SubRange.singleton(1))), equalTo(true));
     assertThat(isValidEcn(IntegerSpace.of(new SubRange(-1, 0))), equalTo(false));
@@ -60,7 +54,7 @@ public class PacketHeaderConstraintsTest {
 
   /** Test boundary values for DSCP */
   @Test
-  public void testIsValidDscp() {
+  void testIsValidDscp() {
     assertThat(isValidDscp(IntegerSpace.of(new SubRange(0, 63))), equalTo(true));
     assertThat(isValidDscp(IntegerSpace.of(SubRange.singleton(1))), equalTo(true));
     assertThat(isValidDscp(IntegerSpace.of(new SubRange(-1, 0))), equalTo(false));
@@ -70,7 +64,7 @@ public class PacketHeaderConstraintsTest {
 
   /** Test boundary values for ICMP fields */
   @Test
-  public void testIsValidIcmp() {
+  void testIsValidIcmp() {
     assertThat(isValidIcmpTypeOrCode(IntegerSpace.of(new SubRange(0, 255))), equalTo(true));
     assertThat(isValidIcmpTypeOrCode(IntegerSpace.of(new SubRange(1, 2))), equalTo(true));
     assertThat(isValidIcmpTypeOrCode(IntegerSpace.of(new SubRange(-1, 0))), equalTo(false));
@@ -79,7 +73,7 @@ public class PacketHeaderConstraintsTest {
   }
 
   @Test
-  public void testAreProtocolsAndPortsCompatible() {
+  void testAreProtocolsAndPortsCompatible() {
     // No conflicts with unset values
     assertThat(areProtocolsAndPortsCompatible(null, null, null), equalTo(true));
     assertThat(
@@ -105,34 +99,40 @@ public class PacketHeaderConstraintsTest {
   }
 
   @Test
-  public void testAreProtocolsAndPortsIncompatibleNoTCP() {
-    thrown.expect(IllegalArgumentException.class); // Not TCP and SSH
-    areProtocolsAndPortsCompatible(
-        ImmutableSet.of(UDP),
-        IntegerSpace.of(new SubRange(22)),
-        ImmutableSet.of(SSH.toApplication()));
+  void testAreProtocolsAndPortsIncompatibleNoTCP() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> // Not TCP and SSH
+        areProtocolsAndPortsCompatible(
+                ImmutableSet.of(UDP),
+                IntegerSpace.of(new SubRange(22)),
+                ImmutableSet.of(SSH.toApplication())));
   }
 
   @Test
-  public void testAreProtocolsAndPortsIncompatibleEmptyPortRange() {
-    thrown.expect(IllegalArgumentException.class); // empty port subrange
-    areProtocolsAndPortsCompatible(
-        ImmutableSet.of(TCP),
-        IntegerSpace.of(new SubRange(20, 1)),
-        ImmutableSet.of(SSH.toApplication()));
+  void testAreProtocolsAndPortsIncompatibleEmptyPortRange() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> // empty port subrange
+        areProtocolsAndPortsCompatible(
+                ImmutableSet.of(TCP),
+                IntegerSpace.of(new SubRange(20, 1)),
+                ImmutableSet.of(SSH.toApplication())));
   }
 
   @Test
-  public void testAreProtocolsAndPortsIncompatibleWrongPorts() {
-    thrown.expect(IllegalArgumentException.class); // wrong port subrange and application protocols
-    areProtocolsAndPortsCompatible(
-        ImmutableSet.of(TCP),
-        IntegerSpace.of(new SubRange(30, 40)),
-        ImmutableSet.of(SSH.toApplication(), HTTP.toApplication()));
+  void testAreProtocolsAndPortsIncompatibleWrongPorts() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> // wrong port subrange and application protocols
+        areProtocolsAndPortsCompatible(
+                ImmutableSet.of(TCP),
+                IntegerSpace.of(new SubRange(30, 40)),
+                ImmutableSet.of(SSH.toApplication(), HTTP.toApplication())));
   }
 
   @Test
-  public void testAreProtocolsAndPortsCompatibleDstportOverlap() {
+  void testAreProtocolsAndPortsCompatibleDstportOverlap() {
     // No conflicts with unset values
     assertTrue(
         areProtocolsAndPortsCompatible(
@@ -140,7 +140,7 @@ public class PacketHeaderConstraintsTest {
   }
 
   @Test
-  public void testResolveIpProtocols() {
+  void testResolveIpProtocols() {
     assertThat(resolveIpProtocols(null, null, null, null, null, null, null), nullValue());
     assertThat(
         resolveIpProtocols(ImmutableSet.of(TCP), null, null, null, null, null, null),
@@ -170,87 +170,113 @@ public class PacketHeaderConstraintsTest {
   }
 
   @Test
-  public void testResolveIpProtocolsTcpAndUdp() {
-    thrown.expect(IllegalArgumentException.class);
-    // both tcp and udp at the same time in src/dst
-    resolveIpProtocols(
-        ImmutableSet.of(TCP), null, null, ImmutableSet.of(DNS.toApplication()), null, null, null);
+  void testResolveIpProtocolsTcpAndUdp() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            // both tcp and udp at the same time in src/dst
+            resolveIpProtocols(
+                ImmutableSet.of(TCP),
+                null,
+                null,
+                ImmutableSet.of(DNS.toApplication()),
+                null,
+                null,
+                null));
   }
 
   @Test
-  public void testResolveIpProtocolsIcmpAndPorts() {
-    thrown.expect(IllegalArgumentException.class);
-    resolveIpProtocols(
-        ImmutableSet.of(ICMP),
-        IntegerSpace.of(SubRange.singleton(10)),
-        null,
-        null,
-        null,
-        null,
-        null);
+  void testResolveIpProtocolsIcmpAndPorts() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            resolveIpProtocols(
+                ImmutableSet.of(ICMP),
+                IntegerSpace.of(SubRange.singleton(10)),
+                null,
+                null,
+                null,
+                null,
+                null));
   }
 
   @Test
-  public void testResolveIpProtocolsIcmpAndTcp() {
-    thrown.expect(IllegalArgumentException.class);
-    resolveIpProtocols(
-        ImmutableSet.of(ICMP), null, null, ImmutableSet.of(SSH.toApplication()), null, null, null);
+  void testResolveIpProtocolsIcmpAndTcp() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            resolveIpProtocols(
+                ImmutableSet.of(ICMP),
+                null,
+                null,
+                ImmutableSet.of(SSH.toApplication()),
+                null,
+                null,
+                null));
   }
 
   @Test
-  public void testResolveIpProtocolsTcpFlagsAndUdp() {
-    thrown.expect(IllegalArgumentException.class);
-    resolveIpProtocols(
-        ImmutableSet.of(UDP),
-        null,
-        null,
-        null,
-        ImmutableSet.of(TcpFlagsMatchConditions.ACK_TCP_FLAG),
-        null,
-        null);
+  void testResolveIpProtocolsTcpFlagsAndUdp() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            resolveIpProtocols(
+                ImmutableSet.of(UDP),
+                null,
+                null,
+                null,
+                ImmutableSet.of(TcpFlagsMatchConditions.ACK_TCP_FLAG),
+                null,
+                null));
   }
 
   @Test
-  public void testResolveIpProtocolsTcpFlagsAndDns() {
-    thrown.expect(IllegalArgumentException.class);
-    resolveIpProtocols(
-        null,
-        null,
-        null,
-        ImmutableSet.of(new UdpApplication(53)),
-        ImmutableSet.of(TcpFlagsMatchConditions.ACK_TCP_FLAG),
-        null,
-        null);
+  void testResolveIpProtocolsTcpFlagsAndDns() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            resolveIpProtocols(
+                null,
+                null,
+                null,
+                ImmutableSet.of(new UdpApplication(53)),
+                ImmutableSet.of(TcpFlagsMatchConditions.ACK_TCP_FLAG),
+                null,
+                null));
   }
 
   @Test
-  public void testResolveIpProtocolsIcmpTypesAndDns() {
-    thrown.expect(IllegalArgumentException.class);
-    resolveIpProtocols(
-        null,
-        null,
-        null,
-        ImmutableSet.of(new UdpApplication(53)),
-        ImmutableSet.of(TcpFlagsMatchConditions.ACK_TCP_FLAG),
-        IntegerSpace.of(1),
-        null);
+  void testResolveIpProtocolsIcmpTypesAndDns() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            resolveIpProtocols(
+                null,
+                null,
+                null,
+                ImmutableSet.of(new UdpApplication(53)),
+                ImmutableSet.of(TcpFlagsMatchConditions.ACK_TCP_FLAG),
+                IntegerSpace.of(1),
+                null));
   }
 
   @Test
-  public void testResolveIpProtocolsIcmpCodesAndDns() {
-    thrown.expect(IllegalArgumentException.class);
-    resolveIpProtocols(
-        null,
-        null,
-        null,
-        ImmutableSet.of(new UdpApplication(53)),
-        ImmutableSet.of(TcpFlagsMatchConditions.ACK_TCP_FLAG),
-        null,
-        IntegerSpace.of(1));
+  void testResolveIpProtocolsIcmpCodesAndDns() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            resolveIpProtocols(
+                null,
+                null,
+                null,
+                ImmutableSet.of(new UdpApplication(53)),
+                ImmutableSet.of(TcpFlagsMatchConditions.ACK_TCP_FLAG),
+                null,
+                IntegerSpace.of(1)));
   }
 
   @Test
-  public void testResolvePorts() {
+  void testResolvePorts() {
     final IntegerSpace sshSet = IntegerSpace.of(SubRange.singleton(22));
 
     assertThat(resolvePorts(null, null), nullValue());
@@ -276,7 +302,7 @@ public class PacketHeaderConstraintsTest {
   }
 
   @Test
-  public void testDefaults() {
+  void testDefaults() {
     PacketHeaderConstraints constraints = PacketHeaderConstraints.unconstrained();
     assertThat(constraints.getSrcPorts(), nullValue());
     assertThat(constraints.getDscps(), nullValue());
@@ -296,7 +322,7 @@ public class PacketHeaderConstraintsTest {
   }
 
   @Test
-  public void testBuilderDefaults() {
+  void testBuilderDefaults() {
     PacketHeaderConstraints constraints = PacketHeaderConstraints.builder().build();
     assertThat(constraints.getSrcPorts(), nullValue());
     assertThat(constraints.getDscps(), nullValue());
@@ -316,7 +342,7 @@ public class PacketHeaderConstraintsTest {
   }
 
   @Test
-  public void testValidation() {
+  void testValidation() {
     PacketHeaderConstraints constraints;
     // concrete resolution
     constraints = PacketHeaderConstraints.builder().setApplications("ssh").build();
@@ -332,117 +358,138 @@ public class PacketHeaderConstraintsTest {
   }
 
   @Test
-  public void testValidationSrcPortICMP() {
+  void testValidationSrcPortICMP() {
     // Src port incompatibility
-    thrown.expect(IllegalArgumentException.class);
-    PacketHeaderConstraints.builder()
-        .setSrcPorts(IntegerSpace.of(SubRange.singleton(22)))
-        .setIpProtocols(ImmutableSet.of(ICMP))
-        .build();
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            PacketHeaderConstraints.builder()
+                .setSrcPorts(IntegerSpace.of(SubRange.singleton(22)))
+                .setIpProtocols(ImmutableSet.of(ICMP))
+                .build());
   }
 
   @Test
-  public void testValidationDstPortICMP() {
+  void testValidationDstPortICMP() {
     // Dst port incompatibility
-    thrown.expect(IllegalArgumentException.class);
-    PacketHeaderConstraints.builder()
-        .setDstPorts(IntegerSpace.of(SubRange.singleton(22)))
-        .setIpProtocols(ImmutableSet.of(ICMP))
-        .build();
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            PacketHeaderConstraints.builder()
+                .setDstPorts(IntegerSpace.of(SubRange.singleton(22)))
+                .setIpProtocols(ImmutableSet.of(ICMP))
+                .build());
   }
 
   @Test
-  public void testValidationTCPICMPIncompatible() {
+  void testValidationTCPICMPIncompatible() {
     // TCP + ICMP codes incompatibility
-    thrown.expect(IllegalArgumentException.class);
-    PacketHeaderConstraints.builder()
-        .setIpProtocols(ImmutableSet.of(TCP))
-        .setIcmpCodes(IntegerSpace.of(SubRange.singleton(1)))
-        .build();
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            PacketHeaderConstraints.builder()
+                .setIpProtocols(ImmutableSet.of(TCP))
+                .setIcmpCodes(IntegerSpace.of(SubRange.singleton(1)))
+                .build());
   }
 
   @Test
-  public void testValidationResolveDstPorts() {
+  void testValidationResolveDstPorts() {
     // dst port resolution
-    thrown.expect(IllegalArgumentException.class);
-    PacketHeaderConstraints.builder()
-        .setIpProtocols(ImmutableSet.of(TCP))
-        .setDstPorts(IntegerSpace.of(new SubRange(30, 40)))
-        .setApplications("ssh")
-        .build();
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            PacketHeaderConstraints.builder()
+                .setIpProtocols(ImmutableSet.of(TCP))
+                .setDstPorts(IntegerSpace.of(new SubRange(30, 40)))
+                .setApplications("ssh")
+                .build());
   }
 
   @Test
-  public void testValidationInvalidSrcPort() {
+  void testValidationInvalidSrcPort() {
     // Port range too large, src or dst
-    thrown.expect(IllegalArgumentException.class);
-    PacketHeaderConstraints.builder()
-        .setIpProtocols(ImmutableSet.of(TCP))
-        .setSrcPorts(IntegerSpace.of(new SubRange(0, 1 << 16)))
-        .build();
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            PacketHeaderConstraints.builder()
+                .setIpProtocols(ImmutableSet.of(TCP))
+                .setSrcPorts(IntegerSpace.of(new SubRange(0, 1 << 16)))
+                .build());
   }
 
   @Test
-  public void testValidationInvalidDstPort() {
-    thrown.expect(IllegalArgumentException.class);
-    PacketHeaderConstraints.builder()
-        .setIpProtocols(ImmutableSet.of(TCP))
-        .setDstPorts(IntegerSpace.of(new SubRange(0, 1 << 16)))
-        .build();
+  void testValidationInvalidDstPort() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            PacketHeaderConstraints.builder()
+                .setIpProtocols(ImmutableSet.of(TCP))
+                .setDstPorts(IntegerSpace.of(new SubRange(0, 1 << 16)))
+                .build());
   }
 
   @Test
-  public void testValidationNoProtocols() {
-    thrown.expect(IllegalArgumentException.class);
-    PacketHeaderConstraints.builder().setIpProtocols(ImmutableSet.of()).build();
+  void testValidationNoProtocols() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> PacketHeaderConstraints.builder().setIpProtocols(ImmutableSet.of()).build());
   }
 
   @Test
-  public void testValidationNoSrcPorts() {
-    thrown.expect(IllegalArgumentException.class);
-    PacketHeaderConstraints.builder().setSrcPorts(IntegerSpace.EMPTY).build();
+  void testValidationNoSrcPorts() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> PacketHeaderConstraints.builder().setSrcPorts(IntegerSpace.EMPTY).build());
   }
 
   @Test
-  public void testValidationNoDestPorts() {
-    thrown.expect(IllegalArgumentException.class);
-    PacketHeaderConstraints.builder().setDstPorts(IntegerSpace.EMPTY).build();
+  void testValidationNoDestPorts() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> PacketHeaderConstraints.builder().setDstPorts(IntegerSpace.EMPTY).build());
   }
 
   @Test
-  public void testValidationNoIcmpCodes() {
-    thrown.expect(IllegalArgumentException.class);
-    PacketHeaderConstraints.builder().setIcmpCodes(IntegerSpace.EMPTY).build();
+  void testValidationNoIcmpCodes() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> PacketHeaderConstraints.builder().setIcmpCodes(IntegerSpace.EMPTY).build());
   }
 
   @Test
-  public void testValidationNoIcmpTypes() {
-    thrown.expect(IllegalArgumentException.class);
-    PacketHeaderConstraints.builder().setIcmpTypes(IntegerSpace.EMPTY).build();
+  void testValidationNoIcmpTypes() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> PacketHeaderConstraints.builder().setIcmpTypes(IntegerSpace.EMPTY).build());
   }
 
   @Test
-  public void testValidationDstProtocolsIncompatible() {
+  void testValidationDstProtocolsIncompatible() {
     // Reject empty IP protocol intersections
-    thrown.expect(IllegalArgumentException.class);
-    PacketHeaderConstraints.builder()
-        .setIpProtocols(ImmutableSet.of(ICMP, TCP))
-        .setApplications("dns")
-        .build();
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            PacketHeaderConstraints.builder()
+                .setIpProtocols(ImmutableSet.of(ICMP, TCP))
+                .setApplications("dns")
+                .build());
   }
 
   @Test
-  public void testValidationSrcProtocolsIncompatible() {
+  void testValidationSrcProtocolsIncompatible() {
     // Reject empty port intersections
-    thrown.expect(IllegalArgumentException.class);
-    PacketHeaderConstraints.builder()
-        .setApplications("dns")
-        .setDstPorts(IntegerSpace.of(new SubRange(1, 2)))
-        .build();
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            PacketHeaderConstraints.builder()
+                .setApplications("dns")
+                .setDstPorts(IntegerSpace.of(new SubRange(1, 2)))
+                .build());
   }
 
   @Test
-  public void testCreationExcludedPortsOnly() throws IOException {
+  void testCreationExcludedPortsOnly() throws IOException {
     PacketHeaderConstraints phc =
         BatfishObjectMapper.mapper()
             .readValue("{\"dstPorts\": \"!22,!40-50\"}", PacketHeaderConstraints.class);
@@ -457,7 +504,7 @@ public class PacketHeaderConstraintsTest {
   }
 
   @Test
-  public void testParseApplications() throws IOException {
+  void testParseApplications() throws IOException {
     Set<Application> expected = ImmutableSet.of(SSH.toApplication(), TELNET.toApplication());
     // this is what we expect via pybatfish
     assertThat(
@@ -474,16 +521,18 @@ public class PacketHeaderConstraintsTest {
   }
 
   @Test
-  public void testParseApplicationsQuotesInString() throws IOException {
-    thrown.expect(IllegalArgumentException.class);
-    // quoted values in a non-json list
-    parseApplications(
-        parseApplicationJsonToString(
-            BatfishObjectMapper.mapper().readValue("\"\\\"SSH\\\"\"", JsonNode.class)));
+  void testParseApplicationsQuotesInString() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            // quoted values in a non-json list
+            parseApplications(
+                parseApplicationJsonToString(
+                    BatfishObjectMapper.mapper().readValue("\"\\\"SSH\\\"\"", JsonNode.class))));
   }
 
   @Test
-  public void testParseIpProtocols() throws IOException {
+  void testParseIpProtocols() throws IOException {
     Set<IpProtocol> expected = ImmutableSet.of(TCP, UDP);
     // this is what we expect via pybatfish
     assertThat(
@@ -497,14 +546,17 @@ public class PacketHeaderConstraintsTest {
   }
 
   @Test
-  public void testParseIpProtocolsQuotesInString() throws IOException {
-    thrown.expect(IllegalArgumentException.class);
-    // quoted values in a non-json list
-    parseIpProtocols(BatfishObjectMapper.mapper().readValue("\"\\\"TCP\\\"\"", JsonNode.class));
+  void testParseIpProtocolsQuotesInString() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            // quoted values in a non-json list
+            parseIpProtocols(
+                BatfishObjectMapper.mapper().readValue("\"\\\"TCP\\\"\"", JsonNode.class)));
   }
 
   @Test
-  public void testParseIpProtocolsNegation() throws IOException {
+  void testParseIpProtocolsNegation() throws IOException {
     Set<IpProtocol> ipProtocols =
         parseIpProtocols(BatfishObjectMapper.mapper().readValue("\"!ICMP\"", JsonNode.class));
     assertThat(
@@ -513,7 +565,7 @@ public class PacketHeaderConstraintsTest {
   }
 
   @Test
-  public void testStringCreationPorts() throws IOException {
+  void testStringCreationPorts() throws IOException {
     PacketHeaderConstraints phc =
         BatfishObjectMapper.mapper()
             .readValue("{\"dstPorts\": \"11,!22,!40-50\"}", PacketHeaderConstraints.class);
@@ -523,7 +575,7 @@ public class PacketHeaderConstraintsTest {
   }
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     PacketHeaderConstraints phc =
         PacketHeaderConstraints.builder()
             .setIpProtocols(ImmutableSet.of(TCP, UDP))
@@ -537,7 +589,7 @@ public class PacketHeaderConstraintsTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             PacketHeaderConstraints.unconstrained(), PacketHeaderConstraints.builder().build())

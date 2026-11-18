@@ -25,12 +25,12 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.representation.frr.RouteMapMatchSourceProtocol.Protocol;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class RouteMapMatchSourceProtocolTest {
+class RouteMapMatchSourceProtocolTest {
 
   @Test
-  public void testConstructionAndGetter() {
+  void testConstructionAndGetter() {
     RouteMapMatchSourceProtocol match = new RouteMapMatchSourceProtocol(Protocol.BGP);
     assertThat(match.getProtocol(), equalTo(Protocol.BGP));
   }
@@ -54,7 +54,7 @@ public class RouteMapMatchSourceProtocolTest {
   }
 
   @Test
-  public void testToBooleanExpr() {
+  void testToBooleanExpr() {
     Bgpv4Route bgp =
         Bgpv4Route.testBuilder().setNetwork(Prefix.ZERO).setProtocol(RoutingProtocol.BGP).build();
     Bgpv4Route ibgp =

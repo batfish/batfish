@@ -19,7 +19,9 @@ import static org.batfish.datamodel.questions.BgpRouteDiff.routeDiffs;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
@@ -34,22 +36,19 @@ import org.batfish.datamodel.bgp.TunnelEncapsulationAttribute;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.questions.BgpRoute.Builder;
 import org.batfish.datamodel.route.nh.NextHopIp;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link BgpRouteDiff}. */
-public class BgpRouteDiffTest {
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class BgpRouteDiffTest {
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     BgpRouteDiff diff = new BgpRouteDiff(PROP_AS_PATH, "A", "B");
     assertEquals(diff, BatfishObjectMapper.clone(diff, BgpRouteDiff.class));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new BgpRouteDiff(PROP_AS_PATH, "a", "b"), new BgpRouteDiff(PROP_AS_PATH, "a", "b"))
@@ -69,7 +68,7 @@ public class BgpRouteDiffTest {
   }
 
   @Test
-  public void testRouteDiffs() {
+  void testRouteDiffs() {
     BgpRoute route1;
     BgpRoute route2;
 
@@ -174,13 +173,12 @@ public class BgpRouteDiffTest {
   }
 
   @Test
-  public void testUnsupported() {
+  void testUnsupported() {
     BgpRoute r1 = builder().setProtocol(RoutingProtocol.BGP).build();
     BgpRoute r2 = builder().setProtocol(RoutingProtocol.OSPF).build();
 
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("BGP");
-    _thrown.expectMessage("OSPF");
-    routeDiffs(r1, r2);
+    Throwable exception = assertThrows(IllegalArgumentException.class, () -> routeDiffs(r1, r2));
+    assertThat(exception.getMessage(), containsString("BGP"));
+    assertThat(exception.getMessage(), containsString("OSPF"));
   }
 }

@@ -2,12 +2,12 @@ package org.batfish.minesweeper.question.searchroutepolicies;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class RegexConstraintsTest {
+class RegexConstraintsTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     RegexConstraint r1 = new RegexConstraint("foo", true);
     RegexConstraint r2 = new RegexConstraint("bar", false);
     RegexConstraints c1 = new RegexConstraints();

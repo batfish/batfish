@@ -12,12 +12,12 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
 import com.google.common.testing.EqualsTester;
 import java.util.List;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link NatPacketLocation}. */
-public class NatPacketLocationTest {
+class NatPacketLocationTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(interfaceLocation("1"), interfaceLocation("1"))
         .addEqualityGroup(interfaceLocation("2"))
@@ -26,7 +26,7 @@ public class NatPacketLocationTest {
   }
 
   @Test
-  public void testComparator() {
+  void testComparator() {
     List<NatPacketLocation> locs =
         ImmutableList.of(
             new NatPacketLocation(),

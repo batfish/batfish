@@ -108,10 +108,10 @@ import org.batfish.specifier.LocationInfo;
 import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.RoutingProtocolSpecifier;
 import org.batfish.specifier.SpecifierContext;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link RoutesAnswerer}. */
-public class RoutesAnswererTest {
+class RoutesAnswererTest {
   private static IBatfish makeBatfish(Configuration... configs) {
     return new IBatfishTestAdapter() {
       @Override
@@ -147,7 +147,7 @@ public class RoutesAnswererTest {
   }
 
   @Test
-  public void testGetMainRibRoutesWhenEmptyRib() {
+  void testGetMainRibRoutesWhenEmptyRib() {
     Multiset<Row> actual =
         getMainRibRoutes(
             ImmutableTable.of(),
@@ -160,7 +160,7 @@ public class RoutesAnswererTest {
   }
 
   @Test
-  public void testHasNetworkFiltering() {
+  void testHasNetworkFiltering() {
     FinalMainRib rib =
         FinalMainRib.of(
             StaticRoute.testBuilder()
@@ -188,7 +188,7 @@ public class RoutesAnswererTest {
   }
 
   @Test
-  public void testNoMatchingNodes() {
+  void testNoMatchingNodes() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -211,7 +211,7 @@ public class RoutesAnswererTest {
   }
 
   @Test
-  public void testNoMatchingVrfs() {
+  void testNoMatchingVrfs() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -236,7 +236,7 @@ public class RoutesAnswererTest {
   }
 
   @Test
-  public void testHasProtocolFiltering() {
+  void testHasProtocolFiltering() {
     FinalMainRib rib =
         FinalMainRib.of(
             StaticRoute.testBuilder()
@@ -260,7 +260,7 @@ public class RoutesAnswererTest {
   }
 
   @Test
-  public void testHasVrfFiltering() {
+  void testHasVrfFiltering() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
         nf.configurationBuilder()
@@ -301,7 +301,7 @@ public class RoutesAnswererTest {
   }
 
   @Test
-  public void testGetTableMetadataProtocolAll() {
+  void testGetTableMetadataProtocolAll() {
     List<ColumnMetadata> columnMetadata = getTableMetadata(RibProtocol.MAIN).getColumnMetadata();
 
     assertThat(
@@ -334,7 +334,7 @@ public class RoutesAnswererTest {
   }
 
   @Test
-  public void testGetTableMetadataBGP() {
+  void testGetTableMetadataBGP() {
     List<String> expected =
         ImmutableList.of(
             COL_NODE,
@@ -367,7 +367,7 @@ public class RoutesAnswererTest {
   }
 
   @Test
-  public void testGetTableMetadataEvpn() {
+  void testGetTableMetadataEvpn() {
     List<String> expected =
         ImmutableList.of(
             COL_NODE,
@@ -400,7 +400,7 @@ public class RoutesAnswererTest {
   }
 
   @Test
-  public void testGetDiffTableMetadataMainRib() {
+  void testGetDiffTableMetadataMainRib() {
     List<ColumnMetadata> columnMetadata =
         getDiffTableMetadata(RibProtocol.MAIN).getColumnMetadata();
 
@@ -446,7 +446,7 @@ public class RoutesAnswererTest {
   }
 
   @Test
-  public void testGetDiffTableMetadataBGP() {
+  void testGetDiffTableMetadataBGP() {
     ImmutableList.Builder<String> expectedBuilder = ImmutableList.builder();
     expectedBuilder.add(
         COL_NODE,
@@ -540,7 +540,7 @@ public class RoutesAnswererTest {
   }
 
   @Test
-  public void testGetDiffTableMetadataEvpn() {
+  void testGetDiffTableMetadataEvpn() {
     ImmutableList.Builder<String> expectedBuilder = ImmutableList.builder();
     expectedBuilder.add(
         COL_NODE,
@@ -635,7 +635,7 @@ public class RoutesAnswererTest {
   }
 
   @Test
-  public void testSameColumnsDiffAndNonDiff() {
+  void testSameColumnsDiffAndNonDiff() {
     List<String> nonDiffColumns =
         getTableMetadata(RibProtocol.MAIN).getColumnMetadata().stream()
             .map(ColumnMetadata::getName)
@@ -671,7 +671,7 @@ public class RoutesAnswererTest {
   }
 
   @Test
-  public void testSameColumnsDiffAndNonDiffBgp() {
+  void testSameColumnsDiffAndNonDiffBgp() {
     List<String> nonDiffColumns =
         getTableMetadata(RibProtocol.BGP).getColumnMetadata().stream()
             .map(ColumnMetadata::getName)
@@ -707,7 +707,7 @@ public class RoutesAnswererTest {
   }
 
   @Test
-  public void testSameColumnsDiffAndNonDiffEvpn() {
+  void testSameColumnsDiffAndNonDiffEvpn() {
     List<String> nonDiffColumns =
         getTableMetadata(RibProtocol.EVPN).getColumnMetadata().stream()
             .map(ColumnMetadata::getName)
@@ -743,7 +743,7 @@ public class RoutesAnswererTest {
   }
 
   @Test
-  public void testMainRibComparator() {
+  void testMainRibComparator() {
     List<Node> orderedNodes = ImmutableList.of(new Node("n1"), new Node("n2"));
     List<String> orderedVrfs = ImmutableList.of("vrf1", "vrf2");
     List<Prefix> orderedNetworks =
@@ -774,7 +774,7 @@ public class RoutesAnswererTest {
   }
 
   @Test
-  public void testBgpRibComparator() {
+  void testBgpRibComparator() {
     List<Node> orderedNodes = ImmutableList.of(new Node("n1"), new Node("n2"));
     List<String> orderedVrfs = ImmutableList.of("vrf1", "vrf2");
     List<Prefix> orderedNetworks =
@@ -812,7 +812,7 @@ public class RoutesAnswererTest {
   }
 
   @Test
-  public void testEvpnRibComparator() {
+  void testEvpnRibComparator() {
     List<Node> orderedNodes = ImmutableList.of(new Node("n1"), new Node("n2"));
     List<String> orderedVrfs = ImmutableList.of("vrf1", "vrf2");
     List<Prefix> orderedNetworks =
@@ -847,7 +847,7 @@ public class RoutesAnswererTest {
   }
 
   @Test
-  public void testDiffComparator() {
+  void testDiffComparator() {
     List<Node> orderedNodes = ImmutableList.of(new Node("n1"), new Node("n2"));
     List<String> orderedVrfs = ImmutableList.of("vrf1", "vrf2");
     List<Prefix> orderedNetworks =
@@ -883,7 +883,7 @@ public class RoutesAnswererTest {
 
   /** Run through full pipeline (create question and answerer), */
   @Test
-  public void testFullAnswerPipelineAndNumResults() {
+  void testFullAnswerPipelineAndNumResults() {
     // Setup mock data structures
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
@@ -918,7 +918,7 @@ public class RoutesAnswererTest {
   }
 
   @Test
-  public void testHasTextDesc() {
+  void testHasTextDesc() {
     String textDesc = getTableMetadata(RibProtocol.MAIN).getTextDesc();
 
     assertThat(textDesc, notNullValue());

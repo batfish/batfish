@@ -20,9 +20,9 @@ import org.batfish.common.bdd.BDDPacket;
 import org.batfish.datamodel.Prefix;
 import org.batfish.symbolic.state.StateExpr;
 import org.batfish.symbolic.state.StateExprVisitor;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class BDDTracerTest {
+class BDDTracerTest {
   private static final class DummyState implements StateExpr {
     private final String _name;
 
@@ -61,7 +61,7 @@ public class BDDTracerTest {
   }
 
   @Test
-  public void testSimple() {
+  void testSimple() {
     ImmutableTable<StateExpr, StateExpr, Transition> table =
         ImmutableTable.<StateExpr, StateExpr, Transition>builder()
             .put(A, B, IDENTITY)
@@ -72,7 +72,7 @@ public class BDDTracerTest {
   }
 
   @Test
-  public void testLoop() {
+  void testLoop() {
     ImmutableTable<StateExpr, StateExpr, Transition> table =
         ImmutableTable.<StateExpr, StateExpr, Transition>builder()
             .put(A, B, IDENTITY)
@@ -83,7 +83,7 @@ public class BDDTracerTest {
   }
 
   @Test
-  public void testLoopWithConstraint() {
+  void testLoopWithConstraint() {
     BDD dst1 = _pkt.getDstIpSpaceToBDD().toBDD(Prefix.parse("128.0.0.0/1"));
     ImmutableTable<StateExpr, StateExpr, Transition> table =
         ImmutableTable.<StateExpr, StateExpr, Transition>builder()
@@ -99,7 +99,7 @@ public class BDDTracerTest {
   }
 
   @Test
-  public void testBranch() {
+  void testBranch() {
     BDD toB = _pkt.getDstIpSpaceToBDD().toBDD(Prefix.parse("0.0.0.0/1"));
     BDD toC = _pkt.getDstIpSpaceToBDD().toBDD(Prefix.parse("128.0.0.0/1"));
     ImmutableTable<StateExpr, StateExpr, Transition> table =

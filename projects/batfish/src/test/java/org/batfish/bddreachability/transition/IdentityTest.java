@@ -5,12 +5,12 @@ import static org.hamcrest.Matchers.equalTo;
 
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link Identity}. */
-public class IdentityTest {
+class IdentityTest {
   @Test
-  public void testIdentity() {
+  void testIdentity() {
     BDDPacket pkt = new BDDPacket();
     BDD one = pkt.getFactory().one();
     BDD zero = pkt.getFactory().zero();

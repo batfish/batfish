@@ -8,11 +8,11 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.representation.juniper.PsFromNextHop.Hop;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class PsFromNextHopTest {
+class PsFromNextHopTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     Hop hop4a = Hop.of(Ip.ZERO);
     Hop hop4b = Hop.of(Ip.FIRST_MULTICAST_IP);
     Hop hop6a = Hop.of(Ip6.ZERO);
@@ -31,7 +31,7 @@ public class PsFromNextHopTest {
   }
 
   @Test
-  public void testToString() {
+  void testToString() {
     Hop hop4 = Hop.of(Ip.FIRST_MULTICAST_IP);
     assertThat(hop4.toString(), equalTo("224.0.0.0"));
     assertThat(Hop.of(Ip6.MAX).toString(), equalTo(Ip6.MAX.toString()));
@@ -40,7 +40,7 @@ public class PsFromNextHopTest {
   }
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     PsFromNextHop hop = new PsFromNextHop(Hop.of(Ip.FIRST_MULTICAST_IP));
     assertThat(SerializationUtils.clone(hop), equalTo(hop));
   }

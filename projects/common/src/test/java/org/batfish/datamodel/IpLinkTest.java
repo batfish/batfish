@@ -1,16 +1,16 @@
 package org.batfish.datamodel;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link IpLink}. */
-public final class IpLinkTest {
+final class IpLinkTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     IpLink link1 = new IpLink(Ip.ZERO, Ip.ZERO);
     IpLink link2 = new IpLink(Ip.ZERO, Ip.FIRST_CLASS_A_PRIVATE_IP);
     IpLink link3 = new IpLink(Ip.FIRST_CLASS_B_PRIVATE_IP, Ip.FIRST_CLASS_A_PRIVATE_IP);
@@ -24,7 +24,7 @@ public final class IpLinkTest {
   }
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     IpLink link = new IpLink(Ip.ZERO, Ip.ZERO);
 
     assertEquals(link, BatfishObjectMapper.clone(link, IpLink.class));

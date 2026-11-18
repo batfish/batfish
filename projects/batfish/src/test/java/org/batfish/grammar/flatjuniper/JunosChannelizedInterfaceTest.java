@@ -11,22 +11,22 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.main.Batfish;
 import org.batfish.representation.juniper.Interface;
 import org.batfish.representation.juniper.JuniperConfiguration;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosChannelizedInterfaceTest {
+final class JunosChannelizedInterfaceTest {
 
   private static final String HOSTNAME = "junos-channelized-interface";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testChannelizedInterfaces() throws IOException {
+  void testChannelizedInterfaces() throws IOException {
     Batfish batfish = getBatfish(_folder, HOSTNAME);
     JuniperConfiguration jc = getVendorConfiguration(batfish, HOSTNAME);
 

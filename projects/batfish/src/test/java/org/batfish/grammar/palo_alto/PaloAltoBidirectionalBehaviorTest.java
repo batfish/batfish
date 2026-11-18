@@ -9,6 +9,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.in;
 
 import com.google.common.collect.ImmutableSet;
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -24,13 +25,11 @@ import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests of bi-directional flow behavior of Palo Alto firewall under various scenarios */
-public final class PaloAltoBidirectionalBehaviorTest {
+final class PaloAltoBidirectionalBehaviorTest {
 
   private static final Ip BIDIR_DEFAULT_DST_IP = Ip.parse("10.0.2.2");
   private static final Ip BIDIR_DEFAULT_SRC_IP = Ip.parse("10.0.1.2");
@@ -39,9 +38,7 @@ public final class PaloAltoBidirectionalBehaviorTest {
   private static final String INTERFACE2 = "ethernet1/2";
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/palo_alto/testconfigs/";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+  @TempDir public File _folder;
 
   private Batfish getBatfishForConfigurationNames(String... configurationNames) throws IOException {
     String[] names =
@@ -140,7 +137,7 @@ public final class PaloAltoBidirectionalBehaviorTest {
   }
 
   @Test
-  public void testDropMissingVsys() throws IOException {
+  void testDropMissingVsys() throws IOException {
     String hostname = "drop-missing-vsys";
 
     // Cannot initiate connection through interface not in a vsys
@@ -148,7 +145,7 @@ public final class PaloAltoBidirectionalBehaviorTest {
   }
 
   @Test
-  public void testAllowSameZoneNoRules() throws IOException {
+  void testAllowSameZoneNoRules() throws IOException {
     String hostname = "allow-same-zone-no-rules";
 
     // Bidirectional traffic between interfaces in the same zone is allowed by default when there
@@ -157,7 +154,7 @@ public final class PaloAltoBidirectionalBehaviorTest {
   }
 
   @Test
-  public void testAllowSameZoneNoMatchingRules() throws IOException {
+  void testAllowSameZoneNoMatchingRules() throws IOException {
     String hostname = "allow-same-zone-no-matching-rules";
 
     // Bidirectional traffic between interfaces in the same zone is allowed by default if there are
@@ -166,7 +163,7 @@ public final class PaloAltoBidirectionalBehaviorTest {
   }
 
   @Test
-  public void testDropSameZoneExplicit() throws IOException {
+  void testDropSameZoneExplicit() throws IOException {
     String hostname = "drop-same-zone-explicit";
 
     // Traffic between interfaces in the same zone should be dropped if matched by deny rule
@@ -174,7 +171,7 @@ public final class PaloAltoBidirectionalBehaviorTest {
   }
 
   @Test
-  public void testDropDefaultCrossZone() throws IOException {
+  void testDropDefaultCrossZone() throws IOException {
     String hostname = "drop-default-cross-zone";
 
     // Traffic between interfaces in the same zone should be dropped if not matched by an allow rule
@@ -182,7 +179,7 @@ public final class PaloAltoBidirectionalBehaviorTest {
   }
 
   @Test
-  public void testAllowExplicitCrossZone() throws IOException {
+  void testAllowExplicitCrossZone() throws IOException {
     String hostname = "allow-explicit-cross-zone";
 
     // Bidirectional traffic between interfaces in different zones should be allowed if matched by
@@ -191,7 +188,7 @@ public final class PaloAltoBidirectionalBehaviorTest {
   }
 
   @Test
-  public void testDropInterVsysImplicit() throws IOException {
+  void testDropInterVsysImplicit() throws IOException {
     String hostname = "drop-inter-vsys-implicit";
 
     // Traffic between interfaces in different vsys'es is denied without appropriate external zones
@@ -200,7 +197,7 @@ public final class PaloAltoBidirectionalBehaviorTest {
   }
 
   @Test
-  public void testDropInterVsysMissingExternalEgress() throws IOException {
+  void testDropInterVsysMissingExternalEgress() throws IOException {
     String hostname = "drop-inter-vsys-missing-external-egress";
 
     // Traffic between interfaces in different vsys'es is denied when external zone is missing from
@@ -209,7 +206,7 @@ public final class PaloAltoBidirectionalBehaviorTest {
   }
 
   @Test
-  public void testDropInterVsysMissingExternalIngress() throws IOException {
+  void testDropInterVsysMissingExternalIngress() throws IOException {
     String hostname = "drop-inter-vsys-missing-external-ingress";
 
     // Traffic between interfaces in different vsys'es is denied when external zone is missing from
@@ -218,7 +215,7 @@ public final class PaloAltoBidirectionalBehaviorTest {
   }
 
   @Test
-  public void testDropInterVsysMisconfiguredExternalEgress() throws IOException {
+  void testDropInterVsysMisconfiguredExternalEgress() throws IOException {
     String hostname = "drop-inter-vsys-misconfigured-external-egress";
 
     // Traffic between interfaces in different vsys'es is denied when external zone on egress vsys
@@ -227,7 +224,7 @@ public final class PaloAltoBidirectionalBehaviorTest {
   }
 
   @Test
-  public void testDropInterVsysMisconfiguredExternalIngress() throws IOException {
+  void testDropInterVsysMisconfiguredExternalIngress() throws IOException {
     String hostname = "drop-inter-vsys-misconfigured-external-ingress";
 
     // Traffic between interfaces in different vsys'es is denied when external zone on ingress vsys
@@ -236,7 +233,7 @@ public final class PaloAltoBidirectionalBehaviorTest {
   }
 
   @Test
-  public void testAllowInterVsys() throws IOException {
+  void testAllowInterVsys() throws IOException {
     String hostname = "allow-inter-vsys";
 
     // Bidirectional traffic from interface in ingress vsys to interface in separate egress vsys is
@@ -248,7 +245,7 @@ public final class PaloAltoBidirectionalBehaviorTest {
   }
 
   @Test
-  public void testDropVsysToSgMissingExternal() throws IOException {
+  void testDropVsysToSgMissingExternal() throws IOException {
     String hostname = "drop-vsys-to-sg-missing-external";
     TracerouteEngine tracerouteEngine = bidirTracerouteEngine(hostname);
 
@@ -262,7 +259,7 @@ public final class PaloAltoBidirectionalBehaviorTest {
   }
 
   @Test
-  public void testDropVsysToSgMisconfiguredExternal() throws IOException {
+  void testDropVsysToSgMisconfiguredExternal() throws IOException {
     String hostname = "drop-vsys-to-sg-misconfigured-external";
     TracerouteEngine tracerouteEngine = bidirTracerouteEngine(hostname);
 
@@ -276,7 +273,7 @@ public final class PaloAltoBidirectionalBehaviorTest {
   }
 
   @Test
-  public void testAllowVsysToSg() throws IOException {
+  void testAllowVsysToSg() throws IOException {
     String hostname = "allow-vsys-to-sg";
     TracerouteEngine tracerouteEngine = bidirTracerouteEngine(hostname);
 
@@ -292,7 +289,7 @@ public final class PaloAltoBidirectionalBehaviorTest {
   }
 
   @Test
-  public void testAllowInterSg() throws IOException {
+  void testAllowInterSg() throws IOException {
     String hostname = "allow-inter-sg";
     TracerouteEngine tracerouteEngine = bidirTracerouteEngine(hostname);
 
@@ -302,7 +299,7 @@ public final class PaloAltoBidirectionalBehaviorTest {
   }
 
   @Test
-  public void testAllowIntraSg() throws IOException {
+  void testAllowIntraSg() throws IOException {
     String hostname = "allow-intra-sg";
     TracerouteEngine tracerouteEngine = bidirTracerouteEngine(hostname);
 
@@ -312,7 +309,7 @@ public final class PaloAltoBidirectionalBehaviorTest {
   }
 
   @Test
-  public void testAllowSgToVsys() throws IOException {
+  void testAllowSgToVsys() throws IOException {
     String hostname = "allow-sg-to-vsys";
     TracerouteEngine tracerouteEngine = bidirTracerouteEngine(hostname);
 
@@ -328,7 +325,7 @@ public final class PaloAltoBidirectionalBehaviorTest {
   }
 
   @Test
-  public void testDropIntraVsysNextVrMissingEgress() throws IOException {
+  void testDropIntraVsysNextVrMissingEgress() throws IOException {
     String hostname = "drop-intra-vsys-next-vr-missing-egress";
     TracerouteEngine tracerouteEngine = bidirTracerouteEngine(hostname);
     Flow forwardFlow = bidirForwardFlow(hostname, BIDIR_DEFAULT_DST_IP);
@@ -358,7 +355,7 @@ public final class PaloAltoBidirectionalBehaviorTest {
   }
 
   @Test
-  public void testDropIntraVsysNextVrMissingIngress() throws IOException {
+  void testDropIntraVsysNextVrMissingIngress() throws IOException {
     String hostname = "drop-intra-vsys-next-vr-missing-ingress";
 
     // forward flow should be dropped due to missing next-vr route in ingress virtual-router
@@ -366,7 +363,7 @@ public final class PaloAltoBidirectionalBehaviorTest {
   }
 
   @Test
-  public void testAllowIntraVsysNextVr() throws IOException {
+  void testAllowIntraVsysNextVr() throws IOException {
     String hostname = "allow-intra-vsys-next-vr";
 
     // Bidirectional traffic between interfaces in different virtual-routers is allowed when:
@@ -378,7 +375,7 @@ public final class PaloAltoBidirectionalBehaviorTest {
   }
 
   @Test
-  public void testAllowVsysToSgNextVr() throws IOException {
+  void testAllowVsysToSgNextVr() throws IOException {
     String hostname = "allow-vsys-to-sg-next-vr";
     TracerouteEngine tracerouteEngine = bidirTracerouteEngine(hostname);
 
@@ -389,7 +386,7 @@ public final class PaloAltoBidirectionalBehaviorTest {
   }
 
   @Test
-  public void testAllowInterVsysNextVr() throws IOException {
+  void testAllowInterVsysNextVr() throws IOException {
     String hostname = "allow-inter-vsys-next-vr";
 
     // next-vr should work for properly configured inter-vsys traffic
@@ -397,7 +394,7 @@ public final class PaloAltoBidirectionalBehaviorTest {
   }
 
   @Test
-  public void testMatchSharedAddress() throws IOException {
+  void testMatchSharedAddress() throws IOException {
     String hostname = "match-shared-address";
     TracerouteEngine tracerouteEngine = bidirTracerouteEngine(hostname);
 
@@ -407,7 +404,7 @@ public final class PaloAltoBidirectionalBehaviorTest {
   }
 
   @Test
-  public void testMatchVsysAddress() throws IOException {
+  void testMatchVsysAddress() throws IOException {
     String hostname = "match-vsys-address";
     TracerouteEngine tracerouteEngine = bidirTracerouteEngine(hostname);
 
@@ -417,7 +414,7 @@ public final class PaloAltoBidirectionalBehaviorTest {
   }
 
   @Test
-  public void testMatchVsysAddressOverShared() throws IOException {
+  void testMatchVsysAddressOverShared() throws IOException {
     String hostname = "match-vsys-address-over-shared";
     TracerouteEngine tracerouteEngine = bidirTracerouteEngine(hostname);
 

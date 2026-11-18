@@ -6,12 +6,12 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link BorderInterfaceInfo} */
-public class BorderInterfaceInfoTest {
+class BorderInterfaceInfoTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new BorderInterfaceInfo(NodeInterfacePair.of("node", "interface")),
@@ -22,7 +22,7 @@ public class BorderInterfaceInfoTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     BorderInterfaceInfo borderInterfaceInfo =
         new BorderInterfaceInfo(NodeInterfacePair.of("node", "interface"));
 

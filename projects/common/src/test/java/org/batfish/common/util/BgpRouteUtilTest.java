@@ -1,7 +1,7 @@
 package org.batfish.common.util;
 
 import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_PREFERENCE;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Ip;
@@ -11,12 +11,12 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link BgpRouteUtil}. */
-public class BgpRouteUtilTest {
+class BgpRouteUtilTest {
   @Test
-  public void testConvertNonBgpRouteToBgpRoute() {
+  void testConvertNonBgpRouteToBgpRoute() {
     StaticRoute inputRoute =
         StaticRoute.builder()
             .setAdministrativeCost(0)

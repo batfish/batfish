@@ -14,12 +14,12 @@ import org.batfish.representation.aws.LoadBalancer.Protocol;
 import org.batfish.representation.aws.LoadBalancerListener.ActionType;
 import org.batfish.representation.aws.LoadBalancerListener.DefaultAction;
 import org.batfish.representation.aws.LoadBalancerListener.Listener;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class LoadBalancerListenerTest {
+class LoadBalancerListenerTest {
 
   @Test
-  public void testDeserialization() throws IOException {
+  void testDeserialization() throws IOException {
     String text =
         readResource("org/batfish/representation/aws/LoadBalancerListenerTest.json", UTF_8);
 
@@ -47,7 +47,7 @@ public class LoadBalancerListenerTest {
   }
 
   @Test
-  public void testDeserializationDefaultAction_nullOrder() throws IOException {
+  void testDeserializationDefaultAction_nullOrder() throws IOException {
     String text = readResource("org/batfish/representation/aws/DefaultAction.json", UTF_8);
 
     DefaultAction defaultAction = BatfishObjectMapper.mapper().readValue(text, DefaultAction.class);

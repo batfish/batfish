@@ -1,6 +1,6 @@
 package org.batfish.datamodel.bgp;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
@@ -13,11 +13,11 @@ import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.bgp.BgpTopology.EdgeId;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link BgpTopology}. */
 @ParametersAreNonnullByDefault
-public final class BgpTopologyTest {
+final class BgpTopologyTest {
 
   private static @Nonnull BgpTopology nonTrivialTopology() {
     MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> graph =
@@ -36,7 +36,7 @@ public final class BgpTopologyTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new Object())
         .addEqualityGroup(
@@ -48,13 +48,13 @@ public final class BgpTopologyTest {
   }
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     assertEquals(
         nonTrivialTopology(), BatfishObjectMapper.clone(nonTrivialTopology(), BgpTopology.class));
   }
 
   @Test
-  public void testEdgeIdEquality() {
+  void testEdgeIdEquality() {
     BgpPeerConfigId c1 = new BgpPeerConfigId("h", "vrf", "iface1");
     BgpPeerConfigId c2 = new BgpPeerConfigId("h", "vrf", "iface2");
     EdgeId edge = new EdgeId(c1, c2);

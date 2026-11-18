@@ -1,18 +1,18 @@
 package org.batfish.vendor.sonic.representation;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class InterfaceKeyPropertiesTest {
+class InterfaceKeyPropertiesTest {
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     InterfaceKeyProperties obj =
         InterfaceKeyProperties.builder()
             .setForcedMgmtRoutes(ImmutableList.of())
@@ -24,7 +24,7 @@ public class InterfaceKeyPropertiesTest {
 
   @SuppressWarnings("UnstableApiUsage")
   @Test
-  public void testEquals() {
+  void testEquals() {
     InterfaceKeyProperties.Builder builder = InterfaceKeyProperties.builder();
     new EqualsTester()
         .addEqualityGroup(builder.build(), builder.build())
@@ -35,7 +35,7 @@ public class InterfaceKeyPropertiesTest {
   }
 
   @Test
-  public void testJacksonDeserialization() throws JsonProcessingException {
+  void testJacksonDeserialization() throws JsonProcessingException {
     String input =
         "{\"secondary\": \"true\", \"forced_mgmt_routes\": [\"1.1.1.1\"], \"gwaddr\": \"2.2.2.2\"}";
     assertEquals(
