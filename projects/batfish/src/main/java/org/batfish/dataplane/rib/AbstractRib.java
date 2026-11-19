@@ -225,12 +225,9 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
    *     or was discarded due to preference comparisons.
    */
   public @Nonnull RibDelta<R> mergeRouteGetDelta(R route) {
+    // A route that lost to a preferred route is recorded as a backup by the tree.
     RibDelta<R> delta = _tree.mergeRoute(route);
     if (delta.isEmpty()) {
-      if (_backupRoutes != null && !_tree.containsRoute(route)) {
-        // Lost to a preferred route for its prefix: keep it in case that route is withdrawn.
-        _backupRoutes.put(route.getNetwork(), route);
-      }
       return delta;
     }
     for (RouteAdvertisement<R> action : delta.getActions()) {
