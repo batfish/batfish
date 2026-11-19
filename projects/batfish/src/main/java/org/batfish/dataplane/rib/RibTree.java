@@ -3,7 +3,6 @@ package org.batfish.dataplane.rib;
 import static org.batfish.common.util.CollectionUtil.maxValues;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Streams;
 import java.io.Serializable;
 import java.util.Collection;
@@ -93,24 +92,6 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
     return _root.get(route.getNetwork()).contains(route);
   }
 
-  private boolean hasAllowedForwardingRoute(Set<R> routes, ResolutionRestriction<R> restriction) {
-    for (R r : routes) {
-      if (!r.getAbstractRoute().getNonForwarding() && restriction.test(r)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  private boolean onlyAllowedForwardingRoutes(Set<R> routes, ResolutionRestriction<R> restriction) {
-    for (R r : routes) {
-      if (r.getAbstractRoute().getNonForwarding() || !restriction.test(r)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
   /**
    * Returns a set of routes in this tree which 1) are forwarding routes and match restriction if
    * present, 2) match the given IP address, and 3) have the longest prefix length within the
@@ -121,30 +102,10 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
   @Nonnull
   Set<R> getLongestPrefixMatch(
       Ip address, int maxPrefixLength, ResolutionRestriction<R> restriction) {
-    int pl = maxPrefixLength;
-    while (pl >= 0) {
-      Set<R> routes = _root.longestPrefixMatch(address, pl);
-      if (routes.isEmpty()) {
-        // No prefix of length at most pl contains the address, so no shorter one does either.
-        return routes;
-      }
-      if (hasAllowedForwardingRoute(routes, restriction)) {
-        if (onlyAllowedForwardingRoutes(routes, restriction)) {
-          return routes;
-        }
-        ImmutableSet.Builder<R> allowed = ImmutableSet.builderWithExpectedSize(routes.size());
-        for (R r : routes) {
-          if (!r.getAbstractRoute().getNonForwarding() && restriction.test(r)) {
-            allowed.add(r);
-          }
-        }
-        return allowed.build();
-      }
-      // Nothing usable at this prefix; the next candidate is the longest match strictly shorter
-      // than it, so skip the lengths in between rather than searching once per length.
-      pl = routes.iterator().next().getNetwork().getPrefixLength() - 1;
-    }
-    return ImmutableSet.of();
+    return _root.longestPrefixMatch(
+        address,
+        maxPrefixLength,
+        r -> !r.getAbstractRoute().getNonForwarding() && restriction.test(r));
   }
 
   /** Equivalent to {@link #getRoutes()}.{@link Set#size}. */

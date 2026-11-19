@@ -11,6 +11,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -144,6 +145,42 @@ class PrefixTrieMultiMapTest {
     assertThat(ptm1.longestPrefixMatch(Ip.parse("1.1.1.128"), 1), empty());
     assertThat(ptm1.longestPrefixMatch(Ip.parse("1.1.1.129")), equalTo(ImmutableSet.of(3)));
     assertThat(ptm1.longestPrefixMatch(Ip.parse("1.1.1.130")), equalTo(ImmutableSet.of(2)));
+  }
+
+  @Test
+  void testLongestPrefixMatchFiltered() {
+    PrefixTrieMultiMap<Integer> ptm = new PrefixTrieMultiMap<>();
+    ptm.put(Prefix.parse("1.0.0.0/8"), 1);
+    ptm.put(Prefix.parse("1.1.0.0/16"), 2);
+    ptm.put(Prefix.parse("1.1.0.0/16"), 3);
+    ptm.put(Prefix.parse("1.1.1.0/24"), 4);
+    ptm.put(Prefix.parse("1.1.1.1/32"), 5);
+    Ip ip = Ip.parse("1.1.1.1");
+    Predicate<Integer> odd = i -> i % 2 == 1;
+
+    // Deepest match accepted.
+    assertThat(ptm.longestPrefixMatch(ip, 32, odd), equalTo(ImmutableSet.of(5)));
+    // Deepest match (/24) rejected: falls back to /16, keeping only its matching elements.
+    assertThat(ptm.longestPrefixMatch(ip, 24, odd), equalTo(ImmutableSet.of(3)));
+    // All elements at the match pass: the stored set itself.
+    assertThat(
+        ptm.longestPrefixMatch(ip, 16, i -> true),
+        sameInstance(ptm.get(Prefix.parse("1.1.0.0/16"))));
+    // Skips several rejected levels.
+    assertThat(ptm.longestPrefixMatch(ip, 32, i -> i == 1), equalTo(ImmutableSet.of(1)));
+    // Nothing passes.
+    assertThat(ptm.longestPrefixMatch(ip, 32, i -> false), empty());
+    // No prefix contains the address.
+    assertThat(ptm.longestPrefixMatch(Ip.parse("2.0.0.0"), 32, i -> true), empty());
+    // Respects maxPrefixLength below the shortest match.
+    assertThat(ptm.longestPrefixMatch(ip, 7, i -> true), empty());
+
+    // A rejected match at /0, alone and beneath an accepted one.
+    ptm.put(Prefix.ZERO, 0);
+    assertThat(ptm.longestPrefixMatch(ip, 0, odd), empty());
+    assertThat(ptm.longestPrefixMatch(ip, 0, i -> true), equalTo(ImmutableSet.of(0)));
+    assertThat(ptm.longestPrefixMatch(ip, 32, i -> i == 0), equalTo(ImmutableSet.of(0)));
+    assertThat(ptm.longestPrefixMatch(Ip.parse("2.0.0.0"), 32, odd), empty());
   }
 
   @Test
@@ -586,6 +623,24 @@ class PrefixTrieMultiMapTest {
       return best == null ? ImmutableSet.of() : _map.get(best);
     }
 
+    Set<Integer> longestPrefixMatch(Ip ip, int maxLen, Predicate<Integer> filter) {
+      Prefix best = null;
+      for (Map.Entry<Prefix, Set<Integer>> e : _map.entrySet()) {
+        Prefix p = e.getKey();
+        if (p.getPrefixLength() > maxLen
+            || !p.containsIp(ip)
+            || e.getValue().stream().noneMatch(filter)) {
+          continue;
+        }
+        if (best == null || p.getPrefixLength() > best.getPrefixLength()) {
+          best = p;
+        }
+      }
+      return best == null
+          ? ImmutableSet.of()
+          : _map.get(best).stream().filter(filter).collect(ImmutableSet.toImmutableSet());
+    }
+
     Set<Integer> allElements() {
       return _map.values().stream().flatMap(Set::stream).collect(ImmutableSet.toImmutableSet());
     }
@@ -655,6 +710,12 @@ class PrefixTrieMultiMapTest {
           trie.longestPrefixMatch(ip, maxLen),
           equalTo(model.longestPrefixMatch(ip, maxLen)));
       assertThat(trie.longestPrefixMatch(ip), equalTo(model.longestPrefixMatch(ip, 32)));
+      int mod = 1 + rng.nextInt(4);
+      Predicate<Integer> filter = e -> e % mod == 0;
+      assertThat(
+          "filtered lpm " + ip + " maxLen " + maxLen + " mod " + mod,
+          trie.longestPrefixMatch(ip, maxLen, filter),
+          equalTo(model.longestPrefixMatch(ip, maxLen, filter)));
       PrefixSpace space = new PrefixSpace(new PrefixRange(p, new SubRange(rng.nextInt(33), 32)));
       assertThat(
           space.toString(),
