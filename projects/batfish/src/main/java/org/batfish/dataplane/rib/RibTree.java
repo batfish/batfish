@@ -167,7 +167,8 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
   }
 
   /**
-   * Add a new route into the RIB, potentially replacing other routes
+   * Add a new route into the RIB, potentially replacing other routes. A route that loses to the
+   * routes already held for its prefix is recorded in the owner's backup routes, if it keeps any.
    *
    * @param route route to add
    * @return a {@link RibDelta} objects indicating which routes where added and evicted from this
@@ -191,6 +192,10 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
     R oldRoute = routes.iterator().next();
     int preferenceComparison = _owner.comparePreference(route, oldRoute);
     if (preferenceComparison < 0) { // less preferable, so route doesn't get added
+      assert !routes.contains(route);
+      if (_owner._backupRoutes != null) {
+        _owner._backupRoutes.put(route.getNetwork(), route);
+      }
       return RibDelta.empty();
     }
     if (preferenceComparison == 0) { // equal preference, so add for multipath routing
