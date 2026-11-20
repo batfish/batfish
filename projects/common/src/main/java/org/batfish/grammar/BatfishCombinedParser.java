@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
@@ -13,11 +15,43 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStream;
+import org.antlr.v4.runtime.atn.ATN;
+import org.antlr.v4.runtime.atn.ATNState;
 import org.antlr.v4.runtime.atn.PredictionMode;
 import org.batfish.common.BatfishException;
 import org.batfish.grammar.flattener.FlattenerLineMap;
 
 public abstract class BatfishCombinedParser<P extends BatfishParser, L extends BatfishLexer> {
+
+  /** ATNs for which {@link #computeLookaheadSets(ATN)} has run. */
+  private static final ConcurrentMap<ATN, Boolean> ATNS_WITH_LOOKAHEAD_SETS =
+      new ConcurrentHashMap<>();
+
+  /**
+   * Computes the lookahead set of every state of {@code atn}, the first time this is called for
+   * that ATN.
+   *
+   * <p>ANTLR computes each state's lookahead set on first use and caches it in the ATN, which all
+   * parsers of a grammar share. It stores the set without synchronization, so a parser on another
+   * thread can read a set before it can see all of its elements, and then reports a syntax error on
+   * valid input (https://github.com/antlr/antlr4/issues/4999, seen on aarch64). After this method
+   * returns, parsing no longer writes that cache, and every thread that has called this method sees
+   * the sets complete.
+   *
+   * <p>Remove once Batfish uses an ANTLR release in which that issue is fixed.
+   */
+  private static void computeLookaheadSets(ATN atn) {
+    ATNS_WITH_LOOKAHEAD_SETS.computeIfAbsent(
+        atn,
+        a -> {
+          for (ATNState state : a.states) {
+            if (state != null) {
+              a.nextTokens(state);
+            }
+          }
+          return true;
+        });
+  }
 
   private int _currentModeStart;
 
@@ -79,6 +113,7 @@ public abstract class BatfishCombinedParser<P extends BatfishParser, L extends B
         | SecurityException e) {
       throw new Error(e);
     }
+    computeLookaheadSets(_parser.getATN());
     _parser.initErrorListener(this);
     _parser.getInterpreter().setPredictionMode(PredictionMode.SLL);
   }
