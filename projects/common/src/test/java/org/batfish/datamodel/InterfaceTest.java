@@ -22,7 +22,9 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -585,5 +587,71 @@ class InterfaceTest {
         .addEqualityGroup(b.setHmm(true).build())
         .addEqualityGroup(b.setName("iface2").build())
         .testEquals();
+  }
+
+  /** Whether an active physical interface with the given addresses can receive IP traffic. */
+  private static boolean canReceiveIpTraffic(
+      InterfaceAddress primary, InterfaceAddress... secondaries) {
+    return TestInterface.builder()
+        .setName("i")
+        .setAddresses(primary, secondaries)
+        .build()
+        .canReceiveIpTraffic();
+  }
+
+  private static final LinkLocalAddress LLA = LinkLocalAddress.of(Ip.parse("169.254.0.1"));
+
+  @Test
+  void testCanReceiveIpTraffic_slash32Only() {
+    assertFalse(canReceiveIpTraffic(ConcreteInterfaceAddress.parse("10.0.0.1/32")));
+  }
+
+  @Test
+  void testCanReceiveIpTraffic_subnet() {
+    assertTrue(canReceiveIpTraffic(ConcreteInterfaceAddress.parse("10.0.0.1/31")));
+  }
+
+  @Test
+  void testCanReceiveIpTraffic_secondarySubnet() {
+    assertTrue(
+        canReceiveIpTraffic(
+            ConcreteInterfaceAddress.parse("10.0.0.1/32"),
+            ConcreteInterfaceAddress.parse("10.0.1.1/31")));
+  }
+
+  @Test
+  void testCanReceiveIpTraffic_linkLocal() {
+    assertTrue(canReceiveIpTraffic(LLA));
+  }
+
+  @Test
+  void testCanReceiveIpTraffic_slash32WithSecondaryLinkLocal() {
+    // e.g., an FRR OSPF point-to-point interface numbered with a /32.
+    // TODO: should be true; layer-3 topology connects this interface.
+    assertFalse(canReceiveIpTraffic(ConcreteInterfaceAddress.parse("10.0.0.1/32"), LLA));
+  }
+
+  @Test
+  void testCanReceiveIpTraffic_unnumbered() {
+    // TODO: should be true; layer-3 topology connects this interface.
+    assertFalse(canReceiveIpTraffic(UnnumberedAddress.of("Loopback0", Ip.parse("10.0.0.1"))));
+  }
+
+  @Test
+  void testCanReceiveIpTraffic_loopback() {
+    assertFalse(
+        TestInterface.builder()
+            .setName("lo")
+            .setType(InterfaceType.LOOPBACK)
+            .setAddresses(ConcreteInterfaceAddress.parse("10.0.0.1/24"), LLA)
+            .build()
+            .canReceiveIpTraffic());
+  }
+
+  @Test
+  void testCanReceiveIpTraffic_inactive() {
+    Interface i = TestInterface.builder().setName("i").setAddresses(LLA).build();
+    i.adminDown();
+    assertFalse(i.canReceiveIpTraffic());
   }
 }
