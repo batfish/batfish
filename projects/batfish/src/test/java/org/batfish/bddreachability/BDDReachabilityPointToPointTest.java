@@ -1,10 +1,10 @@
 package org.batfish.bddreachability;
 
+import static org.batfish.common.bdd.BDDMatchers.intersects;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -139,8 +139,11 @@ final class BDDReachabilityPointToPointTest {
     assertThat(tracerouteDisposition(batfish, flow), equalTo(FlowDisposition.ACCEPTED));
 
     BDDPacket pkt = new BDDPacket();
-    assertFalse(
-        bddAccepted(batfish, pkt, R1, R2_IP).isZero(),
-        "BDD reachability accepts the traffic that traceroute accepts");
+    BDD flowHeaders =
+        pkt.getSrcIp().value(R1_IP.asLong()).and(pkt.getDstIp().value(R2_IP.asLong()));
+    assertThat(
+        "BDD reachability accepts the traffic that traceroute accepts",
+        bddAccepted(batfish, pkt, R1, R2_IP),
+        intersects(flowHeaders));
   }
 }
