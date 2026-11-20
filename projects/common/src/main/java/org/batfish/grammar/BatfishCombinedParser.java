@@ -18,10 +18,36 @@ import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.atn.ATN;
 import org.antlr.v4.runtime.atn.ATNState;
 import org.antlr.v4.runtime.atn.PredictionMode;
+import org.antlr.v4.runtime.misc.Interval;
 import org.batfish.common.BatfishException;
 import org.batfish.grammar.flattener.FlattenerLineMap;
 
 public abstract class BatfishCombinedParser<P extends BatfishParser, L extends BatfishLexer> {
+
+  static {
+    fillIntervalCache();
+  }
+
+  /**
+   * Creates every {@link Interval} that ANTLR caches.
+   *
+   * <p>ANTLR 4.13.2 creates the interval {@code i..i}, for {@code i} up to {@link
+   * Interval#INTERVAL_POOL_MAX_VALUE}, on first use and caches it in a static array. It stores the
+   * interval without synchronization, so another thread can read a cached interval before it can
+   * see its bounds, as {@code 0..0} (https://github.com/antlr/antlr4/issues/4901). The text of a
+   * one-character token and the lookahead sets come from these intervals.
+   *
+   * <p>This runs when this class is initialized, which is before it creates a lexer or parser, so
+   * every thread that creates a combined parser sees the cache full.
+   *
+   * <p>ANTLR removed the cache after 4.13.2. Remove this once Batfish uses a release without it;
+   * {@code INTERVAL_POOL_MAX_VALUE} no longer exists there.
+   */
+  private static void fillIntervalCache() {
+    for (int i = 0; i <= Interval.INTERVAL_POOL_MAX_VALUE; i++) {
+      Interval.of(i, i);
+    }
+  }
 
   /** ATNs for which {@link #computeLookaheadSets(ATN)} has run. */
   private static final ConcurrentMap<ATN, Boolean> ATNS_WITH_LOOKAHEAD_SETS =
