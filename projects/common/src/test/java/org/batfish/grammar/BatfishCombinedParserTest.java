@@ -1,0 +1,36 @@
+package org.batfish.grammar;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
+
+import java.util.List;
+import java.util.Objects;
+import org.antlr.v4.runtime.atn.ATN;
+import org.batfish.grammar.recovery.RecoveryCombinedParser;
+import org.junit.jupiter.api.Test;
+
+/** Tests of {@link BatfishCombinedParser}. */
+final class BatfishCombinedParserTest {
+
+  private static final GrammarSettings SETTINGS =
+      MockGrammarSettings.builder()
+          .setDisableUnrecognized(false)
+          .setThrowOnLexerError(true)
+          .setThrowOnParserError(true)
+          .build();
+
+  @Test
+  void constructorComputesLookaheadSetOfEveryState() {
+    BatfishCombinedParser<?, ?> parser = new RecoveryCombinedParser("simple\n", SETTINGS);
+
+    ATN atn = parser.getParser().getATN();
+    List<Integer> statesWithoutLookaheadSet =
+        atn.states.stream()
+            .filter(Objects::nonNull)
+            .filter(state -> state.nextTokenWithinRule == null)
+            .map(state -> state.stateNumber)
+            .toList();
+
+    assertThat(statesWithoutLookaheadSet, empty());
+  }
+}
