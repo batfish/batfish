@@ -943,6 +943,89 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
   }
 
   /**
+   * The elements satisfying {@code filter} at the longest prefix of length at most {@code
+   * maxPrefixLength} that contains {@code address} and has any such element; empty if there is no
+   * such prefix.
+   *
+   * <p>Searches the trie once if the deepest match has an element passing {@code filter}, and
+   * otherwise once more to find the shorter matches.
+   */
+  public @Nonnull Set<T> longestPrefixMatch(
+      Ip address, int maxPrefixLength, Predicate<? super T> filter) {
+    int ip = (int) address.asLong();
+    int deepest = longestMatchNonEmptyNode(ip, maxPrefixLength);
+    if (deepest == NONE) {
+      return ImmutableSet.of();
+    }
+    ImmutableSet<T> matching = matchingElementsAt(deepest, filter);
+    if (!matching.isEmpty()) {
+      return matching;
+    }
+    // No element at the deepest match passes. Walk down to it once more, top-down, remembering
+    // the last (so longest) shorter match that has an element passing, so nothing is allocated
+    // to revisit the path.
+    int best = NONE;
+    int[] nodes = _nodes;
+    for (int node = _root; node != deepest; ) {
+      int a = nodes[node + 1];
+      int b = nodes[node + 2];
+      if (valued(b) && anyElementMatches(node, filter)) {
+        best = node;
+      }
+      node = bitAt(ip, lenOf(a)) ? rightOf(b) : leftOf(a);
+    }
+    return best == NONE ? ImmutableSet.of() : matchingElementsAt(best, filter);
+  }
+
+  /** Whether any element at valued node {@code n} satisfies {@code filter}. */
+  @SuppressWarnings("unchecked")
+  private boolean anyElementMatches(int n, Predicate<? super T> filter) {
+    Object v = _values[slotOf(n)];
+    if (!multi(_nodes[n + 2])) {
+      // A single element is stored bare, not in a set.
+      return filter.test((T) v);
+    }
+    for (T e : (ImmutableSet<T>) v) {
+      if (filter.test(e)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /** The elements at valued node {@code n} that satisfy {@code filter}. */
+  @SuppressWarnings("unchecked")
+  private @Nonnull ImmutableSet<T> matchingElementsAt(int n, Predicate<? super T> filter) {
+    Object v = _values[slotOf(n)];
+    int flags = _nodes[n + 2];
+    if (!multi(flags)) {
+      // A node holding one element stores the element itself in its slot rather than a singleton
+      // set (the MULTI flag is clear), so wrap it only if it passes.
+      return filter.test((T) v) ? ImmutableSet.of((T) v) : ImmutableSet.of();
+    }
+    ImmutableSet<T> elements = (ImmutableSet<T>) v;
+    int matches = 0;
+    for (T e : elements) {
+      if (filter.test(e)) {
+        matches++;
+      }
+    }
+    if (matches == elements.size()) {
+      return elements;
+    }
+    if (matches == 0) {
+      return ImmutableSet.of();
+    }
+    ImmutableSet.Builder<T> builder = ImmutableSet.builderWithExpectedSize(matches);
+    for (T e : elements) {
+      if (filter.test(e)) {
+        builder.add(e);
+      }
+    }
+    return builder.build();
+  }
+
+  /**
    * Return all values whose keys intersect with the input {@link RangeSet}. Values are returned as
    * a {@link Stream} in post-order, so if prefix p1 contains p2, values for p2 will be returned
    * before values for p1.
