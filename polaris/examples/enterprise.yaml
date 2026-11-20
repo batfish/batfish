@@ -1,0 +1,44 @@
+network:
+  name: enterprise-lab
+
+zones:
+  USERS: 192.168.10.0/24
+  ADMIN: 192.168.20.0/24
+  APP: 192.168.30.0/24
+  DATABASE: 192.168.40.0/24
+  DMZ: 192.168.50.0/24
+
+requirements:
+  - id: REQ-001
+    source: USERS
+    destination: APP
+    protocol: TCP
+    ports: [443]
+    expectation: MUST_ALLOW
+
+  - id: REQ-002
+    source: USERS
+    destination: DATABASE
+    protocol: TCP
+    ports: [5432]
+    expectation: MUST_DENY
+
+  - id: REQ-003
+    source: ADMIN
+    destination: DATABASE
+    protocol: TCP
+    ports: [5432]
+    expectation: MUST_ALLOW
+
+  - id: REQ-004
+    source: APP
+    destination: DATABASE
+    protocol: TCP
+    ports: [5432]
+    expectation: MUST_ALLOW
+
+  - id: REQ-005
+    source: DMZ
+    destination: DATABASE
+    protocol: ANY
+    expectation: MUST_DENY
