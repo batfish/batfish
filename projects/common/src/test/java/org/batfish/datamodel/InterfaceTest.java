@@ -627,14 +627,20 @@ class InterfaceTest {
   @Test
   void testCanReceiveIpTraffic_slash32WithSecondaryLinkLocal() {
     // e.g., an FRR OSPF point-to-point interface numbered with a /32.
-    // TODO: should be true; layer-3 topology connects this interface.
-    assertFalse(canReceiveIpTraffic(ConcreteInterfaceAddress.parse("10.0.0.1/32"), LLA));
+    assertTrue(canReceiveIpTraffic(ConcreteInterfaceAddress.parse("10.0.0.1/32"), LLA));
   }
 
   @Test
   void testCanReceiveIpTraffic_unnumbered() {
-    // TODO: should be true; layer-3 topology connects this interface.
-    assertFalse(canReceiveIpTraffic(UnnumberedAddress.of("Loopback0", Ip.parse("10.0.0.1"))));
+    assertTrue(canReceiveIpTraffic(UnnumberedAddress.of("Loopback0", Ip.parse("10.0.0.1"))));
+  }
+
+  @Test
+  void testCanReceiveIpTraffic_slash32WithSecondaryUnnumbered() {
+    assertTrue(
+        canReceiveIpTraffic(
+            ConcreteInterfaceAddress.parse("10.0.0.1/32"),
+            UnnumberedAddress.of("Loopback0", Ip.parse("10.0.1.1"))));
   }
 
   @Test
@@ -653,5 +659,35 @@ class InterfaceTest {
     Interface i = TestInterface.builder().setName("i").setAddresses(LLA).build();
     i.adminDown();
     assertFalse(i.canReceiveIpTraffic());
+  }
+
+  private static boolean hasPointToPointAddress(
+      InterfaceAddress primary, InterfaceAddress... secondaries) {
+    return TestInterface.builder()
+        .setName("i")
+        .setAddresses(primary, secondaries)
+        .build()
+        .hasPointToPointAddress();
+  }
+
+  @Test
+  void testHasPointToPointAddress_concreteOnly() {
+    assertFalse(
+        hasPointToPointAddress(
+            ConcreteInterfaceAddress.parse("10.0.0.1/32"),
+            ConcreteInterfaceAddress.parse("10.0.1.1/31")));
+  }
+
+  @Test
+  void testHasPointToPointAddress_secondaryLinkLocal() {
+    assertTrue(hasPointToPointAddress(ConcreteInterfaceAddress.parse("10.0.0.1/32"), LLA));
+  }
+
+  @Test
+  void testHasPointToPointAddress_secondaryUnnumbered() {
+    assertTrue(
+        hasPointToPointAddress(
+            ConcreteInterfaceAddress.parse("10.0.0.1/32"),
+            UnnumberedAddress.of("Loopback0", Ip.parse("10.0.1.1"))));
   }
 }

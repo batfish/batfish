@@ -668,6 +668,16 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   /**
+   * Returns {@code true} if this {@link Interface} has a link-local or unnumbered address, primary
+   * or not. Such addresses don't participate in subnet-based layer-3 topology synthesis; they imply
+   * a point-to-point link, so layer-3 edges come from physical adjacency instead.
+   */
+  @JsonIgnore
+  public boolean hasPointToPointAddress() {
+    return !getAllLinkLocalAddresses().isEmpty() || !getAllUnnumberedAddresses().isEmpty();
+  }
+
+  /**
    * Returns {@code true} if this {@link Interface} can send or receive an IPv4 packet on an L3 link
    * (which may not be in the snapshot).
    */
@@ -678,8 +688,8 @@ public final class Interface extends ComparableStructure<String> {
     } else if (isLoopback()) {
       // Loopbacks cannot have Layer 3 edges.
       return false;
-    } else if (getLinkLocalAddress() != null) {
-      // An LLA implies a link.
+    } else if (hasPointToPointAddress()) {
+      // Layer-3 topology connects such interfaces by physical adjacency.
       return true;
     }
     for (ConcreteInterfaceAddress addr : getAllConcreteAddresses()) {
