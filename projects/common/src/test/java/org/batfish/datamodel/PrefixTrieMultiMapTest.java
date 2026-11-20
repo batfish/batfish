@@ -804,6 +804,12 @@ class PrefixTrieMultiMapTest {
     assertTrue(h.remove(3));
     assertThat(trie.get(p), empty());
     assertThat(trie.getNumElements(), equalTo(0));
+    assertTrue(h.addAll(ImmutableList.of(5, 6)));
+    assertFalse(h.addAll(ImmutableList.of(6)));
+    assertThat(trie.get(p), equalTo(ImmutableSet.of(5, 6)));
+    assertThat(trie.getNumElements(), equalTo(2));
+    assertTrue(h.replaceAll(3));
+    assertTrue(h.remove(3));
     // The handle stays valid while the trie grows around it, including above it.
     for (int i = 0; i < 1000; ++i) {
       trie.put(Prefix.create(Ip.create(0x0B000000L + i), 32), i);
