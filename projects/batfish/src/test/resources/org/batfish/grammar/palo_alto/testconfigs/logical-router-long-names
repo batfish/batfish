@@ -1,0 +1,66 @@
+#RANCID-CONTENT-TYPE: paloalto
+deviceconfig {
+  system {
+    hostname logical-router-long-names;
+  }
+}
+network {
+  interface {
+    ethernet {
+      ethernet1/1 {
+        layer3 {
+          ip {
+            10.0.1.1/24;
+          }
+        }
+      }
+    }
+  }
+  logical-router {
+    LR1 {
+      vrf {
+        default {
+          interface [ ethernet1/1 ];
+          bgp {
+            enable yes;
+            router-id 10.0.1.1;
+            local-as 65001;
+            peer-group {
+              pg-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa {
+                enable yes;
+                type {
+                  ebgp;
+                }
+                peer {
+                  pr-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb {
+                    enable yes;
+                    peer-as 65002;
+                    local-address {
+                      ip 10.0.1.1/24;
+                    }
+                    peer-address {
+                      ip 10.0.1.2;
+                    }
+                  }
+                  pr-ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd {
+                    enable yes;
+                    peer-as 65003;
+                    local-address {
+                      ip 10.0.1.1/24;
+                    }
+                    peer-address {
+                      ip 10.0.1.3;
+                    }
+                  }
+                }
+              }
+              pg-ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc {
+                enable yes;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

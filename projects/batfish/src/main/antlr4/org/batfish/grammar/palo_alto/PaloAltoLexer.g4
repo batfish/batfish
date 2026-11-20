@@ -67,13 +67,21 @@ FOUR_BYTE: '4-byte';
 
 ACCEPT_SUMMARY: 'accept-summary';
 
+ACCESS_LIST: 'access-list';
+
 ACTION: 'action';
 
 ACTIVE_ACTIVE: 'active-active';
 
 ACTIVE_ACTIVE_DEVICE_BINDING: 'active-active-device-binding';
 
+ADD_PATH: 'add-path';
+
 ADDRESS: 'address';
+
+ADDRESS_FAMILY: 'address-family';
+
+ADDRESS_FAMILY_PROFILE: 'address-family-profile';
 
 ADDRESS_GROUP: 'address-group';
 
@@ -89,7 +97,11 @@ ADMIN_DISTS: 'admin-dists';
 
 ADMIN_ROLE: 'admin-role';
 
+ADVANCE_ROUTING: 'advance-routing';
+
 ADVERTISE: 'advertise';
+
+ADVERTISE_NETWORK: 'advertise-network';
 
 AES_128_CBC: 'aes-128-cbc';
 
@@ -111,6 +123,12 @@ AGGREGATE_GROUP: 'aggregate-group';
 
 AGGREGATE_MED: 'aggregate-med';
 
+AGGREGATE_ROUTES: 'aggregate-routes';
+
+AGGREGATED_CONFED_AS_PATH: 'aggregated-confed-as-path';
+
+AGGREGATOR: 'aggregator';
+
 AH: 'ah';
 
 ALGORITHM: 'algorithm';
@@ -118,6 +136,12 @@ ALGORITHM: 'algorithm';
 ALL: 'all';
 
 ALLOW: 'allow';
+
+ALLOW_REDIST_DEFAULT_ROUTE: 'allow-redist-default-route';
+
+ALLOWAS_IN: 'allowas-in';
+
+ALWAYS_ADVERTISE_NETWORK_ROUTE: 'always-advertise-network-route';
 
 ALWAYS_COMPARE_MED: 'always-compare-med';
 
@@ -135,7 +159,17 @@ AREA: 'area';
 
 AS_FORMAT: 'as-format';
 
+AS_OVERRIDE: 'as-override';
+
 AS_PATH: 'as-path';
+
+AS_PATH_ACCESS_LIST: 'as-path-access-list';
+
+ASPATH_EXCLUDE: 'aspath-exclude';
+
+ASPATH_PREPEND: 'aspath-prepend';
+
+ATOMIC_AGGREGATE: 'atomic-aggregate';
 
 AUTH: 'auth';
 
@@ -151,11 +185,19 @@ AUTO: 'auto';
 
 AUTO_KEY: 'auto-key';
 
+BACKDOOR: 'backdoor';
+
 BEFORE: 'before';
 
 BFD: 'bfd';
 
 BGP: 'bgp';
+
+BGP_EXTERNAL: 'bgp-external';
+
+BGP_INTERNAL: 'bgp-internal';
+
+BGP_LOCAL: 'bgp-local';
 
 BOTH: 'both';
 
@@ -186,7 +228,13 @@ COMMENTS: 'comments';
 
 COMMUNITY: 'community';
 
+CONDITIONAL_ADVERTISEMENT: 'conditional-advertisement';
+
+CONFEDERATION_MEMBER_AS: 'confederation-member-as';
+
 CONNECT: 'connect';
+
+CONNECTED: 'connected';
 
 CONFIG: 'config';
 
@@ -215,6 +263,10 @@ DEFAULT: 'default';
 DEFAULT_GATEWAY: 'default-gateway';
 
 DEFAULT_LOCAL_PREFERENCE: 'default-local-preference';
+
+DEFAULT_ORIGINATE: 'default-originate';
+
+DEFAULT_ORIGINATE_MAP: 'default-originate-map';
 
 DEFAULT_ROUTE: 'default-route';
 
@@ -255,6 +307,8 @@ DISCARD: 'discard';
 
 DISPLAY_NAME: 'display-name';
 
+DISTRIBUTE_LIST: 'distribute-list';
+
 DNS: 'dns';
 
 DNS_SETTING: 'dns-setting';
@@ -275,13 +329,21 @@ EBGP: 'ebgp';
 
 ECMP: 'ecmp';
 
+ECMP_MULTI_AS: 'ecmp-multi-as';
+
 EGP: 'egp';
 
 ENABLE: 'enable';
 
+ENABLE_MP_BGP: 'enable-mp-bgp';
+
 ENABLE_SENDER_SIDE_LOOP_DETECTION: 'enable-sender-side-loop-detection';
 
 ENCRYPTION: 'encryption';
+
+ENFORCE_FIRST_AS: 'enforce-first-as';
+
+ENTRY: 'entry';
 
 ESP: 'esp';
 
@@ -311,9 +373,17 @@ FACILITY: 'facility';
 
 FAILURE_CONDITION: 'failure-condition';
 
+FAST_EXTERNAL_FAILOVER: 'fast-external-failover';
+
 FILE_BLOCKING: 'file-blocking';
 
 FILTER: 'filter';
+
+FILTER_LIST: 'filter-list';
+
+FILTERING_PROFILE: 'filtering-profile';
+
+FILTERS: 'filters';
 
 FLOATING_IP: 'floating-ip';
 
@@ -336,6 +406,10 @@ GLOBAL_PROTECT_APP_CRYPTO_PROFILES: 'global-protect-app-crypto-profiles';
 GR_DELAY: 'gr-delay';
 
 GRACEFUL_RESTART: 'graceful-restart';
+
+GRACEFUL_SHUTDOWN: 'graceful-shutdown';
+
+GREATER_THAN_OR_EQUAL: 'greater-than-or-equal';
 
 GROUP: 'group';
 
@@ -418,9 +492,15 @@ IMPORT: 'import';
 
 IMPORT_NEXTHOP: 'import-nexthop';
 
+INBOUND: 'inbound';
+
+INBOUND_NETWORK_FILTERS: 'inbound-network-filters';
+
 INCOMING_BGP_CONNECTION: 'incoming-bgp-connection';
 
 INCOMPLETE: 'incomplete';
+
+INHERIT: 'inherit';
 
 INSTALL_ROUTE: 'install-route';
 
@@ -448,15 +528,23 @@ IPSEC_MODE: 'ipsec-mode';
 
 IPV4: 'ipv4';
 
+IPV4_ENTRY: 'ipv4-entry';
+
 IPV6: 'ipv6';
+
+IPV6_ENTRY: 'ipv6-entry';
 
 KEEP_ALIVE_INTERVAL: 'keep-alive-interval';
 
 KEY: 'key';
 
+LARGE_COMMUNITY: 'large-community';
+
 LAYER2: 'layer2';
 
 LAYER3: 'layer3';
+
+LESS_THAN_OR_EQUAL: 'less-than-or-equal';
 
 LIFETIME: 'lifetime';
 
@@ -483,6 +571,10 @@ LOCAL_AS: 'local-as';
 
 LOCAL_PORT: 'local-port';
 
+LOCAL_PREFERENCE: 'local-preference';
+
+LOCAL_RESTART_TIME: 'local-restart-time';
+
 LOG_COLLECTOR: 'log-collector';
 
 LOG_COLLECTOR_GROUP: 'log-collector-group';
@@ -495,13 +587,19 @@ LOG_SETTINGS: 'log-settings';
 
 LOG_START: 'log-start';
 
+LOGICAL_ROUTER: 'logical-router';
+
 LOOPBACK: 'loopback';
 
 MATCH: 'match';
 
 MAX_PATH: 'max-path';
 
+MAX_PEER_RESTART_TIME: 'max-peer-restart-time';
+
 MAX_PREFIXES: 'max-prefixes';
+
+MAXIMUM_PREFIX: 'maximum-prefix';
 
 MD5: 'md5';
 
@@ -520,6 +618,8 @@ METRIC: 'metric';
 MGT_CONFIG: 'mgt-config';
 
 MODE: 'mode';
+
+MONITOR_DESTINATIONS: 'monitor-destinations';
 
 MOVE: 'move';
 
@@ -540,6 +640,10 @@ NEGATE_SOURCE: 'negate-source';
 NETMASK: 'netmask';
 
 NETWORK: 'network';
+
+NEXT_HOP: 'next-hop';
+
+NEXT_LR: 'next-lr';
 
 NEXT_VR: 'next-vr';
 
@@ -567,9 +671,13 @@ NULL: 'null';
 
 OPEN_DELAY_TIME: 'open-delay-time';
 
+ORF: 'orf';
+
 ORIGIN: 'origin';
 
 ORIGINAL: 'original';
+
+ORIGINATOR_ID: 'originator-id';
 
 OSPF: 'ospf';
 
@@ -577,13 +685,29 @@ OSPF_EXT: 'ospf-ext';
 
 OSPF_INT: 'ospf-int';
 
+OSPF_INTER: 'ospf-inter';
+
+OSPF_INTRA: 'ospf-intra';
+
 OSPFV3: 'ospfv3';
 
 OSPFV3_EXT: 'ospfv3-ext';
 
 OSPFV3_INT: 'ospfv3-int';
 
+OSPFV3_INTER: 'ospfv3-inter';
+
+OSPFV3_INTRA: 'ospfv3-intra';
+
+OUTBOUND: 'outbound';
+
+OUTBOUND_NETWORK_FILTERS: 'outbound-network-filters';
+
 OUTGOING_BGP_CONNECTION: 'outgoing-bgp-connection';
+
+OVERWRITE_LARGE_COMMUNITY: 'overwrite-large-community';
+
+OVERWRITE_REGULAR_COMMUNITY: 'overwrite-regular-community';
 
 P2P: 'p2p';
 
@@ -609,6 +733,10 @@ PEER_AS: 'peer-as';
 
 PEER_GROUP: 'peer-group';
 
+PEERING_TYPE: 'peering-type';
+
+PERMIT: 'permit';
+
 PERVASIVE: 'pervasive';
 
 POLICY: 'policy';
@@ -620,6 +748,10 @@ POST_RULEBASE: 'post-rulebase';
 PRE_RULEBASE: 'pre-rulebase';
 
 PRE_SHARED_KEY: 'pre-shared-key';
+
+PREFIX: 'prefix';
+
+PREFIX_LIST: 'prefix-list';
 
 PRIMARY: 'primary';
 
@@ -641,6 +773,8 @@ QOS: 'qos';
 
 READONLY: 'readonly';
 
+RECONNECT_RETRY_INTERVAL: 'reconnect-retry-interval';
+
 RECURRING: 'recurring';
 
 REDIST: 'redist';
@@ -648,6 +782,8 @@ REDIST: 'redist';
 REDIST_PROFILE: 'redist-profile';
 
 REDIST_RULES: 'redist-rules';
+
+REDISTRIBUTION_PROFILE: 'redistribution-profile';
 
 REFLECTOR_CLIENT: 'reflector-client';
 
@@ -657,7 +793,11 @@ REJECT_DEFAULT_ROUTE: 'reject-default-route';
 
 REMOTE_PORT: 'remote-port';
 
-REMOVE_PRIVATE_AS: 'remove-private-as';
+REMOVE_LARGE_COMMUNITY: 'remove-large-community';
+
+REMOVE_PRIVATE_AS: 'remove-private-' [Aa][Ss];
+
+REMOVE_REGULAR_COMMUNITY: 'remove-regular-community';
 
 RESET_BOTH: 'reset-both';
 
@@ -673,15 +813,25 @@ RESULT: 'result';
 
 RETRANSMIT_INTERVAL: 'retransmit-interval';
 
+RIB_FILTER: 'rib-filter';
+
 RIP: 'rip';
 
 RISK: 'risk';
+
+ROUTE_MAP: 'route-map';
+
+ROUTE_MAPS: 'route-maps';
+
+ROUTE_REFLECTOR_CLIENT: 'route-reflector-client';
 
 ROUTE_TABLE: 'route-table';
 
 ROUTER_ID: 'router-id';
 
 ROUTING_OPTIONS: 'routing-options';
+
+ROUTING_PROFILE: 'routing-profile';
 
 ROUTING_TABLE: 'routing-table';
 
@@ -699,7 +849,11 @@ SECONDARY_NTP_SERVER: 'secondary-ntp-server';
 
 SECONDS: 'seconds';
 
+SECRET: 'secret';
+
 SECURITY: 'security';
+
+SEND_COMMUNITY: 'send-community';
 
 SERVER: 'server';
 
@@ -729,6 +883,10 @@ SHARED: 'shared';
 
 SHARED_GATEWAY: 'shared-gateway';
 
+SOFT_RECONFIG_WITH_STORED_INFO: 'soft-reconfig-with-stored-info';
+
+SOFT_RESET_WITH_STORED_INFO: 'soft-reset-with-stored-info';
+
 SOURCE: 'source';
 
 SOURCE_HIP: 'source-hip';
@@ -746,6 +904,8 @@ SSL
     [Ss][Ss][Ll]
 ;
 
+STALE_ROUTE_TIME: 'stale-route-time';
+
 STATIC: 'static';
 
 STATIC_IPV6: 'static-ipv6';
@@ -754,9 +914,15 @@ STATIC_ROUTE: 'static-route';
 
 STRICT_LSA_CHECKING: 'strict-LSA-checking';
 
+STRICT_SOURCE_PATH: 'strict-source-path';
+
 STUB: 'stub';
 
 SUBCATEGORY: 'subcategory';
+
+SUBSEQUENT_ADDRESS_FAMILY_IDENTIFIER: 'subsequent-address-family-identifier';
+
+SYMMETRIC_RETURN: 'symmetric-return';
 
 SYSLOG: 'syslog';
 
@@ -782,6 +948,10 @@ TEMPLATES: 'templates';
 TEMPLATE_STACK: 'template-stack';
 
 THREE_DES: '3des';
+
+TIMER_PROFILE: 'timer-profile';
+
+TIMERS: 'timers';
 
 TIMEZONE: 'timezone';
 
@@ -818,6 +988,8 @@ UNITS: 'units';
 
 UNIVERSAL: 'universal';
 
+UNSUPPRESS_MAP: 'unsuppress-map';
+
 UP: 'up';
 
 UPDATE: 'update';
@@ -853,6 +1025,8 @@ VIRUS: 'virus';
 VISIBLE_VSYS: 'visible-vsys';
 
 VLAN: 'vlan';
+
+VRF: 'vrf';
 
 VSYS: 'vsys';
 

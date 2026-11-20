@@ -1,0 +1,55 @@
+#RANCID-CONTENT-TYPE: paloalto
+deviceconfig {
+  system {
+    hostname logical-router-advertise-network;
+  }
+}
+network {
+  interface {
+    ethernet {
+      ethernet1/1 {
+        layer3 {
+          ip {
+            10.0.1.1/24;
+          }
+        }
+      }
+    }
+  }
+  logical-router {
+    LR1 {
+      vrf {
+        default {
+          interface [ ethernet1/1 ];
+          admin-dists {
+            bgp-internal 200;
+            bgp-external 20;
+            bgp-local 150;
+            ospf-intra 30;
+            ospf-inter 35;
+            ospf-ext 110;
+            static 10;
+          }
+          bgp {
+            enable yes;
+            router-id 10.0.1.1;
+            local-as 65001;
+            advertise-network {
+              ipv4 {
+                network {
+                  10.10.10.0/24 {
+                    unicast yes;
+                    backdoor no;
+                  }
+                  10.10.20.0/24 {
+                    unicast no;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

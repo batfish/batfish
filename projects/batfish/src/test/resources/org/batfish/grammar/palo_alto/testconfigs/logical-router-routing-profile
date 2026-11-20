@@ -1,0 +1,175 @@
+#RANCID-CONTENT-TYPE: paloalto
+deviceconfig {
+  system {
+    hostname logical-router-routing-profile;
+  }
+}
+network {
+  interface {
+    ethernet {
+      ethernet1/1 {
+        layer3 {
+          ip {
+            10.0.1.1/24;
+          }
+        }
+      }
+    }
+  }
+  routing-profile {
+    bgp {
+      address-family-profile {
+        AF-PROF {
+          ipv4 {
+            unicast {
+              enable yes;
+              next-hop {
+                self;
+              }
+              send-community {
+                both;
+              }
+            }
+          }
+        }
+      }
+      timer-profile {
+        TIMER-PROF {
+          hold-time 90;
+          keep-alive-interval 30;
+          min-route-adv-interval 30;
+          open-delay-time 0;
+          reconnect-retry-interval 15;
+        }
+      }
+      filtering-profile {
+        FP-PROF {
+          ipv4 {
+            unicast {
+              route-maps {
+                inbound RM-IN;
+                outbound RM-OUT;
+              }
+              inbound-network-filters {
+                prefix-list PL-IN;
+              }
+            }
+          }
+        }
+      }
+      redistribution-profile {
+        REDIST-PROF {
+          ipv4 {
+            unicast {
+              static {
+                enable yes;
+              }
+            }
+          }
+        }
+      }
+    }
+    filters {
+      as-path-access-list;
+      prefix-list {
+        PL-IN {
+          type {
+            ipv4 {
+              ipv4-entry {
+                10 {
+                  action permit;
+                  prefix {
+                    entry {
+                      network 10.0.0.0/8;
+                      greater-than-or-equal 16;
+                      less-than-or-equal 24;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      route-maps {
+        RM-IN {
+          route-map {
+            10 {
+              action permit;
+              match {
+                ipv4 {
+                  address {
+                    prefix-list PL-IN;
+                  }
+                }
+              }
+              set {
+                local-preference 200;
+              }
+            }
+          }
+        }
+        RM-OUT {
+          route-map {
+            10 {
+              action deny;
+            }
+          }
+        }
+      }
+    }
+  }
+  logical-router {
+    LR1 {
+      vrf {
+        default {
+          interface [ ethernet1/1 ];
+          ospf {
+            enable yes;
+            router-id 10.0.1.1;
+          }
+          bgp {
+            enable yes;
+            router-id 10.0.1.1;
+            local-as 65001;
+            redistribution-profile {
+              ipv4 {
+                unicast REDIST-PROF;
+              }
+            }
+            peer-group {
+              PG1 {
+                enable yes;
+                type {
+                  ebgp;
+                }
+                address-family {
+                  ipv4 AF-PROF;
+                }
+                filtering-profile {
+                  ipv4 FP-PROF;
+                }
+                connection-options {
+                  multihop 0;
+                  timers TIMER-PROF;
+                }
+                peer {
+                  PEER1 {
+                    enable yes;
+                    peer-as 65002;
+                    local-address {
+                      ip 10.0.1.1/24;
+                    }
+                    peer-address {
+                      ip 10.0.1.2;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

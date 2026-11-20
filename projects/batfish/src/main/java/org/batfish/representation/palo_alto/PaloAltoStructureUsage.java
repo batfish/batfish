@@ -50,6 +50,7 @@ public enum PaloAltoStructureUsage implements StructureUsage {
   SERVICE_GROUP_MEMBER("service-group members"),
   STATIC_ROUTE_INTERFACE("static-route interface"),
   STATIC_ROUTE_NEXTHOP_IP("static-route nexthop ip-address"),
+  STATIC_ROUTE_NEXT_LR("static-route nexthop next-lr"),
   STATIC_ROUTE_NEXT_VR("static-route nexthop next-vr"),
   TAP_INTERFACE_ZONE("zone network tap"),
   TEMPLATE_STACK_TEMPLATES("template-stack templates"),
@@ -57,6 +58,7 @@ public enum PaloAltoStructureUsage implements StructureUsage {
   VIRTUAL_ROUTER_SELF_REFERENCE("virtual-router self-reference"),
   VIRTUAL_WIRE_INTERFACE_ZONE("zone network virtual-wire"),
   VSYS_IMPORT_INTERFACE("vsys import interface"),
+  VSYS_IMPORT_LOGICAL_ROUTER("vsys import network logical-router"),
   ZONE_INTERFACE("zone network layer3");
 
   private final String _description;

@@ -391,6 +391,7 @@ final class PaloAltoGrammarTest {
     PaloAltoConfiguration pac = (PaloAltoConfiguration) extractor.getVendorConfiguration();
     pac.setVendor(ConfigurationFormat.PALO_ALTO);
     pac.setFilename(TESTCONFIGS_PREFIX + hostname);
+    pac.setWarnings(w);
     return pac;
   }
 
@@ -5441,5 +5442,273 @@ final class PaloAltoGrammarTest {
     assertThat(
         warnings,
         hasRedFlag(hasText(containsString("NEXTHOP-NETMASK' is not a valid host address"))));
+  }
+
+  @Test
+  public void testLogicalRouterBgp() throws IOException {
+    String hostname = "logical-router-bgp";
+    PaloAltoConfiguration vc = parseNestedConfig(hostname);
+    assertThat(vc.getWarnings().getParseWarnings(), empty());
+
+    VirtualRouter lr = vc.getLogicalRouters().get("LR1");
+    assertThat(lr, notNullValue());
+    assertThat(lr.getBgp(), notNullValue());
+    assertThat(lr.getBgp().getRoutingOptions().getAsFormat(), equalTo(AsFormat.FOUR_BYTE_AS));
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+    assertThat(c.getVrfs(), not(hasKey(NULL_VRF_NAME)));
+    assertThat(c.getAllInterfaces().get("ethernet1/1").getVrfName(), equalTo("LR1"));
+
+    BgpProcess proc = c.getVrfs().get("LR1").getBgpProcess();
+    assertThat(proc, notNullValue());
+    assertThat(proc, hasRouterId(Ip.parse("10.0.1.1")));
+    assertThat(proc.getActiveNeighbors().keySet(), contains(Ip.parse("10.0.1.2")));
+    BgpActivePeerConfig peer = proc.getActiveNeighbors().get(Ip.parse("10.0.1.2"));
+    assertThat(peer.getDescription(), equalTo("PEER1"));
+    assertThat(peer.getGroup(), equalTo("PG1"));
+    assertThat(peer.getLocalAs(), equalTo(65001L));
+    assertThat(peer.getRemoteAsns(), equalTo(LongSpace.of(65002L)));
+    assertThat(peer.getLocalIp(), equalTo(Ip.parse("10.0.1.1")));
+    assertTrue(peer.getEbgpMultihop());
+
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    String filename = "configs/" + hostname;
+    assertThat(ccae, hasDefinedStructure(filename, PaloAltoStructureType.LOGICAL_ROUTER, "LR1"));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename,
+            PaloAltoStructureType.LOGICAL_ROUTER,
+            "LR1",
+            PaloAltoStructureUsage.VSYS_IMPORT_LOGICAL_ROUTER));
+  }
+
+  @Test
+  public void testLogicalRouterAdvertiseNetwork() {
+    String hostname = "logical-router-advertise-network";
+    PaloAltoConfiguration vc = parseNestedConfig(hostname);
+    assertThat(
+        vc.getWarnings().getParseWarnings(),
+        contains(hasComment(containsString("ospf-inter"))));
+
+    Configuration c = parseConfig(hostname);
+    BgpProcess proc = c.getVrfs().get("LR1").getBgpProcess();
+    assertThat(proc, notNullValue());
+    assertThat(proc.getEbgpAdminCost(), equalTo(20));
+    assertThat(proc.getIbgpAdminCost(), equalTo(200));
+    assertThat(proc.getLocalAdminCost(), equalTo(150));
+
+    RoutingPolicy commonExportPolicy = c.getRoutingPolicies().get("~BGP_COMMON_EXPORT_POLICY:LR1~");
+    assertThat(commonExportPolicy, notNullValue());
+
+    org.batfish.datamodel.StaticRoute.Builder srb =
+        org.batfish.datamodel.StaticRoute.testBuilder()
+            .setNetwork(Prefix.parse("10.10.10.0/24"))
+            .setAdmin(10)
+            .setMetric(0L);
+    Bgpv4Route.Builder bgpBuilder = Bgpv4Route.testBuilder();
+    assertTrue(commonExportPolicy.process(srb.build(), bgpBuilder, Direction.OUT));
+    assertThat(bgpBuilder.getOriginType(), equalTo(IGP));
+
+    ConnectedRoute connected =
+        ConnectedRoute.builder()
+            .setNetwork(Prefix.parse("10.10.10.0/24"))
+            .setNextHopInterface("ethernet1/1")
+            .build();
+    assertTrue(commonExportPolicy.process(connected, Bgpv4Route.testBuilder(), Direction.OUT));
+
+    // unicast no prefix and unadvertised prefix are rejected
+    assertFalse(
+        commonExportPolicy.process(
+            srb.setNetwork(Prefix.parse("10.10.20.0/24")).build(),
+            Bgpv4Route.testBuilder(),
+            Direction.OUT));
+    assertFalse(
+        commonExportPolicy.process(
+            srb.setNetwork(Prefix.parse("10.10.99.0/24")).build(),
+            Bgpv4Route.testBuilder(),
+            Direction.OUT));
+  }
+
+  @Test
+  public void testLogicalRouterNextLr() throws IOException {
+    String hostname = "logical-router-next-lr";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+    assertThat(
+        c,
+        hasVrf(
+            "LR1",
+            hasStaticRoutes(
+                contains(
+                    allOf(
+                        hasPrefix(Prefix.parse("10.2.0.0/24")),
+                        hasNextHop(NextHopVrf.of("LR2")),
+                        hasAdministrativeCost(15),
+                        hasMetric(10L))))));
+
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            "configs/" + hostname,
+            PaloAltoStructureType.LOGICAL_ROUTER,
+            "LR2",
+            PaloAltoStructureUsage.STATIC_ROUTE_NEXT_LR));
+  }
+
+  @Test
+  public void testLogicalRouterLongNames() {
+    String hostname = "logical-router-long-names";
+    String pg63 = "pg-" + "a".repeat(60);
+    String peer63 = "pr-" + "b".repeat(60);
+    String pg64 = "pg-" + "c".repeat(61);
+    String peer64 = "pr-" + "d".repeat(61);
+
+    PaloAltoConfiguration vc = parseNestedConfig(hostname);
+    BgpVr bgp = vc.getLogicalRouters().get("LR1").getBgp();
+    assertThat(bgp.getPeerGroups().keySet(), contains(pg63));
+    assertThat(bgp.getPeerGroups().get(pg63).getPeers().keySet(), contains(peer63));
+    assertThat(
+        vc.getWarnings().getParseWarnings(),
+        hasItem(
+            hasComment(
+                containsString(
+                    "Expected bgp peer-group with length in range 1-63, but got '" + pg64 + "'"))));
+    assertThat(
+        vc.getWarnings().getParseWarnings(),
+        hasItem(
+            hasComment(
+                containsString(
+                    "Expected bgp peer with length in range 1-63, but got '" + peer64 + "'"))));
+
+    Configuration c = parseConfig(hostname);
+    BgpProcess proc = c.getVrfs().get("LR1").getBgpProcess();
+    assertThat(proc.getActiveNeighbors().keySet(), contains(Ip.parse("10.0.1.2")));
+  }
+
+  @Test
+  public void testVirtualRouterBgpLimits() {
+    String hostname = "virtual-router-bgp-limits";
+    String peer32 = "peer-" + "x".repeat(27);
+
+    PaloAltoConfiguration vc = parseNestedConfig(hostname);
+    BgpVr bgp = vc.getVirtualRouters().get("VR1").getBgp();
+    assertThat(bgp.getRoutingOptions().getAsFormat(), equalTo(AsFormat.TWO_BYTE_AS));
+    assertThat(bgp.getLocalAs(), nullValue());
+    assertThat(bgp.getPeerGroups().get("PG1").getPeers(), anEmptyMap());
+    assertThat(
+        vc.getWarnings().getParseWarnings(),
+        hasItem(
+            hasComment(
+                containsString(
+                    "Expected 2-byte BGP AS number in range 1-65535, but got '4200000001'"))));
+    assertThat(
+        vc.getWarnings().getParseWarnings(),
+        hasItem(
+            hasComment(
+                containsString(
+                    "Expected bgp peer with length in range 1-31, but got '" + peer32 + "'"))));
+  }
+
+  @Test
+  public void testLogicalRouter4ByteAsn() {
+    Configuration c = parseConfig("logical-router-4byte-asn");
+    BgpProcess proc = c.getVrfs().get("LR1").getBgpProcess();
+    assertThat(proc, notNullValue());
+    BgpActivePeerConfig peer = proc.getActiveNeighbors().get(Ip.parse("10.0.1.2"));
+    assertThat(peer, notNullValue());
+    assertThat(peer.getLocalAs(), equalTo(4200000001L));
+    assertThat(peer.getRemoteAsns(), equalTo(LongSpace.of(4200000002L)));
+  }
+
+  @Test
+  public void testLogicalRouterNondefaultVrf() {
+    String hostname = "logical-router-nondefault-vrf";
+    PaloAltoConfiguration vc = parseNestedConfig(hostname);
+    assertThat(vc.getLogicalRouters().keySet(), contains("LR1:tenantA"));
+    assertThat(
+        vc.getWarnings().getParseWarnings(),
+        contains(hasComment(containsString("LR1:tenantA"))));
+
+    Configuration c = parseConfig(hostname);
+    assertThat(c.getVrfs().keySet(), contains("LR1:tenantA"));
+    assertThat(c.getAllInterfaces().get("ethernet1/1").getVrfName(), equalTo("LR1:tenantA"));
+  }
+
+  @Test
+  public void testLogicalRouterEngineSelection() throws IOException {
+    {
+      String hostname = "logical-router-engine-on";
+      Batfish batfish = getBatfishForConfigurationNames(hostname);
+      Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+      assertThat(c.getVrfs().keySet(), contains("LR1"));
+      assertThat(c.getAllInterfaces().get("ethernet1/1").getVrfName(), equalTo("LR1"));
+      Warnings warnings =
+          batfish
+              .loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot())
+              .getWarnings()
+              .get(hostname);
+      assertThat(
+          warnings,
+          hasRedFlag(hasText(containsString("Ignoring virtual-router stanzas"))));
+    }
+    {
+      String hostname = "logical-router-engine-off";
+      Batfish batfish = getBatfishForConfigurationNames(hostname);
+      Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+      assertThat(c.getVrfs().keySet(), contains("VR1"));
+      assertThat(c.getAllInterfaces().get("ethernet1/1").getVrfName(), equalTo("VR1"));
+      Warnings warnings =
+          batfish
+              .loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot())
+              .getWarnings()
+              .get(hostname);
+      assertThat(
+          warnings,
+          hasRedFlag(hasText(containsString("Ignoring logical-router stanzas"))));
+    }
+  }
+
+  @Test
+  public void testLogicalRouterRoutingProfile() {
+    String hostname = "logical-router-routing-profile";
+    PaloAltoConfiguration vc = parseNestedConfig(hostname);
+    List<ParseWarning> parseWarnings = vc.getWarnings().getParseWarnings();
+    assertThat(parseWarnings, not(hasItem(hasComment("This syntax is unrecognized"))));
+    assertThat(
+        parseWarnings,
+        hasItem(hasComment(containsString("address-family profile 'AF-PROF' is not applied"))));
+    assertThat(
+        parseWarnings,
+        hasItem(hasComment(containsString("filtering-profile 'FP-PROF' is not applied"))));
+    assertThat(
+        parseWarnings,
+        hasItem(hasComment(containsString("timer-profile 'TIMER-PROF' is not applied"))));
+    assertThat(
+        parseWarnings,
+        hasItem(hasComment(containsString("redistribution-profile 'REDIST-PROF' is not applied"))));
+    assertThat(
+        parseWarnings,
+        hasItem(hasComment(containsString("OSPF under logical-router is currently ignored"))));
+    assertThat(vc.getLogicalRouters().get("LR1").getOspf(), nullValue());
+
+    Configuration c = parseConfig(hostname);
+    Vrf vrf = c.getVrfs().get("LR1");
+    assertThat(vrf, notNullValue());
+    assertThat(vrf.getOspfProcesses(), anEmptyMap());
+    assertThat(vrf.getBgpProcess(), notNullValue());
+    assertThat(vrf.getBgpProcess().getActiveNeighbors().keySet(), contains(Ip.parse("10.0.1.2")));
+    assertThat(c.getRoutingPolicies(), not(hasKey("RM-IN")));
+    assertThat(c.getRoutingPolicies(), not(hasKey("RM-OUT")));
+    assertNull(
+        vrf.getBgpProcess()
+            .getActiveNeighbors()
+            .get(Ip.parse("10.0.1.2"))
+            .getIpv4UnicastAddressFamily()
+            .getImportPolicy());
   }
 }
