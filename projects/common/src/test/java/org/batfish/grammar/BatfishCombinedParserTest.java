@@ -2,10 +2,15 @@ package org.batfish.grammar;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.notNullValue;
 
+import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import org.antlr.v4.runtime.atn.ATN;
+import org.antlr.v4.runtime.misc.Interval;
 import org.batfish.grammar.recovery.RecoveryCombinedParser;
 import org.junit.jupiter.api.Test;
 
@@ -32,5 +37,18 @@ final class BatfishCombinedParserTest {
             .toList();
 
     assertThat(statesWithoutLookaheadSet, empty());
+  }
+
+  @Test
+  @SuppressWarnings("PMD.AvoidAccessibilityAlteration") // the cache is private to ANTLR
+  void antlrIntervalCacheIsFullOnceAParserExists() throws ReflectiveOperationException {
+    new RecoveryCombinedParser("simple\n", SETTINGS);
+
+    // Throws once ANTLR no longer has the cache. BatfishCombinedParser then need not fill it.
+    Field cacheField = Interval.class.getDeclaredField("cache");
+    cacheField.setAccessible(true);
+    Interval[] cache = (Interval[]) cacheField.get(null);
+
+    assertThat(Arrays.asList(cache), everyItem(notNullValue()));
   }
 }
