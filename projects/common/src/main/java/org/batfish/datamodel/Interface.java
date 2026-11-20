@@ -678,8 +678,9 @@ public final class Interface extends ComparableStructure<String> {
     } else if (isLoopback()) {
       // Loopbacks cannot have Layer 3 edges.
       return false;
-    } else if (getLinkLocalAddress() != null) {
-      // An LLA implies a link.
+    } else if (!getAllLinkLocalAddresses().isEmpty() || !getAllUnnumberedAddresses().isEmpty()) {
+      // A link-local or unnumbered address, primary or not, implies a point-to-point link. Layer-3
+      // topology connects such interfaces by physical adjacency.
       return true;
     }
     for (ConcreteInterfaceAddress addr : getAllConcreteAddresses()) {
