@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -34,6 +36,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker;
 import org.batfish.datamodel.bgp.NextHopIpTieBreaker;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 import org.junit.jupiter.api.BeforeEach;
@@ -551,5 +554,37 @@ class AbstractRibTest {
     assertThat(
         delta.stream().collect(Collectors.toList()),
         contains(RouteAdvertisement.withdrawing(route2), new RouteAdvertisement<>(route1)));
+  }
+
+  @Test
+  void testBackupLogicPromotesTiedBackups() {
+    // The main RIB keeps backups and prefers lower administrative distance.
+    Rib rib = new Rib();
+    StaticRoute.Builder routeBuilder =
+        StaticRoute.builder().setNetwork(Prefix.parse("10.0.0.0/24"));
+    AnnotatedRoute<AbstractRoute> best =
+        new AnnotatedRoute<>(
+            routeBuilder.setNextHop(NextHopInterface.of("eth0")).setAdmin(1).build(), "vrf");
+    AnnotatedRoute<AbstractRoute> backup1 =
+        new AnnotatedRoute<>(
+            routeBuilder.setNextHop(NextHopInterface.of("eth1")).setAdmin(5).build(), "vrf");
+    AnnotatedRoute<AbstractRoute> backup2 =
+        new AnnotatedRoute<>(
+            routeBuilder.setNextHop(NextHopInterface.of("eth2")).setAdmin(5).build(), "vrf");
+
+    rib.mergeRoute(best);
+    rib.mergeRoute(backup1);
+    rib.mergeRoute(backup2);
+    assertThat(rib.getRoutes(), contains(best));
+
+    RibDelta<AnnotatedRoute<AbstractRoute>> delta = rib.removeRouteGetDelta(best);
+    // Both tied backups are promoted together.
+    assertThat(rib.getRoutes(), containsInAnyOrder(backup1, backup2));
+    assertThat(
+        delta.getActions(),
+        contains(
+            RouteAdvertisement.withdrawing(best),
+            RouteAdvertisement.adding(backup1),
+            RouteAdvertisement.adding(backup2)));
   }
 }

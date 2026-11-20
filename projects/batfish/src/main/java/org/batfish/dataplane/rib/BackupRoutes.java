@@ -1,8 +1,10 @@
 package org.batfish.dataplane.rib;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,6 +68,23 @@ final class BackupRoutes<R extends AbstractRouteDecorator> {
       return ImmutableSet.of((R) existing);
     }
     return ImmutableSet.copyOf((List<R>) existing);
+  }
+
+  /**
+   * The routes stored under {@code prefix} in insertion order, as a read-only view that is valid
+   * until this is next modified. Empty if there are none. Unlike {@link #get}, does not copy.
+   */
+  @SuppressWarnings("unchecked")
+  @Nonnull
+  Collection<R> getView(Prefix prefix) {
+    Object existing = _byPrefix.get(prefix);
+    if (existing == null) {
+      return ImmutableList.of();
+    }
+    if (!(existing instanceof List)) {
+      return ImmutableList.of((R) existing);
+    }
+    return Collections.unmodifiableList((List<R>) existing);
   }
 
   /** Whether {@code route} is stored under {@code prefix}. */

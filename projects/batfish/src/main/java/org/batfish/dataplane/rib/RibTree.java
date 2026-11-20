@@ -63,7 +63,8 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
     }
 
     @Nullable
-    Set<R> backups = _owner._backupRoutes == null ? null : _owner._backupRoutes.get(network);
+    Collection<R> backups =
+        _owner._backupRoutes == null ? null : _owner._backupRoutes.getView(network);
     if (backups == null || backups.isEmpty()) {
       // no backup routes
       return RibDelta.of(removeRoute);
@@ -71,7 +72,7 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
 
     // find the best backup route(s) to add
     Collection<R> bestBackups = maxValues(backups, _owner::comparePreference);
-    _root.putAll(network, bestBackups);
+    handle.addAll(bestBackups);
 
     return RibDelta.of(
         Streams.concat(Stream.of(removeRoute), bestBackups.stream().map(RouteAdvertisement::adding))

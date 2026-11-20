@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.batfish.datamodel.ConnectedRoute;
@@ -26,6 +27,7 @@ final class BackupRoutesTest {
     BackupRoutes<ConnectedRoute> backups = new BackupRoutes<>();
 
     assertThat(backups.get(P1), empty());
+    assertThat(backups.getView(P1), empty());
     assertThat(backups.values(), empty());
     assertFalse(backups.containsEntry(P1, route(P1, "i1")));
   }
@@ -57,6 +59,7 @@ final class BackupRoutesTest {
     backups.put(P1, r3);
 
     assertThat(backups.get(P1), contains(r1, r2, r3));
+    assertThat(backups.getView(P1), contains(r1, r2, r3));
     assertThat(backups.values(), contains(r1, r2, r3));
     assertTrue(backups.containsEntry(P1, r3));
   }
@@ -89,6 +92,19 @@ final class BackupRoutesTest {
     assertThat(backups.values(), empty());
   }
 
+  /** {@link BackupRoutes#getView} cannot be used to modify the backups. */
+  @Test
+  void testGetViewIsReadOnly() {
+    BackupRoutes<ConnectedRoute> backups = new BackupRoutes<>();
+    ConnectedRoute r1 = route(P1, "i1");
+    ConnectedRoute r2 = route(P1, "i2");
+    backups.put(P1, r1);
+    assertThrows(UnsupportedOperationException.class, () -> backups.getView(P1).clear());
+    backups.put(P1, r2);
+    assertThrows(UnsupportedOperationException.class, () -> backups.getView(P1).clear());
+    assertThat(backups.get(P1), contains(r1, r2));
+  }
+
   /** Removing down to one route must still behave as a populated prefix. */
   @Test
   void testRemoveFromMultiple() {
@@ -100,10 +116,12 @@ final class BackupRoutesTest {
 
     backups.remove(P1, r1);
     assertThat(backups.get(P1), contains(r2));
+    assertThat(backups.getView(P1), contains(r2));
     assertTrue(backups.containsEntry(P1, r2));
 
     backups.put(P1, r1);
     assertThat(backups.get(P1), contains(r2, r1));
+    assertThat(backups.getView(P1), contains(r2, r1));
 
     backups.remove(P1, r1);
     backups.remove(P1, r2);
