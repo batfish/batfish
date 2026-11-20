@@ -15,11 +15,16 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -33,6 +38,8 @@ import org.batfish.datamodel.FibNextVrf;
 import org.batfish.datamodel.FibNullRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.ResolutionRestriction;
@@ -571,5 +578,104 @@ final class FibImplTest {
     Set<AbstractRoute> fibRoutes = getTopLevelRoutesByInterface(fib, "Eth1");
     assertThat(fibRoutes, hasItem(hasPrefix(Prefix.parse("1.1.1.0/24"))));
     assertThat(fibRoutes, not(hasItem(hasPrefix(Prefix.parse("2.2.2.0/24")))));
+  }
+
+  private static StaticRoute interfaceRoute(Prefix network, boolean nonForwarding) {
+    return StaticRoute.testBuilder()
+        .setNetwork(network)
+        .setNextHopInterface("Eth1")
+        .setAdministrativeCost(1)
+        .setNonForwarding(nonForwarding)
+        .build();
+  }
+
+  @Test
+  void testMatchingIpsExcludesNextLongerForwardingPrefixes() {
+    Prefix p8 = Prefix.parse("10.0.0.0/8");
+    Prefix p16a = Prefix.parse("10.1.0.0/16");
+    Prefix p24 = Prefix.parse("10.1.1.0/24");
+    Prefix p16b = Prefix.parse("10.2.0.0/16");
+    Prefix nonForwarding = Prefix.parse("10.3.0.0/16");
+    Rib rib = new Rib();
+    for (Prefix p : ImmutableList.of(p8, p16a, p24, p16b)) {
+      rib.mergeRoute(annotateRoute(interfaceRoute(p, false)));
+    }
+    rib.mergeRoute(annotateRoute(interfaceRoute(nonForwarding, true)));
+    Fib fib = new FibImpl(rib, alwaysTrue());
+
+    // Only the next-longer forwarding prefixes are excluded: not 10.1.1.0/24, which 10.1.0.0/16
+    // already excludes, and not the non-forwarding 10.3.0.0/16.
+    assertThat(
+        fib.matchingIps(p8),
+        equalTo(
+            IpWildcardSetIpSpace.create(
+                ImmutableSet.of(IpWildcard.create(p16a), IpWildcard.create(p16b)),
+                ImmutableSet.of(IpWildcard.create(p8)))));
+    assertThat(
+        fib.matchingIps(p16a),
+        equalTo(
+            IpWildcardSetIpSpace.create(
+                ImmutableSet.of(IpWildcard.create(p24)),
+                ImmutableSet.of(IpWildcard.create(p16a)))));
+    assertThat(fib.matchingIps(p24), equalTo(p24.toIpSpace()));
+    assertThat(fib.matchingIps(p16b), equalTo(p16b.toIpSpace()));
+  }
+
+  /** Random prefixes clustered enough that they nest, collide, and share subtrees. */
+  private static Prefix randomPrefix(Random rng) {
+    int len = rng.nextInt(33);
+    long ip =
+        rng.nextBoolean()
+            ? 0x0A000000L | rng.nextInt(1 << 16)
+            : 0x0A000000L | (rng.nextInt(8) << 8) | rng.nextInt(4);
+    return Prefix.create(Ip.create(ip), len);
+  }
+
+  /** An IP is in {@code matchingIps(p)} iff {@code p} is its longest forwarding prefix match. */
+  @Test
+  void testMatchingIpsIsLongestPrefixMatch() {
+    Random rng = new Random(20261120);
+    for (int trial = 0; trial < 40; trial++) {
+      Rib rib = new Rib();
+      List<Prefix> forwarding = new ArrayList<>();
+      if (trial % 2 == 0) {
+        rib.mergeRoute(annotateRoute(interfaceRoute(Prefix.ZERO, false)));
+        forwarding.add(Prefix.ZERO);
+      }
+      int routes = 1 + rng.nextInt(60);
+      for (int i = 0; i < routes; i++) {
+        Prefix p = randomPrefix(rng);
+        boolean nonForwarding = rng.nextInt(5) == 0;
+        rib.mergeRoute(annotateRoute(interfaceRoute(p, nonForwarding)));
+        if (!nonForwarding) {
+          forwarding.add(p);
+        }
+      }
+      Fib fib = new FibImpl(rib, alwaysTrue());
+      Set<Prefix> fibPrefixes =
+          fib.allEntries().stream()
+              .map(e -> e.getTopLevelRoute().getNetwork())
+              .collect(ImmutableSet.toImmutableSet());
+      assertThat(fibPrefixes, equalTo(ImmutableSet.copyOf(forwarding)));
+
+      for (int i = 0; i < 200; i++) {
+        Ip ip = randomPrefix(rng).getStartIp();
+        if (rng.nextBoolean()) {
+          ip = Ip.create(ip.asLong() | rng.nextInt(256));
+        }
+        Ip finalIp = ip;
+        Prefix longest =
+            fibPrefixes.stream()
+                .filter(p -> p.containsIp(finalIp))
+                .max(Comparator.comparingInt(Prefix::getPrefixLength))
+                .orElse(null);
+        for (Prefix p : fibPrefixes) {
+          assertThat(
+              "trial " + trial + " " + ip + " in matchingIps(" + p + ")",
+              fib.matchingIps(p).containsIp(ip, ImmutableMap.of()),
+              equalTo(p.equals(longest)));
+        }
+      }
+    }
   }
 }
