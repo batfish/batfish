@@ -1,7 +1,7 @@
 package org.batfish.representation.frr;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.LineAction;
 
@@ -9,7 +9,7 @@ import org.batfish.datamodel.LineAction;
 public class BgpCommunityListExpanded extends BgpCommunityList {
 
   private final LineAction _action;
-  private final @Nonnull List<BgpCommunityListExpandedLine> _lines;
+  private final @Nonnull SortedMap<Long, BgpCommunityListExpandedLine> _lines;
 
   public BgpCommunityListExpanded(String name, LineAction action) {
     super(name);
@@ -20,7 +20,7 @@ public class BgpCommunityListExpanded extends BgpCommunityList {
   public BgpCommunityListExpanded(String name) {
     super(name);
     _action = null;
-    _lines = new ArrayList<>();
+    _lines = new TreeMap<>();
   }
 
   @Override
@@ -32,7 +32,8 @@ public class BgpCommunityListExpanded extends BgpCommunityList {
     return _action;
   }
 
-  public @Nonnull List<BgpCommunityListExpandedLine> getLines() {
+  /** The lines of this list, by sequence number. */
+  public @Nonnull SortedMap<Long, BgpCommunityListExpandedLine> getLines() {
     return _lines;
   }
 }

@@ -1,8 +1,8 @@
 package org.batfish.representation.frr;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -11,18 +11,15 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public class BgpAsPathAccessList implements Serializable {
 
   private final @Nonnull String _name;
-  private final @Nonnull List<BgpAsPathAccessListLine> _lines;
+  private final @Nonnull SortedMap<Long, BgpAsPathAccessListLine> _lines;
 
   public BgpAsPathAccessList(String name) {
     _name = name;
-    _lines = new ArrayList<>();
+    _lines = new TreeMap<>();
   }
 
-  public void addLine(BgpAsPathAccessListLine line) {
-    _lines.add(line);
-  }
-
-  public @Nonnull List<BgpAsPathAccessListLine> getLines() {
+  /** The lines of this list, by sequence number. */
+  public @Nonnull SortedMap<Long, BgpAsPathAccessListLine> getLines() {
     return _lines;
   }
 

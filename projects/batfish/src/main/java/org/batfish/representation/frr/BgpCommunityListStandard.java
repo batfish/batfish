@@ -1,7 +1,7 @@
 package org.batfish.representation.frr;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import javax.annotation.Nonnull;
 
 /**
@@ -10,11 +10,11 @@ import javax.annotation.Nonnull;
  */
 public final class BgpCommunityListStandard extends BgpCommunityList {
 
-  private final @Nonnull List<BgpCommunityListStandardLine> _lines;
+  private final @Nonnull SortedMap<Long, BgpCommunityListStandardLine> _lines;
 
   public BgpCommunityListStandard(String name) {
     super(name);
-    _lines = new ArrayList<BgpCommunityListStandardLine>();
+    _lines = new TreeMap<>();
   }
 
   @Override
@@ -22,7 +22,8 @@ public final class BgpCommunityListStandard extends BgpCommunityList {
     return visitor.visitBgpCommunityListStandard(this);
   }
 
-  public @Nonnull List<BgpCommunityListStandardLine> getLines() {
+  /** The lines of this list, by sequence number. */
+  public @Nonnull SortedMap<Long, BgpCommunityListStandardLine> getLines() {
     return _lines;
   }
 }
