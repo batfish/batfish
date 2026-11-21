@@ -134,13 +134,50 @@ public final class FibImpl implements Fib {
       Predicate<AbstractRoute> fibExportFilter) {
     _root = new PrefixTrieMultiMap<>();
     Map<ResolutionKey, ResolvedNextHop> resolvedNextHops = new HashMap<>();
-    rib.getRoutes().stream()
-        .map(AbstractRouteDecorator::getAbstractRoute)
-        .filter(r -> !r.getNonForwarding() && fibExportFilter.test(r))
-        .forEach(
-            r -> _root.putAll(r.getNetwork(), resolveRoute(rib, r, restriction, resolvedNextHops)));
+    /* Insert each network's entries in one call. Inserting into a network that already has
+     * entries rebuilds its set, so going route by route would make a k-way ECMP network cost
+     * O(k^2). RIBs return a network's routes together, so consecutive routes with the same
+     * network are collected first. If a network's routes are not consecutive, it is inserted more
+     * than once, which is still correct.
+     */
+    Prefix network = null;
+    Set<FibEntry> entries = null;
+    Builder<FibEntry> moreEntries = null;
+    for (R r : rib.getRoutes()) {
+      AbstractRoute route = r.getAbstractRoute();
+      if (route.getNonForwarding() || !fibExportFilter.test(route)) {
+        continue;
+      }
+      Set<FibEntry> resolved = resolveRoute(rib, route, restriction, resolvedNextHops);
+      if (route.getNetwork().equals(network)) {
+        if (moreEntries == null) {
+          moreEntries = ImmutableSet.<FibEntry>builder().addAll(entries);
+        }
+        moreEntries.addAll(resolved);
+        continue;
+      }
+      insertEntries(network, entries, moreEntries);
+      network = route.getNetwork();
+      entries = resolved;
+      moreEntries = null;
+    }
+    insertEntries(network, entries, moreEntries);
     _root.trimToSize();
     initSuppliers();
+  }
+
+  /**
+   * Inserts the entries collected for {@code network}: {@code entries} from its first route, plus
+   * {@code moreEntries} if it had more than one. Does nothing if {@code network} is null.
+   */
+  private void insertEntries(
+      @Nullable Prefix network,
+      @Nullable Set<FibEntry> entries,
+      @Nullable Builder<FibEntry> moreEntries) {
+    if (network == null) {
+      return;
+    }
+    _root.putAll(network, moreEntries == null ? entries : moreEntries.build());
   }
 
   /**
@@ -185,6 +222,9 @@ public final class FibImpl implements Fib {
     ResolvedNextHop resolved = resolvedNextHops.get(key);
     if (resolved != null && resolved.appliesTo(route)) {
       ImmutableList<AbstractRoute> steps = ImmutableList.of(route);
+      if (resolved.actions().size() == 1) {
+        return ImmutableSet.of(new FibEntry(resolved.actions().get(0), steps));
+      }
       Builder<FibEntry> entries = ImmutableSet.builderWithExpectedSize(resolved.actions().size());
       for (FibAction action : resolved.actions()) {
         entries.add(new FibEntry(action, steps));
