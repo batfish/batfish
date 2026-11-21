@@ -78,6 +78,11 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
       return addElement(_node, e);
     }
 
+    /** As {@link PrefixTrieMultiMap#putAll}. */
+    public boolean addAll(Collection<T> elements) {
+      return addElements(_node, elements);
+    }
+
     /** As {@link PrefixTrieMultiMap#replaceAll}. */
     public boolean replaceAll(T e) {
       return replaceAllAt(_node, e);
