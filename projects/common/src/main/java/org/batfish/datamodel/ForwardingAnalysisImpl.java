@@ -721,22 +721,26 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       return EmptyIpSpace.INSTANCE;
     }
 
+    // A default route makes all IPs routable. Check for one before deduplicating and sorting,
+    // since most FIBs have one.
+    List<Prefix> networks = new ArrayList<>(entries.size());
+    for (FibEntry entry : entries) {
+      Prefix network = entry.getTopLevelRoute().getNetwork();
+      if (network.equals(Prefix.ZERO)) {
+        return UniverseIpSpace.INSTANCE;
+      }
+      networks.add(network);
+    }
+
     // Order prefixes by length (shorter first), enabling us to build
     // the simplest routable space.
     List<Prefix> routablePrefixes =
-        entries.stream()
-            .map(e -> e.getTopLevelRoute().getNetwork())
-            .distinct()
-            .sorted()
-            .collect(Collectors.toList());
+        networks.stream().distinct().sorted().collect(Collectors.toList());
 
     PrefixSpace seen = new PrefixSpace();
     List<Prefix> routable = new LinkedList<>();
     for (Prefix network : routablePrefixes) {
-      if (network.equals(Prefix.ZERO)) {
-        // Default route -> all IPs are routable. Skip processing the rest.
-        return UniverseIpSpace.INSTANCE;
-      } else if (!seen.containsPrefix(network)) {
+      if (!seen.containsPrefix(network)) {
         routable.add(network);
         seen.addPrefixRange(PrefixRange.sameAsOrMoreSpecificThan(network));
       } // else skip prefix already contained in output space
