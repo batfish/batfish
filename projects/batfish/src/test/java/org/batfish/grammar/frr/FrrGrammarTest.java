@@ -128,6 +128,7 @@ import org.batfish.representation.frr.BgpAsPathAccessListLine;
 import org.batfish.representation.frr.BgpCommunityListExpanded;
 import org.batfish.representation.frr.BgpCommunityListExpandedLine;
 import org.batfish.representation.frr.BgpCommunityListStandard;
+import org.batfish.representation.frr.BgpCommunityListStandardLine;
 import org.batfish.representation.frr.BgpInterfaceNeighbor;
 import org.batfish.representation.frr.BgpIpNeighbor;
 import org.batfish.representation.frr.BgpNeighbor;
@@ -1651,7 +1652,8 @@ class FrrGrammarTest {
     List<BgpCommunityListExpandedLine> expected =
         Lists.newArrayList(
             new BgpCommunityListExpandedLine(LineAction.PERMIT, "10000:10 20000:20"));
-    List<BgpCommunityListExpandedLine> actual = communityList.getLines();
+    List<BgpCommunityListExpandedLine> actual =
+        ImmutableList.copyOf(communityList.getLines().values());
     assertThat(expected.size(), equalTo(actual.size()));
     assertThat(expected.get(0).getAction(), equalTo(actual.get(0).getAction()));
     assertThat(expected.get(0).getRegex(), equalTo(actual.get(0).getRegex()));
@@ -1686,21 +1688,123 @@ class FrrGrammarTest {
 
     assertThat(
         ((BgpCommunityListStandard) _frr.getBgpCommunityLists().get("A"))
-            .getLines().stream()
+            .getLines().values().stream()
                 .map(l -> l.getAction() + " " + l.getCommunities())
                 .collect(ImmutableList.toImmutableList()),
         contains("PERMIT [65000:11]", "PERMIT [65000:20]", "PERMIT [65000:99]"));
     assertThat(
         ((BgpCommunityListExpanded) _frr.getBgpCommunityLists().get("E"))
-            .getLines().stream()
+            .getLines().values().stream()
                 .map(l -> l.getAction() + " " + l.getRegex())
                 .collect(ImmutableList.toImmutableList()),
         contains("DENY _65000:2_", "PERMIT _65000:1_", "PERMIT .*"));
     assertThat(
-        _frr.getBgpAsPathAccessLists().get("P").getLines().stream()
+        _frr.getBgpAsPathAccessLists().get("P").getLines().values().stream()
             .map(l -> l.getAction() + " " + l.getRegex())
             .collect(ImmutableList.toImmutableList()),
         contains("PERMIT _65003$", "PERMIT ^65001_", "PERMIT .*"));
+  }
+
+  @Test
+  void testFrrListDuplicateSeq() {
+    // FRR replaces the entry that has the same seq (community_list_entry_add in bgp_clist.c,
+    // as_list_filter_add in bgp_filter.c)
+    parseLines(
+        "bgp community-list standard A seq 10 deny 65000:10",
+        "bgp community-list standard A seq 10 permit 65000:11",
+        "bgp community-list expanded E seq 5 deny _65000:2_",
+        "bgp community-list expanded E seq 5 permit _65000:3_",
+        "bgp as-path access-list P seq 7 deny _65002$",
+        "bgp as-path access-list P seq 7 permit _65003$");
+
+    assertThat(
+        ((BgpCommunityListStandard) _frr.getBgpCommunityLists().get("A")).getLines(),
+        equalTo(
+            ImmutableMap.of(
+                10L,
+                new BgpCommunityListStandardLine(
+                    LineAction.PERMIT, ImmutableSet.of(StandardCommunity.of(65000, 11))))));
+    assertThat(
+        ((BgpCommunityListExpanded) _frr.getBgpCommunityLists().get("E")).getLines(),
+        equalTo(
+            ImmutableMap.of(5L, new BgpCommunityListExpandedLine(LineAction.PERMIT, "_65000:3_"))));
+    assertThat(
+        _frr.getBgpAsPathAccessLists().get("P").getLines(),
+        equalTo(ImmutableMap.of(7L, new BgpAsPathAccessListLine(LineAction.PERMIT, "_65003$"))));
+    assertThat(
+        _warnings.getRiskyParseWarnings(),
+        contains(
+            allOf(
+                hasText("standard A seq 10 permit 65000:11"),
+                hasComment("RISK: This entry replaces the earlier entry with seq 10")),
+            allOf(
+                hasText("expanded E seq 5 permit _65000:3_"),
+                hasComment("RISK: This entry replaces the earlier entry with seq 5")),
+            allOf(
+                hasText("as-path access-list P seq 7 permit _65003$"),
+                hasComment("RISK: This entry replaces the earlier entry with seq 7"))));
+  }
+
+  @Test
+  void testFrrListDuplicateEntry() {
+    // FRR drops an entry the list already has, whatever its seq (community_list_dup_check in
+    // bgp_clist.c, as_list_dup_check in bgp_filter.c). Here the last line of each list would
+    // otherwise replace the deny entry.
+    parseLines(
+        "bgp community-list standard A seq 5 permit 65000:1",
+        "bgp community-list standard A seq 10 deny 65000:2",
+        "bgp community-list standard A seq 10 permit 65000:1",
+        "bgp community-list expanded E seq 5 permit _65000:1_",
+        "bgp community-list expanded E seq 10 deny _65000:2_",
+        "bgp community-list expanded E seq 10 permit _65000:1_",
+        "bgp as-path access-list P seq 5 permit _65001$",
+        "bgp as-path access-list P seq 10 deny _65002$",
+        "bgp as-path access-list P seq 10 permit _65001$",
+        // repeated as is, with the same seq or with none: dropped without a warning
+        "bgp as-path access-list P seq 5 permit _65001$",
+        "bgp as-path access-list P permit _65001$");
+
+    assertThat(
+        ((BgpCommunityListStandard) _frr.getBgpCommunityLists().get("A")).getLines(),
+        equalTo(
+            ImmutableMap.of(
+                5L,
+                new BgpCommunityListStandardLine(
+                    LineAction.PERMIT, ImmutableSet.of(StandardCommunity.of(65000, 1))),
+                10L,
+                new BgpCommunityListStandardLine(
+                    LineAction.DENY, ImmutableSet.of(StandardCommunity.of(65000, 2))))));
+    assertThat(
+        ((BgpCommunityListExpanded) _frr.getBgpCommunityLists().get("E")).getLines(),
+        equalTo(
+            ImmutableMap.of(
+                5L,
+                new BgpCommunityListExpandedLine(LineAction.PERMIT, "_65000:1_"),
+                10L,
+                new BgpCommunityListExpandedLine(LineAction.DENY, "_65000:2_"))));
+    assertThat(
+        _frr.getBgpAsPathAccessLists().get("P").getLines(),
+        equalTo(
+            ImmutableMap.of(
+                5L,
+                new BgpAsPathAccessListLine(LineAction.PERMIT, "_65001$"),
+                10L,
+                new BgpAsPathAccessListLine(LineAction.DENY, "_65002$"))));
+    assertThat(
+        _warnings.getRiskyParseWarnings(),
+        contains(
+            allOf(
+                hasText("standard A seq 10 permit 65000:1"),
+                hasComment(
+                    "RISK: FRR ignores this entry because the list already has it at seq 5")),
+            allOf(
+                hasText("expanded E seq 10 permit _65000:1_"),
+                hasComment(
+                    "RISK: FRR ignores this entry because the list already has it at seq 5")),
+            allOf(
+                hasText("as-path access-list P seq 10 permit _65001$"),
+                hasComment(
+                    "RISK: FRR ignores this entry because the list already has it at seq 5"))));
   }
 
   @Test
@@ -1708,7 +1812,7 @@ class FrrGrammarTest {
     parseLines(
         "bgp as-path access-list seq permit .*", "bgp as-path access-list seq seq 1 deny _65001_");
     assertThat(
-        _frr.getBgpAsPathAccessLists().get("seq").getLines().stream()
+        _frr.getBgpAsPathAccessLists().get("seq").getLines().values().stream()
             .map(l -> l.getAction() + " " + l.getRegex())
             .collect(ImmutableList.toImmutableList()),
         contains("DENY _65001_", "PERMIT .*"));
@@ -1871,17 +1975,19 @@ class FrrGrammarTest {
     assertThat(_frr.getBgpAsPathAccessLists().keySet(), contains(name));
     BgpAsPathAccessList asPathAccessList = _frr.getBgpAsPathAccessLists().get(name);
     assertThat(asPathAccessList.getName(), equalTo(name));
-    assertThat(asPathAccessList.getLines(), hasSize(8));
+    List<BgpAsPathAccessListLine> lines =
+        ImmutableList.copyOf(asPathAccessList.getLines().values());
+    assertThat(lines, hasSize(8));
 
     // Check that lines look as expected
-    BgpAsPathAccessListLine line0 = asPathAccessList.getLines().get(0);
-    BgpAsPathAccessListLine line1 = asPathAccessList.getLines().get(1);
-    BgpAsPathAccessListLine line2 = asPathAccessList.getLines().get(2);
-    BgpAsPathAccessListLine line3 = asPathAccessList.getLines().get(3);
-    BgpAsPathAccessListLine line4 = asPathAccessList.getLines().get(4);
-    BgpAsPathAccessListLine line5 = asPathAccessList.getLines().get(5);
-    BgpAsPathAccessListLine line6 = asPathAccessList.getLines().get(6);
-    BgpAsPathAccessListLine line7 = asPathAccessList.getLines().get(7);
+    BgpAsPathAccessListLine line0 = lines.get(0);
+    BgpAsPathAccessListLine line1 = lines.get(1);
+    BgpAsPathAccessListLine line2 = lines.get(2);
+    BgpAsPathAccessListLine line3 = lines.get(3);
+    BgpAsPathAccessListLine line4 = lines.get(4);
+    BgpAsPathAccessListLine line5 = lines.get(5);
+    BgpAsPathAccessListLine line6 = lines.get(6);
+    BgpAsPathAccessListLine line7 = lines.get(7);
 
     assertThat(line0.getAction(), equalTo(LineAction.PERMIT));
     assertThat(line1.getAction(), equalTo(LineAction.PERMIT));
