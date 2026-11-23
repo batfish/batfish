@@ -12,7 +12,7 @@ BIN_FILE=$$(tr " " "\n" <<< $${{ALL_FILES}} | grep -v jar)
 echo \
   $${{BIN_FILE}} --jvm_flag=-ea \
     -coordinatorargs '"-periodassignworkms 5"' \
-    -cmdfile $(location {commands}) > $@
+    -cmdfile $(execpath {commands}) > $@
 """
 
 def ref_tests(name, commands, allinone = None, extra_deps = None, **kwargs):
