@@ -112,7 +112,7 @@ bazel_dep(name = "rules_jvm_external", version = "7.2")
 bazel_dep(name = "rules_python", version = "2.5.0")
 
 # Development tools
-bazel_dep(name = "buildifier_prebuilt", version = "10.1.0", dev_dependency = True)
+bazel_dep(name = "buildifier_prebuilt", version = "10.2.0", dev_dependency = True)
 
 bazel_dep(name = "rules_shell", version = "0.10.0")
 
