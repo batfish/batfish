@@ -790,6 +790,62 @@ final class FrrConversionsTest {
   }
 
   @Test
+  void testGenerateBgpCommonPeerConfig_removePrivateAsReplaceAs() {
+    Ip peerIp = Ip.parse("10.0.0.2");
+    BgpIpNeighbor neighbor = new BgpIpNeighbor("BgpNeighbor", peerIp);
+    neighbor.setRemoteAs(RemoteAs.internal());
+    BgpNeighborIpv4UnicastAddressFamily ipv4UnicastAddressFamily =
+        new BgpNeighborIpv4UnicastAddressFamily();
+    BgpVrf bgpVrf = new BgpVrf("vrf");
+    bgpVrf
+        .getOrCreateIpv4Unicast()
+        .getNeighbors()
+        .put(neighbor.getName(), ipv4UnicastAddressFamily);
+
+    org.batfish.datamodel.BgpProcess newProc =
+        org.batfish.datamodel.BgpProcess.testBgpProcess(Ip.parse("10.0.0.1"));
+
+    // FRR replaces private ASes with the local AS in these modes, which keeps the path length.
+    // That is not modeled, so the path is left alone rather than shortened.
+    for (RemovePrivateAsMode mode :
+        ImmutableList.of(RemovePrivateAsMode.REPLACE_AS, RemovePrivateAsMode.ALL_REPLACE_AS)) {
+      ipv4UnicastAddressFamily.setRemovePrivateAsMode(mode);
+
+      Configuration viConfig =
+          _nf.configurationBuilder()
+              .setConfigurationFormat(ConfigurationFormat.CUMULUS_CONCATENATED)
+              .build();
+      Warnings w = new Warnings(true, true, true);
+
+      generateBgpCommonPeerConfig(
+          viConfig,
+          _vc,
+          _frr,
+          neighbor,
+          10000L,
+          bgpVrf,
+          newProc,
+          BgpActivePeerConfig.builder().setPeerAddress(peerIp),
+          w);
+
+      assertTrue(
+          viConfig
+              .getRoutingPolicies()
+              .get(generatedBgpPeerExportPolicyName("vrf", neighbor.getName()))
+              .getStatements()
+              .stream()
+              .noneMatch(s -> s.equals(RemovePrivateAs.toStaticStatement())));
+      assertThat(
+          w,
+          hasRedFlags(
+              contains(
+                  hasText(
+                      "neighbor BgpNeighbor: remove-private-AS replace-AS is not yet modeled"
+                          + " (private ASes will be left in exported AS paths)"))));
+    }
+  }
+
+  @Test
   void testGenerateBgpCommonPeerConfig_SetEbgpMultiHop() {
     // set bgp neighbor
     Ip peerIp = Ip.parse("10.0.0.2");
