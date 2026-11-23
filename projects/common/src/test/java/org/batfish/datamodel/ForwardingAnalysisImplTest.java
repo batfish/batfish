@@ -44,10 +44,12 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Random;
 import java.util.Set;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.topology.GlobalBroadcastNoPointToPoint;
@@ -959,6 +961,154 @@ class ForwardingAnalysisImplTest {
             .build();
     assertThat(
         routableSpace(compressibleToSingleton), equalTo(Prefix.parse("1.2.3.0/24").toIpSpace()));
+  }
+
+  /**
+   * A few nearby start addresses: with random lengths, networks built on them nest, overlap only by
+   * containment, share start IPs, and repeat. Some are at the top of the address space, where the
+   * high bits of routableSpace's packed sort keys are set.
+   */
+  private static final List<Ip> ROUTABLE_TEST_START_IPS =
+      ImmutableList.of(
+          Ip.parse("10.0.0.0"),
+          Ip.parse("10.0.0.128"),
+          Ip.parse("10.0.1.0"),
+          Ip.parse("10.0.16.0"),
+          Ip.parse("10.1.0.0"),
+          Ip.parse("10.128.0.0"),
+          Ip.parse("11.0.0.0"),
+          Ip.parse("200.0.0.0"),
+          Ip.parse("255.255.255.0"),
+          Ip.parse("255.255.255.254"),
+          Ip.parse("255.255.255.255"));
+
+  /** The routable space built from exactly {@code networks}, as routableSpace builds it. */
+  private static IpSpace routableSpaceOf(Set<Prefix> networks) {
+    return networks.size() == 1
+        ? networks.iterator().next().toIpSpace()
+        : IpWildcardSetIpSpace.create(
+            ImmutableSet.of(),
+            networks.stream().map(IpWildcard::create).collect(ImmutableSet.toImmutableSet()));
+  }
+
+  /** Adjacent networks, neither containing the other, are both routable. */
+  @Test
+  void testRoutableIpSpaceAdjacentNetworks() {
+    Prefix low = Prefix.parse("10.0.0.0/25");
+    Prefix high = Prefix.parse("10.0.0.128/25");
+    Fib fib =
+        MockFib.builder()
+            .setFibEntries(
+                ImmutableMap.of(Ip.ZERO, ImmutableSet.of(mockFibEntry(low), mockFibEntry(high))))
+            .build();
+    assertThat(
+        routableSpace(fib),
+        allOf(
+            containsIp(low.getEndIp()),
+            containsIp(high.getStartIp()),
+            containsIp(high.getEndIp()),
+            not(containsIp(Ip.parse("10.0.1.0")))));
+  }
+
+  /** A network covering only the last address of another network adds nothing. */
+  @Test
+  void testRoutableIpSpaceDropsNetworkAtEndOfAnother() {
+    Prefix outer = Prefix.parse("10.0.0.0/24");
+    Prefix atEnd = Prefix.parse("10.0.0.255/32");
+    Prefix topOuter = Prefix.parse("255.255.255.254/31");
+    Prefix topAtEnd = Prefix.parse("255.255.255.255/32");
+    Fib fib =
+        MockFib.builder()
+            .setFibEntries(
+                ImmutableMap.of(
+                    Ip.ZERO,
+                    ImmutableSet.of(
+                        mockFibEntry(outer),
+                        mockFibEntry(atEnd),
+                        mockFibEntry(topOuter),
+                        mockFibEntry(topAtEnd))))
+            .build();
+    assertThat(routableSpace(fib), equalTo(routableSpaceOf(ImmutableSet.of(outer, topOuter))));
+  }
+
+  /** Networks at the very top of the address space, including 255.255.255.255/32. */
+  @Test
+  void testRoutableIpSpaceTopOfAddressSpace() {
+    Prefix lower = Prefix.parse("255.255.255.0/25");
+    Prefix secondToLast = Prefix.parse("255.255.255.254/32");
+    Prefix last = Prefix.parse("255.255.255.255/32");
+    Fib fib =
+        MockFib.builder()
+            .setFibEntries(
+                ImmutableMap.of(
+                    Ip.ZERO,
+                    ImmutableSet.of(
+                        mockFibEntry(last), mockFibEntry(lower), mockFibEntry(secondToLast))))
+            .build();
+    IpSpace routable = routableSpace(fib);
+    assertThat(routable, equalTo(routableSpaceOf(ImmutableSet.of(lower, secondToLast, last))));
+    assertThat(
+        routable,
+        allOf(
+            containsIp(Ip.MAX),
+            containsIp(secondToLast.getStartIp()),
+            not(containsIp(Ip.parse("255.255.255.253"))),
+            not(containsIp(Ip.parse("255.255.255.128")))));
+  }
+
+  /**
+   * The routable space is built from exactly the FIB networks not inside another one, so an IP is
+   * in it iff some FIB network contains it.
+   */
+  @Test
+  void testRoutableIpSpaceIsUnionOfFibNetworks() {
+    Random rng = new Random(20261121);
+    for (int trial = 0; trial < 50; trial++) {
+      List<Prefix> networks = new ArrayList<>();
+      ImmutableSet.Builder<FibEntry> entries = ImmutableSet.builder();
+      // Few networks per trial, so that a short one seldom covers all the others.
+      int count = 1 + rng.nextInt(8);
+      for (int i = 0; i < count; i++) {
+        Ip start = ROUTABLE_TEST_START_IPS.get(rng.nextInt(ROUTABLE_TEST_START_IPS.size()));
+        Prefix network = Prefix.create(start, 1 + rng.nextInt(32));
+        networks.add(network);
+        entries.add(mockFibEntry(network));
+      }
+      Fib fib = MockFib.builder().setFibEntries(ImmutableMap.of(Ip.ZERO, entries.build())).build();
+      IpSpace routable = routableSpace(fib);
+
+      // Membership alone would not notice a redundant nested network being kept.
+      Set<Prefix> outermost =
+          networks.stream()
+              .filter(p -> networks.stream().noneMatch(q -> !q.equals(p) && q.containsPrefix(p)))
+              .collect(ImmutableSet.toImmutableSet());
+      assertThat("trial " + trial, routable, equalTo(routableSpaceOf(outermost)));
+
+      // Each network's first and last IPs and the IPs just outside it, where an off-by-one in
+      // deciding which networks are redundant would show, plus a few arbitrary IPs.
+      List<Ip> probes = new ArrayList<>();
+      for (Prefix network : networks) {
+        long first = network.getStartIp().asLong();
+        long last = network.getEndIp().asLong();
+        probes.add(network.getStartIp());
+        probes.add(network.getEndIp());
+        if (first > 0) {
+          probes.add(Ip.create(first - 1));
+        }
+        if (last < Ip.MAX.asLong()) {
+          probes.add(Ip.create(last + 1));
+        }
+      }
+      for (int i = 0; i < 20; i++) {
+        probes.add(Ip.create(Integer.toUnsignedLong(rng.nextInt())));
+      }
+      for (Ip ip : probes) {
+        assertThat(
+            "trial " + trial + " " + ip,
+            routable.containsIp(ip, ImmutableMap.of()),
+            equalTo(networks.stream().anyMatch(p -> p.containsIp(ip))));
+      }
+    }
   }
 
   @Test
