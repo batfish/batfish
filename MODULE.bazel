@@ -114,7 +114,7 @@ bazel_dep(name = "rules_python", version = "2.5.0")
 # Development tools
 bazel_dep(name = "buildifier_prebuilt", version = "10.1.0", dev_dependency = True)
 
-bazel_dep(name = "rules_shell", version = "0.8.0")
+bazel_dep(name = "rules_shell", version = "0.10.0")
 
 batfish_version = use_repo_rule("//skylark:batfish_version.bzl", "batfish_version")
 
