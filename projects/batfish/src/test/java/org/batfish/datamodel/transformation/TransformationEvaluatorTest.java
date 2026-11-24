@@ -34,16 +34,16 @@ import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.TransformationStep;
 import org.batfish.datamodel.flow.TransformationStep.TransformationStepDetail;
 import org.batfish.datamodel.transformation.TransformationEvaluator.TransformationResult;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link TransformationEvaluator}. */
-public class TransformationEvaluatorTest {
+class TransformationEvaluatorTest {
 
   Flow.Builder _flowBuilder;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _flowBuilder =
         Flow.builder()
             .setIngressNode("node")
@@ -62,7 +62,7 @@ public class TransformationEvaluatorTest {
   }
 
   @Test
-  public void testAssignIpAddressFromPool() {
+  void testAssignIpAddressFromPool() {
     Ip srcIp = Ip.parse("1.1.1.1");
     Ip origDstIp = Ip.parse("2.2.2.2");
     Ip poolIp = Ip.parse("3.3.3.3");
@@ -95,7 +95,7 @@ public class TransformationEvaluatorTest {
   }
 
   @Test
-  public void testShiftIpAddressIntoSubnet() {
+  void testShiftIpAddressIntoSubnet() {
     Ip origDstIp = Ip.parse("1.2.3.4");
     Prefix prefix = Prefix.parse("15.16.0.0/16");
 
@@ -129,7 +129,7 @@ public class TransformationEvaluatorTest {
   }
 
   @Test
-  public void testNoop() {
+  void testNoop() {
     Transformation transformation = always().apply(new Noop(SOURCE_NAT)).build();
     Flow origFlow =
         _flowBuilder.setSrcIp(Ip.parse("1.1.1.1")).setDstIp(Ip.parse("2.2.2.2")).build();
@@ -148,7 +148,7 @@ public class TransformationEvaluatorTest {
   }
 
   @Test
-  public void testMultipleSteps() {
+  void testMultipleSteps() {
     Ip srcIp = Ip.parse("1.2.3.4");
     Ip dstIp = Ip.parse("9.8.7.6");
     Prefix subnet = Prefix.parse("15.16.0.0/16");
@@ -172,7 +172,7 @@ public class TransformationEvaluatorTest {
   }
 
   @Test
-  public void testBranching() {
+  void testBranching() {
     // then branch sets destIp = 1.1.1.1
     Ip thenDstIp = Ip.parse("1.1.1.1");
     Transformation andThen = always().apply(assignDestinationIp(thenDstIp, thenDstIp)).build();
@@ -237,7 +237,7 @@ public class TransformationEvaluatorTest {
   }
 
   @Test
-  public void testTransformedTwice() {
+  void testTransformedTwice() {
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("2.2.2.2");
     Ip ip3 = Ip.parse("3.3.3.3");
@@ -271,7 +271,7 @@ public class TransformationEvaluatorTest {
   }
 
   @Test
-  public void testAssignPortFromPoolDst() {
+  void testAssignPortFromPoolDst() {
     Ip srcIp = Ip.parse("1.1.1.1");
     int dstPort = 3000;
     int poolPort = 2000;
@@ -307,7 +307,7 @@ public class TransformationEvaluatorTest {
   }
 
   @Test
-  public void testAssignPortFromPoolSrc() {
+  void testAssignPortFromPoolSrc() {
     Ip srcIp = Ip.parse("1.1.1.1");
     int srcPort = 3000;
     int poolPort = 2000;
@@ -342,7 +342,7 @@ public class TransformationEvaluatorTest {
   }
 
   @Test
-  public void testAssignPortFromPoolSrc_nonPortProtocol() {
+  void testAssignPortFromPoolSrc_nonPortProtocol() {
     Transformation transformation = always().apply(assignSourcePort(2000, 2000)).build();
 
     Flow origFlow =

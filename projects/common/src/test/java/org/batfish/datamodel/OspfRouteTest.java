@@ -1,22 +1,21 @@
 package org.batfish.datamodel;
 
-import static org.junit.Assert.assertNotNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.route.nh.NextHopVrf;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link OspfRoute} */
-public final class OspfRouteTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+final class OspfRouteTest {
 
   @Test
-  public void testOspfRouteValid() {
+  void testOspfRouteValid() {
     assertNotNull(testBuilder().setNextHop(NextHopDiscard.instance()).build());
     assertNotNull(
         testBuilder().setNextHop(NextHopInterface.of("e0", Ip.parse("192.0.2.1"))).build());
@@ -28,17 +27,25 @@ public final class OspfRouteTest {
   }
 
   @Test
-  public void testOspfRouteInvalidNextHopIpRouting() {
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("OSPF routes cannot only have next-hop IP unless they are non-routing.");
-    testBuilder().setNextHop(NextHopIp.of(Ip.parse("192.0.2.1"))).build();
+  void testOspfRouteInvalidNextHopIpRouting() {
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> testBuilder().setNextHop(NextHopIp.of(Ip.parse("192.0.2.1"))).build());
+    assertThat(
+        exception.getMessage(),
+        containsString("OSPF routes cannot only have next-hop IP unless they are non-routing."));
   }
 
   @Test
-  public void testOspfRouteInvalidNextHopInterfaceWithoutNextHopIp() {
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("OSPF routes with next-hop interface must have next-hop IP.");
-    testBuilder().setNextHop(NextHopInterface.of("e0")).build();
+  void testOspfRouteInvalidNextHopInterfaceWithoutNextHopIp() {
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> testBuilder().setNextHop(NextHopInterface.of("e0")).build());
+    assertThat(
+        exception.getMessage(),
+        containsString("OSPF routes with next-hop interface must have next-hop IP."));
   }
 
   private static OspfIntraAreaRoute.Builder testBuilder() {

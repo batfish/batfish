@@ -12,15 +12,24 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Random;
 import java.util.Set;
+import java.util.stream.IntStream;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -32,6 +41,9 @@ import org.batfish.datamodel.FibNextVrf;
 import org.batfish.datamodel.FibNullRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
+import org.batfish.datamodel.MockRib;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.ResolutionRestriction;
@@ -40,17 +52,13 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.dataplane.rib.Rib;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests of {@link FibImpl} */
-@RunWith(JUnit4.class)
-public final class FibImplTest {
-  @Rule public TemporaryFolder folder = new TemporaryFolder();
+final class FibImplTest {
+  @TempDir public File folder;
 
   private static final Ip DST_IP = Ip.parse("3.3.3.3");
   private static final String NODE1 = "node1";
@@ -63,8 +71,8 @@ public final class FibImplTest {
   private Configuration _config;
   private Vrf _vrf;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -82,7 +90,7 @@ public final class FibImplTest {
   }
 
   @Test
-  public void testGetNextHopInterfacesByRoute() throws IOException {
+  void testGetNextHopInterfacesByRoute() throws IOException {
     String iface1 = "iface1";
     String iface2 = "iface2";
     String iface3 = "iface3";
@@ -119,7 +127,7 @@ public final class FibImplTest {
   }
 
   @Test
-  public void testNextHopInterfaceTakesPrecedence() throws IOException {
+  void testNextHopInterfaceTakesPrecedence() throws IOException {
     _ib.setName(FAST_ETHERNET_0).setAddresses(NODE1_PHYSICAL_NETWORK).build();
     /*
      * Both next hop IP and interface on the static route. Interface should take precedence
@@ -151,7 +159,7 @@ public final class FibImplTest {
   }
 
   @Test
-  public void testNextHopIpIsResolved() throws IOException {
+  void testNextHopIpIsResolved() throws IOException {
     _ib.setName(FAST_ETHERNET_0).setAddresses(NODE1_PHYSICAL_NETWORK).build();
     /*
      * Only next hop ip on the static route.
@@ -181,7 +189,7 @@ public final class FibImplTest {
   }
 
   @Test
-  public void testNonForwardingRoutesNotInFib() {
+  void testNonForwardingRoutesNotInFib() {
     Rib rib = new Rib();
 
     StaticRoute nonForwardingInterfaceRoute =
@@ -220,7 +228,7 @@ public final class FibImplTest {
   }
 
   @Test
-  public void testNextVrfRouteInFib() {
+  void testNextVrfRouteInFib() {
     Rib rib = new Rib();
     String nextVrf = "nextVrf";
 
@@ -246,7 +254,7 @@ public final class FibImplTest {
    * is not.
    */
   @Test
-  public void testResolutionSharedAcrossRoutesWithSameNextHopExceptLoops() {
+  void testResolutionSharedAcrossRoutesWithSameNextHopExceptLoops() {
     Rib rib = new Rib();
     ConnectedRoute connected = new ConnectedRoute(Prefix.parse("10.0.0.0/24"), "Eth1");
     // Two ECMP routes for 2.2.2.0/24: one resolves via the connected route, the other via 2.2.2.2,
@@ -301,7 +309,7 @@ public final class FibImplTest {
   }
 
   @Test
-  public void testResolutionWhenNextHopMatchesNonForwardingRoute() {
+  void testResolutionWhenNextHopMatchesNonForwardingRoute() {
     Rib rib = new Rib();
 
     StaticRoute nonForwardingRoute =
@@ -344,7 +352,7 @@ public final class FibImplTest {
   }
 
   @Test
-  public void testResolutionWhenNextHopMatchesRestrictionViolatingRoute() {
+  void testResolutionWhenNextHopMatchesRestrictionViolatingRoute() {
     Rib rib = new Rib();
 
     StaticRoute restrictionViolatingRoute =
@@ -385,8 +393,7 @@ public final class FibImplTest {
   }
 
   @Test
-  public void
-      testResolutionWhenRecursiveStaticRouteNextHopMatchesRestrictionViolatingConnectedRoute() {
+  void testResolutionWhenRecursiveStaticRouteNextHopMatchesRestrictionViolatingConnectedRoute() {
     Rib rib = new Rib();
 
     ConnectedRoute restrictionViolatingRoute =
@@ -421,7 +428,7 @@ public final class FibImplTest {
   }
 
   @Test
-  public void testResolutionWhenNextHopMatchesNonForwardingRouteWithECMP() {
+  void testResolutionWhenNextHopMatchesNonForwardingRouteWithECMP() {
     Rib rib = new Rib();
 
     StaticRoute nonForwardingRoute =
@@ -487,7 +494,7 @@ public final class FibImplTest {
   }
 
   @Test
-  public void testResolutionWhenNextHopRouteDoesNotMatchRestrictionWithECMP() {
+  void testResolutionWhenNextHopRouteDoesNotMatchRestrictionWithECMP() {
     Rib rib = new Rib();
 
     StaticRoute restrictionViolatingRoute =
@@ -549,7 +556,7 @@ public final class FibImplTest {
   }
 
   @Test
-  public void testFibExportFilter() {
+  void testFibExportFilter() {
     Rib rib = new Rib();
 
     StaticRoute allowedRoute =
@@ -575,5 +582,158 @@ public final class FibImplTest {
     Set<AbstractRoute> fibRoutes = getTopLevelRoutesByInterface(fib, "Eth1");
     assertThat(fibRoutes, hasItem(hasPrefix(Prefix.parse("1.1.1.0/24"))));
     assertThat(fibRoutes, not(hasItem(hasPrefix(Prefix.parse("2.2.2.0/24")))));
+  }
+
+  private static StaticRoute interfaceRoute(Prefix network, boolean nonForwarding) {
+    return StaticRoute.testBuilder()
+        .setNetwork(network)
+        .setNextHopInterface("Eth1")
+        .setAdministrativeCost(1)
+        .setNonForwarding(nonForwarding)
+        .build();
+  }
+
+  @Test
+  void testMatchingIpsExcludesNextLongerForwardingPrefixes() {
+    Prefix p8 = Prefix.parse("10.0.0.0/8");
+    Prefix p16a = Prefix.parse("10.1.0.0/16");
+    Prefix p24 = Prefix.parse("10.1.1.0/24");
+    Prefix p16b = Prefix.parse("10.2.0.0/16");
+    Prefix nonForwarding = Prefix.parse("10.3.0.0/16");
+    Rib rib = new Rib();
+    for (Prefix p : ImmutableList.of(p8, p16a, p24, p16b)) {
+      rib.mergeRoute(annotateRoute(interfaceRoute(p, false)));
+    }
+    rib.mergeRoute(annotateRoute(interfaceRoute(nonForwarding, true)));
+    Fib fib = new FibImpl(rib, alwaysTrue());
+
+    // Only the next-longer forwarding prefixes are excluded: not 10.1.1.0/24, which 10.1.0.0/16
+    // already excludes, and not the non-forwarding 10.3.0.0/16.
+    assertThat(
+        fib.matchingIps(p8),
+        equalTo(
+            IpWildcardSetIpSpace.create(
+                ImmutableSet.of(IpWildcard.create(p16a), IpWildcard.create(p16b)),
+                ImmutableSet.of(IpWildcard.create(p8)))));
+    assertThat(
+        fib.matchingIps(p16a),
+        equalTo(
+            IpWildcardSetIpSpace.create(
+                ImmutableSet.of(IpWildcard.create(p24)),
+                ImmutableSet.of(IpWildcard.create(p16a)))));
+    assertThat(fib.matchingIps(p24), equalTo(p24.toIpSpace()));
+    assertThat(fib.matchingIps(p16b), equalTo(p16b.toIpSpace()));
+  }
+
+  /** Random prefixes clustered enough that they nest, collide, and share subtrees. */
+  private static Prefix randomPrefix(Random rng) {
+    int len = rng.nextInt(33);
+    long ip =
+        rng.nextBoolean()
+            ? 0x0A000000L | rng.nextInt(1 << 16)
+            : 0x0A000000L | (rng.nextInt(8) << 8) | rng.nextInt(4);
+    return Prefix.create(Ip.create(ip), len);
+  }
+
+  /** An IP is in {@code matchingIps(p)} iff {@code p} is its longest forwarding prefix match. */
+  @Test
+  void testMatchingIpsIsLongestPrefixMatch() {
+    Random rng = new Random(20261120);
+    for (int trial = 0; trial < 40; trial++) {
+      Rib rib = new Rib();
+      List<Prefix> forwarding = new ArrayList<>();
+      if (trial % 2 == 0) {
+        rib.mergeRoute(annotateRoute(interfaceRoute(Prefix.ZERO, false)));
+        forwarding.add(Prefix.ZERO);
+      }
+      int routes = 1 + rng.nextInt(60);
+      for (int i = 0; i < routes; i++) {
+        Prefix p = randomPrefix(rng);
+        boolean nonForwarding = rng.nextInt(5) == 0;
+        rib.mergeRoute(annotateRoute(interfaceRoute(p, nonForwarding)));
+        if (!nonForwarding) {
+          forwarding.add(p);
+        }
+      }
+      Fib fib = new FibImpl(rib, alwaysTrue());
+      Set<Prefix> fibPrefixes =
+          fib.allEntries().stream()
+              .map(e -> e.getTopLevelRoute().getNetwork())
+              .collect(ImmutableSet.toImmutableSet());
+      assertThat(fibPrefixes, equalTo(ImmutableSet.copyOf(forwarding)));
+
+      for (int i = 0; i < 200; i++) {
+        Ip ip = randomPrefix(rng).getStartIp();
+        if (rng.nextBoolean()) {
+          ip = Ip.create(ip.asLong() | rng.nextInt(256));
+        }
+        Ip finalIp = ip;
+        Prefix longest =
+            fibPrefixes.stream()
+                .filter(p -> p.containsIp(finalIp))
+                .max(Comparator.comparingInt(Prefix::getPrefixLength))
+                .orElse(null);
+        for (Prefix p : fibPrefixes) {
+          assertThat(
+              "trial " + trial + " " + ip + " in matchingIps(" + p + ")",
+              fib.matchingIps(p).containsIp(ip, ImmutableMap.of()),
+              equalTo(p.equals(longest)));
+        }
+      }
+    }
+  }
+
+  private static AnnotatedRoute<AbstractRoute> ecmpRoute(Prefix network, String iface) {
+    return annotateRoute(
+        StaticRoute.testBuilder()
+            .setNetwork(network)
+            .setNextHopInterface(iface)
+            .setAdministrativeCost(1)
+            .build());
+  }
+
+  @Test
+  void testEcmpRoutesAllInstalled() {
+    Prefix network = Prefix.parse("10.0.0.0/24");
+    Rib rib = new Rib();
+    for (int i = 0; i < 8; i++) {
+      rib.mergeRoute(ecmpRoute(network, "Eth" + i));
+    }
+    rib.mergeRoute(ecmpRoute(Prefix.parse("10.0.1.0/24"), "Eth0"));
+    Fib fib = new FibImpl(rib, alwaysTrue());
+
+    Set<FibEntry> entries = fib.get(Ip.parse("10.0.0.1"));
+    assertThat(entries, hasSize(8));
+    assertThat(
+        entries.stream()
+            .map(e -> ((FibForward) e.getAction()).getInterfaceName())
+            .collect(ImmutableSet.toImmutableSet()),
+        equalTo(
+            IntStream.range(0, 8).mapToObj(i -> "Eth" + i).collect(ImmutableSet.toImmutableSet())));
+    assertThat(fib.allEntries(), hasSize(9));
+  }
+
+  /** A RIB need not return a network's routes together; they are still all installed. */
+  @Test
+  void testRoutesForOneNetworkNotTogetherAllInstalled() {
+    Prefix p1 = Prefix.parse("10.0.0.0/24");
+    Prefix p2 = Prefix.parse("10.0.1.0/24");
+    MockRib rib =
+        MockRib.builder()
+            .setRoutes(
+                ImmutableSet.of(
+                    ecmpRoute(p1, "Eth1"),
+                    ecmpRoute(p2, "Eth2"),
+                    ecmpRoute(p1, "Eth3"),
+                    ecmpRoute(p1, "Eth4")))
+            .build();
+    Fib fib = new FibImpl(rib, alwaysTrue());
+
+    assertThat(
+        fib.get(Ip.parse("10.0.0.1")).stream()
+            .map(e -> ((FibForward) e.getAction()).getInterfaceName())
+            .collect(ImmutableSet.toImmutableSet()),
+        equalTo(ImmutableSet.of("Eth1", "Eth3", "Eth4")));
+    assertThat(fib.get(Ip.parse("10.0.1.1")), hasSize(1));
   }
 }

@@ -2,17 +2,17 @@ package org.batfish.datamodel.packet_policy;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ReturnTest {
+class ReturnTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     Return r = new Return(Drop.instance());
     new EqualsTester()
         .addEqualityGroup(r, r, new Return(Drop.instance()))
@@ -22,19 +22,19 @@ public class ReturnTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     Return r = new Return(Drop.instance());
     assertThat(SerializationUtils.clone(r), equalTo(r));
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     Return r = new Return(Drop.instance());
     assertThat(BatfishObjectMapper.clone(r, Return.class), equalTo(r));
   }
 
   @Test
-  public void testToString() {
+  void testToString() {
     Return r = new Return(Drop.instance());
     assertTrue(r.toString().contains(Return.class.getSimpleName()));
     assertTrue(r.toString().contains("action"));

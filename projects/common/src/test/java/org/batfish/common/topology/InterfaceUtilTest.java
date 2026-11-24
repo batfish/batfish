@@ -13,11 +13,11 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.NetworkFactory;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class InterfaceUtilTest {
+class InterfaceUtilTest {
   @Test
-  public void testMatchingInterfaceNameKnown() {
+  void testMatchingInterfaceNameKnown() {
     Set<String> known = ImmutableSet.of("Ethernet1", "Ethernet2");
     assertThat(matchingInterfaceName("Ethernet1", known), equalTo(Optional.of("Ethernet1")));
     assertThat(matchingInterfaceName("ETHERNET1", known), equalTo(Optional.of("Ethernet1")));
@@ -25,7 +25,7 @@ public class InterfaceUtilTest {
   }
 
   @Test
-  public void testMatchingInterfaceNameCanonicalized() {
+  void testMatchingInterfaceNameCanonicalized() {
     Set<String> known = ImmutableSet.of("TenGigE1", "TenGigE1.5");
     assertThat(matchingInterfaceName("Ethernet1", known), equalTo(Optional.empty()));
     assertThat(
@@ -35,7 +35,7 @@ public class InterfaceUtilTest {
   }
 
   @Test
-  public void testMatchingInterface() {
+  void testMatchingInterface() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c = nf.configurationBuilder().build();
     Interface i =

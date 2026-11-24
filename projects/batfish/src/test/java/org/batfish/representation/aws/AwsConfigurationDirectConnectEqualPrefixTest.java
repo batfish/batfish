@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 
 import com.google.common.collect.ImmutableList;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,10 +23,9 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * E2e tests for a Direct Connect Gateway whose association allows a prefix equal to the attached
@@ -37,7 +37,7 @@ import org.junit.rules.TemporaryFolder;
  * <p>Regression tests for batfish/batfish#10447: an allowed prefix equal to a TGW-propagated VPC
  * CIDR must forward toward the TGW rather than discard on the DXGW.
  */
-public class AwsConfigurationDirectConnectEqualPrefixTest {
+class AwsConfigurationDirectConnectEqualPrefixTest {
 
   private static final String TESTCONFIGS_DIR =
       "org/batfish/representation/aws/test-direct-connect-gateway-equal-prefix";
@@ -75,12 +75,12 @@ public class AwsConfigurationDirectConnectEqualPrefixTest {
   private static final Prefix _vpcCidr = Prefix.parse("10.100.0.0/16");
   private static final Prefix _summary = Prefix.parse("10.0.0.0/8");
 
-  @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public static File _folder;
 
   private static IBatfish _batfish;
 
-  @BeforeClass
-  public static void setup() throws IOException {
+  @BeforeAll
+  static void setup() throws IOException {
     _batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
@@ -96,7 +96,7 @@ public class AwsConfigurationDirectConnectEqualPrefixTest {
    * must reach the instance through the DXGW and TGW rather than be discarded on the DXGW.
    */
   @Test
-  public void testFromOnPremToInstance() {
+  void testFromOnPremToInstance() {
     testTrace(
         getAnyFlow(_onPremRouter, _instanceIp, _batfish),
         FlowDisposition.ACCEPTED,
@@ -105,7 +105,7 @@ public class AwsConfigurationDirectConnectEqualPrefixTest {
   }
 
   @Test
-  public void testFromInstanceToOnPrem() {
+  void testFromInstanceToOnPrem() {
     testTrace(
         getAnyFlow(_instance, Ip.parse("10.10.0.1"), _batfish),
         FlowDisposition.ACCEPTED,
@@ -115,7 +115,7 @@ public class AwsConfigurationDirectConnectEqualPrefixTest {
 
   /** Both allowed prefixes are advertised to on-prem by the DXGW, as AWS does. */
   @Test
-  public void testOnPremReceivesAllowedPrefixes() {
+  void testOnPremReceivesAllowedPrefixes() {
     DataPlane dp = _batfish.loadDataPlane(_batfish.getSnapshot());
     for (Prefix prefix : ImmutableList.of(_vpcCidr, _summary)) {
       List<AbstractRoute> routes = mainRibRoutes(dp, _onPremRouter, "default", prefix);
@@ -131,7 +131,7 @@ public class AwsConfigurationDirectConnectEqualPrefixTest {
    * VPC CIDR over BGP; the static must not shadow it with a discard.
    */
   @Test
-  public void testDxgwRoutesAllowedPrefixesTowardTgw() {
+  void testDxgwRoutesAllowedPrefixesTowardTgw() {
     DataPlane dp = _batfish.loadDataPlane(_batfish.getSnapshot());
     String ifaceToTgw = Utils.interfaceNameToRemote(_tgw, _tgwRouteTable);
     for (Prefix prefix : ImmutableList.of(_vpcCidr, _summary)) {
@@ -149,7 +149,7 @@ public class AwsConfigurationDirectConnectEqualPrefixTest {
    * dropped there, as in AWS, rather than discarded on the DXGW.
    */
   @Test
-  public void testUnroutedDestinationInsideSummaryDropsAtTgw() {
+  void testUnroutedDestinationInsideSummaryDropsAtTgw() {
     testTrace(
         getAnyFlow(_onPremRouter, Ip.parse("10.200.1.1"), _batfish),
         FlowDisposition.NO_ROUTE,

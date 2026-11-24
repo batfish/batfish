@@ -28,11 +28,12 @@
  */
 package net.sf.javabdd.regression;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.bdd.BDDTestCase;
-import org.junit.internal.runners.JUnit38ClassRunner;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * support() bug
@@ -40,24 +41,20 @@ import org.junit.runner.RunWith;
  * @author John Whaley
  * @version $Id: R2.java,v 1.4 2004/10/19 06:51:43 joewhaley Exp $
  */
-@RunWith(JUnit38ClassRunner.class)
-public class R2 extends BDDTestCase {
-  public static void main(String[] args) {
-    junit.textui.TestRunner.run(R2.class);
-  }
-
-  public void testR2() {
+class R2 extends BDDTestCase {
+  @Test
+  void testR2() {
     assertTrue(hasNext());
     while (hasNext()) {
       BDDFactory bdd = next();
       BDD zero = bdd.zero();
       BDD one = bdd.one();
-      assertTrue(bdd.toString(), zero.isZero());
-      assertTrue(bdd.toString(), one.isOne());
+      assertTrue(zero.isZero(), bdd.toString());
+      assertTrue(one.isOne(), bdd.toString());
       BDD s0 = zero.support();
       BDD s1 = one.support();
-      assertTrue(bdd.toString(), s0.isOne());
-      assertTrue(bdd.toString(), s1.isOne());
+      assertTrue(s0.isOne(), bdd.toString());
+      assertTrue(s1.isOne(), bdd.toString());
       zero.free();
       one.free();
       s0.free();

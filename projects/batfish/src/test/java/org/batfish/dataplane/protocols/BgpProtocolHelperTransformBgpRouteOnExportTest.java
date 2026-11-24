@@ -14,8 +14,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import java.util.Objects;
@@ -55,11 +55,11 @@ import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.route.nh.NextHopVtep;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link BgpProtocolHelper#transformBgpRoutePreExport} */
-public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
+final class BgpProtocolHelperTransformBgpRouteOnExportTest {
 
   private final NetworkFactory _nf = new NetworkFactory();
   private BgpActivePeerConfig _fromNeighbor;
@@ -86,8 +86,8 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
    * Sets aggregate and BGP route builders to the most basic form that will result in a route that
    * gets exported (given the default BGP session setup created in {@link #setUpPeers(boolean)}).
    */
-  @Before
-  public void resetDefaultRouteBuilders() {
+  @BeforeEach
+  void resetDefaultRouteBuilders() {
     _baseAggRouteBuilder =
         GeneratedRoute.builder().setNextHop(NextHopDiscard.instance()).setNetwork(DEST_NETWORK);
     _baseBgpRouteBuilder =
@@ -225,7 +225,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
    * does not get exported, we know it's due to modifications made in that test.
    */
   @Test
-  public void testBaseRoutesGetExported() {
+  void testBaseRoutesGetExported() {
     for (boolean isIbgp : ImmutableList.of(false, true)) {
       setUpPeers(isIbgp);
       assertThat(runTransformBgpRoutePreExport(_baseAggRouteBuilder.build()), not(nullValue()));
@@ -234,7 +234,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
   }
 
   @Test
-  public void testConvertGeneratedToBgpHasNextHop() {
+  void testConvertGeneratedToBgpHasNextHop() {
     NextHop nextHop = NextHopIp.of(Ip.parse("1.1.1.1"));
     assertThat(
         convertGeneratedRouteToBgp(_baseAggRouteBuilder.build(), Ip.ZERO, nextHop, false).build(),
@@ -242,7 +242,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
   }
 
   @Test
-  public void testConvertGeneratedToBgpPreservesOriginType() {
+  void testConvertGeneratedToBgpPreservesOriginType() {
     NextHop nextHop = NextHopIp.of(Ip.parse("1.1.1.1"));
     assertThat(
         convertGeneratedRouteToBgp(
@@ -264,7 +264,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
    * sendCommunity set, in IBGP or EBGP.
    */
   @Test
-  public void testCommunitiesInTransformedRoute() {
+  void testCommunitiesInTransformedRoute() {
     for (boolean isIbgp : ImmutableList.of(false, true)) {
       setUpPeers(isIbgp);
       CommunitySet communities = CommunitySet.of(StandardCommunity.of(10L));
@@ -298,7 +298,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
    * that behavior is configured.
    */
   @Test
-  public void testReplaceAllAsesWithLocalAs_true_ebgp() {
+  void testReplaceAllAsesWithLocalAs_true_ebgp() {
     setUpPeers(false, true);
     AsPath preExportAsPath = AsPath.ofSingletonAsSets(5L);
     Bgpv4Route bgpv4Route = _baseBgpRouteBuilder.setAsPath(preExportAsPath).build();
@@ -313,7 +313,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
    * if that behavior is NOT configured.
    */
   @Test
-  public void testReplaceAllAsesWithLocalAs_false_ebgp() {
+  void testReplaceAllAsesWithLocalAs_false_ebgp() {
     setUpPeers(false, false);
     AsPath preExportAsPath = AsPath.ofSingletonAsSets(5L);
     Bgpv4Route bgpv4Route = _baseBgpRouteBuilder.setAsPath(preExportAsPath).build();
@@ -328,7 +328,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
    * that behavior is configured.
    */
   @Test
-  public void testReplaceAllAsesWithLocalAs_ibgp() {
+  void testReplaceAllAsesWithLocalAs_ibgp() {
     for (boolean replaceNonLocalAsesOnExport : ImmutableList.of(false, true)) {
       setUpPeers(true, replaceNonLocalAsesOnExport);
       AsPath preExportAsPath = AsPath.ofSingletonAsSets(5L);
@@ -345,7 +345,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
    * it has the {@value org.batfish.common.WellKnownCommunity#NO_ADVERTISE} community (IBGP or EBGP)
    */
   @Test
-  public void testRoutesWithNoAdvertiseSetNotExported() {
+  void testRoutesWithNoAdvertiseSetNotExported() {
     for (boolean isIbgp : ImmutableList.of(false, true)) {
       setUpPeers(isIbgp);
       CommunitySet noAdvertiseCommunitySet = CommunitySet.of(StandardCommunity.NO_ADVERTISE);
@@ -368,7 +368,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
    * is EBGP.
    */
   @Test
-  public void testRoutesWithNoExportSetNotExported() {
+  void testRoutesWithNoExportSetNotExported() {
     CommunitySet noExportCommunitySet = CommunitySet.of(StandardCommunity.NO_EXPORT);
 
     {
@@ -422,7 +422,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
    * because that is tested in {@link #testEbgpDoesNotExportWithAsLoop()})
    */
   @Test
-  public void testAsPathInTransformedRoute() {
+  void testAsPathInTransformedRoute() {
     setUpPeers(false);
     long asInPath = 3L;
     AsPath originalAsPath = AsPath.of(AsSet.of(asInPath));
@@ -460,7 +460,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
    * in EBGP (when source peer hasn't set allowRemoteAsOut).
    */
   @Test
-  public void testEbgpDoesNotExportWithAsLoop() {
+  void testEbgpDoesNotExportWithAsLoop() {
     AsPath asPathContainingDestPeer = AsPath.of(AsSet.of(AS2));
     Bgpv4Route bgpv4Route = _baseBgpRouteBuilder.setAsPath(asPathContainingDestPeer).build();
     GeneratedRoute aggRoute = _baseAggRouteBuilder.setAsPath(asPathContainingDestPeer).build();
@@ -482,7 +482,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
 
   /** Test that MED is cleared on export to EBGP peers except for locally originated routes. */
   @Test
-  public void testEbgpDoesNotExportWithMEDSet() {
+  void testEbgpDoesNotExportWithMEDSet() {
     // _baseBgpRouteBuilder has receivedFromIp 0.0.0.0 indicating local origination
     Bgpv4Route locallyOriginated = _baseBgpRouteBuilder.setMetric(1000).build();
     Bgpv4Route notLocallyOriginated =
@@ -497,7 +497,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
 
   /** Test that MED is preserved/advertised to IBGP peers. */
   @Test
-  public void testIbgpDoesNotExportWithMEDSet() {
+  void testIbgpDoesNotExportWithMEDSet() {
     Bgpv4Route bgpv4Route = _baseBgpRouteBuilder.setMetric(1000).build();
 
     setUpPeers(true);
@@ -507,7 +507,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
 
   /** Test that weight is cleared in post-export for both IBGP and EBGP. */
   @Test
-  public void testWeightIsClearedPostExport() {
+  void testWeightIsClearedPostExport() {
     int nonZeroWeight = 19;
 
     // EBGP
@@ -525,7 +525,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
   }
 
   @Test
-  public void testNonBgpToBgpKeepTag() {
+  void testNonBgpToBgpKeepTag() {
     long tag = 100L;
     setUpPeers(false);
     assertThat(
@@ -546,7 +546,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
   }
 
   @Test
-  public void testNonBgpToBgpKeepMetric() {
+  void testNonBgpToBgpKeepMetric() {
     setUpPeers(false);
     long metric = 333;
     assertThat(
@@ -567,7 +567,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
   }
 
   @Test
-  public void testTransformBgpRoutePreExportKeepMetric_ibgp() {
+  void testTransformBgpRoutePreExportKeepMetric_ibgp() {
     // Peers are IBGP, so routes should be exported with their metrics preserved
     setUpPeers(true);
     long metric = 333;
@@ -582,7 +582,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
    * be propagated across eBGP session boundaries.
    */
   @Test
-  public void testLocalPreferenceClearedPostExportForEbgp() {
+  void testLocalPreferenceClearedPostExportForEbgp() {
     long nonDefaultLocalPref = 50;
     Builder routeBuilder =
         Bgpv4Route.testBuilder().setLocalPreference(nonDefaultLocalPref).setNetwork(DEST_NETWORK);
@@ -608,7 +608,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
    * within a confederation.
    */
   @Test
-  public void testLocalPreferencePreservedPostExportForIbgpAndConfed() {
+  void testLocalPreferencePreservedPostExportForIbgpAndConfed() {
     long nonDefaultLocalPref = 50;
 
     // iBGP: local preference should be preserved
@@ -651,7 +651,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
   }
 
   @Test
-  public void testAggregateProtocolIsCleared() {
+  void testAggregateProtocolIsCleared() {
     Builder routeBuilder = Bgpv4Route.testBuilder().setProtocol(RoutingProtocol.AGGREGATE);
     transformBgpRoutePostExport(
         routeBuilder,
@@ -670,7 +670,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
   }
 
   @Test
-  public void testSetEvpnType5NhPostExport() {
+  void testSetEvpnType5NhPostExport() {
     // Simulate exporting an EVPN route. If the route appears to be originated (based on NHIP),
     // transformBgpRoutePostExport should set its NHIP to the address family's NVE IP. Otherwise, it
     // should preserve the original NHIP for both EBGP and IBGP.
@@ -725,7 +725,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
   }
 
   @Test
-  public void testOriginatorIpSetOnOriginate() {
+  void testOriginatorIpSetOnOriginate() {
     setUpPeers(true);
     // When originating a route (e.g. from static/aggregate), Originator IP should be the local
     // Router ID.
@@ -740,7 +740,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
   }
 
   @Test
-  public void testOriginatorIpLoopPrevention() {
+  void testOriginatorIpLoopPrevention() {
     setUpPeers(true); // iBGP
 
     // Setup a received iBGP route with OriginatorIP equal to the destination's Router ID.

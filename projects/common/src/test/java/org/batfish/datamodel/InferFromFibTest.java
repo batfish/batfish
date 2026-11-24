@@ -1,22 +1,20 @@
 package org.batfish.datamodel;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
-import junit.framework.TestCase;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-@RunWith(JUnit4.class)
-public class InferFromFibTest extends TestCase {
+class InferFromFibTest {
   /**
    * {@link InferFromFib#getPotentialSourceIps} should dynamically resolve source IP based on FIB
    * and interface configurations.
    */
   @Test
-  public void testGetPotentialSourceIps() {
+  void testGetPotentialSourceIps() {
     String iface1 = "iface1";
 
     ImmutableList<AbstractRoute> resolutionSteps =
@@ -46,7 +44,7 @@ public class InferFromFibTest extends TestCase {
    * {@link InferFromFib#getPotentialSourceIps} should return an empty set if {@code fib} is null.
    */
   @Test
-  public void testGetPotentialSourceIps_nullFib() {
+  void testGetPotentialSourceIps_nullFib() {
     Configuration c = Configuration.builder().setHostname("r1").build();
     assertEquals(
         InferFromFib.instance().getPotentialSourceIps(Ip.parse("1.2.3.4"), null, c),

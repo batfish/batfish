@@ -9,12 +9,12 @@ import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class RouteMapMatchIpAddressPrefixListTest {
+class RouteMapMatchIpAddressPrefixListTest {
 
   @Test
-  public void testToBooleanExpr() {
+  void testToBooleanExpr() {
     RouteMapMatchIpAddressPrefixList match =
         new RouteMapMatchIpAddressPrefixList(ImmutableList.of("N1", "N2"));
 

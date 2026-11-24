@@ -14,6 +14,7 @@ import static org.batfish.dataplane.ibdp.TestUtils.assertRoute;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
+import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -69,11 +70,10 @@ import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public class OspfTest {
+class OspfTest {
 
   private static final ConcreteInterfaceAddress C1_E1_2_ADDRESS =
       ConcreteInterfaceAddress.parse("10.12.0.1/24");
@@ -679,7 +679,7 @@ public class OspfTest {
   }
 
   @Test
-  public void testOspfArea0MaxMetricTransit() {
+  void testOspfArea0MaxMetricTransit() {
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routesByNode =
         getOspfRoutes(
             0L,
@@ -728,7 +728,7 @@ public class OspfTest {
   }
 
   @Test
-  public void testOspfArea0MaxMetricTransitAndStub() {
+  void testOspfArea0MaxMetricTransitAndStub() {
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routesByNode =
         getOspfRoutes(
             0L,
@@ -777,7 +777,7 @@ public class OspfTest {
   }
 
   @Test
-  public void testOspfDualAreaBackboneInterAreaPropagationMaxMetricTransitStubSummary() {
+  void testOspfDualAreaBackboneInterAreaPropagationMaxMetricTransitStubSummary() {
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routesByNode =
         getOspfRoutes(
             1L,
@@ -826,7 +826,7 @@ public class OspfTest {
   }
 
   @Test
-  public void testOspfDualAreaBackboneInterAreaPropagationMaxMetricInterArea() {
+  void testOspfDualAreaBackboneInterAreaPropagationMaxMetricInterArea() {
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routesByNode =
         getOspfRoutes(
             1L,
@@ -861,7 +861,7 @@ public class OspfTest {
   }
 
   @Test
-  public void testOspfDualAreaBackboneInterAreaPropagationMaxMetricSummaryOverridesInterArea() {
+  void testOspfDualAreaBackboneInterAreaPropagationMaxMetricSummaryOverridesInterArea() {
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routesByNode =
         getOspfRoutes(
             1L,
@@ -892,7 +892,7 @@ public class OspfTest {
   }
 
   @Test
-  public void
+  void
       testOspfDualAreaBackboneInterAreaPropagationMaxMetricTransitStubSummaryR2E21SummarizeAdvertiseFixedMetric() {
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routesByNode =
         getOspfRoutes(
@@ -941,7 +941,7 @@ public class OspfTest {
   }
 
   @Test
-  public void testOspfDualAreaBackboneInterAreaPropagationR2E21SummarizeAdvertiseDynamicMetric() {
+  void testOspfDualAreaBackboneInterAreaPropagationR2E21SummarizeAdvertiseDynamicMetric() {
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routesByNode =
         getOspfRoutes(
             1L,
@@ -989,7 +989,7 @@ public class OspfTest {
   }
 
   @Test
-  public void testOspfDualAreaBackboneInterAreaPropagationR2E21SummarizeAdvertiseFixedMetric() {
+  void testOspfDualAreaBackboneInterAreaPropagationR2E21SummarizeAdvertiseFixedMetric() {
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routesByNode =
         getOspfRoutes(
             1L,
@@ -1037,7 +1037,7 @@ public class OspfTest {
   }
 
   @Test
-  public void testOspfDualAreaBackboneInterAreaPropagationR2E21SummarizeNoAdvertiseAndNoInstall() {
+  void testOspfDualAreaBackboneInterAreaPropagationR2E21SummarizeNoAdvertiseAndNoInstall() {
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routesByNode =
         getOspfRoutes(
             1L, 1L, 0L, 0L, 0L, 0L, 0L, null, null, null, null, NOT_ADVERTISE_AND_NO_DISCARD, null);
@@ -1073,7 +1073,7 @@ public class OspfTest {
   }
 
   @Test
-  public void testOspfDualAreaBackboneInterAreaPropagationR2E21SummarizeNoAdvertiseAndInstall() {
+  void testOspfDualAreaBackboneInterAreaPropagationR2E21SummarizeNoAdvertiseAndInstall() {
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routesByNode =
         getOspfRoutes(
             1L,
@@ -1121,7 +1121,7 @@ public class OspfTest {
   }
 
   @Test
-  public void testOspfDualAreaNonBackboneInterAreaPropagationMaxMetricTransitStubSummary() {
+  void testOspfDualAreaNonBackboneInterAreaPropagationMaxMetricTransitStubSummary() {
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routesByNode =
         getOspfRoutes(
             0L,
@@ -1170,7 +1170,7 @@ public class OspfTest {
   }
 
   @Test
-  public void testOspfMultiAreaThroughBackboneMaxMetricTransitStubSummary() {
+  void testOspfMultiAreaThroughBackboneMaxMetricTransitStubSummary() {
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routesByNode =
         getOspfRoutes(
             1L,
@@ -1219,7 +1219,7 @@ public class OspfTest {
   }
 
   @Test
-  public void testOspfMultiAreaThroughNonBackboneMaxMetricTransitStubSummary() {
+  void testOspfMultiAreaThroughNonBackboneMaxMetricTransitStubSummary() {
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routesByNode =
         getOspfRoutes(
             0L,
@@ -1268,7 +1268,7 @@ public class OspfTest {
   }
 
   @Test
-  public void testOspfStubBehaviorBackboneRoutes() {
+  void testOspfStubBehaviorBackboneRoutes() {
     // NSSA args don't really matter
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routesWithSummaries =
         getOspfStubBehavior(true, true, OspfDefaultOriginateType.INTER_AREA);
@@ -1286,7 +1286,7 @@ public class OspfTest {
   }
 
   @Test
-  public void testOspfStubBehaviorNssaDefaultTypes() {
+  void testOspfStubBehaviorNssaDefaultTypes() {
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routesInterArea =
         getOspfStubBehavior(true, true, OspfDefaultOriginateType.INTER_AREA);
     assertRoute(routesInterArea, OSPF_IA, "r4", Prefix.ZERO, 10L);
@@ -1315,7 +1315,7 @@ public class OspfTest {
   }
 
   @Test
-  public void testOspfStubBehaviorNssaRoutes() {
+  void testOspfStubBehaviorNssaRoutes() {
     // stub args don't really matter
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routesWithSummaries =
         getOspfStubBehavior(true, false, OspfDefaultOriginateType.NONE);
@@ -1345,7 +1345,7 @@ public class OspfTest {
   }
 
   @Test
-  public void testOspfStubBehaviorRegularAreaRoutes() {
+  void testOspfStubBehaviorRegularAreaRoutes() {
     // NSSA args don't really matter
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routesWithSummaries =
         getOspfStubBehavior(true, true, OspfDefaultOriginateType.NONE);
@@ -1358,7 +1358,7 @@ public class OspfTest {
   }
 
   @Test
-  public void testOspfStubBehaviorStubRoutes() {
+  void testOspfStubBehaviorStubRoutes() {
     // NSSA args don't really matter
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routesWithSummaries =
         getOspfStubBehavior(false, false, OspfDefaultOriginateType.NONE);
@@ -1389,10 +1389,10 @@ public class OspfTest {
     assertNoRoute(routesWithSummaries, "r3", Prefix.parse("10.10.10.10/32"));
   }
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testOspfWithMultipleEdgesInSameIface() throws IOException {
+  void testOspfWithMultipleEdgesInSameIface() throws IOException {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
@@ -1411,7 +1411,7 @@ public class OspfTest {
   }
 
   @Test
-  public void testOspfDistributeList() throws IOException {
+  void testOspfDistributeList() throws IOException {
     // the network will result in two routes of each OSPF type on r2 and r3, and we will block one
     // of them by using distribute-list
     // r2 will have ospf, ospf e1 and ospf e2. r3 will have ospf IA
@@ -1444,7 +1444,7 @@ public class OspfTest {
   }
 
   @Test
-  public void testLoopbackRoutes() throws IOException {
+  void testLoopbackRoutes() throws IOException {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()

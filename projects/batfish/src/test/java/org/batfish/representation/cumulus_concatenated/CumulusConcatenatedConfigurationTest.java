@@ -19,10 +19,10 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -49,13 +49,13 @@ import org.batfish.representation.frr.BgpVrf;
 import org.batfish.representation.frr.FrrConfiguration;
 import org.batfish.representation.frr.FrrInterface;
 import org.batfish.representation.frr.StaticRoute;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link CumulusConcatenatedConfiguration}. */
-public class CumulusConcatenatedConfigurationTest {
+class CumulusConcatenatedConfigurationTest {
 
   @Test
-  public void testConvertVxlan_localIpPrecedence() {
+  void testConvertVxlan_localIpPrecedence() {
     Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
     Vrf vrf = new Vrf("vrf");
     c.setVrfs(ImmutableMap.of(vrf.getName(), vrf));
@@ -104,7 +104,7 @@ public class CumulusConcatenatedConfigurationTest {
 
   /** Test that loopback interface is unconditionally created */
   @Test
-  public void testInitializeAllInterfaces_createLoopback() {
+  void testInitializeAllInterfaces_createLoopback() {
     Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
     CumulusConcatenatedConfiguration.builder().setHostname("c").build().initializeAllInterfaces(c);
     assertTrue(c.getAllInterfaces().containsKey(LOOPBACK_INTERFACE_NAME));
@@ -127,7 +127,7 @@ public class CumulusConcatenatedConfigurationTest {
 
   /** Test bandwidths incorporate interface runtime data. */
   @Test
-  public void testInterfaceRuntimeData() {
+  void testInterfaceRuntimeData() {
     Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
     CumulusConcatenatedConfiguration.builder()
         .setHostname("c")
@@ -139,7 +139,7 @@ public class CumulusConcatenatedConfigurationTest {
 
   /** Test bandwidths ignore invalid interface runtime data. */
   @Test
-  public void testInterfaceRuntimeDataInvalidTooLow() {
+  void testInterfaceRuntimeDataInvalidTooLow() {
     Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
     CumulusConcatenatedConfiguration vs =
         CumulusConcatenatedConfiguration.builder()
@@ -155,7 +155,7 @@ public class CumulusConcatenatedConfigurationTest {
 
   /** Test bandwidths ignore invalid interface runtime data. */
   @Test
-  public void testInterfaceRuntimeDataInvalidTooHigh() {
+  void testInterfaceRuntimeDataInvalidTooHigh() {
     Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
     CumulusConcatenatedConfiguration vs =
         CumulusConcatenatedConfiguration.builder()
@@ -171,7 +171,7 @@ public class CumulusConcatenatedConfigurationTest {
 
   /** Test that bridge is not included as an interface */
   @Test
-  public void testInitializeAllInterfaces_noBridge() {
+  void testInitializeAllInterfaces_noBridge() {
     Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
     InterfacesInterface bridge = new InterfacesInterface(BRIDGE_NAME);
     CumulusConcatenatedConfiguration.builder()
@@ -184,7 +184,7 @@ public class CumulusConcatenatedConfigurationTest {
 
   /** Interfaces in interfaceConfiguration are included */
   @Test
-  public void testInitializeAllInterfaces_interfacesInterfaces() {
+  void testInitializeAllInterfaces_interfacesInterfaces() {
     Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
     InterfacesInterface iface1 = new InterfacesInterface("interfaces");
     iface1.setVrf("vrf1");
@@ -201,7 +201,7 @@ public class CumulusConcatenatedConfigurationTest {
 
   /** Interfaces in frrConfiguration are included */
   @Test
-  public void testInitializeAllInterfaces_frrInterfaces() {
+  void testInitializeAllInterfaces_frrInterfaces() {
     Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
     FrrInterface iface1 = new FrrInterface("frr", "vrf1");
     FrrConfiguration frrConfiguration = new FrrConfiguration();
@@ -219,7 +219,7 @@ public class CumulusConcatenatedConfigurationTest {
 
   /** Missing super interfaces are included */
   @Test
-  public void testInitializeAllInterfaces_superInterfaces() {
+  void testInitializeAllInterfaces_superInterfaces() {
     Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
     InterfacesInterface iface1 = new InterfacesInterface("swp1.2");
     CumulusConcatenatedConfiguration.builder()
@@ -233,7 +233,7 @@ public class CumulusConcatenatedConfigurationTest {
   }
 
   @Test
-  public void testInitializeAllInterfaces_vxlanInterfaces() {
+  void testInitializeAllInterfaces_vxlanInterfaces() {
     Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
     InterfacesInterface iface1 = new InterfacesInterface("vni4001");
     iface1.setVxlanId(10001);
@@ -246,7 +246,7 @@ public class CumulusConcatenatedConfigurationTest {
   }
 
   @Test
-  public void testToInterface_active() {
+  void testToInterface_active() {
     InterfacesInterface vsIface = new InterfacesInterface("swp1");
     CumulusConcatenatedConfiguration vsConfig =
         CumulusConcatenatedConfiguration.builder()
@@ -262,7 +262,7 @@ public class CumulusConcatenatedConfigurationTest {
   }
 
   @Test
-  public void testToInterface_inactive() {
+  void testToInterface_inactive() {
     InterfacesInterface vsIface = new InterfacesInterface("swp1");
     CumulusConcatenatedConfiguration vsConfig =
         CumulusConcatenatedConfiguration.builder()
@@ -281,7 +281,7 @@ public class CumulusConcatenatedConfigurationTest {
   }
 
   @Test
-  public void testToInterface_sub_active() {
+  void testToInterface_sub_active() {
     InterfacesInterface vsIface = new InterfacesInterface("swp1s1");
     CumulusConcatenatedConfiguration vsConfig =
         CumulusConcatenatedConfiguration.builder()
@@ -293,7 +293,7 @@ public class CumulusConcatenatedConfigurationTest {
   }
 
   @Test
-  public void testToInterface_sub_inactive() {
+  void testToInterface_sub_inactive() {
     InterfacesInterface vsIface = new InterfacesInterface("swp1s1");
     CumulusConcatenatedConfiguration vsConfig =
         CumulusConcatenatedConfiguration.builder()
@@ -312,7 +312,7 @@ public class CumulusConcatenatedConfigurationTest {
   }
 
   @Test
-  public void testToVIConfigIntfShut() {
+  void testToVIConfigIntfShut() {
     InterfacesInterface vsIface = new InterfacesInterface("swp1");
     FrrConfiguration frrConfiguration = new FrrConfiguration();
 
@@ -348,7 +348,7 @@ public class CumulusConcatenatedConfigurationTest {
   }
 
   @Test
-  public void testToVIConfigIntfNoShut() {
+  void testToVIConfigIntfNoShut() {
     InterfacesInterface vsIface = new InterfacesInterface("swp1");
     FrrConfiguration frrConfiguration = new FrrConfiguration();
 
@@ -371,7 +371,7 @@ public class CumulusConcatenatedConfigurationTest {
 
   /** Tests that interfaces are assigned LLAs iff needed */
   @Test
-  public void testInterface_assignLla() {
+  void testInterface_assignLla() {
     /*
      - swp1 -- no address in interfaces or frr, not used for unnumbered
      - swp2 -- no address in interfaces or frr, used for unnumbered
@@ -428,7 +428,7 @@ public class CumulusConcatenatedConfigurationTest {
   }
 
   @Test
-  public void testPopulateCommonProperties_mtu() {
+  void testPopulateCommonProperties_mtu() {
     Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
     CumulusConcatenatedConfiguration vc = new CumulusConcatenatedConfiguration();
     InterfacesInterface vsIface = new InterfacesInterface("iface");
@@ -450,7 +450,7 @@ public class CumulusConcatenatedConfigurationTest {
   }
 
   @Test
-  public void testPopulateLoopbackProperties_clagVxlanAnycastIp() {
+  void testPopulateLoopbackProperties_clagVxlanAnycastIp() {
     Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
     org.batfish.datamodel.Interface viLoopback =
         org.batfish.datamodel.TestInterface.builder()
@@ -474,7 +474,7 @@ public class CumulusConcatenatedConfigurationTest {
   }
 
   @Test
-  public void testInitPostUpRoutes() {
+  void testInitPostUpRoutes() {
     StaticRoute route0 = new StaticRoute(Prefix.parse("1.1.1.0/24"), null, "eth0", null);
     StaticRoute route1 = new StaticRoute(Prefix.parse("2.1.1.0/24"), null, "eth0", null);
 
@@ -525,14 +525,14 @@ public class CumulusConcatenatedConfigurationTest {
   }
 
   @Test
-  public void testLowerCaseHostname() {
+  void testLowerCaseHostname() {
     CumulusConcatenatedConfiguration vsConfig =
         CumulusConcatenatedConfiguration.builder().setHostname("Node").build();
     assertThat(vsConfig.getHostname(), equalTo("node"));
   }
 
   @Test
-  public void testIsValidVIInterface() {
+  void testIsValidVIInterface() {
     assertFalse(isValidVIInterface(new InterfacesInterface(BRIDGE_NAME)));
     InterfacesInterface vxlan = new InterfacesInterface("vni4001");
     vxlan.setVxlanId(10001);

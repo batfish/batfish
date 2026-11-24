@@ -8,13 +8,13 @@ import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link CommunityToRegexInputString}. */
-public final class CommunityToRegexInputStringTest {
+final class CommunityToRegexInputStringTest {
 
   @Test
-  public void testVisitColonSeparatedRendering() {
+  void testVisitColonSeparatedRendering() {
     assertThat(
         ColonSeparatedRendering.instance()
             .accept(CommunityToRegexInputString.instance(), StandardCommunity.of(1, 1)),
@@ -33,7 +33,7 @@ public final class CommunityToRegexInputStringTest {
   }
 
   @Test
-  public void testVisitIntegerValueRendering() {
+  void testVisitIntegerValueRendering() {
     assertThat(
         IntegerValueRendering.instance()
             .accept(CommunityToRegexInputString.instance(), StandardCommunity.of(1, 1)),
@@ -49,7 +49,7 @@ public final class CommunityToRegexInputStringTest {
   }
 
   @Test
-  public void testVisitSpecialCasesRendering() {
+  void testVisitSpecialCasesRendering() {
     Community specialCase = StandardCommunity.of(3, 4);
     String specialCaseString = "foo";
     SpecialCasesRendering r =

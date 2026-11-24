@@ -1,28 +1,28 @@
 package org.batfish.datamodel.tracking;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link DecrementPriority}. */
-public final class DecrementPriorityTest {
+final class DecrementPriorityTest {
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     DecrementPriority obj = new DecrementPriority(1);
     assertEquals(obj, SerializationUtils.clone(obj));
   }
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     DecrementPriority obj = new DecrementPriority(1);
     assertEquals(obj, BatfishObjectMapper.clone(obj, TrackAction.class));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     DecrementPriority obj = new DecrementPriority(1);
     new EqualsTester()
         .addEqualityGroup(obj, new DecrementPriority(1))

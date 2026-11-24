@@ -9,9 +9,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import org.batfish.common.Warnings;
@@ -26,13 +26,13 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.vendor.VendorStructureId;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class CiscoXrConversionsTest {
+class CiscoXrConversionsTest {
 
   /** Check that vendorStructureId is set when ACL is converted to route filter list */
   @Test
-  public void testToRouterFilterList_standardAccessList_vendorStructureId() {
+  void testToRouterFilterList_standardAccessList_vendorStructureId() {
     Ipv4AccessList acl = new Ipv4AccessList("name");
     RouteFilterList rfl = toRouteFilterList(acl, "file");
     assertThat(
@@ -44,7 +44,7 @@ public class CiscoXrConversionsTest {
 
   /** Check that vendorStructureId is set when prefix list is converted to route filter list */
   @Test
-  public void testToRouterFilterList_prefixList_vendorStructureId() {
+  void testToRouterFilterList_prefixList_vendorStructureId() {
     PrefixList plist = new PrefixList("name");
     RouteFilterList rfl = toRouteFilterList(plist, "file");
     assertThat(
@@ -55,7 +55,7 @@ public class CiscoXrConversionsTest {
   }
 
   @Test
-  public void testGetOspfInboundDistributeListPolicy_nullList() {
+  void testGetOspfInboundDistributeListPolicy_nullList() {
     Configuration c = new Configuration("c", ConfigurationFormat.CISCO_IOS_XR);
     Warnings w = new Warnings(true, true, true);
     assertNull(getOspfInboundDistributeListPolicy(null, "vrf", "proc", 0, "iface", c, w));
@@ -63,7 +63,7 @@ public class CiscoXrConversionsTest {
   }
 
   @Test
-  public void testGetOspfInboundDistributeListPolicy_undefinedAcl() {
+  void testGetOspfInboundDistributeListPolicy_undefinedAcl() {
     DistributeList distList =
         new DistributeList("acl", DistributeList.DistributeListFilterType.ACCESS_LIST);
     Configuration c = new Configuration("c", ConfigurationFormat.CISCO_IOS_XR);
@@ -81,7 +81,7 @@ public class CiscoXrConversionsTest {
   }
 
   @Test
-  public void testGetOspfInboundDistributeListPolicy_undefinedRoutePolicy() {
+  void testGetOspfInboundDistributeListPolicy_undefinedRoutePolicy() {
     DistributeList distList =
         new DistributeList("rp", DistributeList.DistributeListFilterType.ROUTE_POLICY);
     Configuration c = new Configuration("c", ConfigurationFormat.CISCO_IOS_XR);
@@ -99,7 +99,7 @@ public class CiscoXrConversionsTest {
   }
 
   @Test
-  public void testGetOspfInboundDistributeListPolicy_acl() {
+  void testGetOspfInboundDistributeListPolicy_acl() {
     DistributeList distList =
         new DistributeList("acl", DistributeList.DistributeListFilterType.ACCESS_LIST);
     Configuration c = new Configuration("c", ConfigurationFormat.CISCO_IOS_XR);
@@ -132,7 +132,7 @@ public class CiscoXrConversionsTest {
   }
 
   @Test
-  public void testGetOspfInboundDistributeListPolicy_routePolicy() {
+  void testGetOspfInboundDistributeListPolicy_routePolicy() {
     DistributeList distList =
         new DistributeList("rp", DistributeList.DistributeListFilterType.ROUTE_POLICY);
     Configuration c = new Configuration("c", ConfigurationFormat.CISCO_IOS_XR);

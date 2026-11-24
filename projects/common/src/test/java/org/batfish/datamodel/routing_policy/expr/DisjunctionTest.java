@@ -12,47 +12,44 @@ import static org.hamcrest.Matchers.is;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link Disjunction}. */
-@RunWith(JUnit4.class)
-public class DisjunctionTest {
+class DisjunctionTest {
 
   @Test
-  public void simplifyEmpty() {
+  void simplifyEmpty() {
     Disjunction empty = new Disjunction();
     assertThat(empty.simplify(), is(FALSE));
   }
 
   @Test
-  public void simplifyFalse() {
+  void simplifyFalse() {
     Disjunction falseS = new Disjunction(ImmutableList.of(FALSE));
     assertThat(falseS.simplify(), is(FALSE));
   }
 
   @Test
-  public void simplifyTrue() {
+  void simplifyTrue() {
     Disjunction trueS = new Disjunction(ImmutableList.of(TRUE));
     assertThat(trueS.simplify(), is(TRUE));
   }
 
   @Test
-  public void simplifySingleStatement() {
+  void simplifySingleStatement() {
     Disjunction single = new Disjunction(ImmutableList.of(CALL_EXPR_CONTEXT));
     assertThat(single.simplify(), is(CALL_EXPR_CONTEXT));
   }
 
   @Test
-  public void simplifySkipFalse() {
+  void simplifySkipFalse() {
     Disjunction manyFalse =
         new Disjunction(ImmutableList.of(FALSE, FALSE, CALL_EXPR_CONTEXT, FALSE));
     assertThat(manyFalse.simplify(), is(CALL_EXPR_CONTEXT));
   }
 
   @Test
-  public void simplifyTwoStatements() {
+  void simplifyTwoStatements() {
     Disjunction two = new Disjunction(ImmutableList.of(CALL_EXPR_CONTEXT, CALL_STATEMENT_CONTEXT));
     BooleanExpr simplified = two.simplify();
     assertThat(simplified, allOf(instanceOf(Disjunction.class), equalTo(two)));
@@ -60,7 +57,7 @@ public class DisjunctionTest {
   }
 
   @Test
-  public void simplifyShortCircuit() {
+  void simplifyShortCircuit() {
     Disjunction shortCircuit =
         new Disjunction(ImmutableList.of(CALL_EXPR_CONTEXT, TRUE, CALL_STATEMENT_CONTEXT));
     BooleanExpr simplified = shortCircuit.simplify();

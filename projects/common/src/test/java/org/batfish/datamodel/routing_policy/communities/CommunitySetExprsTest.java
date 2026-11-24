@@ -1,16 +1,16 @@
 package org.batfish.datamodel.routing_policy.communities;
 
 import static org.batfish.datamodel.routing_policy.communities.CommunitySetExprs.toMatchExpr;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.apache.commons.text.StringEscapeUtils;
 import org.batfish.datamodel.routing_policy.Common;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class CommunitySetExprsTest {
+final class CommunitySetExprsTest {
 
   @Test
-  public void testCommunitySetMatchRegexUnoptimized() {
+  void testCommunitySetMatchRegexUnoptimized() {
     assertEquals(
         toMatchExpr("^65000:123 65011:12[3]$"),
         new CommunitySetMatchRegex(
@@ -28,7 +28,7 @@ public final class CommunitySetExprsTest {
   }
 
   @Test
-  public void testVisitCommunitySetMatchRegexOptimized() {
+  void testVisitCommunitySetMatchRegexOptimized() {
 
     String underscore = StringEscapeUtils.unescapeJava(Common.DEFAULT_UNDERSCORE_REPLACEMENT);
 

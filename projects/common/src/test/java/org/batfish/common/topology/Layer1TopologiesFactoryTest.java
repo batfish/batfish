@@ -9,12 +9,12 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.collect.ImmutableMap;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.NetworkFactory;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link Layer1TopologiesFactory}. */
-public final class Layer1TopologiesFactoryTest {
+final class Layer1TopologiesFactoryTest {
   @Test
-  public void testCanonicalization() {
+  void testCanonicalization() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c = nf.configurationBuilder().setHostname("c").build();
     nf.interfaceBuilder().setOwner(c).setName("i").setType(PHYSICAL).build();
@@ -37,7 +37,7 @@ public final class Layer1TopologiesFactoryTest {
   }
 
   @Test
-  public void testLogicalTopologyConversion() {
+  void testLogicalTopologyConversion() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c = nf.configurationBuilder().setHostname("c").build();
     nf.interfaceBuilder().setOwner(c).setName("agg").setType(AGGREGATED).build();

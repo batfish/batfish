@@ -3,7 +3,7 @@ package org.batfish.datamodel.flow;
 import static org.batfish.datamodel.FlowDiff.flowDiff;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
@@ -15,12 +15,12 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.MatchSessionStep.MatchSessionStepDetail;
 import org.batfish.datamodel.transformation.IpField;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link MatchSessionStep}. */
-public final class MatchSessionStepTest {
+final class MatchSessionStepTest {
   @Test
-  public void testConstructor() {
+  void testConstructor() {
     SessionScope sessionScope = new IncomingSessionScope(ImmutableSet.of("a"));
     SessionMatchExpr matchCriteria =
         new SessionMatchExpr(IpProtocol.ICMP, Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"), null, null);
@@ -42,7 +42,7 @@ public final class MatchSessionStepTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     SessionScope sessionScope = new IncomingSessionScope(ImmutableSet.of("b"));
     ForwardOutInterface forwardAction =
         new ForwardOutInterface("a", NodeInterfacePair.of("a", "b"));
@@ -68,7 +68,7 @@ public final class MatchSessionStepTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     SessionScope sessionScope = new IncomingSessionScope(ImmutableSet.of("a"));
     SessionScope sessionScope2 = new IncomingSessionScope(ImmutableSet.of("b"));
     SessionMatchExpr matchCriteria =

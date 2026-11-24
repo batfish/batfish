@@ -2,8 +2,8 @@ package org.batfish.datamodel.routing_policy.expr;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
@@ -21,25 +21,25 @@ import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.routing_policy.Environment;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link MatchClusterListLength} */
-public final class MatchClusterListLengthTest {
+final class MatchClusterListLengthTest {
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     BooleanExpr obj = MatchClusterListLength.of(IntComparator.EQ, new LiteralInt(1));
     assertThat(BatfishObjectMapper.clone(obj, BooleanExpr.class), equalTo(obj));
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     BooleanExpr obj = MatchClusterListLength.of(IntComparator.EQ, new LiteralInt(1));
     assertThat(SerializationUtils.clone(obj), equalTo(obj));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     MatchClusterListLength obj = MatchClusterListLength.of(IntComparator.EQ, new LiteralInt(1));
     new EqualsTester()
         .addEqualityGroup(obj, MatchClusterListLength.of(IntComparator.EQ, new LiteralInt(1)))
@@ -49,7 +49,7 @@ public final class MatchClusterListLengthTest {
   }
 
   @Test
-  public void testEvaluate() {
+  void testEvaluate() {
     BooleanExpr matchClusterListLength_0 =
         MatchClusterListLength.of(IntComparator.EQ, new LiteralInt(0));
     BooleanExpr matchClusterListLength_1 =

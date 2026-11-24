@@ -1,6 +1,6 @@
 package org.batfish.minesweeper.collectors;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -28,11 +28,11 @@ import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.minesweeper.utils.Tuple;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link AsPathNameBooleanExprCollector}. */
-public class AsPathNameBooleanExprCollectorTest {
+class AsPathNameBooleanExprCollectorTest {
 
   private static final String HOSTNAME = "hostname";
   private Configuration _baseConfig;
@@ -43,8 +43,8 @@ public class AsPathNameBooleanExprCollectorTest {
   private static final String ASPATH_LST_3 = "lst3";
   private static final String ASPATH_LST_4 = "lst4";
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder()
@@ -67,7 +67,7 @@ public class AsPathNameBooleanExprCollectorTest {
   }
 
   @Test
-  public void testVisitConjunction() {
+  void testVisitConjunction() {
     Conjunction c =
         new Conjunction(
             ImmutableList.of(
@@ -79,7 +79,7 @@ public class AsPathNameBooleanExprCollectorTest {
   }
 
   @Test
-  public void testVisitConjunctionChain() {
+  void testVisitConjunctionChain() {
     ConjunctionChain cc =
         new ConjunctionChain(
             ImmutableList.of(
@@ -93,7 +93,7 @@ public class AsPathNameBooleanExprCollectorTest {
   }
 
   @Test
-  public void testVisitDisjunction() {
+  void testVisitDisjunction() {
     Disjunction d =
         new Disjunction(
             ImmutableList.of(
@@ -106,7 +106,7 @@ public class AsPathNameBooleanExprCollectorTest {
   }
 
   @Test
-  public void testVisitFirstMatchChain() {
+  void testVisitFirstMatchChain() {
     FirstMatchChain fmc =
         new FirstMatchChain(
             ImmutableList.of(
@@ -120,7 +120,7 @@ public class AsPathNameBooleanExprCollectorTest {
   }
 
   @Test
-  public void testVisitMatchAsPath() {
+  void testVisitMatchAsPath() {
     MatchAsPath matchAsPath =
         MatchAsPath.of(InputAsPath.instance(), AsPathMatchExprReference.of(ASPATH_LST_1));
 
@@ -131,7 +131,7 @@ public class AsPathNameBooleanExprCollectorTest {
   }
 
   @Test
-  public void testVisitMatchLegacyAsPathNamed() {
+  void testVisitMatchLegacyAsPathNamed() {
     String asPathName = "name";
 
     _baseConfig.setAsPathAccessLists(
@@ -152,7 +152,7 @@ public class AsPathNameBooleanExprCollectorTest {
   }
 
   @Test
-  public void testVisitNot() {
+  void testVisitNot() {
     Not n =
         new Not(
             MatchAsPath.of(
@@ -168,7 +168,7 @@ public class AsPathNameBooleanExprCollectorTest {
   }
 
   @Test
-  public void testVisitWithEnvironmentExpr() {
+  void testVisitWithEnvironmentExpr() {
     WithEnvironmentExpr wee = new WithEnvironmentExpr();
     wee.setExpr(MatchAsPath.of(InputAsPath.instance(), AsPathMatchExprReference.of(ASPATH_LST_1)));
     wee.setPreStatements(

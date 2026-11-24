@@ -7,11 +7,11 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.dataplane.rib.RibId;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class NodeTest {
+class NodeTest {
   @Test
-  public void testGetRib() {
+  void testGetRib() {
     Configuration c =
         Configuration.builder()
             .setHostname("c")

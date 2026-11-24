@@ -15,12 +15,9 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.expr.AsExpr;
 import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
 import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-@RunWith(JUnit4.class)
-public final class ExcludeAsPathTest {
+final class ExcludeAsPathTest {
 
   private static Environment newTestEnvironment(Bgpv4Route.Builder outputRoute) {
     Configuration c = new Configuration("host", ConfigurationFormat.CISCO_IOS);
@@ -28,7 +25,7 @@ public final class ExcludeAsPathTest {
   }
 
   @Test
-  public void testExcludeMissingAsFromAsSet() {
+  void testExcludeMissingAsFromAsSet() {
     List<AsExpr> exclude = Lists.newArrayList(new ExplicitAs(3L));
     ExcludeAsPath operation = new ExcludeAsPath(new LiteralAsList(exclude));
     Bgpv4Route.Builder builder = Bgpv4Route.testBuilder();
@@ -40,7 +37,7 @@ public final class ExcludeAsPathTest {
   }
 
   @Test
-  public void testExcludeAsSet() {
+  void testExcludeAsSet() {
     List<AsExpr> exclude = Lists.newArrayList(new ExplicitAs(3L));
     ExcludeAsPath operation = new ExcludeAsPath(new LiteralAsList(exclude));
     Bgpv4Route.Builder builder = Bgpv4Route.testBuilder();
@@ -52,7 +49,7 @@ public final class ExcludeAsPathTest {
   }
 
   @Test
-  public void testExcludeSingletonAsSet() {
+  void testExcludeSingletonAsSet() {
     List<AsExpr> exclude = Lists.newArrayList(new ExplicitAs(3L));
     ExcludeAsPath operation = new ExcludeAsPath(new LiteralAsList(exclude));
     Bgpv4Route.Builder builder = Bgpv4Route.testBuilder();
@@ -64,7 +61,7 @@ public final class ExcludeAsPathTest {
   }
 
   @Test
-  public void testExcludeWithIntermediateAttributes() {
+  void testExcludeWithIntermediateAttributes() {
     List<AsExpr> exclude = Lists.newArrayList(new ExplicitAs(3L));
     ExcludeAsPath operation = new ExcludeAsPath(new LiteralAsList(exclude));
     Bgpv4Route.Builder outputRoute = Bgpv4Route.testBuilder();

@@ -8,9 +8,9 @@ import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -28,10 +28,10 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.NetworkFactory;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link BDDSourceManager}. */
-public class BDDSourceManagerTest {
+class BDDSourceManagerTest {
   private static final String IFACE1 = "iface1";
   private static final String IFACE2 = "iface2";
   private static final String IFACE3 = "iface3";
@@ -44,7 +44,7 @@ public class BDDSourceManagerTest {
   private final BDDOps _ops = new BDDOps(_pkt.getFactory());
 
   @Test
-  public void test() {
+  void test() {
     BDDSourceManager mgr = BDDSourceManager.forInterfaces(_pkt, IFACES_1_2);
     BDD deviceBDD = mgr.getOriginatingFromDeviceBDD();
     BDD bdd1 = mgr.getSourceInterfaceBDD(IFACE1);
@@ -55,7 +55,7 @@ public class BDDSourceManagerTest {
   }
 
   @Test
-  public void testSane() {
+  void testSane() {
     BDDSourceManager mgr = BDDSourceManager.forInterfaces(_pkt, IFACES_1_2);
     BDD noSource =
         _ops.or(
@@ -67,7 +67,7 @@ public class BDDSourceManagerTest {
   }
 
   @Test
-  public void testNoReferencedSources() {
+  void testNoReferencedSources() {
     BDDSourceManager mgr = BDDSourceManager.forSources(_pkt, IFACES_1_2, ImmutableSet.of());
     assertTrue(mgr.isTrivial());
     assertTrue(mgr.getSourceInterfaceBDD(IFACE1).isOne());
@@ -97,7 +97,7 @@ public class BDDSourceManagerTest {
   }
 
   @Test
-  public void testForNetwork() {
+  void testForNetwork() {
     /*
      * Create a network with two configs. Both have the same interfaces and ACLs
      */
@@ -119,7 +119,7 @@ public class BDDSourceManagerTest {
   }
 
   @Test
-  public void testAllSourcesTracked() {
+  void testAllSourcesTracked() {
     BDDSourceManager mgr = BDDSourceManager.forSources(_pkt, ALL_IFACES, ALL_IFACES);
     assertFalse(mgr.isTrivial());
     assertTrue(mgr.allSourcesTracked());
@@ -130,7 +130,7 @@ public class BDDSourceManagerTest {
   }
 
   @Test
-  public void testSourceBDDs() {
+  void testSourceBDDs() {
     BDDSourceManager mgr = BDDSourceManager.forSources(_pkt, ALL_IFACES, ALL_IFACES);
     assertFalse(mgr.isTrivial());
     Map<String, BDD> srcBdds = mgr.getSourceBDDs();
@@ -155,7 +155,7 @@ public class BDDSourceManagerTest {
    * source manager tracks all interfaces that can send or can receive packets.
    */
   @Test
-  public void testInitializeSessions() {
+  void testInitializeSessions() {
     NetworkFactory nf = new NetworkFactory();
     Configuration config =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
@@ -190,7 +190,7 @@ public class BDDSourceManagerTest {
    * trivial. The trivial source manager still only tracks active sources that can receive packets.
    */
   @Test
-  public void testInitializeSessions_noSessionInfo() {
+  void testInitializeSessions_noSessionInfo() {
     NetworkFactory nf = new NetworkFactory();
     Configuration config =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();

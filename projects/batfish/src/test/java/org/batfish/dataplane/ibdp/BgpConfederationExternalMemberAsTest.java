@@ -1,10 +1,11 @@
 package org.batfish.dataplane.ibdp;
 
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.graph.ValueGraph;
+import java.io.File;
 import java.io.IOException;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpSessionProperties;
@@ -13,9 +14,8 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * Regression test for https://github.com/batfish/batfish/issues/9877.
@@ -27,9 +27,9 @@ import org.junit.rules.TemporaryFolder;
  * and would send its member-AS (65001) in the OPEN message. R1 expects 65000 (confed ID), causing
  * an AS mismatch. No session should form between R1 and R2.
  */
-public final class BgpConfederationExternalMemberAsTest {
+final class BgpConfederationExternalMemberAsTest {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private static boolean isSessionEstablished(Batfish batfish, String hostname, Ip remotePeerIp) {
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpGraph =
@@ -40,7 +40,7 @@ public final class BgpConfederationExternalMemberAsTest {
   }
 
   @Test
-  public void testExternalPeerMatchingConfedMemberAs() throws IOException {
+  void testExternalPeerMatchingConfedMemberAs() throws IOException {
     String snapshotPath = "org/batfish/dataplane/ibdp/bgp-confederation-external-member-as";
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(

@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.batfish.common.plugin.IBatfish;
@@ -19,11 +20,10 @@ import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.rules.TemporaryFolder;
 
 public class AzureConfigurationTestUtils {
 
-  static IBatfish testSetup(String testconfigsDir, List<String> fileNames, TemporaryFolder folder)
+  static IBatfish testSetup(String testconfigsDir, List<String> fileNames, File folder)
       throws IOException {
     IBatfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(

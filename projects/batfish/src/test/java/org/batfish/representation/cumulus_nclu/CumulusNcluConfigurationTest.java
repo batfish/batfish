@@ -3,8 +3,8 @@ package org.batfish.representation.cumulus_nclu;
 import static org.batfish.representation.cumulus_nclu.CumulusConversions.DEFAULT_LOOPBACK_BANDWIDTH;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -12,20 +12,20 @@ import com.google.common.collect.ImmutableSortedSet;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link CumulusNcluConfiguration}. */
-public class CumulusNcluConfigurationTest {
+class CumulusNcluConfigurationTest {
 
   @Test
-  public void testToInterface_active() {
+  void testToInterface_active() {
     Interface vsIface = new Interface("swp1", CumulusInterfaceType.PHYSICAL, null, 1);
     org.batfish.datamodel.Interface viIface = new CumulusNcluConfiguration().toInterface(vsIface);
     assertTrue(viIface.getActive());
   }
 
   @Test
-  public void testToInterface_inactive() {
+  void testToInterface_inactive() {
     Interface vsIface = new Interface("swp1", CumulusInterfaceType.PHYSICAL, null, 1);
     vsIface.setDisabled(true);
     org.batfish.datamodel.Interface viIface = new CumulusNcluConfiguration().toInterface(vsIface);
@@ -33,7 +33,7 @@ public class CumulusNcluConfigurationTest {
   }
 
   @Test
-  public void testToInterface_sub_active() {
+  void testToInterface_sub_active() {
     Interface vsIface = new Interface("swp1s1", CumulusInterfaceType.PHYSICAL, null, 1);
     org.batfish.datamodel.Interface viIface =
         new CumulusNcluConfiguration().toInterface(vsIface, "swp1");
@@ -41,7 +41,7 @@ public class CumulusNcluConfigurationTest {
   }
 
   @Test
-  public void testToInterface_sub_inactive() {
+  void testToInterface_sub_inactive() {
     Interface vsIface = new Interface("swp1s1", CumulusInterfaceType.PHYSICAL, null, 1);
     vsIface.setDisabled(true);
     org.batfish.datamodel.Interface viIface =
@@ -50,7 +50,7 @@ public class CumulusNcluConfigurationTest {
   }
 
   @Test
-  public void testPopulateLoopback() {
+  void testPopulateLoopback() {
     Interface iface = new Interface("lo", CumulusInterfaceType.LOOPBACK, null, null);
     iface.getIpAddresses().add(ConcreteInterfaceAddress.parse("1.1.1.1/30"));
     Loopback loopback = new Loopback();
@@ -62,14 +62,14 @@ public class CumulusNcluConfigurationTest {
   }
 
   @Test
-  public void testCreateVIInterfaceForLo_Bandwidth() {
+  void testCreateVIInterfaceForLo_Bandwidth() {
     CumulusNcluConfiguration vendorConfiguration = new CumulusNcluConfiguration();
     org.batfish.datamodel.Interface iface = vendorConfiguration.createVIInterfaceForLo();
     assertThat(iface.getBandwidth(), equalTo(DEFAULT_LOOPBACK_BANDWIDTH));
   }
 
   @Test
-  public void testInitVrfStaticRoutes_postUpRoutes() {
+  void testInitVrfStaticRoutes_postUpRoutes() {
     CumulusNcluConfiguration vendorConfiguration = new CumulusNcluConfiguration();
 
     StaticRoute route0 = new StaticRoute(Prefix.parse("1.1.1.0/24"), null, "eth0", null);

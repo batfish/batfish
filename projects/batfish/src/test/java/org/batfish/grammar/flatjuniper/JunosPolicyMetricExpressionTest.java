@@ -10,6 +10,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasKey;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -17,18 +18,17 @@ import org.batfish.main.Batfish;
 import org.batfish.representation.juniper.JuniperConfiguration;
 import org.batfish.representation.juniper.PolicyStatement;
 import org.batfish.representation.juniper.PsThenMetricExpression;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosPolicyMetricExpressionTest {
+final class JunosPolicyMetricExpressionTest {
 
   private static final String HOSTNAME = "policy-metric-expression";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testExtractionAndConversion() throws IOException {
+  void testExtractionAndConversion() throws IOException {
     Batfish batfish = getBatfish(_folder, HOSTNAME);
     JuniperConfiguration juniperConfiguration = getVendorConfiguration(batfish, HOSTNAME);
     PolicyStatement policy =

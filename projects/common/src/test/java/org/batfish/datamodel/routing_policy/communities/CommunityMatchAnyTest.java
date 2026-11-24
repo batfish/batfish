@@ -7,25 +7,25 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link CommunityMatchAny}. */
-public final class CommunityMatchAnyTest {
+final class CommunityMatchAnyTest {
 
   private static final CommunityMatchAny EXPR = new CommunityMatchAny(ImmutableList.of());
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     assertThat(BatfishObjectMapper.clone(EXPR, CommunityMatchAny.class), equalTo(EXPR));
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     assertThat(SerializationUtils.clone(EXPR), equalTo(EXPR));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(EXPR, EXPR, new CommunityMatchAny(ImmutableList.of()))
         .addEqualityGroup(

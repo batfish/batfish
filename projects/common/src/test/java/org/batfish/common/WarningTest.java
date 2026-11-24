@@ -10,12 +10,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link Warning}. */
-public class WarningTest {
+class WarningTest {
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     Warning w = new Warning("A", "B");
     assertThat(SerializationUtils.clone(w), equalTo(w));
 
@@ -24,7 +24,7 @@ public class WarningTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     Warning w = new Warning("A", "B");
     assertThat(BatfishObjectMapper.clone(w, Warning.class), equalTo(w));
 
@@ -33,7 +33,7 @@ public class WarningTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new Warning("a", "b"), new Warning("a", "b"))
         .addEqualityGroup(new Warning("a", null))
@@ -42,7 +42,7 @@ public class WarningTest {
   }
 
   @Test
-  public void testCompareTo() {
+  void testCompareTo() {
     List<Warning> warnings =
         ImmutableList.of(new Warning("a", null), new Warning("a", "a"), new Warning("a", "b"));
 

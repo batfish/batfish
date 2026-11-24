@@ -1,24 +1,24 @@
 package org.batfish.datamodel.vendor_family.f5_bigip;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link DeviceGroupDevice}. */
-public final class DeviceGroupDeviceTest {
+final class DeviceGroupDeviceTest {
 
   private DeviceGroupDevice.Builder _builder;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _builder = DeviceGroupDevice.builder().setName("n").setSetSyncLeader(true);
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     DeviceGroupDevice obj = _builder.build();
     new EqualsTester()
         .addEqualityGroup(obj, obj, _builder.build())
@@ -29,7 +29,7 @@ public final class DeviceGroupDeviceTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     DeviceGroupDevice obj = _builder.build();
     assertEquals(obj, SerializationUtils.clone(obj));
   }

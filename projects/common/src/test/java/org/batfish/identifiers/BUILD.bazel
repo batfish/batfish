@@ -28,5 +28,5 @@ junit_tests(
         allow_empty = True,
         exclude = ["Test*.java"],
     ),
-    deps = ["@maven//:junit_junit"],
+    deps = ["@maven//:org_junit_jupiter_junit_jupiter_api"],
 )

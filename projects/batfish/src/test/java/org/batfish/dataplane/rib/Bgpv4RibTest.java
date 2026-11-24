@@ -13,6 +13,7 @@ import static org.batfish.dataplane.ibdp.TestUtils.annotateRoute;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
@@ -21,8 +22,9 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.in;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -57,25 +59,18 @@ import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 import org.hamcrest.Matcher;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link Bgpv4Rib} */
-@RunWith(JUnit4.class)
-public class Bgpv4RibTest {
+class Bgpv4RibTest {
 
   private Bgpv4Route.Builder _rb;
   private Bgpv4Rib _multiPathRib;
   private Bgpv4Rib _bestPathRib;
 
-  @Rule public ExpectedException thrown = ExpectedException.none();
-
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _rb = Bgpv4Route.testBuilder();
     _rb.setAsPath(AsPath.ofSingletonAsSets(1L, 2L))
         .setNetwork(Prefix.parse("10.0.0.0/8"))
@@ -114,7 +109,7 @@ public class Bgpv4RibTest {
   }
 
   @Test
-  public void testEvictSamePrefixReceivedFromPathId() {
+  void testEvictSamePrefixReceivedFromPathId() {
     StaticRoute.Builder sb =
         StaticRoute.builder().setNextHop(NextHopDiscard.instance()).setAdministrativeCost(1);
 
@@ -182,55 +177,69 @@ public class Bgpv4RibTest {
   }
 
   @Test
-  public void testParameterValidationMaxPaths() {
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Invalid max-paths value");
-    new Bgpv4Rib(
-        null,
-        BgpTieBreaker.ARRIVAL_ORDER,
-        0,
-        null,
-        false,
-        LocalOriginationTypeTieBreaker.NO_PREFERENCE,
-        NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
-        NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
-        ResolutionRestriction.alwaysTrue());
+  void testParameterValidationMaxPaths() {
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> {
+              new Bgpv4Rib(
+                  null,
+                  BgpTieBreaker.ARRIVAL_ORDER,
+                  0,
+                  null,
+                  false,
+                  LocalOriginationTypeTieBreaker.NO_PREFERENCE,
+                  NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+                  NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+                  ResolutionRestriction.alwaysTrue());
+            });
+    assertThat(exception.getMessage(), containsString("Invalid max-paths value"));
   }
 
   @Test
-  public void testParameterValidationMatchMode() {
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Multipath AS-Path-Match-mode must be specified");
-    new Bgpv4Rib(
-        null,
-        BgpTieBreaker.ARRIVAL_ORDER,
-        2,
-        null,
-        false,
-        LocalOriginationTypeTieBreaker.NO_PREFERENCE,
-        NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
-        NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
-        ResolutionRestriction.alwaysTrue());
+  void testParameterValidationMatchMode() {
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> {
+              new Bgpv4Rib(
+                  null,
+                  BgpTieBreaker.ARRIVAL_ORDER,
+                  2,
+                  null,
+                  false,
+                  LocalOriginationTypeTieBreaker.NO_PREFERENCE,
+                  NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+                  NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+                  ResolutionRestriction.alwaysTrue());
+            });
+    assertThat(
+        exception.getMessage(), containsString("Multipath AS-Path-Match-mode must be specified"));
   }
 
   @Test
-  public void testParameterValidationMatchModeNullMaxPaths() {
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Multipath AS-Path-Match-mode must be specified");
-    new Bgpv4Rib(
-        null,
-        BgpTieBreaker.ARRIVAL_ORDER,
-        null,
-        null,
-        false,
-        LocalOriginationTypeTieBreaker.NO_PREFERENCE,
-        NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
-        NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
-        ResolutionRestriction.alwaysTrue());
+  void testParameterValidationMatchModeNullMaxPaths() {
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> {
+              new Bgpv4Rib(
+                  null,
+                  BgpTieBreaker.ARRIVAL_ORDER,
+                  null,
+                  null,
+                  false,
+                  LocalOriginationTypeTieBreaker.NO_PREFERENCE,
+                  NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+                  NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+                  ResolutionRestriction.alwaysTrue());
+            });
+    assertThat(
+        exception.getMessage(), containsString("Multipath AS-Path-Match-mode must be specified"));
   }
 
   @Test
-  public void testIsMultipath() {
+  void testIsMultipath() {
     Bgpv4Rib rib =
         new Bgpv4Rib(
             null,
@@ -242,7 +251,7 @@ public class Bgpv4RibTest {
             NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
             NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
             ResolutionRestriction.alwaysTrue());
-    assertFalse("MaxPaths=1, not multipath", rib.isMultipath());
+    assertFalse(rib.isMultipath(), "MaxPaths=1, not multipath");
     rib =
         new Bgpv4Rib(
             null,
@@ -254,7 +263,7 @@ public class Bgpv4RibTest {
             NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
             NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
             ResolutionRestriction.alwaysTrue());
-    assertTrue("Maxpaths=2 -> multipath", rib.isMultipath());
+    assertTrue(rib.isMultipath(), "Maxpaths=2 -> multipath");
     rib =
         new Bgpv4Rib(
             null,
@@ -266,11 +275,11 @@ public class Bgpv4RibTest {
             NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
             NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
             ResolutionRestriction.alwaysTrue());
-    assertTrue("Maxpaths=null -> multipath", rib.isMultipath());
+    assertTrue(rib.isMultipath(), "Maxpaths=null -> multipath");
   }
 
   @Test
-  public void testWeightPreference() {
+  void testWeightPreference() {
     Bgpv4Route worse = _rb.setWeight(0).build();
     // Higher value is preferred
     Bgpv4Route best = _rb.setWeight(1).build();
@@ -282,7 +291,7 @@ public class Bgpv4RibTest {
   }
 
   @Test
-  public void testLocalPreference() {
+  void testLocalPreference() {
     Bgpv4Route worse = _rb.setLocalPreference(100).build();
     // Higher value is preferred
     Bgpv4Route best = _rb.setLocalPreference(200).build();
@@ -294,7 +303,7 @@ public class Bgpv4RibTest {
   }
 
   @Test
-  public void testAggregatePreference() {
+  void testAggregatePreference() {
     Bgpv4Route worse = _rb.setProtocol(RoutingProtocol.BGP).build();
     Bgpv4Route best = _rb.setProtocol(RoutingProtocol.AGGREGATE).build();
     _multiPathRib.mergeRoute(worse);
@@ -305,7 +314,7 @@ public class Bgpv4RibTest {
   }
 
   @Test
-  public void testAsPathLengthPreference() {
+  void testAsPathLengthPreference() {
     Bgpv4Route worse = _rb.setAsPath(AsPath.ofSingletonAsSets(1L, 2L)).build();
     // shorter path is preferred
     Bgpv4Route best = _rb.setAsPath(AsPath.ofSingletonAsSets(3L)).build();
@@ -317,7 +326,7 @@ public class Bgpv4RibTest {
   }
 
   @Test
-  public void testOriginTypePreference() {
+  void testOriginTypePreference() {
     Bgpv4Route worst = _rb.setOriginType(OriginType.INCOMPLETE).build();
     Bgpv4Route medium = _rb.setOriginType(OriginType.EGP).build();
     Bgpv4Route best = _rb.setOriginType(OriginType.IGP).build();
@@ -334,7 +343,7 @@ public class Bgpv4RibTest {
   }
 
   @Test
-  public void testEIbgpProtocolPreference() {
+  void testEIbgpProtocolPreference() {
     Bgpv4Route worse = _rb.setProtocol(RoutingProtocol.IBGP).build();
     Bgpv4Route best = _rb.setProtocol(RoutingProtocol.BGP).build();
 
@@ -346,7 +355,7 @@ public class Bgpv4RibTest {
   }
 
   @Test
-  public void testMedPreference() {
+  void testMedPreference() {
     Bgpv4Route worse = _rb.setMetric(1).build();
     Bgpv4Route best = _rb.setMetric(0).build();
 
@@ -358,7 +367,7 @@ public class Bgpv4RibTest {
   }
 
   @Test
-  public void testIgpCostPreferenceSingleResolutionStep() {
+  void testIgpCostPreferenceSingleResolutionStep() {
     Rib mainRib = new Rib();
     StaticRoute.Builder sb =
         StaticRoute.testBuilder().setAdministrativeCost(1).setNextHopInterface("eth0");
@@ -390,7 +399,7 @@ public class Bgpv4RibTest {
   }
 
   @Test
-  public void testIgpCostPreferenceDiscardWorst() {
+  void testIgpCostPreferenceDiscardWorst() {
     Rib mainRib = new Rib();
     StaticRoute.Builder sb = StaticRoute.testBuilder().setAdministrativeCost(1);
     mainRib.mergeRoute(
@@ -429,7 +438,7 @@ public class Bgpv4RibTest {
   }
 
   @Test
-  public void testIgpCostPreferenceTwoResolutionSteps() {
+  void testIgpCostPreferenceTwoResolutionSteps() {
     Rib mainRib = new Rib();
     StaticRoute.Builder sb =
         StaticRoute.testBuilder().setAdministrativeCost(1).setNextHopInterface("eth0");
@@ -476,7 +485,7 @@ public class Bgpv4RibTest {
   }
 
   @Test
-  public void testMultipathAsPathModeExactPath() {
+  void testMultipathAsPathModeExactPath() {
     Bgpv4Rib rib =
         new Bgpv4Rib(
             null,
@@ -502,14 +511,14 @@ public class Bgpv4RibTest {
             .build();
 
     rib.mergeRoute(base);
-    assertTrue("Exact AS path match, allow merge", rib.mergeRoute(candidate1));
-    assertFalse("Not an exact AS path match, don't merge", rib.mergeRoute(candidate2));
+    assertTrue(rib.mergeRoute(candidate1), "Exact AS path match, allow merge");
+    assertFalse(rib.mergeRoute(candidate2), "Not an exact AS path match, don't merge");
     assertThat(rib.getUnannotatedRoutes(), hasSize(2));
     assertThat(rib.getBestPathRoutes(), hasSize(1));
   }
 
   @Test
-  public void testMultipathAsPathModeFirstAs() {
+  void testMultipathAsPathModeFirstAs() {
     Bgpv4Rib rib =
         new Bgpv4Rib(
             null,
@@ -535,14 +544,14 @@ public class Bgpv4RibTest {
             .build();
 
     rib.mergeRoute(base);
-    assertTrue("Exact AS path match, allow merge", rib.mergeRoute(candidate1));
-    assertFalse("Not an exact AS path match, don't merge", rib.mergeRoute(candidate2));
+    assertTrue(rib.mergeRoute(candidate1), "Exact AS path match, allow merge");
+    assertFalse(rib.mergeRoute(candidate2), "Not an exact AS path match, don't merge");
     assertThat(rib.getUnannotatedRoutes(), hasSize(2));
     assertThat(rib.getBestPathRoutes(), hasSize(1));
   }
 
   @Test
-  public void testMultipathDiffOriginator() {
+  void testMultipathDiffOriginator() {
     Bgpv4Route bestPath = _rb.build();
     _multiPathRib.mergeRoute(
         _rb.setOriginatorIp(Ip.parse("2.2.2.2"))
@@ -560,7 +569,7 @@ public class Bgpv4RibTest {
   }
 
   @Test
-  public void testMultipathArrivalOrder() {
+  void testMultipathArrivalOrder() {
     _multiPathRib =
         new Bgpv4Rib(
             null,
@@ -591,7 +600,7 @@ public class Bgpv4RibTest {
   }
 
   @Test
-  public void testMultipathDiffClusterList() {
+  void testMultipathDiffClusterList() {
     _rb.setProtocol(RoutingProtocol.IBGP).setClusterList(ImmutableSortedSet.of());
     Bgpv4Route bestPath = _rb.setNextHop(NextHopIp.of(Ip.parse("2.2.2.2"))).build();
     _multiPathRib.mergeRoute(bestPath);
@@ -611,7 +620,7 @@ public class Bgpv4RibTest {
   }
 
   @Test
-  public void testMultipathDiffNeighbor() {
+  void testMultipathDiffNeighbor() {
     Bgpv4Route bestPath = _rb.build();
     _multiPathRib.mergeRoute(
         _rb.setReceivedFrom(ReceivedFromIp.of(Ip.parse("2.2.2.2")))
@@ -628,7 +637,7 @@ public class Bgpv4RibTest {
   }
 
   @Test
-  public void testMultipathSamePath() {
+  void testMultipathSamePath() {
     Bgpv4Route bestPath = _rb.build();
     _multiPathRib.mergeRoute(bestPath);
     _multiPathRib.mergeRoute(bestPath);
@@ -639,7 +648,7 @@ public class Bgpv4RibTest {
   }
 
   @Test
-  public void testMultipathEviction() {
+  void testMultipathEviction() {
     _multiPathRib.mergeRoute(
         _rb.setOriginatorIp(Ip.parse("4.4.4.4"))
             .setNextHop(NextHopIp.of(Ip.parse("4.4.4.4")))
@@ -663,7 +672,7 @@ public class Bgpv4RibTest {
   }
 
   @Test
-  public void testBestPathsEqualRoutesForBestPathRib() {
+  void testBestPathsEqualRoutesForBestPathRib() {
     Bgpv4Rib bestPathRib =
         new Bgpv4Rib(
             null,
@@ -685,7 +694,7 @@ public class Bgpv4RibTest {
   }
 
   @Test
-  public void testMergeMultiplePrefixes() {
+  void testMergeMultiplePrefixes() {
     _multiPathRib.mergeRoute(_rb.build());
     _multiPathRib.mergeRoute(_rb.setNetwork(Prefix.parse("10.1.0.0/16")).build());
     _multiPathRib.mergeRoute(_rb.setNetwork(Prefix.parse("10.1.1.0/24")).build());
@@ -704,7 +713,7 @@ public class Bgpv4RibTest {
   }
 
   @Test
-  public void testBestPathSelectionWithoutTieBreaking() {
+  void testBestPathSelectionWithoutTieBreaking() {
     _bestPathRib.mergeRoute(_rb.build());
     Bgpv4Route bestPath = _rb.setLocalPreference(200).build();
     _bestPathRib.mergeRoute(bestPath);
@@ -713,7 +722,7 @@ public class Bgpv4RibTest {
   }
 
   @Test
-  public void testBestPathSelectionTieBreakRouterId() {
+  void testBestPathSelectionTieBreakRouterId() {
     _bestPathRib.mergeRoute(_rb.build());
     // Lower originator IP is better
     Bgpv4Route bestPath = _rb.setOriginatorIp(Ip.parse("1.1.0.1")).build();
@@ -723,7 +732,7 @@ public class Bgpv4RibTest {
   }
 
   @Test
-  public void testBestPathSelectionTieBreakReceivedFrom() {
+  void testBestPathSelectionTieBreakReceivedFrom() {
     _bestPathRib.mergeRoute(_rb.build());
     // Lower IP is better
     Bgpv4Route bestPath = _rb.setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.0.1"))).build();
@@ -733,7 +742,7 @@ public class Bgpv4RibTest {
   }
 
   @Test
-  public void testBestPathSelectionTieBreakingArrivalOrder() {
+  void testBestPathSelectionTieBreakingArrivalOrder() {
     _bestPathRib =
         new Bgpv4Rib(
             null,
@@ -758,7 +767,7 @@ public class Bgpv4RibTest {
   }
 
   @Test
-  public void testBestPathSelectionArrivalOrderUnchangedByDuplicateMerge() {
+  void testBestPathSelectionArrivalOrderUnchangedByDuplicateMerge() {
     _bestPathRib =
         new Bgpv4Rib(
             null,
@@ -793,7 +802,7 @@ public class Bgpv4RibTest {
   }
 
   @Test
-  public void testBestPathSelectionTieBreakingEbgpOnly() {
+  void testBestPathSelectionTieBreakingEbgpOnly() {
     _bestPathRib =
         new Bgpv4Rib(
             null,
@@ -817,7 +826,7 @@ public class Bgpv4RibTest {
   }
 
   @Test
-  public void testBestPathSelectionClusterListLengthTrue() {
+  void testBestPathSelectionClusterListLengthTrue() {
     _bestPathRib =
         new Bgpv4Rib(
             null,
@@ -846,7 +855,7 @@ public class Bgpv4RibTest {
   }
 
   @Test
-  public void testBestPathSelectionClusterListLengthFalse() {
+  void testBestPathSelectionClusterListLengthFalse() {
     _bestPathRib =
         new Bgpv4Rib(
             null,
@@ -876,7 +885,7 @@ public class Bgpv4RibTest {
 
   /** We should not merge routes for which next hop is unreachable */
   @Test
-  public void testRejectNextHopUnreachable() {
+  void testRejectNextHopUnreachable() {
     Rib mainRib = new Rib();
     Bgpv4Rib bgpRib =
         new Bgpv4Rib(
@@ -908,7 +917,7 @@ public class Bgpv4RibTest {
    * rib.
    */
   @Test
-  public void testAcceptLinkLocalNextHopEvenWhenUnreachable() {
+  void testAcceptLinkLocalNextHopEvenWhenUnreachable() {
     Rib mainRib = new Rib();
     Bgpv4Rib bgpRib =
         new Bgpv4Rib(
@@ -1057,7 +1066,7 @@ public class Bgpv4RibTest {
   }
 
   @Test
-  public void testBgpAsPathMultipathExactPath() {
+  void testBgpAsPathMultipathExactPath() {
     /*
      * Only routes with exact AS path match to that of best AS path should appear in RIB post-merge.
      */
@@ -1065,7 +1074,7 @@ public class Bgpv4RibTest {
   }
 
   @Test
-  public void testBgpAsPathMultipathFirstAs() {
+  void testBgpAsPathMultipathFirstAs() {
     /*
      * Only routes with first-as matching that of best as path should appear in RIB post-merge.
      */
@@ -1074,7 +1083,7 @@ public class Bgpv4RibTest {
   }
 
   @Test
-  public void testBgpAsPathMultipathPathLength() {
+  void testBgpAsPathMultipathPathLength() {
     /*
      * All routes with same as-path-length as that of best as-path should appear in RIB post-merge.
      */
@@ -1083,7 +1092,7 @@ public class Bgpv4RibTest {
   }
 
   @Test
-  public void testBgpCompareOriginType() {
+  void testBgpCompareOriginType() {
     Bgpv4Rib bbr =
         new Bgpv4Rib(
             null,
@@ -1153,7 +1162,7 @@ public class Bgpv4RibTest {
   }
 
   @Test
-  public void testContainsRoute() {
+  void testContainsRoute() {
 
     Bgpv4Rib bbr =
         new Bgpv4Rib(
@@ -1240,7 +1249,7 @@ public class Bgpv4RibTest {
   }
 
   @Test
-  public void testBgpTieBreaker() {
+  void testBgpTieBreaker() {
     // good for both ebgp and ibgp
     Bgpv4Rib bmr =
         new Bgpv4Rib(
@@ -1341,7 +1350,7 @@ public class Bgpv4RibTest {
   }
 
   @Test
-  public void testBgpRouteResolution() {
+  void testBgpRouteResolution() {
     Ip nhip = Ip.parse("1.1.1.1");
     Bgpv4Route dependentRoute =
         Bgpv4Route.testBuilder()
@@ -1461,7 +1470,7 @@ public class Bgpv4RibTest {
    * route must not change the BGP RIB.
    */
   @Test
-  public void testUpdateActiveRoutesShadowedPrefix() {
+  void testUpdateActiveRoutesShadowedPrefix() {
     Ip nhip = Ip.parse("1.1.1.1");
     Bgpv4Route dependentRoute =
         Bgpv4Route.testBuilder()
@@ -1518,7 +1527,7 @@ public class Bgpv4RibTest {
    * next hop's resolvability unchanged from the last time all of them were evaluated.
    */
   @Test
-  public void testUpdateActiveRoutesMixedNextHopState() {
+  void testUpdateActiveRoutesMixedNextHopState() {
     Ip nhip = Ip.parse("1.1.1.1");
     Bgpv4Route route1 =
         Bgpv4Route.testBuilder()
@@ -1582,7 +1591,7 @@ public class Bgpv4RibTest {
   }
 
   @Test
-  public void testRedistributeRoutes() {
+  void testRedistributeRoutes() {
     Ip lowestNhip = Ip.parse("10.0.0.1");
     Ip highestNhip = Ip.parse("10.0.0.2");
     Prefix prefix = Prefix.strict("10.1.0.0/24");

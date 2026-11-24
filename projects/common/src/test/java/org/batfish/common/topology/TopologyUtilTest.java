@@ -27,8 +27,8 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.in;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -75,19 +75,19 @@ import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.VxlanNode;
 import org.batfish.datamodel.vxlan.VxlanTopology;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link TopologyUtil}. */
-public final class TopologyUtilTest {
+final class TopologyUtilTest {
 
   private Builder _cb;
   private Interface.Builder _ib;
   private NetworkFactory _nf;
   private Vrf.Builder _vb;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _nf = new NetworkFactory();
     _cb = _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     _vb = _nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
@@ -121,7 +121,7 @@ public final class TopologyUtilTest {
   }
 
   @Test
-  public void testComputeLayer2TopologyCrossVni() {
+  void testComputeLayer2TopologyCrossVni() {
     /*
      * SWP1      I1 I2      SWP2
      * <=== S1 ===> <=== S2 ===>
@@ -177,7 +177,7 @@ public final class TopologyUtilTest {
   }
 
   @Test
-  public void testComputeVniInterNodeEdges() {
+  void testComputeVniInterNodeEdges() {
     String s1Name = "S1";
     String s2Name = "S2";
     int vlanId = 2;
@@ -209,7 +209,7 @@ public final class TopologyUtilTest {
   }
 
   @Test
-  public void testComputeLayer2Topology_self_edge_optimization() {
+  void testComputeLayer2Topology_self_edge_optimization() {
     String c1Name = "c1";
     String c2Name = "c2";
     String c3Name = "c3";
@@ -242,9 +242,9 @@ public final class TopologyUtilTest {
           computeLayer2Topology(layer1Topology, VxlanTopology.EMPTY, configs);
       // self edges inside c2 should be computed because c2 has at least 1 edge in L1 topology
       assertTrue(
-          "c2:i1 and c2:i2 are in the same broadcast domain",
           layer2Topology.inSameBroadcastDomain(
-              new Layer2Node(c2Name, c2i1Name, 1), new Layer2Node(c2Name, c2i2Name, 1)));
+              new Layer2Node(c2Name, c2i1Name, 1), new Layer2Node(c2Name, c2i2Name, 1)),
+          "c2:i1 and c2:i2 are in the same broadcast domain");
     }
     {
       // c1i1 is only connected to c3i1, leaving c2 without layer1 edges
@@ -259,14 +259,14 @@ public final class TopologyUtilTest {
       // self edges inside c2 should NOT be computed because c2 has no edges in L1 topology (nor
       // VXLAN topology)
       assertFalse(
-          "c2:i1 and c2:i2 are NOT in the same broadcast domain",
           layer2Topology.inSameBroadcastDomain(
-              new Layer2Node(c2Name, c2i1Name, 1), new Layer2Node(c2Name, c2i2Name, 1)));
+              new Layer2Node(c2Name, c2i1Name, 1), new Layer2Node(c2Name, c2i2Name, 1)),
+          "c2:i1 and c2:i2 are NOT in the same broadcast domain");
     }
   }
 
   @Test
-  public void testComputeLayer2Topology_layer1() {
+  void testComputeLayer2Topology_layer1() {
     String c1Name = "c1";
     String c2Name = "c2";
     String c3Name = "c3";
@@ -297,8 +297,8 @@ public final class TopologyUtilTest {
       Layer2Topology layer2Topology =
           computeLayer2Topology(layer1Topology, VxlanTopology.EMPTY, configs);
       assertTrue(
-          "c1:i1 and c2:i1 are in the same broadcast domain",
-          layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name));
+          layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name),
+          "c1:i1 and c2:i1 are in the same broadcast domain");
     }
 
     {
@@ -324,8 +324,8 @@ public final class TopologyUtilTest {
       Layer2Topology layer2Topology =
           computeLayer2Topology(layer1Topology, VxlanTopology.EMPTY, configs);
       assertTrue(
-          "c1:i1 and c2:i1 are in the same broadcast domain",
-          layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name));
+          layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name),
+          "c1:i1 and c2:i1 are in the same broadcast domain");
     }
 
     {
@@ -351,8 +351,8 @@ public final class TopologyUtilTest {
       Layer2Topology layer2Topology =
           computeLayer2Topology(layer1Topology, VxlanTopology.EMPTY, configs);
       assertFalse(
-          "c1:i1 and c2:i1 are not in the same broadcast domain",
-          layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name));
+          layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name),
+          "c1:i1 and c2:i1 are not in the same broadcast domain");
     }
 
     {
@@ -379,8 +379,8 @@ public final class TopologyUtilTest {
       Layer2Topology layer2Topology =
           computeLayer2Topology(layer1Topology, VxlanTopology.EMPTY, configs);
       assertTrue(
-          "c1:i1 and c2:i1 are in the same broadcast domain",
-          layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name));
+          layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name),
+          "c1:i1 and c2:i1 are in the same broadcast domain");
     }
 
     {
@@ -407,8 +407,8 @@ public final class TopologyUtilTest {
       Layer2Topology layer2Topology =
           computeLayer2Topology(layer1Topology, VxlanTopology.EMPTY, configs);
       assertFalse(
-          "c1:i1 and c2:i1 are not in the same broadcast domain",
-          layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name));
+          layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name),
+          "c1:i1 and c2:i1 are not in the same broadcast domain");
     }
 
     {
@@ -435,8 +435,8 @@ public final class TopologyUtilTest {
       Layer2Topology layer2Topology =
           computeLayer2Topology(layer1Topology, VxlanTopology.EMPTY, configs);
       assertFalse(
-          "c1:i1 and c2:i1 are not in the same broadcast domain",
-          layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name));
+          layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name),
+          "c1:i1 and c2:i1 are not in the same broadcast domain");
     }
 
     {
@@ -479,8 +479,8 @@ public final class TopologyUtilTest {
       Layer2Topology layer2Topology =
           computeLayer2Topology(layer1Topology, VxlanTopology.EMPTY, configs);
       assertTrue(
-          "c1:i1 and c2:i1 are in the same broadcast domain",
-          layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name));
+          layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name),
+          "c1:i1 and c2:i1 are in the same broadcast domain");
     }
 
     {
@@ -523,13 +523,13 @@ public final class TopologyUtilTest {
       Layer2Topology layer2Topology =
           computeLayer2Topology(layer1Topology, VxlanTopology.EMPTY, configs);
       assertFalse(
-          "c1:i1 and c2:i1 are not in the same broadcast domain",
-          layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name));
+          layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name),
+          "c1:i1 and c2:i1 are not in the same broadcast domain");
     }
   }
 
   @Test
-  public void testComputeLayer2Topology_multipleTrunks() {
+  void testComputeLayer2Topology_multipleTrunks() {
     /* Setup:
      Two devices c1 and c2, each with four interfaces i1-i4.
      L1 topology connects c1[i1] to c2[i1] and c1[i2] to c2[i2].
@@ -623,7 +623,7 @@ public final class TopologyUtilTest {
   }
 
   @Test
-  public void testComputeLayer2SelfEdges() {
+  void testComputeLayer2SelfEdges() {
     String c1Name = "c1";
 
     String i1Name = "i1";
@@ -654,7 +654,7 @@ public final class TopologyUtilTest {
   }
 
   @Test
-  public void testComputeLayer2SelfEdgesVniIrb() {
+  void testComputeLayer2SelfEdgesVniIrb() {
     String c1Name = "c1";
 
     int vlanId = 2;
@@ -690,7 +690,7 @@ public final class TopologyUtilTest {
   }
 
   @Test
-  public void testComputeLayer2SelfEdgesVniSwitchport() {
+  void testComputeLayer2SelfEdgesVniSwitchport() {
     String c1Name = "c1";
 
     int vlanId = 2;
@@ -737,7 +737,7 @@ public final class TopologyUtilTest {
   }
 
   @Test
-  public void testComputeLayer2TopologyTaggedLayer3ToTaggedLayer3() {
+  void testComputeLayer2TopologyTaggedLayer3ToTaggedLayer3() {
     String n1Name = "n1";
     String n2Name = "n2";
     String i1Name = "i1";
@@ -781,18 +781,18 @@ public final class TopologyUtilTest {
             layer1LogicalTopology, VxlanTopology.EMPTY, ImmutableMap.of(n1Name, n1, n2Name, n2));
 
     assertTrue(
-        "n1:i1a and n2:i1a are in the same broadcast domain",
-        layer2Topology.inSameBroadcastDomain(n1Name, i1aName, n2Name, i1aName));
+        layer2Topology.inSameBroadcastDomain(n1Name, i1aName, n2Name, i1aName),
+        "n1:i1a and n2:i1a are in the same broadcast domain");
     assertTrue(
-        "n1:i1b and n2:i1b are in the same broadcast domain",
-        layer2Topology.inSameBroadcastDomain(n1Name, i1bName, n2Name, i1bName));
+        layer2Topology.inSameBroadcastDomain(n1Name, i1bName, n2Name, i1bName),
+        "n1:i1b and n2:i1b are in the same broadcast domain");
     assertFalse(
-        "n1:i1a and n2:i1b are NOT in the same broadcast domain",
-        layer2Topology.inSameBroadcastDomain(n1Name, i1aName, n2Name, i1bName));
+        layer2Topology.inSameBroadcastDomain(n1Name, i1aName, n2Name, i1bName),
+        "n1:i1a and n2:i1b are NOT in the same broadcast domain");
   }
 
   @Test
-  public void testComputeLayer2TopologyTaggedLayer3ToTrunk() {
+  void testComputeLayer2TopologyTaggedLayer3ToTrunk() {
     // n1:iTagged <=> n2:iTrunkParent
 
     // n1:iTagged children:
@@ -886,20 +886,20 @@ public final class TopologyUtilTest {
             layer1LogicalTopology, VxlanTopology.EMPTY, ImmutableMap.of(n1Name, n1, n2Name, n2));
 
     assertTrue(
-        "n1:ia and n2:ia are in the same broadcast domain",
-        layer2Topology.inSameBroadcastDomain(n1Name, iaName, n2Name, iaName));
+        layer2Topology.inSameBroadcastDomain(n1Name, iaName, n2Name, iaName),
+        "n1:ia and n2:ia are in the same broadcast domain");
     assertFalse(
-        "n1:ib and n2:ib are NOT in the same broadcast domain",
-        layer2Topology.inSameBroadcastDomain(n1Name, ibName, n2Name, ibName));
+        layer2Topology.inSameBroadcastDomain(n1Name, ibName, n2Name, ibName),
+        "n1:ib and n2:ib are NOT in the same broadcast domain");
     assertFalse(
-        "n1:ic and n2:ic are NOT in the same broadcast domain",
-        layer2Topology.inSameBroadcastDomain(n1Name, icName, n2Name, icName));
+        layer2Topology.inSameBroadcastDomain(n1Name, icName, n2Name, icName),
+        "n1:ic and n2:ic are NOT in the same broadcast domain");
     assertFalse(
-        "n1:ia and n2:ib are NOT in the same broadcast domain",
-        layer2Topology.inSameBroadcastDomain(n1Name, iaName, n2Name, ibName));
+        layer2Topology.inSameBroadcastDomain(n1Name, iaName, n2Name, ibName),
+        "n1:ia and n2:ib are NOT in the same broadcast domain");
     assertFalse(
-        "n1:ia and n2:ic are NOT in the same broadcast domain",
-        layer2Topology.inSameBroadcastDomain(n1Name, iaName, n2Name, icName));
+        layer2Topology.inSameBroadcastDomain(n1Name, iaName, n2Name, icName),
+        "n1:ia and n2:ic are NOT in the same broadcast domain");
   }
 
   /**
@@ -908,7 +908,7 @@ public final class TopologyUtilTest {
    * same broadcast domain even though one is vlan 5 on n1 and another vlan 6 on n2
    */
   @Test
-  public void testComputeLayer2TopologyMismatchedNativeVlans() {
+  void testComputeLayer2TopologyMismatchedNativeVlans() {
     String n1Name = "n1";
     String n2Name = "n2";
 
@@ -963,14 +963,14 @@ public final class TopologyUtilTest {
             layer1LogicalTopology, VxlanTopology.EMPTY, ImmutableMap.of(n1Name, n1, n2Name, n2));
 
     assertTrue(
-        "acc1 and acc2 are in the same broadcast domain",
         layer2Topology.inSameBroadcastDomain(
-            new Layer2Node(n1Name, access1Name, 5), new Layer2Node(n2Name, access2Name, 6)));
+            new Layer2Node(n1Name, access1Name, 5), new Layer2Node(n2Name, access2Name, 6)),
+        "acc1 and acc2 are in the same broadcast domain");
   }
 
   /** Parent and children interfaces of an L1 node should be present in L2 topology. */
   @Test
-  public void testComputeLayer2Topology_includesParentAndSubinterface() {
+  void testComputeLayer2Topology_includesParentAndSubinterface() {
     _cb.setConfigurationFormat(ConfigurationFormat.CUMULUS_CONCATENATED);
     Configuration c1 = _cb.setHostname("c1").build();
     Configuration c2 = _cb.setHostname("c2").build();
@@ -1019,7 +1019,7 @@ public final class TopologyUtilTest {
   }
 
   @Test
-  public void testComputeLayer3Topology() {
+  void testComputeLayer3Topology() {
     String c1Name = "c1";
     String c2Name = "c2";
 
@@ -1143,7 +1143,7 @@ public final class TopologyUtilTest {
    * LLDP on while computing layer3.
    */
   @Test
-  public void testComputeLayer3Topology_considerLogicalLayer1Nodes() {
+  void testComputeLayer3Topology_considerLogicalLayer1Nodes() {
     String c1Name = "c1";
     String c2Name = "c2";
     String c3Name = "c3";
@@ -1233,7 +1233,7 @@ public final class TopologyUtilTest {
    * turned on. This can be correctly populated at least for synthesized L1.
    */
   @Test
-  public void testComputeLayer3Topology_unhandledCase() {
+  void testComputeLayer3Topology_unhandledCase() {
     String c1Name = "c1";
     String c2Name = "c2";
     String c3Name = "c3";
@@ -1299,7 +1299,7 @@ public final class TopologyUtilTest {
   }
 
   @Test
-  public void testIncompleteLayer1TopologyHandlingIsp() {
+  void testIncompleteLayer1TopologyHandlingIsp() {
     /*
      * Connectivity between border routers and generated ISP nodes
      * Expected: h1 <=> b1 <=> INTERNET <=> b2 <=> h2
@@ -1435,7 +1435,7 @@ public final class TopologyUtilTest {
   }
 
   @Test
-  public void testIncompleteLayer1TopologyHandlingInconsistentAvailability() {
+  void testIncompleteLayer1TopologyHandlingInconsistentAvailability() {
     /*
      * Inconsistent availability of Layer-1 information
      * Expected L1: n1 <=> n2 <=> n3 <=> n4
@@ -1515,7 +1515,7 @@ public final class TopologyUtilTest {
    * output of {@link IpOwnersBaseImpl#computeIpInterfaceOwners}
    */
   @Test
-  public void testIpInterfaceOwnersActiveInclusion() {
+  void testIpInterfaceOwnersActiveInclusion() {
     Map<String, Set<Interface>> nodeInterfaces =
         ImmutableMap.of(
             "node",
@@ -1556,7 +1556,7 @@ public final class TopologyUtilTest {
   }
 
   @Test
-  public void testSynthesizeTopology_asymmetric() {
+  void testSynthesizeTopology_asymmetric() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -1579,7 +1579,7 @@ public final class TopologyUtilTest {
   }
 
   @Test
-  public void testSynthesizeTopology_selfEdges() {
+  void testSynthesizeTopology_selfEdges() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
@@ -1601,7 +1601,7 @@ public final class TopologyUtilTest {
   }
 
   @Test
-  public void testSynthesizeTopology_asymmetricPartialOverlap() {
+  void testSynthesizeTopology_asymmetricPartialOverlap() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -1622,7 +1622,7 @@ public final class TopologyUtilTest {
   }
 
   @Test
-  public void testSynthesizeTopology_asymmetricSharedIp() {
+  void testSynthesizeTopology_asymmetricSharedIp() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -1643,7 +1643,7 @@ public final class TopologyUtilTest {
   }
 
   @Test
-  public void testComputeLayer3Topology_linkLocalAddresses() {
+  void testComputeLayer3Topology_linkLocalAddresses() {
     _cb.setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Configuration c1 = _cb.setHostname("c1").build();
     Configuration c2 = _cb.setHostname("c2").build();
@@ -1690,7 +1690,7 @@ public final class TopologyUtilTest {
    * domain get an L3 edge
    */
   @Test
-  public void testComputeLayer3Topology_SubInterfaceWithlinkLocalAddresses() {
+  void testComputeLayer3Topology_SubInterfaceWithlinkLocalAddresses() {
     _cb.setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Configuration c1 = _cb.setHostname("c1").build();
     Configuration c2 = _cb.setHostname("c2").build();
@@ -1754,7 +1754,7 @@ public final class TopologyUtilTest {
    * and are in the same broadcast domain do not get an L3 edge
    */
   @Test
-  public void testComputeLayer3Topology_SubInterfaceWithoutLinkLocalAddresses() {
+  void testComputeLayer3Topology_SubInterfaceWithoutLinkLocalAddresses() {
     _cb.setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Configuration c1 = _cb.setHostname("c1").build();
     Configuration c2 = _cb.setHostname("c2").build();
@@ -1795,7 +1795,7 @@ public final class TopologyUtilTest {
   }
 
   @Test
-  public void testComputeInitialTunnelTopology() {
+  void testComputeInitialTunnelTopology() {
     _cb.setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Configuration c1 = _cb.build();
     Configuration c2 = _cb.build();
@@ -1849,7 +1849,7 @@ public final class TopologyUtilTest {
   }
 
   @Test
-  public void testIsVirtualWire() {
+  void testIsVirtualWire() {
     // Not the same device
     assertFalse(
         isVirtualWireSameDevice(
@@ -1872,7 +1872,7 @@ public final class TopologyUtilTest {
   }
 
   @Test
-  public void testIsBorderToIspEdge() {
+  void testIsBorderToIspEdge() {
     Configuration border =
         _cb.setHostname("border").setDeviceModel(DeviceModel.CISCO_UNSPECIFIED).build();
     Configuration isp = _cb.setHostname("isp").setDeviceModel(DeviceModel.BATFISH_ISP).build();

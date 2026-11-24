@@ -16,10 +16,10 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class CanonicalAclTest {
+class CanonicalAclTest {
 
   private Configuration _c;
   private Configuration _c2;
@@ -27,8 +27,8 @@ public class CanonicalAclTest {
   private IpAccessList.Builder _aclb;
   private IpAccessList.Builder _aclb2;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -39,7 +39,7 @@ public class CanonicalAclTest {
   }
 
   @Test
-  public void testIdenticalAclsWithIdenticalDependenciesEqual() {
+  void testIdenticalAclsWithIdenticalDependenciesEqual() {
     // acl1 & acl2 are identical acls on different hosts that reference identical ACLs & interfaces
     IpAccessList acl1 =
         _aclb
@@ -102,7 +102,7 @@ public class CanonicalAclTest {
   }
 
   @Test
-  public void testDifferentAclsNotEqual() {
+  void testDifferentAclsNotEqual() {
     // acl1 and acl2 are different.
     IpAccessList acl1 =
         _aclb
@@ -137,7 +137,7 @@ public class CanonicalAclTest {
   }
 
   @Test
-  public void testAclsWithDifferentDependenciesNotEqual() {
+  void testAclsWithDifferentDependenciesNotEqual() {
     // acl1 and acl2 are identical acls on different configs that both reference referencedAcl, but
     // the two versions of referencedAcl are different
     IpAccessList acl1 =
@@ -201,7 +201,7 @@ public class CanonicalAclTest {
   }
 
   @Test
-  public void testAclsWithDifferentInterfacesNotEqual() {
+  void testAclsWithDifferentInterfacesNotEqual() {
     IpAccessList acl1 =
         _aclb
             .setName("acl1")

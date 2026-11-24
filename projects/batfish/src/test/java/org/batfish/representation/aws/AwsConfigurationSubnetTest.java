@@ -8,10 +8,11 @@ import static org.batfish.representation.aws.Region.eniEgressAclName;
 import static org.batfish.representation.aws.Region.eniIngressAclName;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.batfish.common.plugin.IBatfish;
@@ -21,16 +22,15 @@ import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.flow.FilterStep;
 import org.batfish.datamodel.flow.Trace;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * E2e tests for connectivity within a subnet. The snapshot has one VPC, one subnet, and two
  * instances.
  */
-public class AwsConfigurationSubnetTest {
+class AwsConfigurationSubnetTest {
 
   private static final String TESTCONFIGS_DIR = "org/batfish/representation/aws/test-subnet";
 
@@ -56,12 +56,12 @@ public class AwsConfigurationSubnetTest {
   private static final String VPC = "vpc-062867d29dbf9386f";
   private static final String NETWORK_ACL = "acl-07102431133dec52a";
 
-  @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public static File _folder;
 
   private static IBatfish _batfish;
 
-  @BeforeClass
-  public static void setup() throws IOException {
+  @BeforeAll
+  static void setup() throws IOException {
     _batfish = testSetup(TESTCONFIGS_DIR, fileNames, _folder);
   }
 
@@ -76,7 +76,7 @@ public class AwsConfigurationSubnetTest {
   }
 
   @Test
-  public void testInstanceToInstance() {
+  void testInstanceToInstance() {
     Trace trace =
         testTrace(
             getAnyFlow(INSTANCE_1, INSTANCE_2_IP, _batfish),
@@ -92,7 +92,7 @@ public class AwsConfigurationSubnetTest {
   }
 
   @Test
-  public void testInstanceToOutsideSubnet() {
+  void testInstanceToOutsideSubnet() {
     Trace trace =
         testTrace(
             getAnyFlow(INSTANCE_1, Ip.parse("10.10.0.1"), _batfish),
@@ -105,7 +105,7 @@ public class AwsConfigurationSubnetTest {
   }
 
   @Test
-  public void testOutsideSubnetToInstance() {
+  void testOutsideSubnetToInstance() {
     Trace trace =
         testTrace(
             Flow.builder().setIngressNode(VPC).setDstIp(INSTANCE_2_IP).build(),
@@ -118,7 +118,7 @@ public class AwsConfigurationSubnetTest {
   }
 
   @Test
-  public void testInstanceHasOriginatingVrf() {
+  void testInstanceHasOriginatingVrf() {
     // Instances should allow originating sessions (sessions can be established by inbound packets)
     Configuration instance1 = _batfish.loadConfigurations(_batfish.getSnapshot()).get(INSTANCE_1);
     Configuration instance2 = _batfish.loadConfigurations(_batfish.getSnapshot()).get(INSTANCE_2);

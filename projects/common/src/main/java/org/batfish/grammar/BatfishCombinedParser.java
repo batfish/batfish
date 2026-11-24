@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
@@ -13,11 +15,69 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStream;
+import org.antlr.v4.runtime.atn.ATN;
+import org.antlr.v4.runtime.atn.ATNState;
 import org.antlr.v4.runtime.atn.PredictionMode;
+import org.antlr.v4.runtime.misc.Interval;
 import org.batfish.common.BatfishException;
 import org.batfish.grammar.flattener.FlattenerLineMap;
 
 public abstract class BatfishCombinedParser<P extends BatfishParser, L extends BatfishLexer> {
+
+  static {
+    fillIntervalCache();
+  }
+
+  /**
+   * Creates every {@link Interval} that ANTLR caches.
+   *
+   * <p>ANTLR 4.13.2 creates the interval {@code i..i}, for {@code i} up to {@link
+   * Interval#INTERVAL_POOL_MAX_VALUE}, on first use and caches it in a static array. It stores the
+   * interval without synchronization, so another thread can read a cached interval before it can
+   * see its bounds, as {@code 0..0} (https://github.com/antlr/antlr4/issues/4901). The text of a
+   * one-character token and the lookahead sets come from these intervals.
+   *
+   * <p>This runs when this class is initialized, which is before it creates a lexer or parser, so
+   * every thread that creates a combined parser sees the cache full.
+   *
+   * <p>ANTLR removed the cache after 4.13.2. Remove this once Batfish uses a release without it;
+   * {@code INTERVAL_POOL_MAX_VALUE} no longer exists there.
+   */
+  private static void fillIntervalCache() {
+    for (int i = 0; i <= Interval.INTERVAL_POOL_MAX_VALUE; i++) {
+      Interval.of(i, i);
+    }
+  }
+
+  /** ATNs for which {@link #computeLookaheadSets(ATN)} has run. */
+  private static final ConcurrentMap<ATN, Boolean> ATNS_WITH_LOOKAHEAD_SETS =
+      new ConcurrentHashMap<>();
+
+  /**
+   * Computes the lookahead set of every state of {@code atn}, the first time this is called for
+   * that ATN.
+   *
+   * <p>ANTLR computes each state's lookahead set on first use and caches it in the ATN, which all
+   * parsers of a grammar share. It stores the set without synchronization, so a parser on another
+   * thread can read a set before it can see all of its elements, and then reports a syntax error on
+   * valid input (https://github.com/antlr/antlr4/issues/4999, seen on aarch64). After this method
+   * returns, parsing no longer writes that cache, and every thread that has called this method sees
+   * the sets complete.
+   *
+   * <p>Remove once Batfish uses an ANTLR release in which that issue is fixed.
+   */
+  private static void computeLookaheadSets(ATN atn) {
+    ATNS_WITH_LOOKAHEAD_SETS.computeIfAbsent(
+        atn,
+        a -> {
+          for (ATNState state : a.states) {
+            if (state != null) {
+              a.nextTokens(state);
+            }
+          }
+          return true;
+        });
+  }
 
   private int _currentModeStart;
 
@@ -79,6 +139,7 @@ public abstract class BatfishCombinedParser<P extends BatfishParser, L extends B
         | SecurityException e) {
       throw new Error(e);
     }
+    computeLookaheadSets(_parser.getATN());
     _parser.initErrorListener(this);
     _parser.getInterpreter().setPredictionMode(PredictionMode.SLL);
   }

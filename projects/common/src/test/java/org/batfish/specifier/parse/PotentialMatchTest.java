@@ -6,12 +6,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class PotentialMatchTest {
+class PotentialMatchTest {
 
   @Test
-  public void testGetMatchNonStringLiteral() {
+  void testGetMatchNonStringLiteral() {
     PotentialMatch pm =
         new PotentialMatch(
             new PathElement(ADDRESS_GROUP_NAME, "\"label\"", 0, 0), "pfx", ImmutableList.of());
@@ -19,7 +19,7 @@ public class PotentialMatchTest {
   }
 
   @Test
-  public void testGetMatchStringLiteral() {
+  void testGetMatchStringLiteral() {
     PotentialMatch pm =
         new PotentialMatch(
             new PathElement(STRING_LITERAL, "\"label\"", 0, 0), "pfx", ImmutableList.of());

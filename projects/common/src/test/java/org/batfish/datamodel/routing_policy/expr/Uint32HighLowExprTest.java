@@ -6,26 +6,26 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link Uint32HighLowExpr}. */
-public final class Uint32HighLowExprTest {
+final class Uint32HighLowExprTest {
 
   private static final Uint32HighLowExpr OBJ =
       new Uint32HighLowExpr(new LiteralInt(1), new LiteralInt(1));
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     assertThat(BatfishObjectMapper.clone(OBJ, Uint32HighLowExpr.class), equalTo(OBJ));
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     assertThat(SerializationUtils.clone(OBJ), equalTo(OBJ));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new Object())
         .addEqualityGroup(OBJ, OBJ, new Uint32HighLowExpr(new LiteralInt(1), new LiteralInt(1)))

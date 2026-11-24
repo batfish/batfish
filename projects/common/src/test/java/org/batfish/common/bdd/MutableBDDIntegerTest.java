@@ -6,7 +6,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
 import net.sf.javabdd.BDD;
@@ -15,11 +15,11 @@ import net.sf.javabdd.BDDPairing;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class MutableBDDIntegerTest {
+class MutableBDDIntegerTest {
   @Test
-  public void testIpToBDD() {
+  void testIpToBDD() {
     BDDFactory factory = BDDUtils.bddFactory(32);
     Ip ip = Ip.parse("1.2.3.4");
 
@@ -39,7 +39,7 @@ public class MutableBDDIntegerTest {
   }
 
   @Test
-  public void testPrefixToBDD() {
+  void testPrefixToBDD() {
     BDDFactory factory = BDDUtils.bddFactory(32);
     Prefix p = Prefix.parse("1.2.3.64/30");
     Long[] expected =
@@ -70,7 +70,7 @@ public class MutableBDDIntegerTest {
   }
 
   @Test
-  public void testAdd() {
+  void testAdd() {
     BDDFactory factory = BDDUtils.bddFactory(10);
     MutableBDDInteger x = MutableBDDInteger.makeFromIndex(factory, 5, 0, false);
     MutableBDDInteger constant1 = MutableBDDInteger.makeFromValue(factory, 5, 1);
@@ -101,7 +101,7 @@ public class MutableBDDIntegerTest {
   }
 
   @Test
-  public void testAddClipping() {
+  void testAddClipping() {
     BDDFactory factory = BDDUtils.bddFactory(10);
     MutableBDDInteger x = MutableBDDInteger.makeFromIndex(factory, 5, 0, false);
     MutableBDDInteger constant1 = MutableBDDInteger.makeFromValue(factory, 5, 1);
@@ -116,7 +116,7 @@ public class MutableBDDIntegerTest {
   }
 
   @Test
-  public void testSub() {
+  void testSub() {
     BDDFactory factory = BDDUtils.bddFactory(10);
     MutableBDDInteger x = MutableBDDInteger.makeFromIndex(factory, 5, 0, false);
     MutableBDDInteger constant1 = MutableBDDInteger.makeFromValue(factory, 5, 1);
@@ -147,7 +147,7 @@ public class MutableBDDIntegerTest {
   }
 
   @Test
-  public void testSubClipping() {
+  void testSubClipping() {
     BDDFactory factory = BDDUtils.bddFactory(10);
     MutableBDDInteger x = MutableBDDInteger.makeFromIndex(factory, 5, 0, false);
     MutableBDDInteger constant1 = MutableBDDInteger.makeFromValue(factory, 5, 1);
@@ -162,7 +162,7 @@ public class MutableBDDIntegerTest {
   }
 
   @Test
-  public void testToBDDIpWildcard() {
+  void testToBDDIpWildcard() {
     BDDFactory factory = BDDUtils.bddFactory(32);
     MutableBDDInteger constant1 = MutableBDDInteger.makeFromValue(factory, 32, 1);
     assertThat(constant1.toBDD(IpWildcard.ANY), isOne());
@@ -170,7 +170,7 @@ public class MutableBDDIntegerTest {
   }
 
   @Test
-  public void testAnd() {
+  void testAnd() {
     BDDFactory factory = BDDUtils.bddFactory(2);
     MutableBDDInteger constant0 = MutableBDDInteger.makeFromValue(factory, 2, 0);
     MutableBDDInteger constant1 = MutableBDDInteger.makeFromValue(factory, 2, 1);
@@ -179,7 +179,7 @@ public class MutableBDDIntegerTest {
   }
 
   @Test
-  public void testAugmentPairing() {
+  void testAugmentPairing() {
     BDDFactory factory = BDDUtils.bddFactory(10);
     // an unconstrained BDD integer of 5 bits, let's call it x0...x4
     MutableBDDInteger x = MutableBDDInteger.makeFromIndex(factory, 5, 0, false);
@@ -206,7 +206,7 @@ public class MutableBDDIntegerTest {
   }
 
   @Test
-  public void testSupport() {
+  void testSupport() {
     BDDFactory factory = BDDUtils.bddFactory(10);
     MutableBDDInteger x = MutableBDDInteger.makeFromIndex(factory, 5, 0, false);
     MutableBDDInteger one = MutableBDDInteger.makeFromValue(factory, 5, 1);
@@ -223,7 +223,7 @@ public class MutableBDDIntegerTest {
   }
 
   @Test
-  public void testAllDifferences() {
+  void testAllDifferences() {
     BDDFactory factory = BDDUtils.bddFactory(10);
     MutableBDDInteger x = MutableBDDInteger.makeFromIndex(factory, 5, 0, false);
     MutableBDDInteger constant1 = MutableBDDInteger.makeFromValue(factory, 5, 1);

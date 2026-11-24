@@ -1,12 +1,12 @@
 package org.batfish.representation.juniper;
 
 import com.google.common.testing.EqualsTester;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class PsToPolicyStatementTest {
+final class PsToPolicyStatementTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new PsToPolicyStatement("POLICY"), new PsToPolicyStatement("POLICY"))
         .addEqualityGroup(new PsToPolicyStatement("OTHER"))

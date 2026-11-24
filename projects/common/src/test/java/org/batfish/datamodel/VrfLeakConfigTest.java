@@ -7,9 +7,9 @@ import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class VrfLeakConfigTest {
+class VrfLeakConfigTest {
   private static final VrfLeakConfig BGP_LEAK_CONFIG =
       VrfLeakConfig.builder(true)
           .addBgpVrfLeakConfig(
@@ -34,13 +34,13 @@ public class VrfLeakConfigTest {
           .build();
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     assertThat(SerializationUtils.clone(BGP_LEAK_CONFIG), equalTo(BGP_LEAK_CONFIG));
     assertThat(SerializationUtils.clone(MAIN_RIB_LEAK_CONFIG), equalTo(MAIN_RIB_LEAK_CONFIG));
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     assertThat(
         BatfishObjectMapper.clone(BGP_LEAK_CONFIG, VrfLeakConfig.class), equalTo(BGP_LEAK_CONFIG));
     assertThat(
@@ -49,7 +49,7 @@ public class VrfLeakConfigTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     VrfLeakConfig.Builder bgpBuilder = VrfLeakConfig.builder(true);
     VrfLeakConfig.Builder mainRibBuilder = VrfLeakConfig.builder(false);
     VrfLeakConfig bgp = bgpBuilder.build();

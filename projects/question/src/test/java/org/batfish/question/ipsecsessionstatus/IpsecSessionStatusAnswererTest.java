@@ -22,8 +22,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
@@ -49,11 +49,11 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link IpsecSessionStatusAnswerer} */
-public class IpsecSessionStatusAnswererTest {
+class IpsecSessionStatusAnswererTest {
   private static final String INITIATOR_IPSEC_PEER_CONFIG = "initiatorIpsecPeerConfig";
   private static final String RESPONDER_IPSEC_PEER_CONFIG = "responderIpsecPeerConfig";
 
@@ -66,8 +66,8 @@ public class IpsecSessionStatusAnswererTest {
   private IpsecSession.Builder _ipsecSessionBuilder;
   private NetworkConfigurations _networkConfigurations;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     Configuration initiatorNode;
     Configuration responderNode;
     _ipsecStaticPeerConfigBuilder
@@ -108,7 +108,7 @@ public class IpsecSessionStatusAnswererTest {
   }
 
   @Test
-  public void testGenerateRowsIke1Fail() {
+  void testGenerateRowsIke1Fail() {
     // IPSecSession does not have IKE phase 1 proposal set
     _graph.putEdgeValue(
         new IpsecPeerConfigId(INITIATOR_IPSEC_PEER_CONFIG, INITIATOR_HOST_NAME),
@@ -128,7 +128,7 @@ public class IpsecSessionStatusAnswererTest {
   }
 
   @Test
-  public void testGenerateRowsIke1KeyFail() {
+  void testGenerateRowsIke1KeyFail() {
     // IPSecSession does not have IKE phase 1 key set
     _ipsecSessionBuilder.setNegotiatedIkeP1Proposal(new IkePhase1Proposal("test_ike_proposal"));
     _graph.putEdgeValue(
@@ -151,7 +151,7 @@ public class IpsecSessionStatusAnswererTest {
   }
 
   @Test
-  public void testGenerateRowsIpsec2Fail() {
+  void testGenerateRowsIpsec2Fail() {
     // IPSecSession does not have IPSec phase 2 proposal set
     _ipsecSessionBuilder.setNegotiatedIkeP1Proposal(new IkePhase1Proposal("test_ike_proposal"));
     _ipsecSessionBuilder.setNegotiatedIkeP1Key(new IkePhase1Key());
@@ -174,7 +174,7 @@ public class IpsecSessionStatusAnswererTest {
   }
 
   @Test
-  public void testGenerateRowsMissingEndpoint() {
+  void testGenerateRowsMissingEndpoint() {
     // Responder not set in the graph
     _graph.addNode(new IpsecPeerConfigId(INITIATOR_IPSEC_PEER_CONFIG, INITIATOR_HOST_NAME));
     Multiset<IpsecSessionInfo> ipsecSessionInfos =
@@ -192,7 +192,7 @@ public class IpsecSessionStatusAnswererTest {
   }
 
   @Test
-  public void testGenerateRowsIpsecEstablished() {
+  void testGenerateRowsIpsecEstablished() {
     // IPSecSession has all phases negotiated and IKE phase 1 key consistent
     _ipsecSessionBuilder.setNegotiatedIkeP1Proposal(new IkePhase1Proposal("test_ike_proposal"));
     _ipsecSessionBuilder.setNegotiatedIkeP1Key(new IkePhase1Key());
@@ -217,7 +217,7 @@ public class IpsecSessionStatusAnswererTest {
   }
 
   @Test
-  public void testToRow() {
+  void testToRow() {
     IpsecSessionInfo.Builder ipsecPeeringInfoBuilder = IpsecSessionInfo.builder();
 
     IpsecSessionInfo ipsecSessionInfo =
@@ -268,7 +268,7 @@ public class IpsecSessionStatusAnswererTest {
   }
 
   @Test
-  public void testToRowTunnelMissingEndpoint() {
+  void testToRowTunnelMissingEndpoint() {
     IpsecSessionInfo.Builder ipsecPeeringInfoBuilder = IpsecSessionInfo.builder();
 
     IpsecSessionInfo ipsecSessionInfo =
@@ -296,7 +296,7 @@ public class IpsecSessionStatusAnswererTest {
   }
 
   @Test
-  public void testToRowNotApplicableTunnelIfaces() {
+  void testToRowNotApplicableTunnelIfaces() {
     IpsecSessionInfo.Builder ipsecPeeringInfoBuilder = IpsecSessionInfo.builder();
 
     IpsecSessionInfo ipsecSessionInfo =
@@ -319,16 +319,16 @@ public class IpsecSessionStatusAnswererTest {
   }
 
   @Test
-  public void testGetColumnMetadataKeyStatus() {
+  void testGetColumnMetadataKeyStatus() {
     List<ColumnMetadata> columnMetadata = getColumnMetadata();
 
     columnMetadata.forEach(cData -> {
       if (cData.getName().equals(COL_STATUS)) {
-        assertFalse(cData.getName(), cData.getIsKey());
-        assertTrue(cData.getName(), cData.getIsValue());
+        assertFalse(cData.getIsKey(), cData.getName());
+        assertTrue(cData.getIsValue(), cData.getName());
       } else {
-        assertTrue(cData.getName(), cData.getIsKey());
-        assertFalse(cData.getName(), cData.getIsValue());
+        assertTrue(cData.getIsKey(), cData.getName());
+        assertFalse(cData.getIsValue(), cData.getName());
       }
     });
   }

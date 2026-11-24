@@ -9,11 +9,11 @@ import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.IpsecPeerConfigId;
 import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecSession;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link IpsecTopology}. */
 @ParametersAreNonnullByDefault
-public final class IpsecTopologyTest {
+final class IpsecTopologyTest {
 
   private static @Nonnull IpsecTopology nonTrivialTopology() {
     MutableValueGraph<IpsecPeerConfigId, IpsecSession> graph =
@@ -29,7 +29,7 @@ public final class IpsecTopologyTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new Object())
         .addEqualityGroup(

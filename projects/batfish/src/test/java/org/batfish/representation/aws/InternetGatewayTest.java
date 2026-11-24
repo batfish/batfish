@@ -32,7 +32,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -63,13 +63,13 @@ import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.matchers.IpAccessListMatchers;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link InternetGateway} */
-public class InternetGatewayTest {
+class InternetGatewayTest {
 
   @Test
-  public void testDeserialization() throws IOException {
+  void testDeserialization() throws IOException {
     String text = readResource("org/batfish/representation/aws/InternetGatewayTest.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
@@ -91,7 +91,7 @@ public class InternetGatewayTest {
   }
 
   @Test
-  public void testToConfiguration() {
+  void testToConfiguration() {
     Vpc vpc = getTestVpc("vpc");
     Configuration vpcConfig = Utils.newAwsConfiguration(vpc.getId(), "awstest");
 
@@ -206,7 +206,7 @@ public class InternetGatewayTest {
   }
 
   @Test
-  public void testConfigureNatEmptyMap() {
+  void testConfigureNatEmptyMap() {
     Interface iface = TestInterface.builder().setName("iface").build();
     configureNat(iface, ImmutableMap.of());
     assertThat(iface.getIncomingTransformation(), nullValue());
@@ -214,7 +214,7 @@ public class InternetGatewayTest {
   }
 
   @Test
-  public void testConfigureNat() {
+  void testConfigureNat() {
     Ip pvt1 = Ip.parse("10.10.10.1");
     Ip pvt2 = Ip.parse("10.10.10.2");
     Ip pub1 = Ip.parse("1.1.1.1");
@@ -246,7 +246,7 @@ public class InternetGatewayTest {
   }
 
   @Test
-  public void testComputeUnassociatedPrivateIpFilter() {
+  void testComputeUnassociatedPrivateIpFilter() {
     Ip associatedPrivateIp = Ip.parse("1.1.1.1");
     Ip unassociatedPrivateIp = Ip.parse("6.6.6.6");
     IpAccessList unassociatedIpFilter =
@@ -272,7 +272,7 @@ public class InternetGatewayTest {
   }
 
   @Test
-  public void testComputeUnassociatedPrivateIpFilter_noPrivateIps() {
+  void testComputeUnassociatedPrivateIpFilter_noPrivateIps() {
     IpAccessList unassociatedIpFilter = computeUnassociatedPrivateIpFilter(ImmutableList.of());
     assertThat(
         unassociatedIpFilter,

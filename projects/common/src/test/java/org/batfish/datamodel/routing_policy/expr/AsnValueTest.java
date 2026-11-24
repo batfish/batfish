@@ -13,17 +13,17 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link AsnValue}. */
-public class AsnValueTest {
+class AsnValueTest {
   @Test
-  public void testToString() {
+  void testToString() {
     assertThat(AsnValue.of(RemoteAs.instance()).toString(), equalTo("AsnValue{asExpr=RemoteAs}"));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     AsnValue tester = AsnValue.of(RemoteAs.instance());
     new EqualsTester()
         .addEqualityGroup(
@@ -37,7 +37,7 @@ public class AsnValueTest {
   }
 
   @Test
-  public void testAsnValue() {
+  void testAsnValue() {
     Configuration c =
         new NetworkFactory()
             .configurationBuilder()

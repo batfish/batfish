@@ -12,6 +12,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 
 import com.google.common.collect.Table;
+import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 import org.batfish.common.NetworkSnapshot;
@@ -21,13 +22,12 @@ import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** A test that learned and exported BGP routes can be successfully withdrawn and replaced. */
-public class BgpWithdrawalTest {
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+class BgpWithdrawalTest {
+  @TempDir public File _folder;
 
   /**
    * Set up a 5-node topology as follows:
@@ -57,7 +57,7 @@ public class BgpWithdrawalTest {
    * rather than only having sent B's route. This is finicky based on schedule.
    */
   @Test
-  public void testWithdrawals() throws IOException {
+  void testWithdrawals() throws IOException {
     String prefix = "org/batfish/e2e/bgp/withdrawals";
     IBatfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
@@ -122,7 +122,7 @@ public class BgpWithdrawalTest {
    * this lab S sets a low local preference rather than weight on the routes it receives from A.
    */
   @Test
-  public void testWithdrawalsWithAddPath() throws IOException {
+  void testWithdrawalsWithAddPath() throws IOException {
     String prefix = "org/batfish/e2e/bgp/withdrawals_add_path";
     IBatfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(

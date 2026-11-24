@@ -11,6 +11,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.base.Functions;
 import com.google.common.collect.ImmutableMap;
@@ -35,13 +36,9 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.vendor.VendorStructureId;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-public class FortiosConfigurationTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class FortiosConfigurationTest {
 
   private final BddTestbed _bddTestbed = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
   private final BDD _one = _bddTestbed.getPkt().getFactory().one();
@@ -49,7 +46,7 @@ public class FortiosConfigurationTest {
   private final HeaderSpaceToBDD _hsToBdd = _bddTestbed.getHsToBdd();
 
   @Test
-  public void testToMatchExpr_tcpUdpSctp_oneCustom() {
+  void testToMatchExpr_tcpUdpSctp_oneCustom() {
     IntegerSpace tcpDstPorts = IntegerSpace.of(1);
     Service service = new Service("name", new BatfishUUID(1));
     service.setTcpPortRangeDst(tcpDstPorts);
@@ -67,7 +64,7 @@ public class FortiosConfigurationTest {
   }
 
   @Test
-  public void testToMatchExpr_tcpUdpSctp_allCustom() {
+  void testToMatchExpr_tcpUdpSctp_allCustom() {
     IntegerSpace tcpSrcPorts = IntegerSpace.of(1);
     IntegerSpace tcpDstPorts = IntegerSpace.of(2);
     IntegerSpace udpSrcPorts = IntegerSpace.of(3);
@@ -107,7 +104,7 @@ public class FortiosConfigurationTest {
   }
 
   @Test
-  public void testToMatchExpr_icmp_defaults() {
+  void testToMatchExpr_icmp_defaults() {
     Service service = new Service("name", new BatfishUUID(1));
     service.setProtocol(Service.Protocol.ICMP);
     HeaderSpace expected = HeaderSpace.builder().setIpProtocols(IpProtocol.ICMP).build();
@@ -115,14 +112,14 @@ public class FortiosConfigurationTest {
   }
 
   @Test
-  public void testToMatchExpr_icmp6_defaults() {
+  void testToMatchExpr_icmp6_defaults() {
     Service service = new Service("name", new BatfishUUID(1));
     service.setProtocol(Service.Protocol.ICMP6);
     assertConverts(service, _bddTestbed.getPkt().getFactory().zero());
   }
 
   @Test
-  public void testToMatchExpr_icmp_custom() {
+  void testToMatchExpr_icmp_custom() {
     int icmpCode = 1;
     int icmpType = 2;
     Service service = new Service("name", new BatfishUUID(1));
@@ -139,14 +136,14 @@ public class FortiosConfigurationTest {
   }
 
   @Test
-  public void testToMatchExpr_ip_default() {
+  void testToMatchExpr_ip_default() {
     Service service = new Service("name", new BatfishUUID(1));
     service.setProtocol(Service.Protocol.IP);
     assertConverts(service, _one);
   }
 
   @Test
-  public void testToMatchExpr_ip_custom() {
+  void testToMatchExpr_ip_custom() {
     int protocolNumber = 88;
     Service service = new Service("name", new BatfishUUID(1));
     service.setProtocol(Service.Protocol.IP);
@@ -157,7 +154,7 @@ public class FortiosConfigurationTest {
   }
 
   @Test
-  public void testToMatchExpr_serviceGroup() {
+  void testToMatchExpr_serviceGroup() {
     IntegerSpace tcpSrcPorts = IntegerSpace.of(1);
     IntegerSpace tcpDstPorts = IntegerSpace.of(2);
     IntegerSpace udpSrcPorts = IntegerSpace.of(3);
@@ -210,7 +207,7 @@ public class FortiosConfigurationTest {
   }
 
   @Test
-  public void testToMatchExpr_serviceGroupTraceElement() {
+  void testToMatchExpr_serviceGroupTraceElement() {
     String filename = "filename";
     FortiosConfiguration c = new FortiosConfiguration();
     c.setWarnings(new Warnings());
@@ -247,7 +244,7 @@ public class FortiosConfigurationTest {
   }
 
   @Test
-  public void testToMatchExpr_traceElement() {
+  void testToMatchExpr_traceElement() {
     String svcName = "name";
     String filename = "filename";
     Service service = new Service(svcName, new BatfishUUID(1));
@@ -294,13 +291,13 @@ public class FortiosConfigurationTest {
   }
 
   @Test
-  public void testToIpSpace_ipmaskDefault() {
+  void testToIpSpace_ipmaskDefault() {
     Address address = new Address("name", new BatfishUUID(1));
     assertConvertsWithoutWarnings(address, Prefix.ZERO.toIpSpace());
   }
 
   @Test
-  public void testToIpSpace_ipmask() {
+  void testToIpSpace_ipmask() {
     Ip ip = Ip.parse("1.1.1.1");
     Ip mask = Ip.parse("255.255.255.0");
     Address address = createAddressWithIps(ip, mask);
@@ -308,15 +305,14 @@ public class FortiosConfigurationTest {
   }
 
   @Test
-  public void testToIpSpace_ipmaskInvalidMask() {
+  void testToIpSpace_ipmaskInvalidMask() {
     // 1.1.1.0 isn't a valid subnet mask
     Address address = createAddressWithIps(Ip.parse("1.1.1.0"), Ip.parse("1.1.1.0"));
-    _thrown.expect(IllegalStateException.class);
-    toIpSpace(address, new Warnings());
+    assertThrows(IllegalStateException.class, () -> toIpSpace(address, new Warnings()));
   }
 
   @Test
-  public void testToIpSpace_iprangeDefault() {
+  void testToIpSpace_iprangeDefault() {
     // Must set end IP
     Ip endIp = Ip.parse("1.1.1.255");
     Address address = new Address("name", new BatfishUUID(1));
@@ -326,7 +322,7 @@ public class FortiosConfigurationTest {
   }
 
   @Test
-  public void testToIpSpace_iprange() {
+  void testToIpSpace_iprange() {
     Ip startIp = Ip.parse("1.1.1.0");
     Ip endIp = Ip.parse("1.1.1.255");
     Address address = createAddressWithIps(startIp, endIp);
@@ -335,31 +331,29 @@ public class FortiosConfigurationTest {
   }
 
   @Test
-  public void testToIpSpace_iprangeNoEndIp() {
+  void testToIpSpace_iprangeNoEndIp() {
     // 1.1.1.0 isn't a valid subnet mask
     Address address = new Address("name", new BatfishUUID(1));
     address.setType(Address.Type.IPRANGE);
-    _thrown.expect(IllegalStateException.class);
-    toIpSpace(address, new Warnings());
+    assertThrows(IllegalStateException.class, () -> toIpSpace(address, new Warnings()));
   }
 
   @Test
-  public void testToIpSpace_iprangeEndIpTooLow() {
+  void testToIpSpace_iprangeEndIpTooLow() {
     Address address = createAddressWithIps(Ip.parse("2.2.2.2"), Ip.parse("1.1.1.1"));
     address.setType(Address.Type.IPRANGE);
-    _thrown.expect(IllegalArgumentException.class);
-    toIpSpace(address, new Warnings());
+    assertThrows(IllegalArgumentException.class, () -> toIpSpace(address, new Warnings()));
   }
 
   @Test
-  public void testToIpSpace_wildcardDefault() {
+  void testToIpSpace_wildcardDefault() {
     Address address = new Address("name", new BatfishUUID(1));
     address.setType(Address.Type.WILDCARD);
     assertConvertsWithoutWarnings(address, IpWildcard.ANY.toIpSpace());
   }
 
   @Test
-  public void testToIpSpace_wildcard() {
+  void testToIpSpace_wildcard() {
     Ip mask = Ip.parse("255.0.255.128"); // FortiOS format (bits that are set matter)
     IpWildcard wildcard = IpWildcard.ipWithWildcardMask(Ip.parse("1.1.1.1"), mask.inverted());
     Address address = createAddressWithIps(wildcard.getIp(), mask);
@@ -368,7 +362,7 @@ public class FortiosConfigurationTest {
   }
 
   @Test
-  public void testToIpSpace_unsupportedTypes() {
+  void testToIpSpace_unsupportedTypes() {
     Stream.of(
             Address.Type.INTERFACE_SUBNET,
             Address.Type.DYNAMIC,
@@ -392,7 +386,7 @@ public class FortiosConfigurationTest {
   }
 
   @Test
-  public void testToIpSpace_addrgrp() {
+  void testToIpSpace_addrgrp() {
     Addrgrp addrgrp = new Addrgrp("addrgrp", new BatfishUUID(3));
     addrgrp.setExclude(true);
     addrgrp.setExcludeMember(ImmutableSet.of("exclude1"));
@@ -408,7 +402,7 @@ public class FortiosConfigurationTest {
 
   /** Check that vendor structure id is set when access list is converted to route filter list */
   @Test
-  public void testConvertAccessList_vendorStructureId() {
+  void testConvertAccessList_vendorStructureId() {
     AccessList acl = new AccessList("name");
     RouteFilterList rfl = convertAccessList(acl, "file");
     assertThat(

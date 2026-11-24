@@ -4,13 +4,13 @@ import static org.batfish.representation.juniper.GroupWildcard.toJavaRegex;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link GroupWildcard} */
-public class GroupWildcardTest {
+class GroupWildcardTest {
 
   @Test
-  public void testToJavaRegex() {
+  void testToJavaRegex() {
     assertThat(toJavaRegex("*"), equalTo(".*"));
     assertThat(toJavaRegex("*.*"), equalTo(".*\\..*"));
     assertThat(toJavaRegex("Foo*"), equalTo("Foo.*"));
@@ -19,14 +19,14 @@ public class GroupWildcardTest {
   }
 
   @Test
-  public void testToJavaRegexWithUnmatchedBrackets() {
+  void testToJavaRegexWithUnmatchedBrackets() {
     assertThat(toJavaRegex("["), equalTo("\\["));
     assertThat(toJavaRegex("Literal["), equalTo("Literal\\["));
     assertThat(toJavaRegex("Literal]"), equalTo("Literal\\]"));
   }
 
   @Test
-  public void testToJavaRegexWithCharacterClasses() {
+  void testToJavaRegexWithCharacterClasses() {
     assertThat(toJavaRegex("[a-c]"), equalTo("[a-c]"));
     assertThat(toJavaRegex("Foo[bar]"), equalTo("Foo[bar]"));
     assertThat(toJavaRegex("[0-9]"), equalTo("[0-9]"));
@@ -37,7 +37,7 @@ public class GroupWildcardTest {
   }
 
   @Test
-  public void testToJavaRegexWithCharacterClassNegation() {
+  void testToJavaRegexWithCharacterClassNegation() {
     assertThat(toJavaRegex("[!a-c]"), equalTo("[^a-c]"));
     assertThat(toJavaRegex("[!qwerty]"), equalTo("[^qwerty]"));
     assertThat(toJavaRegex("test[!4]"), equalTo("test[^4]"));

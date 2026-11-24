@@ -11,13 +11,13 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.routing_policy.expr.IntComparison;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link AsPathMatchAny}. */
-public final class AsPathMatchAnyTest {
+final class AsPathMatchAnyTest {
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     AsPathMatchAny obj =
         AsPathMatchAny.of(
             ImmutableList.of(HasAsPathLength.of(new IntComparison(EQ, new LiteralInt(1)))));
@@ -25,7 +25,7 @@ public final class AsPathMatchAnyTest {
   }
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     AsPathMatchAny obj =
         AsPathMatchAny.of(
             ImmutableList.of(HasAsPathLength.of(new IntComparison(EQ, new LiteralInt(1)))));
@@ -33,7 +33,7 @@ public final class AsPathMatchAnyTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     AsPathMatchAny obj =
         AsPathMatchAny.of(
             ImmutableList.of(HasAsPathLength.of(new IntComparison(EQ, new LiteralInt(1)))));

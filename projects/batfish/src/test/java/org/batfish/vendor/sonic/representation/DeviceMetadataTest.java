@@ -2,18 +2,18 @@ package org.batfish.vendor.sonic.representation;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class DeviceMetadataTest {
+class DeviceMetadataTest {
 
   @Test
-  public void testJacksonDeserialization() throws JsonProcessingException {
+  void testJacksonDeserialization() throws JsonProcessingException {
     String input =
         "{"
             + "    \"bgp_asn\": \"65044\","
@@ -31,14 +31,14 @@ public class DeviceMetadataTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     DeviceMetadata obj = new DeviceMetadata("name");
     assertEquals(obj, SerializationUtils.clone(obj));
   }
 
   @SuppressWarnings("UnstableApiUsage")
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new DeviceMetadata(null), new DeviceMetadata(null))
         .addEqualityGroup(new DeviceMetadata("hostname"))

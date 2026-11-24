@@ -3,13 +3,13 @@ package org.batfish.main.preprocess;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link DiffResult}. */
-public class DiffResultTest {
+class DiffResultTest {
 
   @Test
-  public void testSuccess_withContent() {
+  void testSuccess_withContent() {
     String diffOutput = "--- file1\n+++ file2\n@@ -1,1 +1,1 @@\n-old\n+new";
     DiffResult result = DiffResult.success(diffOutput);
 
@@ -21,7 +21,7 @@ public class DiffResultTest {
   }
 
   @Test
-  public void testSuccess_empty() {
+  void testSuccess_empty() {
     DiffResult result = DiffResult.success("");
 
     assertThat("Should be successful", result.wasSuccessful(), equalTo(true));
@@ -32,7 +32,7 @@ public class DiffResultTest {
   }
 
   @Test
-  public void testFailure() {
+  void testFailure() {
     String errorMsg = "File not found";
     DiffResult result = DiffResult.failure(errorMsg);
 

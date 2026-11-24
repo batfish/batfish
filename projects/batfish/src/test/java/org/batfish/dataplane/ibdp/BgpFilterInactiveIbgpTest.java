@@ -3,6 +3,7 @@ package org.batfish.dataplane.ibdp;
 import static org.batfish.dataplane.ibdp.TestUtils.assertNoRoute;
 import static org.batfish.dataplane.ibdp.TestUtils.assertRoute;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 import java.util.SortedMap;
@@ -13,9 +14,8 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * Tests that advertise-inactive (and its suppression) takes effect on iBGP sessions, not just eBGP.
@@ -25,7 +25,7 @@ import org.junit.rules.TemporaryFolder;
  * advertises to as3 (AS 2) over an iBGP session. The inactive route reaches as3 only when as2
  * advertises inactive routes, which is the IOS default and is disabled by "bgp suppress-inactive".
  */
-public final class BgpFilterInactiveIbgpTest {
+final class BgpFilterInactiveIbgpTest {
 
   private static final String AS1_NAME = "as1";
   private static final String AS2_ADVERTISE_INACTIVE_NAME = "as2-advertise-inactive";
@@ -34,10 +34,10 @@ public final class BgpFilterInactiveIbgpTest {
   private static final String SNAPSHOT_PATH = "org/batfish/dataplane/ibdp/bgp-filter-inactive-ibgp";
   private static final Ip STATIC_NEXT_HOP = Ip.parse("10.0.12.254");
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testSuppressInactive() throws IOException {
+  void testSuppressInactive() throws IOException {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
@@ -64,7 +64,7 @@ public final class BgpFilterInactiveIbgpTest {
   }
 
   @Test
-  public void testAdvertiseInactive() throws IOException {
+  void testAdvertiseInactive() throws IOException {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()

@@ -5,11 +5,11 @@ import static org.hamcrest.Matchers.contains;
 
 import com.google.common.collect.ImmutableMap;
 import org.batfish.datamodel.EmptyIpSpace;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class AllSourcesTest {
+class AllSourcesTest {
   @Test
-  public void testResolve() {
+  void testResolve() {
     Location src = new InterfaceLinkLocation("n1", "i1");
     Location nonSrc = new InterfaceLinkLocation("n2", "i2");
     SpecifierContext ctxt =

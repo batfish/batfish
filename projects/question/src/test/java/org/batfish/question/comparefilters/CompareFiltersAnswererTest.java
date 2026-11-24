@@ -17,9 +17,9 @@ import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.PermitAndDenyBdds;
 import org.batfish.datamodel.LineAction;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class CompareFiltersAnswererTest {
+final class CompareFiltersAnswererTest {
 
   private static final String HOSTNAME = "hostname";
   private static final String FILTER = "filter";
@@ -62,7 +62,7 @@ public final class CompareFiltersAnswererTest {
   }
 
   @Test
-  public void testCompareFilters() {
+  void testCompareFilters() {
     BDD dstIp0 = _pkt.getDstIp().value(0);
     BDD dstIp1 = _pkt.getDstIp().value(1);
     BDD srcIp0 = _pkt.getSrcIp().value(0);

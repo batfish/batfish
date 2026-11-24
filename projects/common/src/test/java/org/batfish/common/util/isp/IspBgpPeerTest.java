@@ -1,12 +1,12 @@
 package org.batfish.common.util.isp;
 
 import com.google.common.testing.EqualsTester;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class IspBgpPeerTest {
+class IspBgpPeerTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     // test via unnumbered child class
     new EqualsTester()
         .addEqualityGroup(

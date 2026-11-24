@@ -6,20 +6,20 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import java.util.Set;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link InterfacesByVlanRange} */
-public class InterfacesByVlanRangeTest {
+class InterfacesByVlanRangeTest {
 
   @Test
-  public void testIsInvalidRange() {
+  void testIsInvalidRange() {
     // Canonical but empty
     assertTrue(isInvalidRange(Range.closedOpen(1, 1)));
     // Not empty but non-canonical
@@ -31,7 +31,7 @@ public class InterfacesByVlanRangeTest {
   }
 
   @Test
-  public void testRangesDoNotOverlap_overlapping() {
+  void testRangesDoNotOverlap_overlapping() {
     assertFalse(
         rangesDoNotOverlap(ImmutableSet.of(Range.closedOpen(0, 3), Range.closedOpen(2, 6))));
     assertFalse(
@@ -39,7 +39,7 @@ public class InterfacesByVlanRangeTest {
   }
 
   @Test
-  public void testRangesDoNotOverlap() {
+  void testRangesDoNotOverlap() {
     assertTrue(rangesDoNotOverlap(ImmutableSet.of()));
     assertTrue(rangesDoNotOverlap(ImmutableSet.of(Range.closedOpen(1, 10))));
     assertTrue(
@@ -49,7 +49,7 @@ public class InterfacesByVlanRangeTest {
   }
 
   @Test
-  public void testGet() {
+  void testGet() {
     Range<Integer> range = Range.closedOpen(1, 11);
     Set<String> ifaces = ImmutableSet.of("iface1", "iface2");
     InterfacesByVlanRange ifacesByRange = new InterfacesByVlanRange(ImmutableMap.of(range, ifaces));
@@ -60,7 +60,7 @@ public class InterfacesByVlanRangeTest {
   }
 
   @Test
-  public void testGetRange() {
+  void testGetRange() {
     Range<Integer> range = Range.closedOpen(1, 11);
     Set<String> ifaces = ImmutableSet.of("iface1", "iface2");
     InterfacesByVlanRange ifacesByRange = new InterfacesByVlanRange(ImmutableMap.of(range, ifaces));

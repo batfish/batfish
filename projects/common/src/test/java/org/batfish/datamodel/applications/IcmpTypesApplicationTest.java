@@ -2,7 +2,7 @@ package org.batfish.datamodel.applications;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
@@ -10,12 +10,12 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class IcmpTypesApplicationTest {
+class IcmpTypesApplicationTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             IcmpTypesApplication.ALL,
@@ -33,7 +33,7 @@ public class IcmpTypesApplicationTest {
   }
 
   @Test
-  public void testToString() {
+  void testToString() {
     assertThat(IcmpTypesApplication.ALL.toString(), equalTo("icmp"));
     assertThat(new IcmpTypesApplication(8).toString(), equalTo("icmp/8"));
     assertThat(
@@ -46,7 +46,7 @@ public class IcmpTypesApplicationTest {
   }
 
   @Test
-  public void testToAclLineMatchExpr_all() {
+  void testToAclLineMatchExpr_all() {
     assertEquals(
         IcmpTypesApplication.ALL.toAclLineMatchExpr(),
         new MatchHeaderSpace(
@@ -57,7 +57,7 @@ public class IcmpTypesApplicationTest {
   }
 
   @Test
-  public void testToAclLineMatchExpr_multipleTypes() {
+  void testToAclLineMatchExpr_multipleTypes() {
     assertEquals(
         new IcmpTypesApplication(ImmutableList.of(new SubRange(0, 10), new SubRange(20, 30)))
             .toAclLineMatchExpr(),

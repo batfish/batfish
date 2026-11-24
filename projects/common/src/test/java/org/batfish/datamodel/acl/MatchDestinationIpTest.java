@@ -10,11 +10,11 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.TraceElement;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class MatchDestinationIpTest {
+class MatchDestinationIpTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new MatchDestinationIp(Ip.parse("1.1.1.1").toIpSpace(), null),
@@ -26,7 +26,7 @@ public class MatchDestinationIpTest {
   }
 
   @Test
-  public void testSerialization() throws IOException {
+  void testSerialization() throws IOException {
     MatchDestinationIp test1 = new MatchDestinationIp(Ip.parse("1.1.1.1").toIpSpace(), null);
     MatchDestinationIp test2 =
         new MatchDestinationIp(Ip.parse("1.1.1.1").toIpSpace(), TraceElement.of("test"));

@@ -1,16 +1,16 @@
 package org.batfish.datamodel.questions;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link BgpRouteDiffs}. */
-public class BgpRouteDiffsTest {
+class BgpRouteDiffsTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new BgpRouteDiffs(ImmutableSet.of()), new BgpRouteDiffs(ImmutableSet.of()))
@@ -20,7 +20,7 @@ public class BgpRouteDiffsTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     BgpRouteDiffs diffs =
         new BgpRouteDiffs(ImmutableSet.of(new BgpRouteDiff(BgpRoute.PROP_AS_PATH, "B", "C")));
     assertEquals(diffs, BatfishObjectMapper.clone(diffs, BgpRouteDiffs.class));

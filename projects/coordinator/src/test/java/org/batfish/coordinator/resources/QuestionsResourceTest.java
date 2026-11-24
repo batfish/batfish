@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableSortedSet;
+import java.io.File;
 import java.io.IOException;
 import java.util.SortedSet;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -21,15 +22,14 @@ import org.batfish.coordinator.Main;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
 import org.batfish.datamodel.questions.TestQuestion;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 @ParametersAreNonnullByDefault
-public final class QuestionsResourceTest extends WorkMgrServiceV2TestBase {
+final class QuestionsResourceTest extends WorkMgrServiceV2TestBase {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private Builder getQuestionTargetAdHoc(String network, String question) {
     return target(CoordConsts.SVC_CFG_WORK_MGR2)
@@ -50,13 +50,13 @@ public final class QuestionsResourceTest extends WorkMgrServiceV2TestBase {
         .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY);
   }
 
-  @Before
-  public void initTestEnvironment() {
+  @BeforeEach
+  void initTestEnvironment() {
     WorkMgrTestUtils.initWorkManager(_folder);
   }
 
   @Test
-  public void testDeleteQuestionAdHocMissingNetwork() {
+  void testDeleteQuestionAdHocMissingNetwork() {
     String network = "network1";
     String question = "question1";
     try (Response response = getQuestionTargetAdHoc(network, question).delete()) {
@@ -65,7 +65,7 @@ public final class QuestionsResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testDeleteQuestionAdHocMissingQuestion() {
+  void testDeleteQuestionAdHocMissingQuestion() {
     String network = "network1";
     String question = "question1";
     Main.getWorkMgr().initNetwork(network, null);
@@ -75,7 +75,7 @@ public final class QuestionsResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testDeleteQuestionAdHocSuccess() throws IOException {
+  void testDeleteQuestionAdHocSuccess() throws IOException {
     String network = "network1";
     String question = "question1";
     Main.getWorkMgr().initNetwork(network, null);
@@ -93,7 +93,7 @@ public final class QuestionsResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetQuestionAdHocMissingNetwork() {
+  void testGetQuestionAdHocMissingNetwork() {
     String network = "network1";
     String question = "question1";
     try (Response response = getQuestionTargetAdHoc(network, question).get()) {
@@ -102,7 +102,7 @@ public final class QuestionsResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetQuestionAdHocMissingQuestion() {
+  void testGetQuestionAdHocMissingQuestion() {
     String network = "network1";
     String question = "question1";
     Main.getWorkMgr().initNetwork(network, null);
@@ -112,7 +112,7 @@ public final class QuestionsResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetQuestionAdHocSuccess() throws IOException {
+  void testGetQuestionAdHocSuccess() throws IOException {
     String network = "network1";
     String question = "question1";
     String questionJson = BatfishObjectMapper.writeString(new TestQuestion());
@@ -125,7 +125,7 @@ public final class QuestionsResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testListQuestionsAdHocMissingNetwork() {
+  void testListQuestionsAdHocMissingNetwork() {
     String network = "network1";
     try (Response response = getTargetAdHoc(network).get()) {
       assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
@@ -133,7 +133,7 @@ public final class QuestionsResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testListQuestionsAdHocSuccess() throws IOException {
+  void testListQuestionsAdHocSuccess() throws IOException {
     String network = "network1";
     String question = "question1";
     Main.getWorkMgr().initNetwork(network, null);
@@ -146,7 +146,7 @@ public final class QuestionsResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testPutQuestionAdHocMissingNetwork() throws JsonProcessingException {
+  void testPutQuestionAdHocMissingNetwork() throws JsonProcessingException {
     String network = "network1";
     String question = "question1";
     String questionJson = BatfishObjectMapper.writeString(new TestQuestion());
@@ -158,7 +158,7 @@ public final class QuestionsResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testPutQuestionAdHocSuccess() throws IOException {
+  void testPutQuestionAdHocSuccess() throws IOException {
     String network = "network1";
     String question = "question1";
     String questionJson = BatfishObjectMapper.writeString(new TestQuestion());

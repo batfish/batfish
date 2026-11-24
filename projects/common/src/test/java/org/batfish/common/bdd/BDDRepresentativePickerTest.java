@@ -7,11 +7,11 @@ import static org.hamcrest.Matchers.equalTo;
 
 import net.sf.javabdd.BDD;
 import org.batfish.datamodel.IpProtocol;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class BDDRepresentativePickerTest {
+class BDDRepresentativePickerTest {
   @Test
-  public void testBDDRepresentativePicker1() {
+  void testBDDRepresentativePicker1() {
     BDDPacket pkt = new BDDPacket();
     BDD bdd1 = pkt.getIpProtocol().value(IpProtocol.UDP);
     BDD bdd2 = pkt.getIpProtocol().value(IpProtocol.TCP);
@@ -23,7 +23,7 @@ public class BDDRepresentativePickerTest {
   }
 
   @Test
-  public void testBDDRepresentativePicker2() {
+  void testBDDRepresentativePicker2() {
     BDDPacket pkt = new BDDPacket();
     BDD bdd1 = pkt.getIpProtocol().value(IpProtocol.UDP);
     BDD bdd2 = pkt.getIpProtocol().value(IpProtocol.TCP);

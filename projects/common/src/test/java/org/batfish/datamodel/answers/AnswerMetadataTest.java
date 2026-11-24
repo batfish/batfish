@@ -1,12 +1,12 @@
 package org.batfish.datamodel.answers;
 
 import com.google.common.testing.EqualsTester;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class AnswerMetadataTest {
+final class AnswerMetadataTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     AnswerMetadata.Builder builder = AnswerMetadata.builder().setStatus(AnswerStatus.SUCCESS);
     AnswerMetadata group1Elem1 = builder.build();
     AnswerMetadata group1Elem2 = builder.build();

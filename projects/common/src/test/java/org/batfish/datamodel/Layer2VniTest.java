@@ -10,16 +10,12 @@ import com.google.common.testing.EqualsTester;
 import java.util.SortedSet;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.datamodel.vxlan.Layer2Vni;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-public class Layer2VniTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class Layer2VniTest {
 
   @Test
-  public void testAllAttrs() {
+  void testAllAttrs() {
     SortedSet<Ip> bumTransportIps = ImmutableSortedSet.of(Ip.parse("2.2.2.2"), Ip.parse("2.2.2.3"));
     Layer2Vni vs =
         testBuilder()
@@ -40,7 +36,7 @@ public class Layer2VniTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     SortedSet<Ip> bumTransportIps = ImmutableSortedSet.of(Ip.parse("2.2.2.2"), Ip.parse("2.2.2.3"));
     Layer2Vni vs =
         testBuilder()
@@ -55,7 +51,7 @@ public class Layer2VniTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     Layer2Vni.Builder builder =
         testBuilder().setVni(1).setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP);
 
@@ -74,7 +70,7 @@ public class Layer2VniTest {
   }
 
   @Test
-  public void testToBuilder() {
+  void testToBuilder() {
     SortedSet<Ip> bumTransportIps = ImmutableSortedSet.of(Ip.parse("2.2.2.2"), Ip.parse("2.2.2.3"));
     Layer2Vni vs =
         testBuilder()
@@ -89,7 +85,7 @@ public class Layer2VniTest {
   }
 
   @Test
-  public void testAddToFloodList() {
+  void testAddToFloodList() {
     Ip ip = Ip.parse("2.2.2.2");
     Layer2Vni vs =
         testBuilder()

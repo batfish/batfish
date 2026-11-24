@@ -2,7 +2,7 @@ package org.batfish.vendor.check_point_management;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
@@ -10,13 +10,13 @@ import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link CpmiVsClusterNetobj}. */
-public final class CpmiVsClusterNetobjTest {
+final class CpmiVsClusterNetobjTest {
 
   @Test
-  public void testJacksonDeserialization() throws JsonProcessingException {
+  void testJacksonDeserialization() throws JsonProcessingException {
     String input =
         "{"
             + "\"GARBAGE\":0,"
@@ -46,7 +46,7 @@ public final class CpmiVsClusterNetobjTest {
   }
 
   @Test
-  public void testJacksonDeserialization_noIpV4Address() throws JsonProcessingException {
+  void testJacksonDeserialization_noIpV4Address() throws JsonProcessingException {
     String input =
         "{"
             + "\"GARBAGE\":0,"
@@ -75,7 +75,7 @@ public final class CpmiVsClusterNetobjTest {
   }
 
   @Test
-  public void testJacksonDeserialization_noInterfaces() throws JsonProcessingException {
+  void testJacksonDeserialization_noInterfaces() throws JsonProcessingException {
     String input =
         "{"
             + "\"GARBAGE\":0,"
@@ -104,7 +104,7 @@ public final class CpmiVsClusterNetobjTest {
   }
 
   @Test
-  public void testJacksonDeserialization_noMembers() throws JsonProcessingException {
+  void testJacksonDeserialization_noMembers() throws JsonProcessingException {
     String input =
         "{"
             + "\"GARBAGE\":0,"
@@ -133,7 +133,7 @@ public final class CpmiVsClusterNetobjTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     CpmiVsClusterNetobj obj =
         new CpmiVsClusterNetobj(
             ImmutableList.of(),
@@ -146,7 +146,7 @@ public final class CpmiVsClusterNetobjTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     CpmiVsClusterNetobj obj =
         new CpmiVsClusterNetobj(
             ImmutableList.of(),

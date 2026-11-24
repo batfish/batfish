@@ -8,12 +8,12 @@ import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class SelfDescribingObjectTest {
+final class SelfDescribingObjectTest {
 
   @Test
-  public void deserialize() throws IOException {
+  void deserialize() throws IOException {
     ObjectNode json = BatfishObjectMapper.mapper().createObjectNode();
     json.put(SelfDescribingObject.PROP_NAME, "meaningoflife");
     json.set(
@@ -30,7 +30,7 @@ public final class SelfDescribingObjectTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     SelfDescribingObject group1Elem1 = new SelfDescribingObject("a", Schema.BOOLEAN, false);
     SelfDescribingObject group1Elem2 = new SelfDescribingObject("a", Schema.BOOLEAN, false);
 
@@ -52,7 +52,7 @@ public final class SelfDescribingObjectTest {
   }
 
   @Test
-  public void testGetTypedValue() {
+  void testGetTypedValue() {
     Ip ip = Ip.parse("1.1.1.1");
     SelfDescribingObject ipObject = new SelfDescribingObject(Schema.IP, ip);
     assertThat(ipObject.getTypedValue(), equalTo(ip));

@@ -1,26 +1,30 @@
 package org.batfish.representation.juniper;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-public class InterfaceRangeMemberTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class InterfaceRangeMemberTest {
 
   @Test
-  public void testConstructorWildcard() {
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("Use of '*' as fpc or pic or port is not currently supported");
-    new InterfaceRangeMember("ge-0/*/0");
+  void testConstructorWildcard() {
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> {
+              new InterfaceRangeMember("ge-0/*/0");
+            });
+    assertThat(
+        exception.getMessage(),
+        containsString("Use of '*' as fpc or pic or port is not currently supported"));
   }
 
   @Test
-  public void testExpandComponent() {
+  void testExpandComponent() {
     assertThat(InterfaceRangeMember.expandComponent("0"), equalTo(ImmutableList.of(0)));
     assertThat(InterfaceRangeMember.expandComponent("[0-0]"), equalTo(ImmutableList.of(0)));
     assertThat(InterfaceRangeMember.expandComponent("[0]"), equalTo(ImmutableList.of(0)));
@@ -29,7 +33,7 @@ public class InterfaceRangeMemberTest {
   }
 
   @Test
-  public void testGetAllMembers() {
+  void testGetAllMembers() {
     assertThat(
         new InterfaceRangeMember("ge-0/0/0").getAllMembers(),
         equalTo(ImmutableList.of("ge-0/0/0")));

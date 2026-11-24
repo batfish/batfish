@@ -7,9 +7,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import java.util.function.Function;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class HeaderSpaceMatchesTest {
+class HeaderSpaceMatchesTest {
 
   private static final Map<String, IpSpace> _namedIpSpaces = ImmutableMap.of();
 
@@ -57,12 +57,12 @@ public class HeaderSpaceMatchesTest {
           .build();
 
   @Test
-  public void testEmptyHeaderSpaceMatches() {
+  void testEmptyHeaderSpaceMatches() {
     assertThat(HeaderSpace.builder().build().matches(_sshFlow, _namedIpSpaces), equalTo(true));
   }
 
   @Test
-  public void testDscpsMatchers() {
+  void testDscpsMatchers() {
     testMatches(
         dscps -> HeaderSpace.builder().setDscps(dscps).build(),
         dscps -> HeaderSpace.builder().setNotDscps(dscps).build(),
@@ -71,7 +71,7 @@ public class HeaderSpaceMatchesTest {
   }
 
   @Test
-  public void testDstIpsMatchers() {
+  void testDstIpsMatchers() {
     testMatches(
         dstIps -> HeaderSpace.builder().setDstIps(dstIps).build(),
         dstIps -> HeaderSpace.builder().setNotDstIps(dstIps).build(),
@@ -80,7 +80,7 @@ public class HeaderSpaceMatchesTest {
   }
 
   @Test
-  public void testDstPortsMatchers() {
+  void testDstPortsMatchers() {
     SubRange nonMatching = new SubRange(0, _dstPort - 1);
     testMatches(
         dstPorts -> HeaderSpace.builder().setDstPorts(dstPorts).build(),
@@ -90,7 +90,7 @@ public class HeaderSpaceMatchesTest {
   }
 
   @Test
-  public void testEcnsMatchers() {
+  void testEcnsMatchers() {
     testMatches(
         ecns -> HeaderSpace.builder().setEcns(ecns).build(),
         ecns -> HeaderSpace.builder().setNotEcns(ecns).build(),
@@ -99,7 +99,7 @@ public class HeaderSpaceMatchesTest {
   }
 
   @Test
-  public void testFragmentOffsetsMatchers() {
+  void testFragmentOffsetsMatchers() {
     SubRange nonMatching = new SubRange(0, _fragmentOffset - 1);
     testMatches(
         fragOffsets -> HeaderSpace.builder().setFragmentOffsets(fragOffsets).build(),
@@ -109,7 +109,7 @@ public class HeaderSpaceMatchesTest {
   }
 
   @Test
-  public void testIcmpCodesMatchers() {
+  void testIcmpCodesMatchers() {
     SubRange nonMatching = new SubRange(0, _icmpCode - 1);
     testMatches(
         _icmpFlow,
@@ -120,7 +120,7 @@ public class HeaderSpaceMatchesTest {
   }
 
   @Test
-  public void testIcmpTypesMatchers() {
+  void testIcmpTypesMatchers() {
     SubRange nonMatching = new SubRange(0, _icmpType - 1);
     testMatches(
         _icmpFlow,
@@ -131,7 +131,7 @@ public class HeaderSpaceMatchesTest {
   }
 
   @Test
-  public void testIpProtocolsMatchers() {
+  void testIpProtocolsMatchers() {
     // _flow is TCP, so notMatching can be UDP and IP
     testMatches(
         protocols -> HeaderSpace.builder().setIpProtocols(protocols).build(),
@@ -141,7 +141,7 @@ public class HeaderSpaceMatchesTest {
   }
 
   @Test
-  public void testPacketLengthsMatchers() {
+  void testPacketLengthsMatchers() {
     SubRange nonMatching = new SubRange(0, _packetLength - 1);
     testMatches(
         packetLengths -> HeaderSpace.builder().setPacketLengths(packetLengths).build(),
@@ -151,7 +151,7 @@ public class HeaderSpaceMatchesTest {
   }
 
   @Test
-  public void testSrcIpsMatchers() {
+  void testSrcIpsMatchers() {
     testMatches(
         srcIps -> HeaderSpace.builder().setSrcIps(srcIps).build(),
         srcIps -> HeaderSpace.builder().setNotSrcIps(srcIps).build(),
@@ -160,7 +160,7 @@ public class HeaderSpaceMatchesTest {
   }
 
   @Test
-  public void testSrcPortsMatchers() {
+  void testSrcPortsMatchers() {
     SubRange nonMatching = new SubRange(0, _srcPort - 1);
     testMatches(
         srcPorts -> HeaderSpace.builder().setSrcPorts(srcPorts).build(),
@@ -170,7 +170,7 @@ public class HeaderSpaceMatchesTest {
   }
 
   @Test
-  public void testSrcOrDestIpsMatchers() {
+  void testSrcOrDestIpsMatchers() {
     // _flow goes from 1.1.1.1 to 2.2.2.2; either should work.
     HeaderSpace withSrcIpAsSrcOrDst =
         HeaderSpace.builder().setSrcOrDstIps(IpIpSpace.create(_srcIp)).build();
@@ -184,7 +184,7 @@ public class HeaderSpaceMatchesTest {
   }
 
   @Test
-  public void testSrcOrDestPortsMatchers() {
+  void testSrcOrDestPortsMatchers() {
     // Need a new flow for this because _flow has the same port for src and dst (22).
     int newDstPort = _dstPort + 1;
     Flow newDstPortFlow = _sshFlow.toBuilder().setDstPort(newDstPort).build();
@@ -205,7 +205,7 @@ public class HeaderSpaceMatchesTest {
   }
 
   @Test
-  public void testTcpFlagsMatchers() {
+  void testTcpFlagsMatchers() {
     HeaderSpace withRightFlag =
         HeaderSpace.builder()
             .setTcpFlags(

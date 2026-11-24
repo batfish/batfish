@@ -10,11 +10,11 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.routing_policy.statement.Comment;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class RoutePolicyNextHopIP6Test {
+class RoutePolicyNextHopIP6Test {
   @Test
-  public void testToNextHop() {
+  void testToNextHop() {
     CiscoXrConfiguration vs = new CiscoXrConfiguration();
     vs.setHostname("xr");
     Configuration vi = new Configuration("xr", ConfigurationFormat.CISCO_IOS_XR);

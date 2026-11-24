@@ -30,15 +30,17 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.graph.ValueGraph;
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -94,12 +96,10 @@ import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.cumulus_concatenated.CumulusConcatenatedConfiguration;
 import org.batfish.representation.frr.BgpVrfAddressFamilyAggregateNetworkConfiguration;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public class CumulusConcatenatedGrammarTest {
+class CumulusConcatenatedGrammarTest {
   private static final String INTERFACES_DELIMITER = "# This file describes the network interfaces";
   private static final String PORTS_DELIMITER = "# ports.conf --";
   private static final String FRR_DELIMITER = "frr version 4.0+cl3u8";
@@ -110,9 +110,7 @@ public class CumulusConcatenatedGrammarTest {
   private static final String TESTRIGS_PREFIX =
       "org/batfish/grammar/cumulus_concatenated/testrigs/";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+  @TempDir public File _folder;
 
   private final BddTestbed _bddTestbed = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
   private final IpSpaceToBDD _dstIpBdd = _bddTestbed.getDstIpBdd();
@@ -197,25 +195,25 @@ public class CumulusConcatenatedGrammarTest {
   }
 
   @Test
-  public void testConcatenation() {
+  void testConcatenation() {
     CumulusConcatenatedConfiguration cfg = parseVendorConfig("concatenation");
     assertThat(cfg.getHostname(), equalTo("hostname"));
   }
 
   @Test
-  public void testConcatenationWithLeadingGarbage() {
+  void testConcatenationWithLeadingGarbage() {
     CumulusConcatenatedConfiguration cfg = parseVendorConfig("concatenation_with_leading_garbage");
     assertThat(cfg.getHostname(), equalTo("hostname"));
   }
 
   @Test
-  public void testConcatenationWithMissingHostname() {
+  void testConcatenationWithMissingHostname() {
     CumulusConcatenatedConfiguration cfg = parseVendorConfig("concatenation_with_missing_hostname");
     assertThat(cfg.getHostname(), emptyString());
   }
 
   @Test
-  public void testPortsUnrecognized() {
+  void testPortsUnrecognized() {
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
     settings.setDisableUnrecognized(false);
@@ -226,7 +224,7 @@ public class CumulusConcatenatedGrammarTest {
   }
 
   @Test
-  public void testBgpRedistribution() throws IOException {
+  void testBgpRedistribution() throws IOException {
     /*
      * Config contains two VRFs:
      * - VRF1 has static route 1.1.1.1/32 and redistributes static into BGP unconditionally
@@ -285,7 +283,7 @@ public class CumulusConcatenatedGrammarTest {
   }
 
   @Test
-  public void testBgpAddressFamilyNeighborIpv4AdvertiseInactiveConversion() throws IOException {
+  void testBgpAddressFamilyNeighborIpv4AdvertiseInactiveConversion() throws IOException {
     Configuration c = parseConfig("bgp_advertise_inactive");
     assertTrue(
         c.getDefaultVrf()
@@ -298,7 +296,7 @@ public class CumulusConcatenatedGrammarTest {
   }
 
   @Test
-  public void testVrf() {
+  void testVrf() {
     CumulusConcatenatedConfiguration c =
         parseLines(
             "hostname",
@@ -316,7 +314,7 @@ public class CumulusConcatenatedGrammarTest {
   }
 
   @Test
-  public void testVniVrfBgpProcesses() throws IOException {
+  void testVniVrfBgpProcesses() throws IOException {
     Configuration c = parseConfig("bgp_vnis");
     Vrf vrf1 = c.getVrfs().get("vrf1");
     Vrf vrf2 = c.getVrfs().get("vrf2");
@@ -345,7 +343,7 @@ public class CumulusConcatenatedGrammarTest {
   }
 
   @Test
-  public void testBgpConfederationConversion() throws IOException {
+  void testBgpConfederationConversion() throws IOException {
     Configuration c = parseConfig("bgp_confederation");
     BgpProcess bgpProcess = c.getDefaultVrf().getBgpProcess();
     assertThat(
@@ -356,7 +354,7 @@ public class CumulusConcatenatedGrammarTest {
   }
 
   @Test
-  public void testInterfaces() throws IOException {
+  void testInterfaces() throws IOException {
     Configuration c = parseConfig("interface_test");
 
     assertThat(c.getAllInterfaces().keySet(), contains("lo", "swp1", "swp2"));
@@ -384,7 +382,7 @@ public class CumulusConcatenatedGrammarTest {
   }
 
   @Test
-  public void testStaticRoute() {
+  void testStaticRoute() {
     CumulusConcatenatedConfiguration vsConfig = parseVendorConfig("static_route");
     Configuration viConfig = vsConfig.toVendorIndependentConfigurations().get(0);
     assertThat(
@@ -433,7 +431,7 @@ public class CumulusConcatenatedGrammarTest {
   }
 
   @Test
-  public void testBgpSessionUpdateSource() throws IOException {
+  void testBgpSessionUpdateSource() throws IOException {
     String testrigName = "bgp_update_source";
     List<String> configurationNames = ImmutableList.of("n1", "n2");
 
@@ -469,7 +467,7 @@ public class CumulusConcatenatedGrammarTest {
   }
 
   @Test
-  public void testSetCommunityAdditive() throws IOException {
+  void testSetCommunityAdditive() throws IOException {
     Ip origNextHopIp = Ip.parse("192.0.2.254");
     Bgpv4Route base =
         Bgpv4Route.testBuilder()
@@ -503,7 +501,7 @@ public class CumulusConcatenatedGrammarTest {
   }
 
   @Test
-  public void testSetCommunityContinue() throws IOException {
+  void testSetCommunityContinue() throws IOException {
     Ip origNextHopIp = Ip.parse("192.0.2.254");
     Bgpv4Route base =
         Bgpv4Route.testBuilder()
@@ -530,7 +528,7 @@ public class CumulusConcatenatedGrammarTest {
   }
 
   @Test
-  public void testSetMetric() throws IOException {
+  void testSetMetric() throws IOException {
     Ip origNextHopIp = Ip.parse("192.0.2.254");
     Bgpv4Route base =
         Bgpv4Route.testBuilder()
@@ -564,7 +562,7 @@ public class CumulusConcatenatedGrammarTest {
   }
 
   @Test
-  public void testSetCommListDelete() throws IOException {
+  void testSetCommListDelete() throws IOException {
     Ip origNextHopIp = Ip.parse("192.0.2.254");
     Bgpv4Route base =
         Bgpv4Route.testBuilder()
@@ -683,7 +681,7 @@ public class CumulusConcatenatedGrammarTest {
   }
 
   @Test
-  public void testCommSetMatchExpr() throws IOException {
+  void testCommSetMatchExpr() throws IOException {
     Ip origNextHopIp = Ip.parse("192.0.2.254");
     Bgpv4Route base =
         Bgpv4Route.testBuilder()
@@ -809,7 +807,7 @@ public class CumulusConcatenatedGrammarTest {
   }
 
   @Test
-  public void testInterfaceDefinition() throws IOException {
+  void testInterfaceDefinition() throws IOException {
     Configuration c = parseConfig("interface_definition_test");
     assertThat(
         c.getActiveInterfaces()
@@ -854,7 +852,7 @@ public class CumulusConcatenatedGrammarTest {
   }
 
   @Test
-  public void testOptionalAddressFamily() throws IOException {
+  void testOptionalAddressFamily() throws IOException {
     Configuration c = parseConfig("optional_address_family_identifier");
     assertThat(
         c.getActiveInterfaces()
@@ -879,13 +877,13 @@ public class CumulusConcatenatedGrammarTest {
   }
 
   @Test
-  public void testOspfAreaNetwork() throws IOException {
+  void testOspfAreaNetwork() throws IOException {
     Configuration c = parseConfig("ospf-network-area");
     assertThat(c.getAllInterfaces().get("eth1").getOspfAreaName(), equalTo(10L));
   }
 
   @Test
-  public void testLocalAs() throws IOException {
+  void testLocalAs() throws IOException {
     Configuration c = parseConfig("local_as_test");
     org.batfish.datamodel.Vrf defaultVrf = c.getDefaultVrf();
     Long neighbor_ip_local_as =
@@ -897,7 +895,7 @@ public class CumulusConcatenatedGrammarTest {
   }
 
   @Test
-  public void testLocalAsWarn() throws IOException {
+  void testLocalAsWarn() throws IOException {
     String hostname = "local_as_test_warn";
     IBatfish batfish = getBatfishForConfigurationNames(hostname);
     String filename = "configs/" + hostname;
@@ -913,7 +911,7 @@ public class CumulusConcatenatedGrammarTest {
   }
 
   @Test
-  public void testRouteMapMatchTagNonBgp() throws IOException {
+  void testRouteMapMatchTagNonBgp() throws IOException {
     Configuration c = parseConfig("frr-match-tag-non-bgp");
     RoutingPolicy policy = c.getRoutingPolicies().get("SET_METRIC");
     // Don't crash
@@ -924,7 +922,7 @@ public class CumulusConcatenatedGrammarTest {
   }
 
   @Test
-  public void testIpReuse() throws IOException {
+  void testIpReuse() throws IOException {
     Configuration c = parseConfig("ip_reuse");
 
     assertThat(
@@ -981,19 +979,24 @@ public class CumulusConcatenatedGrammarTest {
     }
   }
 
-  @Test(expected = AssertionError.class) // https://github.com/batfish/batfish/issues/7819
-  public void testIpReuse_differentAddressSamePrefix() throws IOException {
-    Configuration c = parseConfig("ip_reuse_different_address_same_prefix");
-    assertThat(
-        c.getAllInterfaces().get("swp1").getAllAddresses(),
-        contains(ConcreteInterfaceAddress.parse("10.2.1.1/24")));
-    assertThat(
-        c.getAllInterfaces().get("swp2").getAllAddresses(),
-        contains(ConcreteInterfaceAddress.parse("10.2.1.2/24")));
+  // https://github.com/batfish/batfish/issues/7819
+  @Test
+  void testIpReuse_differentAddressSamePrefix() throws IOException {
+    assertThrows(
+        AssertionError.class,
+        () -> {
+          Configuration c = parseConfig("ip_reuse_different_address_same_prefix");
+          assertThat(
+              c.getAllInterfaces().get("swp1").getAllAddresses(),
+              contains(ConcreteInterfaceAddress.parse("10.2.1.1/24")));
+          assertThat(
+              c.getAllInterfaces().get("swp2").getAllAddresses(),
+              contains(ConcreteInterfaceAddress.parse("10.2.1.2/24")));
+        });
   }
 
   @Test
-  public void testOspfAddresses() throws IOException {
+  void testOspfAddresses() throws IOException {
     Configuration c = parseConfig("ip_reuse");
     assertThat(
         c.getAllInterfaces(), hasKeys("swp1", "swp2", "swp3", "swp4", "swp5", "lo", "v1", "v2"));
@@ -1040,7 +1043,7 @@ public class CumulusConcatenatedGrammarTest {
   }
 
   @Test
-  public void testOspfUnnumberedLLAs() throws IOException {
+  void testOspfUnnumberedLLAs() throws IOException {
     Configuration c = parseConfig("ospf_link_local");
     assertThat(c.getAllInterfaces(), hasKeys("swp1", "swp2", "swp3", "swp4", "swp5", "swp6", "lo"));
     {
@@ -1085,14 +1088,14 @@ public class CumulusConcatenatedGrammarTest {
   }
 
   @Test
-  public void testLoopbackInterfaceType() throws IOException {
+  void testLoopbackInterfaceType() throws IOException {
     Configuration c = parseConfig("loopback");
     assertThat(c.getAllInterfaces(), hasKeys("lo"));
     assertThat(c.getAllInterfaces().get("lo").getInterfaceType(), equalTo(InterfaceType.LOOPBACK));
   }
 
   @Test
-  public void testAggregateAddressExtraction() {
+  void testAggregateAddressExtraction() {
     String hostname = "frr-aggregate-address";
     CumulusConcatenatedConfiguration vc = parseVendorConfig(hostname);
     Map<Prefix, BgpVrfAddressFamilyAggregateNetworkConfiguration> aggs =
@@ -1168,7 +1171,7 @@ public class CumulusConcatenatedGrammarTest {
   }
 
   @Test
-  public void testAggregateAddressConversion() throws IOException {
+  void testAggregateAddressConversion() throws IOException {
     String hostname = "frr-aggregate-address";
     Configuration c = parseConfig(hostname);
 
@@ -1259,7 +1262,7 @@ public class CumulusConcatenatedGrammarTest {
   }
 
   @Test
-  public void testCommunityListReferenceTracking() throws IOException {
+  void testCommunityListReferenceTracking() throws IOException {
     String hostname = "community_list_reference_tracking";
     IBatfish batfish = getBatfishForConfigurationNames(hostname);
 

@@ -8,13 +8,13 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MacAddress;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link InterfaceClagSettings} */
-public final class InterfaceClagSettingsTest {
+final class InterfaceClagSettingsTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     InterfaceClagSettings.Builder builder = InterfaceClagSettings.builder();
     InterfaceClagSettings c1 = builder.build();
 
@@ -36,7 +36,7 @@ public final class InterfaceClagSettingsTest {
   }
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     InterfaceClagSettings c =
         InterfaceClagSettings.builder()
             .setBackupIp(Ip.ZERO)
@@ -51,7 +51,7 @@ public final class InterfaceClagSettingsTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     InterfaceClagSettings c =
         InterfaceClagSettings.builder()
             .setBackupIp(Ip.ZERO)

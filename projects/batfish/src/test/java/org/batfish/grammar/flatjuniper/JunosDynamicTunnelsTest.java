@@ -14,6 +14,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Ip;
@@ -24,18 +25,17 @@ import org.batfish.representation.juniper.DynamicTunnel;
 import org.batfish.representation.juniper.DynamicTunnel.Type;
 import org.batfish.representation.juniper.JuniperConfiguration;
 import org.batfish.representation.juniper.RoutingInstance;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosDynamicTunnelsTest {
+final class JunosDynamicTunnelsTest {
 
   private static final String HOSTNAME = "junos-dynamic-tunnels";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testDynamicTunnels() throws IOException {
+  void testDynamicTunnels() throws IOException {
     Batfish batfish = getBatfish(_folder, HOSTNAME);
     JuniperConfiguration jc = getVendorConfiguration(batfish, HOSTNAME);
     RoutingInstance ri = jc.getMasterLogicalSystem().getDefaultRoutingInstance();

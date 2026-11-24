@@ -1,10 +1,11 @@
 package org.batfish.question.differentialreachability;
 
 import static org.batfish.specifier.LocationInfoUtils.connectedHostSubnetHostIps;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import java.io.File;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
@@ -34,13 +35,12 @@ import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
 import org.batfish.specifier.LocationVisitor;
 import org.batfish.specifier.SpecifierContext;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Test for {@link DifferentialReachabilityAnswerer}. */
-public final class DifferentialReachabilityAnswererTest {
-  @Rule public TemporaryFolder _tmp = new TemporaryFolder();
+final class DifferentialReachabilityAnswererTest {
+  @TempDir public File _tmp;
 
   private static Configuration getResolveStartLocationsConfig(
       String hostname, String i0Name, String i1Name) {
@@ -58,7 +58,7 @@ public final class DifferentialReachabilityAnswererTest {
   }
 
   @Test
-  public void testResolveStartLocations() {
+  void testResolveStartLocations() {
     String hostname = "hostname";
     String i0Name = "i0";
     String i1Name = "i1";

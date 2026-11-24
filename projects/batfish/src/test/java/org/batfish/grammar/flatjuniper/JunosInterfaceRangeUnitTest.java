@@ -7,23 +7,23 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.main.Batfish;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosInterfaceRangeUnitTest {
+final class JunosInterfaceRangeUnitTest {
 
   private static final String HOSTNAME = "junos-interface-range-unit";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testInterfaceRangeUnit() throws IOException {
+  void testInterfaceRangeUnit() throws IOException {
     Batfish batfish = getBatfish(_folder, HOSTNAME);
     Configuration config = batfish.loadConfigurations(batfish.getSnapshot()).get(HOSTNAME);
 

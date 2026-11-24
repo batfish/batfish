@@ -18,10 +18,10 @@ import org.batfish.grammar.BatfishLexerRecoveryStrategy;
 import org.batfish.grammar.MockGrammarSettings;
 import org.batfish.grammar.recovery.RecoveryLexer;
 import org.batfish.grammar.recovery.RecoveryParser;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 @ParametersAreNonnullByDefault
-public final class ErrorDetailsTest {
+final class ErrorDetailsTest {
 
   private static final Integer LINE_NUMBER = 1234;
   private static final String LINE_TEXT = "tokenText";
@@ -139,7 +139,7 @@ public final class ErrorDetailsTest {
   }
 
   @Test
-  public void testErrorDetailsSerialization() throws IOException {
+  void testErrorDetailsSerialization() throws IOException {
     ParseExceptionContext context = new ParseExceptionContext("content", 1, "context");
     ErrorDetails error = new ErrorDetails("message", context);
     String serialized = BatfishObjectMapper.writeString(error);
@@ -151,7 +151,7 @@ public final class ErrorDetailsTest {
   }
 
   @Test
-  public void testParseExceptionContextConstructionFromParserRuleContext() {
+  void testParseExceptionContextConstructionFromParserRuleContext() {
     ParseExceptionContext context =
         new ParseExceptionContext(
             new TestParserRuleContext(new TestToken(0, LINE_TEXT.length() - 1)),
@@ -164,7 +164,7 @@ public final class ErrorDetailsTest {
   }
 
   @Test
-  public void testParseExceptionContextSerialization() throws IOException {
+  void testParseExceptionContextSerialization() throws IOException {
     ParseExceptionContext context = new ParseExceptionContext("content", 1, "context");
     String serialized = BatfishObjectMapper.writeString(context);
     ParseExceptionContext deserialized =

@@ -1,7 +1,7 @@
 package org.batfish.datamodel.routing_policy.communities;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -13,16 +13,16 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExprEva
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IntComparison;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link CommunitySetMatchExprEvaluator}. */
-public final class CommunitySetMatchExprEvaluatorTest {
+final class CommunitySetMatchExprEvaluatorTest {
 
   private static final CommunitySetMatchExprEvaluator EVAL =
       CommunityContext.builder().build().getCommunitySetMatchExprEvaluator();
 
   @Test
-  public void testVisitCommunitySetAcl() {
+  void testVisitCommunitySetAcl() {
     // default deny
     assertFalse(new CommunitySetAcl(ImmutableList.of()).accept(EVAL, CommunitySet.empty()));
 
@@ -45,7 +45,7 @@ public final class CommunitySetMatchExprEvaluatorTest {
   }
 
   @Test
-  public void testVisitCommunitySetMatchAll() {
+  void testVisitCommunitySetMatchAll() {
     // empty permits everything
     assertTrue(new CommunitySetMatchAll(ImmutableList.of()).accept(EVAL, CommunitySet.empty()));
 
@@ -68,7 +68,7 @@ public final class CommunitySetMatchExprEvaluatorTest {
   }
 
   @Test
-  public void testVisitCommunitySetMatchAny() {
+  void testVisitCommunitySetMatchAny() {
     // empty denies everything
     assertFalse(new CommunitySetMatchAny(ImmutableList.of()).accept(EVAL, CommunitySet.empty()));
 
@@ -92,7 +92,7 @@ public final class CommunitySetMatchExprEvaluatorTest {
   }
 
   @Test
-  public void testVisitCommunitySetMatchExprReference() {
+  void testVisitCommunitySetMatchExprReference() {
     CommunityContext ctx =
         CommunityContext.builder()
             .setCommunitySetMatchExprs(
@@ -107,7 +107,7 @@ public final class CommunitySetMatchExprEvaluatorTest {
   }
 
   @Test
-  public void testVisitCommunitySetMatchRegex() {
+  void testVisitCommunitySetMatchRegex() {
     CommunitySetMatchRegex r =
         new CommunitySetMatchRegex(
             new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()), "^1:1 2:2$");
@@ -117,7 +117,7 @@ public final class CommunitySetMatchExprEvaluatorTest {
   }
 
   @Test
-  public void testVisitCommunitySetNot() {
+  void testVisitCommunitySetNot() {
     CommunitySetNot not = new CommunitySetNot(new HasCommunity(AllStandardCommunities.instance()));
 
     assertFalse(not.accept(EVAL, CommunitySet.of(StandardCommunity.of(1L))));
@@ -125,7 +125,7 @@ public final class CommunitySetMatchExprEvaluatorTest {
   }
 
   @Test
-  public void testVisitHasCommunity() {
+  void testVisitHasCommunity() {
     HasCommunity hc = new HasCommunity(AllStandardCommunities.instance());
 
     assertTrue(hc.accept(EVAL, CommunitySet.of(StandardCommunity.of(1L))));
@@ -136,7 +136,7 @@ public final class CommunitySetMatchExprEvaluatorTest {
   }
 
   @Test
-  public void testVisitHasSize() {
+  void testVisitHasSize() {
     HasSize hc = new HasSize(new IntComparison(IntComparator.LE, new LiteralInt(2)));
     StandardCommunity c1 = StandardCommunity.of(1);
     StandardCommunity c2 = StandardCommunity.of(2);
@@ -159,7 +159,7 @@ public final class CommunitySetMatchExprEvaluatorTest {
   }
 
   @Test
-  public void testRegexCacheKey() {
+  void testRegexCacheKey() {
     CommunitySetRendering rendering =
         new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance());
     CommunitySetMatchRegex regex1 = new CommunitySetMatchRegex(rendering, "regex");

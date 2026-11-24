@@ -15,12 +15,12 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.trace.Tracer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ResultTest {
+class ResultTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     Bgpv4Route route =
         Bgpv4Route.builder()
             .setOriginatorIp(Ip.parse("1.1.1.1"))

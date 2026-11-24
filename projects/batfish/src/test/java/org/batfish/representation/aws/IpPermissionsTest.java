@@ -37,10 +37,10 @@ import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.trace.TraceTree;
 import org.batfish.representation.aws.IpPermissions.AddressType;
 import org.batfish.representation.aws.IpPermissions.UserIdGroupPair;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link IpPermissions} */
-public class IpPermissionsTest {
+class IpPermissionsTest {
   private static final String SG_NAME = "sg";
   private static final String SG_ID = "sg-id";
   private static final String SG_DESC = "sg desc";
@@ -73,7 +73,7 @@ public class IpPermissionsTest {
   }
 
   @Test
-  public void userIdGroupsToAclLineExprs() {
+  void userIdGroupsToAclLineExprs() {
     IpPermissions ipPermissions =
         new IpPermissions(
             "tcp",
@@ -127,7 +127,7 @@ public class IpPermissionsTest {
   }
 
   @Test
-  public void testUserIdGroupTracing() {
+  void testUserIdGroupTracing() {
     IpPermissions ipPermissions =
         new IpPermissions(
             "tcp",
@@ -177,7 +177,7 @@ public class IpPermissionsTest {
   }
 
   @Test
-  public void testCollectPrefixLists() {
+  void testCollectPrefixLists() {
     Region region = testRegion();
     Map<PrefixList, IpSpace> prefixListIpSpaceMap =
         IpPermissions.collectPrefixLists(region, ImmutableList.of(PL_ID, PL_ID));

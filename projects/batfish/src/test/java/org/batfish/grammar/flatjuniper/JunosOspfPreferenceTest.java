@@ -7,6 +7,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.RoutingProtocol;
@@ -14,18 +15,17 @@ import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.main.Batfish;
 import org.batfish.representation.juniper.JuniperConfiguration;
 import org.batfish.representation.juniper.RoutingInstance;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosOspfPreferenceTest {
+final class JunosOspfPreferenceTest {
 
   private static final String HOSTNAME = "ospf-preference";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testExtractionAndConversion() throws IOException {
+  void testExtractionAndConversion() throws IOException {
     Batfish batfish = getBatfish(_folder, HOSTNAME);
     JuniperConfiguration juniperConfiguration = getVendorConfiguration(batfish, HOSTNAME);
     RoutingInstance routingInstance =

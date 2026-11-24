@@ -15,6 +15,7 @@ import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -52,19 +53,16 @@ import org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesQuest
 import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.SpecifierContext;
 import org.hamcrest.Matcher;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link FindMatchingFilterLinesAnswerer} */
-public class FindMatchingFilterLinesAnswererTest {
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class FindMatchingFilterLinesAnswererTest {
 
   private static FindMatchingFilterLinesQuestion UNCONSTRAINED_QUESTION =
       new FindMatchingFilterLinesQuestion(null, null, null, null, null);
 
   @Test
-  public void testThrowsIfNoFiltersMatch() {
+  void testThrowsIfNoFiltersMatch() {
     // Config with no ACLs; should see exception because no filters match question specifications
     Configuration c =
         new NetworkFactory()
@@ -75,12 +73,11 @@ public class FindMatchingFilterLinesAnswererTest {
     MockBatfish batfish = new MockBatfish(ImmutableSortedMap.of("c", c));
     FindMatchingFilterLinesAnswerer answerer =
         new FindMatchingFilterLinesAnswerer(UNCONSTRAINED_QUESTION, batfish);
-    _thrown.expect(IllegalArgumentException.class);
-    answerer.answer(batfish.getSnapshot());
+    assertThrows(IllegalArgumentException.class, () -> answerer.answer(batfish.getSnapshot()));
   }
 
   @Test
-  public void testGetActionsToReport() {
+  void testGetActionsToReport() {
     // Set up ACL containing two lines, make sure header constraints filter to the right line
 
     // First line accepts TCP to 1.1.1.0/24
@@ -161,7 +158,7 @@ public class FindMatchingFilterLinesAnswererTest {
   }
 
   @Test
-  public void testRecordedActionFinder_AclAclLine() {
+  void testRecordedActionFinder_AclAclLine() {
     HeaderSpace permitSpace =
         HeaderSpace.builder().setDstIps(Ip.parse("1.1.1.1").toIpSpace()).build();
     HeaderSpace denySpace =
@@ -273,7 +270,7 @@ public class FindMatchingFilterLinesAnswererTest {
   }
 
   @Test
-  public void testFullAnswer() {
+  void testFullAnswer() {
     /*
     Configuration c1 has:
       - ACL acl1, with a permit-all line

@@ -4,34 +4,31 @@ import static org.batfish.datamodel.BgpProcess.testBgpProcess;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-@RunWith(JUnit4.class)
-public class DeviceTypeTest {
+class DeviceTypeTest {
 
   NetworkFactory _nf;
   Configuration.Builder _cb;
   Vrf.Builder _vb;
 
-  @Before
-  public void initializeBuilders() {
+  @BeforeEach
+  void initializeBuilders() {
     _nf = new NetworkFactory();
     _cb = _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     _vb = _nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
   }
 
   @Test
-  public void emptyConfigurationIsSwitch() {
+  void emptyConfigurationIsSwitch() {
     Configuration c = _cb.build();
     postProcessConfiguration(c);
     assertThat(c.getDeviceType(), is(DeviceType.SWITCH));
   }
 
   @Test
-  public void configWithEmptyVrfIsSwitch() {
+  void configWithEmptyVrfIsSwitch() {
     Configuration c = _cb.build();
     _vb.setOwner(c).build();
     postProcessConfiguration(c);
@@ -39,14 +36,14 @@ public class DeviceTypeTest {
   }
 
   @Test
-  public void hostConfigIsHost() {
+  void hostConfigIsHost() {
     Configuration c = _cb.setConfigurationFormat(ConfigurationFormat.HOST).build();
     postProcessConfiguration(c);
     assertThat(c.getDeviceType(), is(DeviceType.HOST));
   }
 
   @Test
-  public void hostWithBgpIsHost() {
+  void hostWithBgpIsHost() {
     Configuration c = _cb.setConfigurationFormat(ConfigurationFormat.HOST).build();
     Vrf vrf = _vb.setOwner(c).build();
     vrf.setBgpProcess(testBgpProcess(Ip.ZERO));
@@ -55,7 +52,7 @@ public class DeviceTypeTest {
   }
 
   @Test
-  public void configWithFirstVrfEmptyIsRouter() {
+  void configWithFirstVrfEmptyIsRouter() {
     Configuration c = _cb.build();
     _vb.setOwner(c).build();
     Vrf vrf = _vb.setOwner(c).build();
@@ -65,7 +62,7 @@ public class DeviceTypeTest {
   }
 
   @Test
-  public void configWithBgpIsRouter() {
+  void configWithBgpIsRouter() {
     Configuration c = _cb.build();
     Vrf vrf = _vb.setOwner(c).build();
     vrf.setBgpProcess(testBgpProcess(Ip.ZERO));
@@ -74,7 +71,7 @@ public class DeviceTypeTest {
   }
 
   @Test
-  public void configWithOspfIsRouter() {
+  void configWithOspfIsRouter() {
     Configuration c = _cb.build();
     Vrf vrf = _vb.setOwner(c).build();
     _nf.ospfProcessBuilder().setRouterId(Ip.ZERO).setVrf(vrf).build();
@@ -83,7 +80,7 @@ public class DeviceTypeTest {
   }
 
   @Test
-  public void configWithRipIsRouter() {
+  void configWithRipIsRouter() {
     Configuration c = _cb.build();
     Vrf vrf = _vb.setOwner(c).build();
     _nf.ospfProcessBuilder().setRouterId(Ip.ZERO).setVrf(vrf).build();

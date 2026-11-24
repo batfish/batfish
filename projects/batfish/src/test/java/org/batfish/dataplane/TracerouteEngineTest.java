@@ -8,18 +8,21 @@ import static org.batfish.datamodel.Ip.parse;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasDisposition;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
@@ -52,16 +55,13 @@ import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests for {@link TracerouteEngineImpl} */
-public class TracerouteEngineTest {
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class TracerouteEngineTest {
 
-  @Rule public TemporaryFolder _tempFolder = new TemporaryFolder();
+  @TempDir public File _tempFolder;
 
   private static boolean interfaceRepliesToArpRequestForIp(
       Interface iface, Fib ifaceFib, Ip arpIp) {
@@ -95,7 +95,7 @@ public class TracerouteEngineTest {
    * iface1. Should accept if and only if iface1 and iface2 are in the same VRF.
    */
   @Test
-  public void testAcceptVrf() throws IOException {
+  void testAcceptVrf() throws IOException {
     // Construct network
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
@@ -134,7 +134,7 @@ public class TracerouteEngineTest {
   }
 
   @Test
-  public void testArpMultipleAccess() throws IOException {
+  void testArpMultipleAccess() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -195,7 +195,7 @@ public class TracerouteEngineTest {
    * if and only if iface1 and iface2 are in the same VRF.
    */
   @Test
-  public void testArpVrf() {
+  void testArpVrf() {
     // Construct interfaces
     NetworkFactory nf = new NetworkFactory();
     Interface.Builder ib = nf.interfaceBuilder();
@@ -231,26 +231,26 @@ public class TracerouteEngineTest {
             .build();
 
     assertFalse(
-        "ARP request to interface on a different VRF should fail",
-        interfaceRepliesToArpRequestForIp(i1, vrf1Fib, arpIp));
+        interfaceRepliesToArpRequestForIp(i1, vrf1Fib, arpIp),
+        "ARP request to interface on a different VRF should fail");
     assertTrue(
-        "ARP request to interface with proxy-arp enabled should succeed",
-        interfaceRepliesToArpRequestForIp(i2, vrf2Fib, arpIp));
+        interfaceRepliesToArpRequestForIp(i2, vrf2Fib, arpIp),
+        "ARP request to interface with proxy-arp enabled should succeed");
     assertFalse(
-        "ARP request to interface with proxy-arp disabled should fail",
-        interfaceRepliesToArpRequestForIp(i3, vrf2Fib, arpIp));
+        interfaceRepliesToArpRequestForIp(i3, vrf2Fib, arpIp),
+        "ARP request to interface with proxy-arp disabled should fail");
     assertTrue(
-        "ARP request to interface that owns arpIp should succeed",
-        interfaceRepliesToArpRequestForIp(i4, vrf2Fib, arpIp));
+        interfaceRepliesToArpRequestForIp(i4, vrf2Fib, arpIp),
+        "ARP request to interface that owns arpIp should succeed");
     assertFalse(
-        "ARP request to interface with no address should fail",
-        interfaceRepliesToArpRequestForIp(i5, vrf2Fib, arpIp));
+        interfaceRepliesToArpRequestForIp(i5, vrf2Fib, arpIp),
+        "ARP request to interface with no address should fail");
 
     // arpIp isn't owned by the VRF, but is routable
     arpIp = Ip.parse("4.4.4.0");
     assertFalse(
-        "ARP request for interface subnet to the same interface should fail",
-        interfaceRepliesToArpRequestForIp(i4, vrf2Fib, arpIp));
+        interfaceRepliesToArpRequestForIp(i4, vrf2Fib, arpIp),
+        "ARP request for interface subnet to the same interface should fail");
 
     /*
      * There are routes for arpIp through multiple interfaces, but i4 still doesn't reply because
@@ -271,13 +271,13 @@ public class TracerouteEngineTest {
                             ImmutableList.of(new ConnectedRoute(i4.getPrimaryNetwork(), i4Name))))))
             .build();
     assertFalse(
+        interfaceRepliesToArpRequestForIp(i4, vrf2Fib, arpIp),
         "ARP request for interface subnet to the same interface should fail, "
-            + "even if other routes are available",
-        interfaceRepliesToArpRequestForIp(i4, vrf2Fib, arpIp));
+            + "even if other routes are available");
   }
 
   @Test
-  public void testAclBeforeArpNoEdge() throws IOException {
+  void testAclBeforeArpNoEdge() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -305,7 +305,7 @@ public class TracerouteEngineTest {
   }
 
   @Test
-  public void testAclBeforeArpWithEdge() throws IOException {
+  void testAclBeforeArpWithEdge() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -348,7 +348,7 @@ public class TracerouteEngineTest {
 
   /** When ingress node is non-existent, don't crash with null-pointer. */
   @Test
-  public void testTracerouteOutsideNetwork() throws IOException {
+  void testTracerouteOutsideNetwork() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -359,14 +359,19 @@ public class TracerouteEngineTest {
     batfish.computeDataPlane(snapshot);
     DataPlane dp = batfish.loadDataPlane(snapshot);
 
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("Node missingNode is not in the network");
-    new TracerouteEngineImpl(dp, batfish.getTopologyProvider().getLayer3Topology(snapshot), configs)
-        .computeTraces(ImmutableSet.of(builder().setIngressNode("missingNode").build()), false);
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () ->
+                new TracerouteEngineImpl(
+                        dp, batfish.getTopologyProvider().getLayer3Topology(snapshot), configs)
+                    .computeTraces(
+                        ImmutableSet.of(builder().setIngressNode("missingNode").build()), false));
+    assertThat(exception.getMessage(), containsString("Node missingNode is not in the network"));
   }
 
   @Test
-  public void testDeliveredStep() throws IOException {
+  void testDeliveredStep() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -409,7 +414,7 @@ public class TracerouteEngineTest {
   }
 
   @Test
-  public void testArpErrorStep() throws IOException {
+  void testArpErrorStep() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);

@@ -12,6 +12,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.SubRange;
@@ -28,18 +29,17 @@ import org.batfish.representation.juniper.Interface;
 import org.batfish.representation.juniper.InterfaceRange;
 import org.batfish.representation.juniper.InterfaceRangeMember;
 import org.batfish.representation.juniper.JuniperConfiguration;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosFirewallInterfaceMatchTest {
+final class JunosFirewallInterfaceMatchTest {
 
   private static final String HOSTNAME = "firewall-interface-match";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testExtractionAndConversion() throws IOException {
+  void testExtractionAndConversion() throws IOException {
     Batfish batfish = getBatfish(_folder, HOSTNAME);
     JuniperConfiguration config = getVendorConfiguration(batfish, HOSTNAME);
     Interface ge0 =
@@ -114,7 +114,7 @@ public final class JunosFirewallInterfaceMatchTest {
   }
 
   @Test
-  public void testNoMatchingInterfaces() {
+  void testNoMatchingInterfaces() {
     JuniperConfiguration config = new JuniperConfiguration();
     Warnings warnings = new Warnings(true, true, true);
 

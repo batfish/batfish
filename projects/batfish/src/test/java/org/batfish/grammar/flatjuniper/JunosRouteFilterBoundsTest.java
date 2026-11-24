@@ -7,9 +7,10 @@ import static org.batfish.grammar.JunosGrammarTestUtils.parseJuniperConfig;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.File;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
@@ -19,18 +20,17 @@ import org.batfish.common.Warning;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Prefix;
 import org.batfish.representation.juniper.JuniperConfiguration;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Observations from lab-validation's junos_route_filter_bounds lab on Junos 25.4R1.12. */
-public final class JunosRouteFilterBoundsTest {
+final class JunosRouteFilterBoundsTest {
   private static final String RESOURCES = "org/batfish/grammar/juniper/testconfigs/";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testDiagnostics() {
+  void testDiagnostics() {
     JuniperConfiguration jc = parseJuniperConfig(_folder, "route-filter-bounds");
     assertThat(jc.getWarnings().getParseWarnings(), empty());
     Set<String> expected =
@@ -41,7 +41,7 @@ public final class JunosRouteFilterBoundsTest {
     Pattern policy = Pattern.compile("(FATAL|RISK): .*policy-statement (\\S+) term MATCH");
     for (Warning warning : jc.getWarnings().getRedFlagWarnings()) {
       Matcher matcher = policy.matcher(warning.getText());
-      assertTrue(warning.getText(), matcher.find());
+      assertTrue(matcher.find(), warning.getText());
       actual.add(matcher.group(1) + " " + matcher.group(2));
     }
     assertThat(actual, equalTo(expected));
@@ -49,28 +49,28 @@ public final class JunosRouteFilterBoundsTest {
   }
 
   @Test
-  public void testCommittedIpv4Matches() {
+  void testCommittedIpv4Matches() {
     Configuration c = parseConfig(_folder, "route-filter-bounds-valid");
     readResource(RESOURCES + "route-filter-bounds-matches", UTF_8)
         .lines()
         .forEach(line -> {
           String[] fields = line.split(" ");
           assertEquals(
-              line,
               Boolean.parseBoolean(fields[2]),
-              c.getRouteFilterLists().get(fields[0] + ":MATCH").permits(Prefix.parse(fields[1])));
+              c.getRouteFilterLists().get(fields[0] + ":MATCH").permits(Prefix.parse(fields[1])),
+              line);
         });
   }
 
   @Test
-  public void testInvalidAddressFamilyWithInlineAction() {
+  void testInvalidAddressFamilyWithInlineAction() {
     JuniperConfiguration jc = parseJuniperConfig(_folder, "route-filter-bounds-inline-invalid");
     assertThat(jc.getWarnings().getParseWarnings(), empty());
     assertThat(jc.getWarnings().getFatalRedFlagWarnings().size(), equalTo(4));
   }
 
   @Test
-  public void testSharedSourceAddressFilterGrammar() {
+  void testSharedSourceAddressFilterGrammar() {
     JuniperConfiguration jc = parseJuniperConfig(_folder, "route-filter-bounds-source-address");
     assertThat(jc.getWarnings().getRedFlagWarnings(), empty());
   }

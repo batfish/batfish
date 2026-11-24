@@ -5,7 +5,9 @@ import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasP
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 import org.batfish.common.BdpOscillationException;
@@ -15,19 +17,16 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Test of route resolution in BGP */
-public class BgpResolutionTest {
+class BgpResolutionTest {
   private static final String SNAPSHOTS_PREFIX = "org/batfish/dataplane/testrigs/";
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+  @TempDir public File _folder;
 
   @Test
-  public void testInitiallyUnresolvableExternalRoute() throws IOException {
+  void testInitiallyUnresolvableExternalRoute() throws IOException {
     /*
      Setup: Devices r1 and r2 share an EBGP peering.
      r1 receives an external advertisement for 4.0.0.0/8, with NHIP 5.5.5.5.
@@ -70,7 +69,7 @@ public class BgpResolutionTest {
   }
 
   @Test
-  public void testResolutionLoop() throws IOException {
+  void testResolutionLoop() throws IOException {
     /*
      Setup:          r1 -- r2 -- r3
 
@@ -92,7 +91,7 @@ public class BgpResolutionTest {
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder().setConfigurationFiles(snapshotPath, "r1", "r2", "r3").build(),
             _folder);
-    _thrown.expect(BdpOscillationException.class);
-    batfish.computeDataPlane(batfish.getSnapshot());
+    assertThrows(
+        BdpOscillationException.class, () -> batfish.computeDataPlane(batfish.getSnapshot()));
   }
 }

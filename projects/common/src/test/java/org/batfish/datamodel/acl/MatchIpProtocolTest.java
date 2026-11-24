@@ -10,11 +10,11 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.TraceElement;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class MatchIpProtocolTest {
+class MatchIpProtocolTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new MatchIpProtocol(IpProtocol.TCP, null), new MatchIpProtocol(IpProtocol.TCP, null))
@@ -24,7 +24,7 @@ public class MatchIpProtocolTest {
   }
 
   @Test
-  public void testSerialization() throws IOException {
+  void testSerialization() throws IOException {
     MatchIpProtocol test1 = new MatchIpProtocol(IpProtocol.TCP, null);
     MatchIpProtocol test2 = new MatchIpProtocol(IpProtocol.TCP, TraceElement.of("test"));
     for (MatchIpProtocol t : ImmutableList.of(test1, test2)) {

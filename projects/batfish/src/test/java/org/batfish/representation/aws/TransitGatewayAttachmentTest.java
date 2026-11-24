@@ -12,13 +12,13 @@ import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.representation.aws.TransitGatewayAttachment.Association;
 import org.batfish.representation.aws.TransitGatewayAttachment.ResourceType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link TransitGatewayAttachment} */
-public class TransitGatewayAttachmentTest {
+class TransitGatewayAttachmentTest {
 
   @Test
-  public void testDeserialization() throws IOException {
+  void testDeserialization() throws IOException {
     String text =
         readResource("org/batfish/representation/aws/TransitGatewayAttachmentTest.json", UTF_8);
 
@@ -72,7 +72,7 @@ public class TransitGatewayAttachmentTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new TransitGatewayAttachment(

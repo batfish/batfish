@@ -5,21 +5,21 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.testing.EqualsTester;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.representation.frr.BgpNeighbor.RemoteAs;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link BgpNeighbor} and subclasses. */
-public final class BgpNeighborTest {
+final class BgpNeighborTest {
 
   @Test
-  public void testInheritFrom() {
+  void testInheritFrom() {
     BgpVrf vrf = new BgpVrf("vrf");
     BgpIpv4UnicastAddressFamily vrfIpv4u = new BgpIpv4UnicastAddressFamily();
     vrf.setIpv4Unicast(vrfIpv4u);
@@ -88,7 +88,7 @@ public final class BgpNeighborTest {
   }
 
   @Test
-  public void testRemoteAsEquals() {
+  void testRemoteAsEquals() {
     new EqualsTester()
         .addEqualityGroup(1)
         .addEqualityGroup(RemoteAs.explicit(5), RemoteAs.explicit(5))
@@ -99,7 +99,7 @@ public final class BgpNeighborTest {
   }
 
   @Test
-  public void testRemoteAsExplicit() {
+  void testRemoteAsExplicit() {
     RemoteAs explicit5 = RemoteAs.explicit(5);
     // remoteAs should always resolve to 5
     assertThat(explicit5.getRemoteAs(null), equalTo(LongSpace.of(5)));
@@ -118,7 +118,7 @@ public final class BgpNeighborTest {
   }
 
   @Test
-  public void testRemoteAsExternal() {
+  void testRemoteAsExternal() {
     RemoteAs external = RemoteAs.external();
     // RemoteAS is anything but argument, empty for null.
     assertThat(external.getRemoteAs(null), equalTo(LongSpace.EMPTY));
@@ -134,7 +134,7 @@ public final class BgpNeighborTest {
   }
 
   @Test
-  public void testRemoteAsInternal() {
+  void testRemoteAsInternal() {
     RemoteAs internal = RemoteAs.internal();
     // RemoteAS is same as argument, empty for null.
     assertThat(internal.getRemoteAs(null), equalTo(LongSpace.EMPTY));

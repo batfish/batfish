@@ -5,16 +5,13 @@ import static org.batfish.datamodel.LineAction.PERMIT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link LineAction} */
-@RunWith(JUnit4.class)
-public class LineActionTest {
+class LineActionTest {
 
   @Test
-  public void testCaseInsensitive() {
+  void testCaseInsensitive() {
     assertThat(LineAction.forValue("permit"), equalTo(PERMIT));
     assertThat(LineAction.forValue("PERMIT"), equalTo(PERMIT));
     assertThat(LineAction.forValue("PeRMiT"), equalTo(PERMIT));
@@ -24,7 +21,7 @@ public class LineActionTest {
   }
 
   @Test
-  public void testCompatible() {
+  void testCompatible() {
     assertThat(LineAction.forValue("accept"), equalTo(LineAction.forValue("permit")));
     assertThat(LineAction.forValue("reject"), equalTo(LineAction.forValue("deny")));
   }

@@ -1,20 +1,18 @@
 package org.batfish.datamodel;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
-import junit.framework.TestCase;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-@RunWith(JUnit4.class)
-public class UseConstantIpTest extends TestCase {
+class UseConstantIpTest {
   /**
    * {@link UseConstantIp#getPotentialSourceIps} should return a singleton set of the given constant
    * IP address.
    */
   @Test
-  public void testGetPotentialSourceIps() {
+  void testGetPotentialSourceIps() {
     Ip constantIp = Ip.parse("1.2.3.4");
     UseConstantIp useConstantIp = UseConstantIp.create(constantIp);
     Fib dummyFib = MockFib.builder().build();
@@ -25,7 +23,7 @@ public class UseConstantIpTest extends TestCase {
   }
 
   @Test
-  public void testEquality() {
+  void testEquality() {
     new EqualsTester()
         .addEqualityGroup(
             UseConstantIp.create(Ip.parse("1.1.1.1")), UseConstantIp.create(Ip.parse("1.1.1.1")))
@@ -35,7 +33,7 @@ public class UseConstantIpTest extends TestCase {
   }
 
   @Test
-  public void testToString() {
+  void testToString() {
     assertEquals("UseConstantIp(1.1.1.1)", UseConstantIp.create(Ip.parse("1.1.1.1")).toString());
   }
 }

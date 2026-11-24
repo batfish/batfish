@@ -5,12 +5,12 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link VirtualServerPort} */
-public class VirtualServerPortTest {
+class VirtualServerPortTest {
   @Test
-  public void testPortAndTypeEquality() {
+  void testPortAndTypeEquality() {
     VirtualServerPort.PortAndType obj =
         new VirtualServerPort.PortAndType(10, VirtualServerPort.Type.UDP);
     new EqualsTester()
@@ -21,7 +21,7 @@ public class VirtualServerPortTest {
   }
 
   @Test
-  public void testPortAndTypeSerialization() {
+  void testPortAndTypeSerialization() {
     VirtualServerPort.PortAndType obj =
         new VirtualServerPort.PortAndType(10, VirtualServerPort.Type.UDP);
     VirtualServerPort.PortAndType clone = SerializationUtils.clone(obj);

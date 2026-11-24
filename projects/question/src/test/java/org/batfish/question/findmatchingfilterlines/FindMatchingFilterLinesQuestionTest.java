@@ -8,12 +8,12 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesQuestion.Action;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class FindMatchingFilterLinesQuestionTest {
+class FindMatchingFilterLinesQuestionTest {
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     // Default parameters
     FindMatchingFilterLinesQuestion q =
         new FindMatchingFilterLinesQuestion(null, null, null, null, null);

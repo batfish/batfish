@@ -13,13 +13,13 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link PsFromAsPathGroup}. */
-public class PsFromAsPathGroupTest {
+class PsFromAsPathGroupTest {
 
   @Test
-  public void testUndefined() {
+  void testUndefined() {
     Warnings w = new Warnings(true, true, true);
     BooleanExpr ret = PsFromAsPathGroup.toBooleanExpr(null, w);
     assertThat(ret, is(BooleanExprs.FALSE));
@@ -27,7 +27,7 @@ public class PsFromAsPathGroupTest {
   }
 
   @Test
-  public void testConversionError() {
+  void testConversionError() {
     AsPathGroup asPathGroup = new AsPathGroup("Group");
     asPathGroup
         .getAsPaths()
@@ -44,7 +44,7 @@ public class PsFromAsPathGroupTest {
   }
 
   @Test
-  public void testConversionErrorWithValidRegex() {
+  void testConversionErrorWithValidRegex() {
     AsPathGroup asPathGroup = new AsPathGroup("Group");
     asPathGroup.getAsPaths().put("aspath1", new NamedAsPath("aspath1", "1 2"));
     asPathGroup
@@ -59,7 +59,7 @@ public class PsFromAsPathGroupTest {
   }
 
   @Test
-  public void testConversion() {
+  void testConversion() {
     AsPathGroup asPathGroup = new AsPathGroup("Group");
     asPathGroup.getAsPaths().put("aspath1", new NamedAsPath("aspath1", "1 2"));
     asPathGroup.getAsPaths().put("aspath2", new NamedAsPath("aspath2", "3 4"));

@@ -12,8 +12,9 @@ import static org.batfish.bddreachability.transition.Transitions.constraint;
 import static org.batfish.bddreachability.transition.Transitions.removeSourceConstraint;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.SortedMap;
@@ -48,17 +49,16 @@ import org.batfish.symbolic.state.SetupSessionDeliveredToSubnet;
 import org.batfish.symbolic.state.SetupSessionExitsNetwork;
 import org.batfish.symbolic.state.StateExpr;
 import org.batfish.symbolic.state.VrfAccept;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * Tests source tracking (for ACLs that use {@link org.batfish.datamodel.acl.MatchSrcInterface} and
  * {@link org.batfish.datamodel.acl.OriginatingFromDevice} expressions).
  */
-public class BDDReachabilityAnalysisFactorySourcesTest {
-  @ClassRule public static TemporaryFolder temp = new TemporaryFolder();
+class BDDReachabilityAnalysisFactorySourcesTest {
+  @TempDir public static File temp;
 
   private static final BDDPacket pkt = new BDDPacket();
   private static Map<StateExpr, Map<StateExpr, Transition>> edges;
@@ -71,8 +71,8 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
   private static BDDSourceManager srcMgr;
   private static BDDSourceManager peerSrcMgr;
 
-  @BeforeClass
-  public static void setup() throws IOException {
+  @BeforeAll
+  static void setup() throws IOException {
     SortedMap<String, Configuration> configs = TestNetworkSources.twoNodeNetwork();
     Batfish batfish = BatfishTestUtils.getBatfish(configs, temp);
     batfish.computeDataPlane(batfish.getSnapshot());
@@ -120,8 +120,7 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
    * interface with the OriginatingFromDevice ACL.
    */
   @Test
-  public void
-      preOutInterfaceNeighborUnreachable_NodeInterfaceNeighborUnreachable_OriginatingFromDevice() {
+  void preOutInterfaceNeighborUnreachable_NodeInterfaceNeighborUnreachable_OriginatingFromDevice() {
     Transition transition =
         edges
             .get(
@@ -139,7 +138,7 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
    * interface with the OriginatingFromDevice ACL.
    */
   @Test
-  public void preOutInterfaceDelivered_SetupSessionDelivered_OriginatingFromDevice() {
+  void preOutInterfaceDelivered_SetupSessionDelivered_OriginatingFromDevice() {
     Transition transition =
         edges
             .get(
@@ -157,7 +156,7 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
    * OriginatingFromDevice ACL.
    */
   @Test
-  public void preOutInterfaceExitsNetwork_SetupSessionExitsNetwork_OriginatingFromDevice() {
+  void preOutInterfaceExitsNetwork_SetupSessionExitsNetwork_OriginatingFromDevice() {
     Transition transition =
         edges
             .get(
@@ -172,7 +171,7 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
    * MatchSrcInterface ACL.
    */
   @Test
-  public void preOutInterfaceDelivered_SetupSessionDelivered_MatchSrcInterface() {
+  void preOutInterfaceDelivered_SetupSessionDelivered_MatchSrcInterface() {
     Transition transition =
         edges
             .get(
@@ -187,7 +186,7 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
    * Test the SetupSessionDeliveredToSubnet -> NodeInterfaceDeliveredToSubnet edge
    */
   @Test
-  public void preOutInterfaceDelivered_NodeInterfaceDelivered() {
+  void preOutInterfaceDelivered_NodeInterfaceDelivered() {
     Transition transition =
         edges
             .get(new SetupSessionDeliveredToSubnet(CONFIG_NAME, MATCH_SRC_INTERFACE_ACL_IFACE_NAME))
@@ -202,7 +201,7 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
    * the MatchSrcInterface ACL.
    */
   @Test
-  public void preOutInterfaceExitsNetwork_SetupSessionExitsNetwork_MatchSrcInterface() {
+  void preOutInterfaceExitsNetwork_SetupSessionExitsNetwork_MatchSrcInterface() {
     Transition transition =
         edges
             .get(new PreOutInterfaceExitsNetwork(CONFIG_NAME, MATCH_SRC_INTERFACE_ACL_IFACE_NAME))
@@ -215,7 +214,7 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
    * MatchSrcInterface ACL.
    */
   @Test
-  public void setupSessionExitsNetwork_NodeInterfaceExitsNetwork() {
+  void setupSessionExitsNetwork_NodeInterfaceExitsNetwork() {
     Transition transition =
         edges
             .get(new SetupSessionExitsNetwork(CONFIG_NAME, MATCH_SRC_INTERFACE_ACL_IFACE_NAME))
@@ -228,7 +227,7 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
    * interface with the MatchSrcInterface ACL.
    */
   @Test
-  public void preOutVrf_NodeInterfaceInsufficientInfo_MatchSrcInterface() {
+  void preOutVrf_NodeInterfaceInsufficientInfo_MatchSrcInterface() {
     Transition transition =
         edges
             .get(
@@ -245,7 +244,7 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
    * forward direction.
    */
   @Test
-  public void vrfAccept_NodeAccept() {
+  void vrfAccept_NodeAccept() {
     // NodeAccept -> Accept edge.
     Transition transition =
         edges.get(new VrfAccept(CONFIG_NAME, VRF_NAME)).get(new NodeAccept(CONFIG_NAME));
@@ -254,7 +253,7 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
   }
 
   @Test
-  public void originateInterfaceLink_PreInInterface() {
+  void originateInterfaceLink_PreInInterface() {
     Transition transition =
         edges
             .get(new OriginateInterfaceLink(CONFIG_NAME, INGRESS_IFACE_NAME))
@@ -267,7 +266,7 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
   }
 
   @Test
-  public void originateVrf_PostInVrf() {
+  void originateVrf_PostInVrf() {
     Transition transition =
         edges
             .get(new OriginateVrf(CONFIG_NAME, VRF_NAME))
@@ -284,7 +283,7 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
   }
 
   @Test
-  public void preOutEdgePostNat_PreInInterface() {
+  void preOutEdgePostNat_PreInInterface() {
     Transition transition =
         edges
             .get(new PreOutEdgePostNat(PEER_NAME, PEER_IFACE_NAME, CONFIG_NAME, INGRESS_IFACE_NAME))

@@ -4,11 +4,13 @@ import static org.batfish.datamodel.IntegerSpace.EMPTY;
 import static org.batfish.datamodel.IntegerSpace.PORTS;
 import static org.batfish.datamodel.IntegerSpace.builder;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -20,116 +22,105 @@ import java.util.NoSuchElementException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.IntegerSpace.Builder;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link IntegerSpace}. */
-@RunWith(JUnit4.class)
-public final class IntegerSpaceTest {
+final class IntegerSpaceTest {
   private IntegerSpace.Builder _b;
 
-  @Rule public ExpectedException _expected = ExpectedException.none();
-
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _b = IntegerSpace.builder();
   }
 
   @Test
-  public void testClosedRangeCreation() {
+  void testClosedRangeCreation() {
     IntegerSpace space = _b.including(new SubRange(1, 10)).build();
     for (int i = 1; i <= 10; i++) {
-      assertTrue("Closed ranges are inclusive", space.contains(i));
+      assertTrue(space.contains(i), "Closed ranges are inclusive");
     }
-    assertFalse("No members outside of subrange", space.contains(11));
-    assertFalse("No members outside of subrange", space.contains(0));
+    assertFalse(space.contains(11), "No members outside of subrange");
+    assertFalse(space.contains(0), "No members outside of subrange");
   }
 
   @Test
-  public void testInfRangesNotAllowedUpper() {
-    _expected.expect(IllegalArgumentException.class);
-    _b.including(Range.atLeast(1));
+  void testInfRangesNotAllowedUpper() {
+    assertThrows(IllegalArgumentException.class, () -> _b.including(Range.atLeast(1)));
   }
 
   @Test
-  public void testInfRangesNotAllowedLower() {
-    _expected.expect(IllegalArgumentException.class);
-    _b.including(Range.atMost(1));
+  void testInfRangesNotAllowedLower() {
+    assertThrows(IllegalArgumentException.class, () -> _b.including(Range.atMost(1)));
   }
 
   @Test
-  public void testInfRangesNotAllowedExcludingUpper() {
-    _expected.expect(IllegalArgumentException.class);
-    _b.excluding(Range.atMost(10));
+  void testInfRangesNotAllowedExcludingUpper() {
+    assertThrows(IllegalArgumentException.class, () -> _b.excluding(Range.atMost(10)));
   }
 
   @Test
-  public void testInfRangesNotAllowedExcludingLower() {
-    _expected.expect(IllegalArgumentException.class);
-    _b.excluding(Range.atMost(10));
+  void testInfRangesNotAllowedExcludingLower() {
+    assertThrows(IllegalArgumentException.class, () -> _b.excluding(Range.atMost(10)));
   }
 
   @Test
-  public void testExcludeWithoutInclude() {
+  void testExcludeWithoutInclude() {
     IntegerSpace space = _b.excluding(Range.closed(1, 10)).build();
-    assertTrue("No inclusions means empty space", space.isEmpty());
-    assertTrue("No inclusions means contiguous space", space.isContiguous());
+    assertTrue(space.isEmpty(), "No inclusions means empty space");
+    assertTrue(space.isContiguous(), "No inclusions means contiguous space");
   }
 
   @Test
-  public void testIgnoreEmptySubrange() {
+  void testIgnoreEmptySubrange() {
     IntegerSpace space = _b.including(new SubRange(10, 0)).build();
-    assertTrue("Empty subrange means empty space", space.isEmpty());
+    assertTrue(space.isEmpty(), "Empty subrange means empty space");
   }
 
   @Test
-  public void testExclusionAndContains() {
+  void testExclusionAndContains() {
     IntegerSpace space =
         _b.including(new SubRange(0, 10))
             .excluding(new SubRange(1, 2))
             .excluding(new SubRange(5, 6))
             .build();
 
-    assertFalse("Space not empty", space.isEmpty());
-    assertFalse("Space not contiguous", space.isContiguous());
-    assertFalse("Space does not contain excluded values", space.contains(1));
-    assertFalse("Space does not contain excluded values", space.contains(2));
-    assertFalse("Space does not contain excluded values", space.contains(5));
-    assertFalse("Space does not contain excluded values", space.contains(6));
+    assertFalse(space.isEmpty(), "Space not empty");
+    assertFalse(space.isContiguous(), "Space not contiguous");
+    assertFalse(space.contains(1), "Space does not contain excluded values");
+    assertFalse(space.contains(2), "Space does not contain excluded values");
+    assertFalse(space.contains(5), "Space does not contain excluded values");
+    assertFalse(space.contains(6), "Space does not contain excluded values");
     assertFalse(
-        "Space does not contain excluded values",
-        space.contains(builder().including(new SubRange(1, 2)).build()));
+        space.contains(builder().including(new SubRange(1, 2)).build()),
+        "Space does not contain excluded values");
     assertTrue(
-        "Space contains child space",
-        space.contains(IntegerSpace.builder().including(Range.closed(7, 10)).build()));
+        space.contains(IntegerSpace.builder().including(Range.closed(7, 10)).build()),
+        "Space contains child space");
     assertFalse(
-        "Space does not contain partially overlapping spaces",
-        space.contains(builder().including(Range.closed(0, 1)).build()));
+        space.contains(builder().including(Range.closed(0, 1)).build()),
+        "Space does not contain partially overlapping spaces");
   }
 
   @Test
-  public void emptyInstanceIsEmpty() {
-    assertTrue("Empty instance is empty", EMPTY.isEmpty());
+  void emptyInstanceIsEmpty() {
+    assertTrue(EMPTY.isEmpty(), "Empty instance is empty");
   }
 
   @Test
-  public void testEnumerate() {
+  void testEnumerate() {
     IntegerSpace space = _b.including(Range.closedOpen(1, 5)).build();
     assertThat(space.enumerate(), equalTo(ImmutableSortedSet.of(1, 2, 3, 4)));
   }
 
   @Test
-  public void testEnumerateWithExclusions() {
+  void testEnumerateWithExclusions() {
     IntegerSpace space = _b.including(Range.closedOpen(1, 5)).excluding(Range.closed(2, 3)).build();
     assertThat(space.enumerate(), equalTo(ImmutableSortedSet.of(1, 4)));
   }
 
   @Test
-  public void testIntersection() {
+  void testIntersection() {
     IntegerSpace space = _b.including(Range.closed(0, 90)).excluding(Range.closed(10, 20)).build();
     IntegerSpace space2 =
         IntegerSpace.builder()
@@ -143,7 +134,7 @@ public final class IntegerSpaceTest {
   }
 
   @Test
-  public void testUnion() {
+  void testUnion() {
     IntegerSpace space = _b.including(Range.closed(0, 90)).excluding(Range.closed(10, 20)).build();
     IntegerSpace space2 =
         IntegerSpace.builder()
@@ -168,11 +159,11 @@ public final class IntegerSpaceTest {
   }
 
   @Test
-  public void testComplement() {
+  void testComplement() {
     Range<Integer> u16 = Range.closed(0, 65535);
     IntegerSpace ports = IntegerSpace.of(u16);
     IntegerSpace notPorts = ports.complement(u16);
-    assertTrue("Complement of full space is empty", notPorts.isEmpty());
+    assertTrue(notPorts.isEmpty(), "Complement of full space is empty");
     assertThat("Complement of empty should be all", EMPTY.complement(u16), equalTo(ports));
 
     // Non-empty complement
@@ -189,32 +180,36 @@ public final class IntegerSpaceTest {
   }
 
   @Test
-  public void testComplementRejectsSmaller() {
-    _expected.expect(IllegalArgumentException.class);
-    _expected.expectMessage(
-        "Cannot take the complement of space 10-100 within a smaller bounds [5..5].");
-    IntegerSpace.of(Range.closed(10, 100)).complement(Range.singleton(5));
+  void testComplementRejectsSmaller() {
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> IntegerSpace.of(Range.closed(10, 100)).complement(Range.singleton(5)));
+    assertThat(
+        exception.getMessage(),
+        containsString(
+            "Cannot take the complement of space 10-100 within a smaller bounds [5..5]."));
   }
 
   @Test
-  public void testRoundTripThroughBuilder() {
+  void testRoundTripThroughBuilder() {
     IntegerSpace space = _b.including(PORTS).excluding(SubRange.singleton(22)).build();
     assertThat(space.toBuilder().build(), equalTo(space));
   }
 
   @Test
-  public void testConversionToBuilder() {
+  void testConversionToBuilder() {
     IntegerSpace space = _b.including(PORTS).excluding(SubRange.singleton(22)).build();
     Builder newBuilder = space.toBuilder();
     newBuilder.including(Range.closed(-10, -5));
     newBuilder.excluding(Range.closed(53, 53));
     IntegerSpace newSpace = newBuilder.build();
-    assertTrue("Has newly added value", newSpace.contains(-7));
-    assertFalse("Does not have newly excluded value", newSpace.contains(53));
+    assertTrue(newSpace.contains(-7), "Has newly added value");
+    assertFalse(newSpace.contains(53), "Does not have newly excluded value");
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             builder().including(new SubRange(1, 10)).build(),
@@ -224,19 +219,19 @@ public final class IntegerSpaceTest {
   }
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     assertThat(
         BatfishObjectMapper.clone(IntegerSpace.PORTS, IntegerSpace.class),
         equalTo(IntegerSpace.PORTS));
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     assertThat(SerializationUtils.clone(IntegerSpace.PORTS), equalTo(IntegerSpace.PORTS));
   }
 
   @Test
-  public void testCreationFromInts() {
+  void testCreationFromInts() {
     assertThat(
         IntegerSpace.builder().including(3).including(4).build(),
         equalTo(IntegerSpace.of(Range.closed(3, 4))));
@@ -251,7 +246,7 @@ public final class IntegerSpaceTest {
   }
 
   @Test
-  public void testCreationFromString() {
+  void testCreationFromString() {
     assertThat(
         IntegerSpace.create("10"),
         equalTo(IntegerSpace.builder().including(Range.closed(10, 10)).build()));
@@ -285,60 +280,57 @@ public final class IntegerSpaceTest {
   }
 
   @Test
-  public void testCreationFromStringNull() {
+  void testCreationFromStringNull() {
     assertThat(IntegerSpace.create(null), equalTo(EMPTY));
     assertThat(IntegerSpace.Builder.create(null).build(), equalTo(EMPTY));
   }
 
   @Test
-  public void testCreationFromStringInvalidEmpty() {
-    assertTrue("empty string, empty space", IntegerSpace.create("").isEmpty());
+  void testCreationFromStringInvalidEmpty() {
+    assertTrue(IntegerSpace.create("").isEmpty(), "empty string, empty space");
   }
 
   @Test
-  public void testCreationFromStringInvalidEmptyList() {
-    _expected.expect(IllegalArgumentException.class);
-    IntegerSpace.create(",");
+  void testCreationFromStringInvalidEmptyList() {
+    assertThrows(IllegalArgumentException.class, () -> IntegerSpace.create(","));
   }
 
   @Test
-  public void testCreationFromStringInvalidWord() {
-    _expected.expect(IllegalArgumentException.class);
-    IntegerSpace.create("a");
+  void testCreationFromStringInvalidWord() {
+    assertThrows(IllegalArgumentException.class, () -> IntegerSpace.create("a"));
   }
 
   @Test
-  public void testCreationFromStringInvalidNotWord() {
-    _expected.expect(IllegalArgumentException.class);
-    IntegerSpace.create("!a");
+  void testCreationFromStringInvalidNotWord() {
+    assertThrows(IllegalArgumentException.class, () -> IntegerSpace.create("!a"));
   }
 
   @Test
-  public void testCreationFromStringInvalidRange() {
-    _expected.expect(IllegalArgumentException.class);
-    IntegerSpace.create("54-!54");
+  void testCreationFromStringInvalidRange() {
+    assertThrows(IllegalArgumentException.class, () -> IntegerSpace.create("54-!54"));
   }
 
   @Test
-  public void testCreationFromStringInvalidNegative() {
-    _expected.expect(IllegalArgumentException.class);
-    IntegerSpace.create("-1");
+  void testCreationFromStringInvalidNegative() {
+    assertThrows(IllegalArgumentException.class, () -> IntegerSpace.create("-1"));
   }
 
   @Test
-  public void testCreationFromStringInvalidListWithNegativeValues() {
-    _expected.expect(IllegalArgumentException.class);
-    // read: [-2..-1]
-    IntegerSpace.create("-2--1");
+  void testCreationFromStringInvalidListWithNegativeValues() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            // read: [-2..-1]
+            IntegerSpace.create("-2--1"));
   }
 
   @Test
-  public void testCreationFromSubRange() {
+  void testCreationFromSubRange() {
     assertThat(IntegerSpace.of(new SubRange(3, 4)), equalTo(IntegerSpace.create("3-4")));
   }
 
   @Test
-  public void testDifference() {
+  void testDifference() {
     IntegerSpace s1 = IntegerSpace.builder().including(Range.closed(1, 10)).build();
     IntegerSpace s2 = IntegerSpace.builder().including(Range.closed(5, 15)).build();
     IntegerSpace expected = IntegerSpace.builder().including(Range.closed(1, 4)).build();
@@ -354,7 +346,7 @@ public final class IntegerSpaceTest {
   }
 
   @Test
-  public void testSymmetricDifference() {
+  void testSymmetricDifference() {
     IntegerSpace s1 = IntegerSpace.builder().including(Range.closed(1, 10)).build();
     IntegerSpace s2 = IntegerSpace.builder().including(Range.closed(5, 15)).build();
     IntegerSpace expected =
@@ -374,37 +366,36 @@ public final class IntegerSpaceTest {
   }
 
   @Test
-  public void testIsSingleton() {
+  void testIsSingleton() {
     IntegerSpace s1 = IntegerSpace.builder().including(Range.closed(1, 1)).build();
     IntegerSpace s2 =
         IntegerSpace.builder().including(Range.closed(1, 3)).excluding(Range.closed(2, 3)).build();
     IntegerSpace twoValues = IntegerSpace.builder().including(Range.closed(1, 2)).build();
-    assertTrue("Must be singleton", s1.isSingleton());
-    assertTrue("Must be singleton", s2.isSingleton());
-    assertFalse("Must not be singleton", twoValues.isSingleton());
+    assertTrue(s1.isSingleton(), "Must be singleton");
+    assertTrue(s2.isSingleton(), "Must be singleton");
+    assertFalse(twoValues.isSingleton(), "Must not be singleton");
   }
 
   @Test
-  public void testSingletonValue() {
+  void testSingletonValue() {
     IntegerSpace s1 = IntegerSpace.builder().including(Range.closed(1, 1)).build();
     IntegerSpace s2 =
         IntegerSpace.builder().including(Range.closed(1, 3)).excluding(Range.closed(2, 3)).build();
     IntegerSpace twoValues = IntegerSpace.builder().including(Range.closed(1, 2)).build();
     assertThat(s1.singletonValue(), equalTo(1));
     assertThat(s2.singletonValue(), equalTo(1));
-    _expected.expect(NoSuchElementException.class);
-    twoValues.singletonValue();
+    assertThrows(NoSuchElementException.class, () -> twoValues.singletonValue());
   }
 
   @Test
-  public void testConversionToSubrange() {
+  void testConversionToSubrange() {
     assertThat(IntegerSpace.of(1).getSubRanges(), equalTo(ImmutableSet.of(SubRange.singleton(1))));
     assertThat(PORTS.getSubRanges(), equalTo(ImmutableSet.of(new SubRange(0, 65535))));
     assertThat(EMPTY.getSubRanges(), equalTo(ImmutableSet.of()));
   }
 
   @Test
-  public void testStaticCreators() {
+  void testStaticCreators() {
     SubRange r1 = SubRange.singleton(1);
     SubRange r2 = new SubRange(4, 5);
     assertThat(
@@ -413,21 +404,21 @@ public final class IntegerSpaceTest {
   }
 
   @Test
-  public void testStaticBuilderCreators() {
+  void testStaticBuilderCreators() {
     Builder b = Builder.create("10-20");
     assertThat(b, not(nullValue()));
     assertThat(b.build(), equalTo(IntegerSpace.of(Range.closed(10, 20))));
   }
 
   @Test
-  public void testStream() {
+  void testStream() {
     IntegerSpace space = IntegerSpace.unionOf(new SubRange(1, 5), new SubRange(-3, -1));
     List<Integer> streamed = space.stream().collect(ImmutableList.toImmutableList());
     assertThat(streamed, equalTo(ImmutableList.of(-3, -2, -1, 1, 2, 3, 4, 5)));
   }
 
   @Test
-  public void testToString() {
+  void testToString() {
     assertThat(
         IntegerSpace.builder().including(new SubRange(5, 10)).excluding(9).build().toString(),
         equalTo("5-8,10"));
@@ -436,7 +427,7 @@ public final class IntegerSpaceTest {
   }
 
   @Test
-  public void testExcludingAllSubranges() {
+  void testExcludingAllSubranges() {
     // excluding 2 from 1 leaves 1
     assertThat(
         IntegerSpace.of(1).toBuilder()

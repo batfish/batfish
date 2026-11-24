@@ -9,10 +9,11 @@ import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.t
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -87,6 +88,7 @@ import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighLow
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighMatch;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityLowMatch;
 import org.batfish.datamodel.routing_policy.expr.BgpPeerAddressNextHop;
+import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
@@ -115,6 +117,7 @@ import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.LiteralTunnelEncapsulationAttribute;
 import org.batfish.datamodel.routing_policy.expr.MatchClusterListLength;
 import org.batfish.datamodel.routing_policy.expr.MatchColor;
+import org.batfish.datamodel.routing_policy.expr.MatchColor2;
 import org.batfish.datamodel.routing_policy.expr.MatchInterface;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
 import org.batfish.datamodel.routing_policy.expr.MatchLocalPreference;
@@ -124,6 +127,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.MatchSourceVrf;
 import org.batfish.datamodel.routing_policy.expr.MatchTag;
+import org.batfish.datamodel.routing_policy.expr.MatchTag2;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.NextHopIp;
@@ -140,6 +144,8 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.RemoveTunnelEncapsulationAttribute;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
+import org.batfish.datamodel.routing_policy.statement.SetColor;
+import org.batfish.datamodel.routing_policy.statement.SetColor2;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultTag;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
@@ -148,6 +154,7 @@ import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
+import org.batfish.datamodel.routing_policy.statement.SetTag2;
 import org.batfish.datamodel.routing_policy.statement.SetTunnelEncapsulationAttribute;
 import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.Statement;
@@ -165,13 +172,11 @@ import org.batfish.minesweeper.utils.RouteMapEnvironment;
 import org.batfish.question.testroutepolicies.Result;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link TransferBDD}. */
-public class TransferBDDTest {
+class TransferBDDTest {
 
   private static final String HOSTNAME = "hostname";
   private static final String POLICY_NAME = "policy";
@@ -180,8 +185,6 @@ public class TransferBDDTest {
   private IBatfish _batfish;
   private Configuration _baseConfig;
   private ConfigAtomicPredicates _configAPs;
-
-  @Rule public ExpectedException _expectedException = ExpectedException.none();
 
   private static final String AS_PATH_NAME = "asPathName";
 
@@ -216,8 +219,8 @@ public class TransferBDDTest {
     }
   }
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     setup(ConfigurationFormat.CISCO_IOS);
   }
 
@@ -326,7 +329,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testExitAccept() {
+  void testExitAccept() {
     RoutingPolicy policy =
         _policyBuilder.addStatement(new StaticStatement(Statements.ExitAccept)).build();
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
@@ -342,7 +345,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testExitReject() {
+  void testExitReject() {
     RoutingPolicy policy =
         _policyBuilder.addStatement(new StaticStatement(Statements.ExitReject)).build();
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
@@ -365,7 +368,7 @@ public class TransferBDDTest {
    * entirely different variables and the accept path's output would not equal the supplied route.
    */
   @Test
-  public void testComputePathsHonorsOriginalRouteVariables() {
+  void testComputePathsHonorsOriginalRouteVariables() {
     RoutingPolicy policy =
         _policyBuilder.addStatement(new StaticStatement(Statements.ExitAccept)).build();
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
@@ -385,7 +388,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testEmptyPolicy() {
+  void testEmptyPolicy() {
 
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
     TransferBDD tbdd = new TransferBDD(_configAPs);
@@ -399,7 +402,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testMatchPrefixRange() {
+  void testMatchPrefixRange() {
     _policyBuilder.addStatement(
         new If(
             matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/8:16-24"))),
@@ -423,7 +426,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testAcceptBeforeIf() {
+  void testAcceptBeforeIf() {
     _policyBuilder.addStatement(Statements.ExitAccept.toStaticStatement());
 
     _policyBuilder.addStatement(
@@ -447,7 +450,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testRejectBeforeIf() {
+  void testRejectBeforeIf() {
     _policyBuilder.addStatement(Statements.ExitReject.toStaticStatement());
 
     _policyBuilder.addStatement(
@@ -471,7 +474,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testEarlyReturn() {
+  void testEarlyReturn() {
     _policyBuilder.addStatement(Statements.ReturnFalse.toStaticStatement());
     _policyBuilder.addStatement(Statements.ExitAccept.toStaticStatement());
 
@@ -489,7 +492,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testSuppress() {
+  void testSuppress() {
     _policyBuilder.addStatement(
         new If(
             matchPrefixSet(ImmutableList.of(PrefixRange.fromString("0.0.0.0/0:32-32"))),
@@ -515,7 +518,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testUnsuppress() {
+  void testUnsuppress() {
     _policyBuilder.addStatement(
         new If(
             matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/8:31-32"))),
@@ -549,7 +552,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testSetDefault() {
+  void testSetDefault() {
     _policyBuilder
         .addStatement(Statements.SetDefaultActionAccept.toStaticStatement())
         .addStatement(Statements.DefaultAction.toStaticStatement());
@@ -568,7 +571,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testSetLocalDefault() {
+  void testSetLocalDefault() {
     _policyBuilder
         .addStatement(Statements.SetLocalDefaultActionAccept.toStaticStatement())
         .addStatement(Statements.ReturnLocalDefaultAction.toStaticStatement());
@@ -587,7 +590,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testPartialAccept() {
+  void testPartialAccept() {
     _policyBuilder.addStatement(
         new If(
             matchPrefixSet(ImmutableList.of(PrefixRange.fromString("0.0.0.0/0:32-32"))),
@@ -626,7 +629,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testPartialReturn() {
+  void testPartialReturn() {
     _policyBuilder.addStatement(
         new If(
             matchPrefixSet(ImmutableList.of(PrefixRange.fromString("0.0.0.0/0:32-32"))),
@@ -665,7 +668,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testPartialReturnStatements() {
+  void testPartialReturnStatements() {
     _policyBuilder.addStatement(
         new If(
             matchPrefixSet(ImmutableList.of(PrefixRange.fromString("0.0.0.0/0:32-32"))),
@@ -709,7 +712,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testNestedIf() {
+  void testNestedIf() {
     _policyBuilder.addStatement(
         new If(
             matchPrefixSet(ImmutableList.of(PrefixRange.fromString("0.0.0.0/0:32-32"))),
@@ -739,7 +742,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testIfFalse() {
+  void testIfFalse() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -759,7 +762,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testMatchIpv4() {
+  void testMatchIpv4() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -780,7 +783,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testNot() {
+  void testNot() {
     _policyBuilder.addStatement(
         new If(
             new Not(matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/8:16-24")))),
@@ -804,7 +807,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testTwoPrefixes() {
+  void testTwoPrefixes() {
     _policyBuilder.addStatement(
         new If(
             matchPrefixSet(
@@ -832,7 +835,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testPrefixIntersection() {
+  void testPrefixIntersection() {
     _policyBuilder.addStatement(
         new If(
             new Conjunction(
@@ -861,7 +864,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testMatchEmptyPrefixSet() {
+  void testMatchEmptyPrefixSet() {
     _policyBuilder.addStatement(
         new If(
             matchPrefixSet(ImmutableList.of()),
@@ -879,7 +882,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testMatchNamedPrefixSet() {
+  void testMatchNamedPrefixSet() {
     String name = "name";
     _baseConfig.setRouteFilterLists(
         ImmutableMap.of(
@@ -913,7 +916,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testSetLocalPrefLiteral() {
+  void testSetLocalPrefLiteral() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(new SetLocalPreference(new LiteralLong(42)))
@@ -935,7 +938,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testSetLocalPrefAndReject() {
+  void testSetLocalPrefAndReject() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(new SetLocalPreference(new LiteralLong(42)))
@@ -958,7 +961,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testSetOrigin() {
+  void testSetOrigin() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE, null)))
@@ -978,7 +981,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testUnsupportedSetOrigin() {
+  void testUnsupportedSetOrigin() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(new SetOrigin(new VarOrigin("var")))
@@ -997,7 +1000,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testSetOpsfMetricType_1() {
+  void testSetOpsfMetricType_1() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(new SetOspfMetricType(OspfMetricType.E1))
@@ -1017,7 +1020,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testSetOpsfMetricType_2() {
+  void testSetOpsfMetricType_2() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(new SetOspfMetricType(OspfMetricType.E2))
@@ -1037,7 +1040,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testSetMetric() {
+  void testSetMetric() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(new SetMetric(new LiteralLong(50)))
@@ -1059,7 +1062,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testTwoIncrements() {
+  void testTwoIncrements() {
     List<Statement> stmts =
         ImmutableList.of(
             new SetLocalPreference(new IncrementLocalPreference(5)),
@@ -1112,7 +1115,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testSetTag() {
+  void testSetTag() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(new SetTag(new LiteralLong(42)))
@@ -1135,7 +1138,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testSetTunnelEncapsulationAttribute() {
+  void testSetTunnelEncapsulationAttribute() {
     TunnelEncapsulationAttribute attr =
         new TunnelEncapsulationAttribute(Ip.FIRST_CLASS_A_PRIVATE_IP);
     RoutingPolicy policy =
@@ -1158,7 +1161,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testRemoveTunnelEncapsulationAttribute() {
+  void testRemoveTunnelEncapsulationAttribute() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(RemoveTunnelEncapsulationAttribute.instance())
@@ -1178,7 +1181,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testSetWeight() {
+  void testSetWeight() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(new SetWeight(new LiteralInt(42)))
@@ -1199,8 +1202,202 @@ public class TransferBDDTest {
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
+  /** A policy that executes the given statements and then accepts. */
+  private RoutingPolicy acceptAfter(Statement... statements) {
+    for (Statement statement : statements) {
+      _policyBuilder.addStatement(statement);
+    }
+    return _policyBuilder.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+  }
+
+  /** A policy that accepts the routes matching {@code expr} and rejects all others. */
+  private RoutingPolicy acceptIf(BooleanExpr expr) {
+    return _policyBuilder
+        .addStatement(new If(expr, ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+        .build();
+  }
+
+  /** Builds the analysis for the policies of the base configuration as they are now. */
+  private TransferBDD analysisOfBaseConfig() {
+    _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    return new TransferBDD(_configAPs);
+  }
+
+  /** Asserts that {@code policy} has a single path, which accepts every route as {@code output}. */
+  private void assertAcceptsAllAs(RoutingPolicy policy, TransferBDD tbdd, BDDRoute output) {
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
+    assertEquals(
+        ImmutableList.of(new TransferReturn(output, tbdd.getFactory().one(), true)), paths);
+    assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
+  }
+
+  /**
+   * Asserts that {@code policy} accepts exactly the routes satisfying {@code matched}, without
+   * changing them.
+   */
+  private void assertAcceptsExactly(RoutingPolicy policy, TransferBDD tbdd, BDD matched) {
+    BDDRoute any = new BDDRoute(tbdd.getFactory(), _configAPs);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
+    assertEquals(
+        ImmutableList.of(
+            new TransferReturn(any, matched, true), new TransferReturn(any, matched.not(), false)),
+        paths);
+    assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
+  }
+
   @Test
-  public void testSetWeightUnsupported() {
+  void testSetTag2() {
+    RoutingPolicy policy = acceptAfter(new SetTag2(new LiteralLong(42)));
+    TransferBDD tbdd = analysisOfBaseConfig();
+
+    BDDRoute expected = new BDDRoute(tbdd.getFactory(), _configAPs);
+    expected.getTag2().setValue(42);
+    assertAcceptsAllAs(policy, tbdd, expected);
+  }
+
+  @Test
+  void testSetColor() {
+    RoutingPolicy policy = acceptAfter(new SetColor(new LiteralLong(42)));
+    TransferBDD tbdd = analysisOfBaseConfig();
+
+    BDDRoute expected = new BDDRoute(tbdd.getFactory(), _configAPs);
+    expected.getColor().setValue(42);
+    assertAcceptsAllAs(policy, tbdd, expected);
+  }
+
+  @Test
+  void testSetColor2() {
+    RoutingPolicy policy = acceptAfter(new SetColor2(new LiteralLong(42)));
+    TransferBDD tbdd = analysisOfBaseConfig();
+
+    BDDRoute expected = new BDDRoute(tbdd.getFactory(), _configAPs);
+    expected.getColor2().setValue(42);
+    assertAcceptsAllAs(policy, tbdd, expected);
+  }
+
+  @Test
+  void testSetTag2ToZero() {
+    RoutingPolicy policy = acceptAfter(new SetTag2(new LiteralLong(0)));
+    TransferBDD tbdd = analysisOfBaseConfig();
+
+    BDDRoute expected = new BDDRoute(tbdd.getFactory(), _configAPs);
+    expected.getTag2().setValue(0);
+    assertAcceptsAllAs(policy, tbdd, expected);
+  }
+
+  @Test
+  void testSetTag2Unsupported() {
+    RoutingPolicy policy = acceptAfter(new SetTag2(new VarLong("var")));
+    TransferBDD tbdd = analysisOfBaseConfig();
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
+
+    BDDRoute expected = new BDDRoute(tbdd.getFactory(), _configAPs);
+    expected.setUnsupported(true);
+    assertEquals(
+        ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)), paths);
+  }
+
+  @Test
+  void testSetColorUnsupported() {
+    RoutingPolicy policy = acceptAfter(new SetColor(new VarLong("var")));
+    TransferBDD tbdd = analysisOfBaseConfig();
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
+
+    BDDRoute expected = new BDDRoute(tbdd.getFactory(), _configAPs);
+    expected.setUnsupported(true);
+    assertEquals(
+        ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)), paths);
+  }
+
+  @Test
+  void testMatchTag2() {
+    RoutingPolicy policy = acceptIf(new MatchTag2(IntComparator.EQ, new LiteralLong(42)));
+    TransferBDD tbdd = analysisOfBaseConfig();
+
+    BDD hasTag2 = new BDDRoute(tbdd.getFactory(), _configAPs).getTag2().value(42);
+    assertAcceptsExactly(policy, tbdd, hasTag2);
+  }
+
+  @Test
+  void testMatchTag2Zero() {
+    RoutingPolicy policy = acceptIf(new MatchTag2(IntComparator.EQ, new LiteralLong(0)));
+    TransferBDD tbdd = analysisOfBaseConfig();
+
+    BDD noTag2 = new BDDRoute(tbdd.getFactory(), _configAPs).getTag2().value(0);
+    assertAcceptsExactly(policy, tbdd, noTag2);
+  }
+
+  @Test
+  void testMatchColor() {
+    RoutingPolicy policy = acceptIf(new MatchColor(42));
+    TransferBDD tbdd = analysisOfBaseConfig();
+
+    BDD hasColor = new BDDRoute(tbdd.getFactory(), _configAPs).getColor().value(42);
+    assertAcceptsExactly(policy, tbdd, hasColor);
+  }
+
+  @Test
+  void testMatchColor2() {
+    RoutingPolicy policy = acceptIf(new MatchColor2(42));
+    TransferBDD tbdd = analysisOfBaseConfig();
+
+    BDD hasColor2 = new BDDRoute(tbdd.getFactory(), _configAPs).getColor2().value(42);
+    assertAcceptsExactly(policy, tbdd, hasColor2);
+  }
+
+  @Test
+  void testMatchTag2NonEqualityUnsupported() {
+    RoutingPolicy policy = acceptIf(new MatchTag2(IntComparator.GE, new LiteralLong(42)));
+    TransferBDD tbdd = analysisOfBaseConfig();
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
+
+    BDDRoute any = new BDDRoute(tbdd.getFactory(), _configAPs);
+    any.setUnsupported(true);
+    assertEquals(ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), false)), paths);
+  }
+
+  @Test
+  void testMatchTag2VariableUnsupported() {
+    RoutingPolicy policy = acceptIf(new MatchTag2(IntComparator.EQ, new VarLong("var")));
+    TransferBDD tbdd = analysisOfBaseConfig();
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
+
+    BDDRoute any = new BDDRoute(tbdd.getFactory(), _configAPs);
+    any.setUnsupported(true);
+    assertEquals(ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), false)), paths);
+  }
+
+  @Test
+  void testSetThenMatchTag2() {
+    // Junos matches on the output attributes, so the match sees the value just set
+    setup(ConfigurationFormat.JUNIPER);
+    _policyBuilder.addStatement(new SetTag2(new LiteralLong(42)));
+    RoutingPolicy policy = acceptIf(new MatchTag2(IntComparator.EQ, new LiteralLong(42)));
+    TransferBDD tbdd = analysisOfBaseConfig();
+
+    BDDRoute expected = new BDDRoute(tbdd.getFactory(), _configAPs);
+    expected.getTag2().setValue(42);
+    assertAcceptsAllAs(policy, tbdd, expected);
+  }
+
+  @Test
+  void testSetThenMatchOtherColor() {
+    // Junos matches on the output attributes, so the match sees the value just set
+    setup(ConfigurationFormat.JUNIPER);
+    _policyBuilder.addStatement(new SetColor(new LiteralLong(42)));
+    RoutingPolicy policy = acceptIf(new MatchColor(7));
+    TransferBDD tbdd = analysisOfBaseConfig();
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
+
+    BDDRoute expected = new BDDRoute(tbdd.getFactory(), _configAPs);
+    expected.getColor().setValue(42);
+    assertEquals(
+        ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), false)), paths);
+    assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
+  }
+
+  @Test
+  void testSetWeightUnsupported() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(new SetWeight(new VarInt("var")))
@@ -1220,7 +1417,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testSetAdminDistance() {
+  void testSetAdminDistance() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(new SetAdministrativeCost(new LiteralAdministrativeCost(255)))
@@ -1242,7 +1439,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testIncrementAdminDistance() {
+  void testIncrementAdminDistance() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -1267,7 +1464,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testDecrementAdminDistance() {
+  void testDecrementAdminDistance() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(new SetAdministrativeCost(new DecrementAdministrativeCost(30, 0)))
@@ -1290,7 +1487,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testMatchTag() {
+  void testMatchTag() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -1314,7 +1511,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testSetThenMatchTag() {
+  void testSetThenMatchTag() {
 
     Statement setTag = new SetTag(new LiteralLong(42));
     Statement cond =
@@ -1415,7 +1612,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testMatchTagLT() {
+  void testMatchTagLT() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -1440,7 +1637,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testMatchMetric() {
+  void testMatchMetric() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -1464,7 +1661,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testMatchMetricGE() {
+  void testMatchMetricGE() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -1490,7 +1687,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testSetThenMatchMetric() {
+  void testSetThenMatchMetric() {
     List<Statement> stmts =
         ImmutableList.of(
             new SetMetric(new LiteralLong(42)),
@@ -1527,7 +1724,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testMatchMetricUnsupported() {
+  void testMatchMetricUnsupported() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -1547,7 +1744,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testMatchLocalPreference() {
+  void testMatchLocalPreference() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -1571,7 +1768,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testMatchLocalPreferenceGE() {
+  void testMatchLocalPreferenceGE() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -1596,7 +1793,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testSetThenMatchLocalPreference() {
+  void testSetThenMatchLocalPreference() {
     List<Statement> stmts =
         ImmutableList.of(
             new SetLocalPreference(new LiteralLong(42)),
@@ -1633,7 +1830,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testMatchLocalPreferenceUnsupported() {
+  void testMatchLocalPreferenceUnsupported() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -1653,7 +1850,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testMatchClusterListLength() {
+  void testMatchClusterListLength() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -1677,7 +1874,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testMatchClusterListLengthLE() {
+  void testMatchClusterListLengthLE() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -1707,7 +1904,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testMatchClusterListLengthUnsupported() {
+  void testMatchClusterListLengthUnsupported() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -1727,7 +1924,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testTrackSucceeded() {
+  void testTrackSucceeded() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -1752,7 +1949,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testMatchSourceVrf() {
+  void testMatchSourceVrf() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -1777,7 +1974,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testMatchInterface() {
+  void testMatchInterface() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -1801,7 +1998,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testMatchPeerAddress() {
+  void testMatchPeerAddress() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -1832,7 +2029,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testMatchNextHop() {
+  void testMatchNextHop() {
     _policyBuilder.addStatement(
         new If(
             new MatchPrefixSet(
@@ -1861,7 +2058,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testNoMatchNextHop() {
+  void testNoMatchNextHop() {
     _policyBuilder.addStatement(
         new If(
             new MatchPrefixSet(
@@ -1884,7 +2081,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testUnsupportedMatchNextHop() {
+  void testUnsupportedMatchNextHop() {
     _policyBuilder
         .addStatement(
             new If(
@@ -1910,7 +2107,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testDiscardNextHop() {
+  void testDiscardNextHop() {
     _policyBuilder
         .addStatement(new SetNextHop(DiscardNextHop.INSTANCE))
         .addStatement(new StaticStatement(Statements.ExitAccept));
@@ -1931,7 +2128,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testSelfNextHop() {
+  void testSelfNextHop() {
     _policyBuilder
         .addStatement(new SetNextHop(SelfNextHop.getInstance()))
         .addStatement(new StaticStatement(Statements.ExitAccept));
@@ -1952,7 +2149,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testPeerAddressNextHop() {
+  void testPeerAddressNextHop() {
     _policyBuilder
         .addStatement(new SetNextHop(BgpPeerAddressNextHop.getInstance()))
         .addStatement(new StaticStatement(Statements.ExitAccept));
@@ -1973,7 +2170,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testSetNextHop() {
+  void testSetNextHop() {
     _policyBuilder
         .addStatement(new SetNextHop(new IpNextHop(ImmutableList.of(Ip.parse("1.1.1.1")))))
         .addStatement(new StaticStatement(Statements.ExitAccept));
@@ -1995,7 +2192,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testDiscardThenSetNextHop() {
+  void testDiscardThenSetNextHop() {
     _policyBuilder
         .addStatement(new SetNextHop(DiscardNextHop.INSTANCE))
         .addStatement(new SetNextHop(new IpNextHop(ImmutableList.of(Ip.parse("1.1.1.1")))))
@@ -2018,7 +2215,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testUnsupportedSetNextHop() {
+  void testUnsupportedSetNextHop() {
     _policyBuilder.addStatement(new SetNextHop(UnchangedNextHop.getInstance()));
     RoutingPolicy policy = _policyBuilder.build();
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
@@ -2036,7 +2233,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testMatchProtocol() {
+  void testMatchProtocol() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -2064,7 +2261,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testConditionalDefaultAction() {
+  void testConditionalDefaultAction() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -2085,7 +2282,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testConditionalDefaultAction2() {
+  void testConditionalDefaultAction2() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -2111,7 +2308,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testUnreachableSetDefaultAction() {
+  void testUnreachableSetDefaultAction() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -2139,7 +2336,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testUnreachableUnhandled() {
+  void testUnreachableUnhandled() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -2160,7 +2357,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testLegacyMatchAsPath() {
+  void testLegacyMatchAsPath() {
     _baseConfig.setAsPathAccessLists(
         ImmutableMap.of(
             AS_PATH_NAME,
@@ -2205,7 +2402,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testMatchAsPath() {
+  void testMatchAsPath() {
     _policyBuilder.addStatement(
         new If(
             MatchAsPath.of(
@@ -2253,7 +2450,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testMatchAsPathLengthAny() {
+  void testMatchAsPathLengthAny() {
     _policyBuilder.addStatement(
         new If(
             MatchAsPath.of(
@@ -2276,7 +2473,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testMatchAsPathLengthNone() {
+  void testMatchAsPathLengthNone() {
     _policyBuilder.addStatement(
         new If(
             MatchAsPath.of(
@@ -2298,7 +2495,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testConjunction() {
+  void testConjunction() {
     _policyBuilder.addStatement(
         new If(
             new Conjunction(
@@ -2328,14 +2525,15 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testUnsupportedConjunction() {
+  void testUnsupportedConjunction() {
     _policyBuilder.addStatement(
         new If(
             new Conjunction(
                 ImmutableList.of(
                     matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/8:16-24"))),
-                    // MatchColor is unsupported, so it should be ignored
-                    new MatchColor(0L),
+                    // matching the metric against a variable is unsupported, so it should be
+                    // ignored
+                    new MatchMetric(IntComparator.EQ, new VarLong("var")),
                     matchPrefixSet(ImmutableList.of(PrefixRange.fromString("0.0.0.0/0:24-32"))))),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
@@ -2361,7 +2559,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testStatefulConjunction() {
+  void testStatefulConjunction() {
     String calledPolicyName = "calledPolicy";
 
     RoutingPolicy calledPolicy =
@@ -2400,7 +2598,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testUnreachableStatefulConjunction() {
+  void testUnreachableStatefulConjunction() {
     String calledPolicyName = "calledPolicy";
 
     RoutingPolicy calledPolicy =
@@ -2437,7 +2635,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testConjunctionShortCircuit() {
+  void testConjunctionShortCircuit() {
     String calledPolicyName = "calledPolicy";
 
     RoutingPolicy calledPolicy =
@@ -2488,7 +2686,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testApplyLongExprModification() {
+  void testApplyLongExprModification() {
     TransferBDD tbdd = new TransferBDD(forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME));
     TransferParam p = new TransferParam(false);
     BDDRoute orig = tbdd.getOriginalRoute();
@@ -2515,7 +2713,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testEmptyConjunction() {
+  void testEmptyConjunction() {
     _policyBuilder.addStatement(
         new If(
             new Conjunction(ImmutableList.of()),
@@ -2532,7 +2730,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testDisjunction() {
+  void testDisjunction() {
     _policyBuilder.addStatement(
         new If(
             new Disjunction(
@@ -2562,14 +2760,15 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testUnsupportedDisjunction() {
+  void testUnsupportedDisjunction() {
     _policyBuilder.addStatement(
         new If(
             new Disjunction(
                 ImmutableList.of(
                     matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/8:16-24"))),
-                    // MatchColor is unsupported, so it should be ignored
-                    new MatchColor(0L),
+                    // matching the metric against a variable is unsupported, so it should be
+                    // ignored
+                    new MatchMetric(IntComparator.EQ, new VarLong("var")),
                     matchPrefixSet(ImmutableList.of(PrefixRange.fromString("0.0.0.0/0:24-32"))))),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
@@ -2595,7 +2794,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testDisjunctionShortCircuit() {
+  void testDisjunctionShortCircuit() {
     String calledPolicyName = "calledPolicy";
 
     RoutingPolicy calledPolicy =
@@ -2643,7 +2842,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testEmptyDisjunction() {
+  void testEmptyDisjunction() {
     _policyBuilder.addStatement(
         new If(
             new Disjunction(ImmutableList.of()),
@@ -2660,7 +2859,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testDisjunctionForAsPathGroup() {
+  void testDisjunctionForAsPathGroup() {
     _policyBuilder.addStatement(
         new If(
             new Disjunction(
@@ -2701,7 +2900,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testAsSetsMatchingRanges() {
+  void testAsSetsMatchingRanges() {
     AsSetsMatchingRanges asExpr =
         AsSetsMatchingRanges.of(true, true, ImmutableList.of(Range.closed(10L, 15L)));
     _policyBuilder.addStatement(
@@ -2735,7 +2934,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testDeleteCommunity() {
+  void testDeleteCommunity() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -2773,7 +2972,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testAddCommunity() {
+  void testAddCommunity() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -2810,7 +3009,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testAddDeleteCommunity() {
+  void testAddDeleteCommunity() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -2853,7 +3052,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testAddCommunitiesTwice() {
+  void testAddCommunitiesTwice() {
     List<Statement> stmts =
         ImmutableList.of(
             new SetCommunities(
@@ -2916,7 +3115,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testSetExtendedCommunity() {
+  void testSetExtendedCommunity() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -2958,7 +3157,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testSetExtendedCommunityAdditive() {
+  void testSetExtendedCommunityAdditive() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -2996,7 +3195,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testSetExtendedCommunityNotAdditive() {
+  void testSetExtendedCommunityNotAdditive() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -3033,7 +3232,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testSetLargeCommunity() {
+  void testSetLargeCommunity() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -3067,7 +3266,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testSetCommunities() {
+  void testSetCommunities() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -3109,7 +3308,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testMatchCommunities() {
+  void testMatchCommunities() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -3147,7 +3346,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testMatchCommunityInHalves() {
+  void testMatchCommunityInHalves() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -3200,7 +3399,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testSetThenMatchCommunities() {
+  void testSetThenMatchCommunities() {
     Community comm = StandardCommunity.parse("30:40");
     List<Statement> stmts =
         ImmutableList.of(
@@ -3255,7 +3454,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testSetThenMatchOtherCommunity() {
+  void testSetThenMatchOtherCommunity() {
     Community comm1 = StandardCommunity.parse("30:40");
     Community comm2 = StandardCommunity.parse("10:20");
     List<Statement> stmts =
@@ -3317,7 +3516,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testDeleteThenMatchCommunity() {
+  void testDeleteThenMatchCommunity() {
     Community comm = StandardCommunity.parse("30:40");
     List<Statement> stmts =
         ImmutableList.of(
@@ -3369,7 +3568,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testCallStatement() {
+  void testCallStatement() {
     String calledPolicyName = "calledPolicy";
 
     RoutingPolicy calledPolicy =
@@ -3406,7 +3605,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testCallExpr() {
+  void testCallExpr() {
     String calledPolicyName = "calledPolicy";
 
     RoutingPolicy calledPolicy =
@@ -3447,7 +3646,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testNestedCalls() {
+  void testNestedCalls() {
     String calledPolicyName = "calledPolicy";
 
     RoutingPolicy calledPolicy =
@@ -3497,7 +3696,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testCallStatementEarlyExit() {
+  void testCallStatementEarlyExit() {
     String calledPolicyName = "calledPolicy";
 
     RoutingPolicy calledPolicy =
@@ -3527,7 +3726,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testTraceableStatement() {
+  void testTraceableStatement() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -3557,9 +3756,11 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testUnsupportedExpression() {
+  void testUnsupportedExpression() {
     _policyBuilder.addStatement(
-        new If(new MatchColor(0L), ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
+        new If(
+            new MatchMetric(IntComparator.EQ, new VarLong("var")),
+            ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
@@ -3574,7 +3775,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testUnsupportedMatchCommunities() {
+  void testUnsupportedMatchCommunities() {
     _policyBuilder.addStatement(
         new If(
             new MatchCommunities(
@@ -3596,7 +3797,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testUnsupportedStatement() {
+  void testUnsupportedStatement() {
     _policyBuilder
         .addStatement(new ExcludeAsPath(new LiteralAsList(ImmutableList.of())))
         .addStatement(new StaticStatement(Statements.ExitAccept));
@@ -3614,7 +3815,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testPrependAsPath() {
+  void testPrependAsPath() {
     _policyBuilder
         .addStatement(new PrependAsPath(new LiteralAsList(ImmutableList.of(new ExplicitAs(42L)))))
         .addStatement(new StaticStatement(Statements.ExitAccept));
@@ -3642,7 +3843,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testPrependAsPaths() {
+  void testPrependAsPaths() {
     _policyBuilder
         .addStatement(new PrependAsPath(new LiteralAsList(ImmutableList.of(new ExplicitAs(42L)))))
         .addStatement(
@@ -3665,7 +3866,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testFirstMatchChain() {
+  void testFirstMatchChain() {
     String policy1Name = "policy1";
     RoutingPolicy policy1 =
         _nf.routingPolicyBuilder()
@@ -3722,7 +3923,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testFirstMatchChainReturnFalse() {
+  void testFirstMatchChainReturnFalse() {
     String policy1Name = "policy1";
     RoutingPolicy policy1 =
         _nf.routingPolicyBuilder()
@@ -3779,7 +3980,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testSetDefaultPolicy() {
+  void testSetDefaultPolicy() {
     String policy1Name = "policy1";
     RoutingPolicy policy1 =
         _nf.routingPolicyBuilder()
@@ -3819,7 +4020,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testNoDefaultPolicy() {
+  void testNoDefaultPolicy() {
     String policy1Name = "policy1";
     RoutingPolicy policy1 =
         _nf.routingPolicyBuilder()
@@ -3840,12 +4041,11 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    _expectedException.expect(BatfishException.class);
-    tbdd.computePaths(policy, true);
+    assertThrows(BatfishException.class, () -> tbdd.computePaths(policy, true));
   }
 
   @Test
-  public void testFirstMatchChainStateful() {
+  void testFirstMatchChainStateful() {
 
     // test proper stateful behavior for Juniper chains
     setup(ConfigurationFormat.JUNIPER);
@@ -3899,7 +4099,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testFirstMatchChainOverwrite() {
+  void testFirstMatchChainOverwrite() {
 
     // test proper stateful behavior for Juniper chains
     setup(ConfigurationFormat.JUNIPER);
@@ -3950,7 +4150,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testFirstMatchChainImplicitFallThrough() {
+  void testFirstMatchChainImplicitFallThrough() {
 
     // test proper stateful behavior for Juniper chains
     setup(ConfigurationFormat.JUNIPER);
@@ -4002,7 +4202,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testPartialUnsupportedStatement() {
+  void testPartialUnsupportedStatement() {
     _policyBuilder
         .addStatement(
             new If(
@@ -4034,7 +4234,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testUnsupportedStaticStatement() {
+  void testUnsupportedStaticStatement() {
     _policyBuilder
         .addStatement(Statements.RemovePrivateAs.toStaticStatement())
         .addStatement(new StaticStatement(Statements.ExitAccept));
@@ -4052,7 +4252,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testMatchStaticRoute() {
+  void testMatchStaticRoute() {
     List<Statement> stmts =
         ImmutableList.of(
             new If(
@@ -4085,7 +4285,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testUnsupportedStatementDeny() {
+  void testUnsupportedStatementDeny() {
     _policyBuilder
         .addStatement(new SetTag(new VarLong("var")))
         .addStatement(new StaticStatement(Statements.ExitReject));
@@ -4103,7 +4303,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testIsRelevantFor() {
+  void testIsRelevantFor() {
     BDDRoute bddRoute = anyRoute(JFactory.init(100, 100));
     IpSpaceToBDD ipSpaceToBDD = new IpSpaceToBDD(bddRoute.getPrefix());
 
@@ -4124,7 +4324,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testIsRelevantFor_range32() {
+  void testIsRelevantFor_range32() {
     BDDRoute bddRoute = anyRoute(JFactory.init(100, 100));
 
     PrefixRange range = new PrefixRange(Prefix.parse("0.0.0.0/0"), SubRange.singleton(32));
@@ -4137,7 +4337,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testUseOutputAttributes() {
+  void testUseOutputAttributes() {
     // useOutputAttributes is false for CISCO_IOS
     setup(ConfigurationFormat.CISCO_IOS);
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
@@ -4150,7 +4350,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testDistinctBDDFactories() {
+  void testDistinctBDDFactories() {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
     TransferBDD tbdd1 = new TransferBDD(_configAPs);
     TransferBDD tbdd2 = new TransferBDD(_configAPs);
@@ -4162,7 +4362,7 @@ public class TransferBDDTest {
    * retainAllPaths is false or true.
    */
   @Test
-  public void testDontRetainAllPaths() {
+  void testDontRetainAllPaths() {
     int numIfs = 10;
     // Make a list of N different If statements, each of which has a different guard but the
     // same Set.

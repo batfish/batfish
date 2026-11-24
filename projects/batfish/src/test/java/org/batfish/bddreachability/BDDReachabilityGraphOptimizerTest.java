@@ -18,9 +18,9 @@ import org.batfish.bddreachability.transition.TransitionVisitor;
 import org.batfish.bddreachability.transition.Transitions;
 import org.batfish.symbolic.state.StateExpr;
 import org.batfish.symbolic.state.StateExprVisitor;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class BDDReachabilityGraphOptimizerTest {
+class BDDReachabilityGraphOptimizerTest {
   private static final class DummyState implements StateExpr {
     private final String _name;
 
@@ -99,7 +99,7 @@ public class BDDReachabilityGraphOptimizerTest {
   }
 
   @Test
-  public void testStatesToKeep() {
+  void testStatesToKeep() {
     Edge edge = new Edge(state(1), state(2), IDENTITY);
     assertThat(
         optimize(ImmutableSet.of(edge), ImmutableSet.of(state(1), state(2)), false),
@@ -107,7 +107,7 @@ public class BDDReachabilityGraphOptimizerTest {
   }
 
   @Test
-  public void testPruneRoot() {
+  void testPruneRoot() {
     Edge e1 = new Edge(state(1), state(2), IDENTITY);
     Edge e2 = new Edge(state(2), state(3), IDENTITY);
     assertThat(
@@ -116,7 +116,7 @@ public class BDDReachabilityGraphOptimizerTest {
   }
 
   @Test
-  public void testPruneLeaf() {
+  void testPruneLeaf() {
     Edge e1 = new Edge(state(1), state(2), IDENTITY);
     Edge e2 = new Edge(state(2), state(3), IDENTITY);
     assertThat(
@@ -125,7 +125,7 @@ public class BDDReachabilityGraphOptimizerTest {
   }
 
   @Test
-  public void testPruneLeaf2() {
+  void testPruneLeaf2() {
     // going to prune both STATE2 and STATE3
     assertThat(
         optimize(
@@ -137,7 +137,7 @@ public class BDDReachabilityGraphOptimizerTest {
   }
 
   @Test
-  public void testSplice() {
+  void testSplice() {
     Edge edge1 = new Edge(state(1), state(2), constraint(0));
     Edge edge2 = new Edge(state(2), state(3), constraint(1));
     Edge merged = new Edge(state(1), state(3), constraint(bdd(0).and(bdd(1))));
@@ -147,7 +147,7 @@ public class BDDReachabilityGraphOptimizerTest {
   }
 
   @Test
-  public void testUnmergeable() {
+  void testUnmergeable() {
     // would splice, but the transitions don't merge
     Edge edge1 = new Edge(state(1), state(2), constraint(0));
     Edge edge2 = new Edge(state(2), state(3), DUMMY);
@@ -157,7 +157,7 @@ public class BDDReachabilityGraphOptimizerTest {
   }
 
   @Test
-  public void testSpliceAndDrop() {
+  void testSpliceAndDrop() {
     Edge edge1 = new Edge(state(1), state(2), constraint(bdd(0)));
     Edge edge2 = new Edge(state(2), state(3), constraint(bdd(0).not()));
     assertThat(
@@ -166,7 +166,7 @@ public class BDDReachabilityGraphOptimizerTest {
   }
 
   @Test
-  public void testDropSelfLoopIdentity() {
+  void testDropSelfLoopIdentity() {
     assertThat(
         optimize(
             ImmutableSet.of(new Edge(state(1), state(1), IDENTITY)),
@@ -176,7 +176,7 @@ public class BDDReachabilityGraphOptimizerTest {
   }
 
   @Test
-  public void testDropSelfLoopConstraint() {
+  void testDropSelfLoopConstraint() {
     assertThat(
         optimize(
             ImmutableSet.of(new Edge(state(1), state(1), constraint(1))),
@@ -186,21 +186,21 @@ public class BDDReachabilityGraphOptimizerTest {
   }
 
   @Test
-  public void testKeepSelfLoop_Edge() {
+  void testKeepSelfLoop_Edge() {
     // keep a self-loop when not sure the edge is safe to remove
     Edge edge = new Edge(state(1), state(1), DUMMY);
     assertThat(optimize(ImmutableSet.of(edge), ImmutableSet.of(state(1)), false), contains(edge));
   }
 
   @Test
-  public void testKeepSelfLoop_keepSelfLoops() {
+  void testKeepSelfLoop_keepSelfLoops() {
     // keep a self-loop for loop detection
     Edge edge = new Edge(state(1), state(1), IDENTITY);
     assertThat(optimize(ImmutableSet.of(edge), ImmutableSet.of(state(1)), true), contains(edge));
   }
 
   @Test
-  public void testCycle() {
+  void testCycle() {
     // cycles can be completely removed when keepLoops is false
     Edge edge1 = new Edge(state(1), state(2), IDENTITY);
     Edge edge2 = new Edge(state(2), state(3), IDENTITY);
@@ -209,7 +209,7 @@ public class BDDReachabilityGraphOptimizerTest {
   }
 
   @Test
-  public void testCycle_keepSelfLoops() {
+  void testCycle_keepSelfLoops() {
     // cycles can be optimized to a single node with a self-loop when keepLoops is true
     Edge edge1 = new Edge(state(1), state(2), IDENTITY);
     Edge edge2 = new Edge(state(2), state(3), IDENTITY);
@@ -225,7 +225,7 @@ public class BDDReachabilityGraphOptimizerTest {
   }
 
   @Test
-  public void testEnterCycle() {
+  void testEnterCycle() {
     Edge edge1 = new Edge(state(1), state(2), constraint(0));
     Edge edge2 = new Edge(state(2), state(3), constraint(1));
     Edge edge3 = new Edge(state(3), state(1), constraint(2));
@@ -242,7 +242,7 @@ public class BDDReachabilityGraphOptimizerTest {
   }
 
   @Test
-  public void mergeWithExistingEdge() {
+  void mergeWithExistingEdge() {
     Edge edge1 = new Edge(state(1), state(2), constraint(0));
     Edge edge2 = new Edge(state(2), state(3), constraint(1));
     Edge edge3 = new Edge(state(1), state(3), constraint(2));
@@ -254,7 +254,7 @@ public class BDDReachabilityGraphOptimizerTest {
   }
 
   @Test
-  public void removeIdentityIn() {
+  void removeIdentityIn() {
     Edge edge1 = new Edge(state(1), state(3), constraint(0));
     Edge edge2 = new Edge(state(2), state(3), constraint(1));
     Edge edge3 = new Edge(state(3), state(4), constraint(2));
@@ -275,7 +275,7 @@ public class BDDReachabilityGraphOptimizerTest {
   }
 
   @Test
-  public void removeIdentityIn_keepSelfLoops() {
+  void removeIdentityIn_keepSelfLoops() {
     Edge edge1 = new Edge(state(1), state(1), IDENTITY);
     Edge edge2 = new Edge(state(1), state(2), constraint(0));
     Edge edge3 = new Edge(state(1), state(3), constraint(1));
@@ -286,7 +286,7 @@ public class BDDReachabilityGraphOptimizerTest {
   }
 
   @Test
-  public void removeIdentityOut() {
+  void removeIdentityOut() {
     Edge edge1 = new Edge(state(1), state(3), constraint(0));
     Edge edge2 = new Edge(state(2), state(3), constraint(1));
     Edge edge3 = new Edge(state(3), state(5), IDENTITY); // state(3) will be removed
@@ -307,7 +307,7 @@ public class BDDReachabilityGraphOptimizerTest {
   }
 
   @Test
-  public void removeIdentityOut_keepSelfLoops() {
+  void removeIdentityOut_keepSelfLoops() {
     Edge edge1 = new Edge(state(1), state(3), constraint(1));
     Edge edge2 = new Edge(state(2), state(3), constraint(2));
     Edge edge3 = new Edge(state(3), state(3), IDENTITY);

@@ -4,19 +4,19 @@ import static org.batfish.datamodel.AsSet.confed;
 import static org.batfish.datamodel.AsSet.confedEmpty;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link AsSet} */
-public class AsSetTest {
+class AsSetTest {
 
   @Test
-  public void testToString() {
+  void testToString() {
     // For single ASN, should just return string of that ASN
     long asn = 12345;
     assertThat(AsSet.of(asn).toString(), equalTo(String.valueOf(asn)));
@@ -32,7 +32,7 @@ public class AsSetTest {
   }
 
   @Test
-  public void testConfed() {
+  void testConfed() {
     AsSet set = confedEmpty();
     assertTrue(set.isEmpty());
     assertTrue(set.isConfederationAsSet());
@@ -43,7 +43,7 @@ public class AsSetTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     AsSet set = AsSet.of(1);
     new EqualsTester()
         .addEqualityGroup(set, set, AsSet.of(1))
@@ -54,7 +54,7 @@ public class AsSetTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     AsSet set = AsSet.of(1);
     assertThat(BatfishObjectMapper.clone(set, AsSet.class), equalTo(set));
     // test maximum ASN
@@ -67,7 +67,7 @@ public class AsSetTest {
   }
 
   @Test
-  public void testJsonSerializationFriendly() throws JsonProcessingException {
+  void testJsonSerializationFriendly() throws JsonProcessingException {
     assertThat(
         BatfishObjectMapper.mapper().readValue("4294967295", AsSet.class),
         equalTo(AsSet.of(4294967295L)));

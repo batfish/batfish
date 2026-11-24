@@ -10,13 +10,13 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.grammar.MockGrammarSettings;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of recovery using grammar that puts lists of alternatives in separate rules. */
-public final class RecoveryRuleAltsGrammarTest {
+final class RecoveryRuleAltsGrammarTest {
 
   @Test
-  public void testRecoveryDepth1() {
+  void testRecoveryDepth1() {
     RecoveryRuleAltsExtractor extractor = parse("errors_at_depth1");
 
     assertThat(extractor.getInterfaceCount(), equalTo(1));
@@ -26,7 +26,7 @@ public final class RecoveryRuleAltsGrammarTest {
   }
 
   @Test
-  public void testRecoveryRuleAlts() {
+  void testRecoveryRuleAlts() {
     RecoveryRuleAltsExtractor extractor = parse("errors_at_depth2");
 
     assertThat(extractor.getInterfaceCount(), equalTo(1));

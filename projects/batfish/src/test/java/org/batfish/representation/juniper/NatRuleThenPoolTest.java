@@ -6,7 +6,7 @@ import static org.batfish.datamodel.flow.TransformationStep.TransformationType.S
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import org.batfish.common.Warnings;
@@ -17,11 +17,11 @@ import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.PortField;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.representation.juniper.Nat.Type;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class NatRuleThenPoolTest {
+class NatRuleThenPoolTest {
   @Test
-  public void testToTransformationStep() {
+  void testToTransformationStep() {
     Ip ip = Ip.parse("1.1.1.1");
     int port = 10000;
 
@@ -84,7 +84,7 @@ public class NatRuleThenPoolTest {
   }
 
   @Test
-  public void testInvalidPool() {
+  void testInvalidPool() {
     Ip from = Ip.parse("2.2.2.2");
     Ip to = Ip.parse("1.1.1.1");
 

@@ -9,12 +9,12 @@ import com.google.common.collect.ImmutableSortedMap;
 import org.batfish.datamodel.Configuration;
 import org.batfish.question.VIModelQuestionPlugin.VIModelQuestion;
 import org.batfish.specifier.MockSpecifierContext;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class VIModelQuestionPluginTest {
+class VIModelQuestionPluginTest {
 
   @Test
-  public void testGetConfigs() {
+  void testGetConfigs() {
     Configuration c1 =
         Configuration.builder().setConfigurationFormat(ARISTA).setHostname("c1").build();
     Configuration c2 =

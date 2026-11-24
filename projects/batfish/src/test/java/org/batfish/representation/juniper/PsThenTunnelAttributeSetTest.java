@@ -17,12 +17,12 @@ import org.batfish.datamodel.bgp.TunnelEncapsulationAttribute;
 import org.batfish.datamodel.routing_policy.expr.LiteralTunnelEncapsulationAttribute;
 import org.batfish.datamodel.routing_policy.statement.SetTunnelEncapsulationAttribute;
 import org.batfish.datamodel.routing_policy.statement.Statement;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class PsThenTunnelAttributeSetTest {
+class PsThenTunnelAttributeSetTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     PsThenTunnelAttributeSet then = new PsThenTunnelAttributeSet("foo");
     new EqualsTester()
         .addEqualityGroup(5L)
@@ -32,7 +32,7 @@ public class PsThenTunnelAttributeSetTest {
   }
 
   @Test
-  public void testConversion() {
+  void testConversion() {
     JuniperConfiguration vsConfig = new JuniperConfiguration();
     vsConfig.setHostname("c");
     Configuration viConfig =

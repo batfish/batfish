@@ -10,6 +10,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.batfish.common.plugin.IBatfish;
@@ -19,10 +20,9 @@ import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.flow.Trace;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * E2e tests that connectivity to and from the internet works as expected. The configs have a single
@@ -31,7 +31,7 @@ import org.junit.rules.TemporaryFolder;
  * The wizard did not create the default route to vgw in the main route table. That route was added
  * manually.
  */
-public class AwsConfigurationPublicPrivateSubnetTest {
+class AwsConfigurationPublicPrivateSubnetTest {
 
   private static final String TESTCONFIGS_DIR =
       "org/batfish/representation/aws/test-public-private-subnet";
@@ -70,17 +70,17 @@ public class AwsConfigurationPublicPrivateSubnetTest {
 
   private static Prefix _sitePrefix = Prefix.parse("19.168.0.0/16");
 
-  @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public static File _folder;
 
   private static IBatfish _batfish;
 
-  @BeforeClass
-  public static void setup() throws IOException {
+  @BeforeAll
+  static void setup() throws IOException {
     _batfish = testSetup(TESTCONFIGS_DIR, fileNames, _folder);
   }
 
   @Test
-  public void testFromPrivateToPublicSubnet() {
+  void testFromPrivateToPublicSubnet() {
     // to the public IP: should end at VGW and not go to the public instance. disposition should be
     // no route since the VGW does not know what to do with the packet
     testTrace(
@@ -98,7 +98,7 @@ public class AwsConfigurationPublicPrivateSubnetTest {
   }
 
   @Test
-  public void testFromPublicToPrivateSubnet() {
+  void testFromPublicToPrivateSubnet() {
     testTrace(
         getAnyFlow(_publicInstance, _privateInstancePrivateIp, _batfish),
         FlowDisposition.DENIED_IN, // by the default security settings
@@ -107,7 +107,7 @@ public class AwsConfigurationPublicPrivateSubnetTest {
   }
 
   @Test
-  public void testFromInternet() {
+  void testFromInternet() {
     Flow flowFromInternet =
         Flow.builder()
             .setIngressNode(IspModelingUtils.INTERNET_HOST_NAME)
@@ -134,7 +134,7 @@ public class AwsConfigurationPublicPrivateSubnetTest {
   }
 
   @Test
-  public void testToInternet() {
+  void testToInternet() {
     testTrace(
         getAnyFlow(_publicInstance, Ip.parse("8.8.8.8"), _batfish),
         FlowDisposition.EXITS_NETWORK,
@@ -155,7 +155,7 @@ public class AwsConfigurationPublicPrivateSubnetTest {
   }
 
   @Test
-  public void testToSite() {
+  void testToSite() {
     // public instance should send site traffic to Internet
     testTrace(
         getAnyFlow(_publicInstance, _sitePrefix.getStartIp(), _batfish),
@@ -183,7 +183,7 @@ public class AwsConfigurationPublicPrivateSubnetTest {
   }
 
   @Test
-  public void testFromVgw() {
+  void testFromVgw() {
     // public IP space should not be reachable
     testTrace(
         getAnyFlow(_vgw, _publicInstancePublicIp, _batfish),

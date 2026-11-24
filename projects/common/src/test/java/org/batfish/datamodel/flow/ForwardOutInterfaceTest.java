@@ -7,14 +7,14 @@ import com.google.common.testing.EqualsTester;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link ForwardOutInterface}. */
 @ParametersAreNonnullByDefault
-public final class ForwardOutInterfaceTest {
+final class ForwardOutInterfaceTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     ForwardOutInterface f = new ForwardOutInterface("a", null);
     new EqualsTester()
         .addEqualityGroup(new Object())
@@ -25,7 +25,7 @@ public final class ForwardOutInterfaceTest {
   }
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     ForwardOutInterface f = new ForwardOutInterface("a", null);
     SessionAction clone = BatfishObjectMapper.clone(f, SessionAction.class);
     assertThat(clone, equalTo(f));

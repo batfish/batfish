@@ -8,13 +8,13 @@ import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.IntegerSpace;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link Bridge} */
-public final class BridgeTest {
+final class BridgeTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     Bridge.Builder builder = Bridge.builder();
     Bridge bridge =
         builder.setPorts(ImmutableSet.of()).setPvid(1).setVids(IntegerSpace.EMPTY).build();
@@ -32,7 +32,7 @@ public final class BridgeTest {
   }
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     Bridge bridge =
         Bridge.builder()
             .setPorts(ImmutableSet.of("a"))
@@ -44,7 +44,7 @@ public final class BridgeTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     Bridge bridge =
         Bridge.builder()
             .setPorts(ImmutableSet.of("a"))

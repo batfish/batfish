@@ -5,15 +5,15 @@ import static org.batfish.representation.aws.AwsConfigurationTestUtils.testSetup
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testTrace;
 
 import com.google.common.collect.ImmutableList;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * E2e tests for VPC peering. The configuration was pulled after creating three VPCs, A, B, and C.
@@ -26,7 +26,7 @@ import org.junit.rules.TemporaryFolder;
  * <p>Since B and C and symmetrically configured, most tests below ignore C. Its role in this setup
  * is to create potential for interference and misrouting.
  */
-public class AwsConfigurationVpcPeeringTest {
+class AwsConfigurationVpcPeeringTest {
 
   private static final String TESTCONFIGS_DIR = "org/batfish/representation/aws/test-vpc-peering";
 
@@ -56,18 +56,18 @@ public class AwsConfigurationVpcPeeringTest {
   private static Ip _instanceAIp = Ip.parse("10.10.10.157");
   private static Ip _instanceBIp = Ip.parse("192.168.1.106");
 
-  @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public static File _folder;
 
   private static IBatfish _batfish;
 
-  @BeforeClass
-  public static void setup() throws IOException {
+  @BeforeAll
+  static void setup() throws IOException {
     _batfish = testSetup(TESTCONFIGS_DIR, fileNames, _folder);
   }
 
   /** Test connectivity from A to B */
   @Test
-  public void testFromAtoB() {
+  void testFromAtoB() {
     testTrace(
         getAnyFlow(_instanceA, _instanceBIp, _batfish),
         FlowDisposition.DENIED_IN,
@@ -77,7 +77,7 @@ public class AwsConfigurationVpcPeeringTest {
 
   /** Test connectivity from B to A */
   @Test
-  public void testFromBtoA() {
+  void testFromBtoA() {
     testTrace(
         getAnyFlow(_instanceB, _instanceAIp, _batfish),
         FlowDisposition.DENIED_IN,
@@ -90,7 +90,7 @@ public class AwsConfigurationVpcPeeringTest {
    * be dropped at the source subnet itself.
    */
   @Test
-  public void testFromAtoUnusedSubnet() {
+  void testFromAtoUnusedSubnet() {
     testTrace(
         getAnyFlow(_instanceA, Ip.parse("192.168.100.1"), _batfish),
         FlowDisposition.NO_ROUTE,
@@ -103,7 +103,7 @@ public class AwsConfigurationVpcPeeringTest {
    * router.
    */
   @Test
-  public void testFromBtoUnusedSubnet() {
+  void testFromBtoUnusedSubnet() {
     testTrace(
         getAnyFlow(_instanceB, Ip.parse("10.10.100.1"), _batfish),
         FlowDisposition.NULL_ROUTED,
@@ -116,7 +116,7 @@ public class AwsConfigurationVpcPeeringTest {
    * subnet router.
    */
   @Test
-  public void testFromBtoUnusedIp() {
+  void testFromBtoUnusedIp() {
     testTrace(
         getAnyFlow(_instanceB, Ip.parse("10.10.10.11"), _batfish),
         FlowDisposition.NEIGHBOR_UNREACHABLE,

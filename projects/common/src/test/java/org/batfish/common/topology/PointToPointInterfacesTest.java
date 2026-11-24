@@ -9,12 +9,12 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.testing.EqualsTester;
 import java.util.Map;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class PointToPointInterfacesTest {
+class PointToPointInterfacesTest {
 
   @Test
-  public void testPointToPointInterfaces() {
+  void testPointToPointInterfaces() {
     NodeInterfacePair e1 = NodeInterfacePair.of("a", "ethernet1");
     NodeInterfacePair e1_2 = NodeInterfacePair.of("a", "ethernet1.2");
     NodeInterfacePair e1_3 = NodeInterfacePair.of("a", "ethernet1.3");
@@ -41,7 +41,7 @@ public class PointToPointInterfacesTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     NodeInterfacePair a = NodeInterfacePair.of("a", "a");
     NodeInterfacePair b = NodeInterfacePair.of("b", "b");
     new EqualsTester()

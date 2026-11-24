@@ -9,13 +9,13 @@ import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.IntegerSpace;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link CumulusFamily} */
-public final class CumulusFamilyTest {
+final class CumulusFamilyTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     Bridge.Builder bb =
         Bridge.builder().setPorts(ImmutableSet.of()).setPvid(1).setVids(IntegerSpace.EMPTY);
     CumulusFamily.Builder builder = CumulusFamily.builder().setBridge(bb.build());
@@ -35,7 +35,7 @@ public final class CumulusFamilyTest {
   }
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     CumulusFamily c =
         CumulusFamily.builder()
             .setBridge(
@@ -52,7 +52,7 @@ public final class CumulusFamilyTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     CumulusFamily c =
         CumulusFamily.builder()
             .setBridge(

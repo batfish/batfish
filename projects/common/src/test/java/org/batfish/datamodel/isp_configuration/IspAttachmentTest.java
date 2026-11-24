@@ -5,12 +5,12 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class IspAttachmentTest {
+class IspAttachmentTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new IspAttachment("host", "iface", null),
@@ -23,7 +23,7 @@ public class IspAttachmentTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     IspAttachment attachment = new IspAttachment("host", "iface", 1);
     assertThat(BatfishObjectMapper.clone(attachment, IspAttachment.class), equalTo(attachment));
   }

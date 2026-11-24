@@ -6,25 +6,25 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link NextHopVrf}. */
-public final class NextHopVrfTest {
+final class NextHopVrfTest {
 
   @Test
-  public void testJavaSerialiation() {
+  void testJavaSerialiation() {
     NextHopVrf obj = NextHopVrf.of("foo");
     assertThat(SerializationUtils.clone(obj), equalTo(obj));
   }
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     NextHopVrf obj = NextHopVrf.of("foo");
     assertThat(BatfishObjectMapper.clone(obj, NextHop.class), equalTo(obj));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     NextHopVrf obj = NextHopVrf.of("foo");
     new EqualsTester()
         .addEqualityGroup(obj, NextHopVrf.of("foo"))

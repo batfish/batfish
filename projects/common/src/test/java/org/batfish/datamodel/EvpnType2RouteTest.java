@@ -11,16 +11,13 @@ import org.batfish.datamodel.EvpnType2Route.Builder;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link EvpnType2Route} */
-public class EvpnType2RouteTest {
-  @Rule public ExpectedException thrown = ExpectedException.none();
+class EvpnType2RouteTest {
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     EvpnType2Route er =
         EvpnType2Route.builder()
             .setIp(Ip.parse("1.1.1.1"))
@@ -40,7 +37,7 @@ public class EvpnType2RouteTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     EvpnType2Route er =
         EvpnType2Route.builder()
             .setIp(Ip.parse("1.1.1.1"))
@@ -60,7 +57,7 @@ public class EvpnType2RouteTest {
   }
 
   @Test
-  public void testToBuilder() {
+  void testToBuilder() {
     EvpnType2Route er =
         EvpnType2Route.builder()
             .setIp(Ip.parse("1.1.1.1"))
@@ -80,7 +77,7 @@ public class EvpnType2RouteTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     Builder erb =
         EvpnType2Route.builder()
             .setIp(Ip.parse("1.1.1.1"))
@@ -120,7 +117,7 @@ public class EvpnType2RouteTest {
   }
 
   @Test
-  public void testBuilderNetworkOverwrite() {
+  void testBuilderNetworkOverwrite() {
     Builder erb =
         EvpnType2Route.builder()
             .setIp(Ip.parse("1.1.1.1"))
@@ -138,7 +135,7 @@ public class EvpnType2RouteTest {
   }
 
   @Test
-  public void testJsonSerializationNetworkOverwrite() {
+  void testJsonSerializationNetworkOverwrite() {
     EvpnType2Route er =
         EvpnType2Route.builder()
             .setIp(Ip.parse("1.1.1.1"))

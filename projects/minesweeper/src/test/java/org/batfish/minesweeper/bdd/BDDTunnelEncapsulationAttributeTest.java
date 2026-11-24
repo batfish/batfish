@@ -13,11 +13,11 @@ import org.batfish.common.bdd.BDDPacket;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.bgp.TunnelEncapsulationAttribute;
 import org.batfish.minesweeper.bdd.BDDTunnelEncapsulationAttribute.Value;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class BDDTunnelEncapsulationAttributeTest {
+class BDDTunnelEncapsulationAttributeTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     BDDFactory factory = BDDPacket.defaultFactory(JFactory::init);
     factory.setVarNum(5);
     TunnelEncapsulationAttribute a = new TunnelEncapsulationAttribute(Ip.create(1));
@@ -44,7 +44,7 @@ public class BDDTunnelEncapsulationAttributeTest {
    * two domain values: not present, or present with unknown value.
    */
   @Test
-  public void testEmpty() {
+  void testEmpty() {
     BDDFactory factory = BDDPacket.defaultFactory(JFactory::init);
     factory.setVarNum(5);
     BDDTunnelEncapsulationAttribute empty =
@@ -59,7 +59,7 @@ public class BDDTunnelEncapsulationAttributeTest {
 
   /** Test basic functionality when there is a single value. */
   @Test
-  public void testSingleton() {
+  void testSingleton() {
     BDDFactory factory = BDDPacket.defaultFactory(JFactory::init);
     factory.setVarNum(5);
     TunnelEncapsulationAttribute a = new TunnelEncapsulationAttribute(Ip.create(1));
@@ -91,7 +91,7 @@ public class BDDTunnelEncapsulationAttributeTest {
 
   /** Test basic functionality. */
   @Test
-  public void testSimple() {
+  void testSimple() {
     BDDFactory factory = BDDPacket.defaultFactory(JFactory::init);
     factory.setVarNum(5);
     TunnelEncapsulationAttribute a = new TunnelEncapsulationAttribute(Ip.create(1));
@@ -112,7 +112,7 @@ public class BDDTunnelEncapsulationAttributeTest {
   }
 
   @Test
-  public void testAllDifferences() {
+  void testAllDifferences() {
     BDDFactory factory = BDDPacket.defaultFactory(JFactory::init);
     factory.setVarNum(5);
     TunnelEncapsulationAttribute a = new TunnelEncapsulationAttribute(Ip.create(1));
@@ -128,7 +128,7 @@ public class BDDTunnelEncapsulationAttributeTest {
   }
 
   @Test
-  public void testSupport() {
+  void testSupport() {
     BDDFactory factory = BDDPacket.defaultFactory(JFactory::init);
     factory.setVarNum(5);
 
@@ -145,7 +145,7 @@ public class BDDTunnelEncapsulationAttributeTest {
   }
 
   @Test
-  public void testAugmentPairing() {
+  void testAugmentPairing() {
     BDDFactory factory = BDDPacket.defaultFactory(JFactory::init);
     factory.setVarNum(10);
     TunnelEncapsulationAttribute a = new TunnelEncapsulationAttribute(Ip.create(1));

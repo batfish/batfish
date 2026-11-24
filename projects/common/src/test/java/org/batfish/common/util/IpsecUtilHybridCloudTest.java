@@ -23,15 +23,15 @@ import org.batfish.datamodel.IpsecSession;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.ipsec.IpsecTopology;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class IpsecUtilHybridCloudTest {
+class IpsecUtilHybridCloudTest {
   private IpsecTopology _ipsecTopology;
   private Map<String, Configuration> _configurations = new HashMap<>();
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     // creates a topology with the following edges with edge between Tunnel9 and Tunnel10 having no
     // corresponding IPsec edges/nodes
     /*                                              AWS
@@ -104,7 +104,7 @@ public class IpsecUtilHybridCloudTest {
   }
 
   @Test
-  public void testSessionNotEstablishedToShutdownInterface() {
+  void testSessionNotEstablishedToShutdownInterface() {
     Set<Edge> compatibleIpsecEdges =
         toEdgeSet(
             retainReachableIpsecEdges(_ipsecTopology, _configurations, null), _configurations);

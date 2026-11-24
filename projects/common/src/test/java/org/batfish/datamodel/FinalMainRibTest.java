@@ -7,14 +7,11 @@ import static org.hamcrest.Matchers.hasSize;
 
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-@RunWith(JUnit4.class)
-public class FinalMainRibTest {
+class FinalMainRibTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     StaticRoute sr = StaticRoute.testBuilder().setNetwork(Prefix.ZERO).build();
     StaticRoute sr2 = StaticRoute.testBuilder().setNetwork(Prefix.MULTICAST).build();
     new EqualsTester()
@@ -25,7 +22,7 @@ public class FinalMainRibTest {
   }
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     FinalMainRib empty = FinalMainRib.of();
     assertThat(empty, equalTo(SerializationUtils.clone(empty)));
 

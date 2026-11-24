@@ -21,6 +21,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.SortedMap;
@@ -75,13 +76,12 @@ import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public class ComparePeerGroupPoliciesAnswererTest {
-  @Rule public TemporaryFolder _tempFolder = new TemporaryFolder();
+class ComparePeerGroupPoliciesAnswererTest {
+  @TempDir public File _tempFolder;
 
   Batfish _batfish;
 
@@ -96,8 +96,8 @@ public class ComparePeerGroupPoliciesAnswererTest {
   private RoutingPolicy.Builder _policyBuilderDelta;
   private RoutingPolicy.Builder _policyBuilderBase;
 
-  @Before
-  public void setup() throws IOException {
+  @BeforeEach
+  void setup() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder()
@@ -217,7 +217,7 @@ public class ComparePeerGroupPoliciesAnswererTest {
   }
 
   @Test
-  public void testNoDifference() {
+  void testNoDifference() {
     _policyBuilderDelta.addStatement(new Statements.StaticStatement(Statements.ExitAccept)).build();
     _policyBuilderBase.addStatement(new Statements.StaticStatement(Statements.ExitAccept)).build();
 
@@ -268,7 +268,7 @@ public class ComparePeerGroupPoliciesAnswererTest {
    * the question runs without crashing and reports nothing for it.
    */
   @Test
-  public void testNullPeerGroupSkipped() {
+  void testNullPeerGroupSkipped() {
     // The shared group peer's policy (POLICY_NAME) is unchanged.
     _policyBuilderDelta.addStatement(new Statements.StaticStatement(Statements.ExitAccept)).build();
     _policyBuilderBase.addStatement(new Statements.StaticStatement(Statements.ExitAccept)).build();
@@ -303,7 +303,7 @@ public class ComparePeerGroupPoliciesAnswererTest {
    * even when the same device also has a group-less peer with a differing policy.
    */
   @Test
-  public void testGroupedPeerComparedAlongsideNullPeerGroup() {
+  void testGroupedPeerComparedAlongsideNullPeerGroup() {
     // The grouped peer's policy (POLICY_NAME) differs across snapshots.
     _policyBuilderBase.addStatement(new Statements.StaticStatement(Statements.ExitReject)).build();
     _policyBuilderDelta.addStatement(new Statements.StaticStatement(Statements.ExitAccept)).build();
@@ -343,7 +343,7 @@ public class ComparePeerGroupPoliciesAnswererTest {
 
   /** Tests route-map diff when the action differs. */
   @Test
-  public void testActionDifference() {
+  void testActionDifference() {
     _policyBuilderDelta.addStatement(new Statements.StaticStatement(Statements.ExitAccept)).build();
     _policyBuilderBase.addStatement(new Statements.StaticStatement(Statements.ExitReject)).build();
 
@@ -386,7 +386,7 @@ public class ComparePeerGroupPoliciesAnswererTest {
 
   /** A node specifier that matches the (only) node reports its differences. */
   @Test
-  public void testNodesSpecifierMatches() {
+  void testNodesSpecifierMatches() {
     _policyBuilderDelta.addStatement(new Statements.StaticStatement(Statements.ExitAccept)).build();
     _policyBuilderBase.addStatement(new Statements.StaticStatement(Statements.ExitReject)).build();
 
@@ -411,7 +411,7 @@ public class ComparePeerGroupPoliciesAnswererTest {
 
   /** A node specifier that excludes the node suppresses its differences. */
   @Test
-  public void testNodesSpecifierExcludes() {
+  void testNodesSpecifierExcludes() {
     _policyBuilderDelta.addStatement(new Statements.StaticStatement(Statements.ExitAccept)).build();
     _policyBuilderBase.addStatement(new Statements.StaticStatement(Statements.ExitReject)).build();
 
@@ -434,7 +434,7 @@ public class ComparePeerGroupPoliciesAnswererTest {
 
   /** Tests route-map diff when the output routes differ. */
   @Test
-  public void testRouteMapDiff() {
+  void testRouteMapDiff() {
     _policyBuilderDelta
         .addStatement(
             new If(
@@ -510,7 +510,7 @@ public class ComparePeerGroupPoliciesAnswererTest {
 
   /** Tests route-map diff when an AS-Path list definition differs. */
   @Test
-  public void testMatchNamedAsPathDiff() {
+  void testMatchNamedAsPathDiff() {
     _policyBuilderBase
         .addStatement(
             new If(
@@ -586,7 +586,7 @@ public class ComparePeerGroupPoliciesAnswererTest {
 
   /** Tests route-map diff when the policies are the same but a named prefix-list differs. */
   @Test
-  public void testMatchNamedPrefix() {
+  void testMatchNamedPrefix() {
     _policyBuilderBase
         .addStatement(
             new If(
@@ -639,7 +639,7 @@ public class ComparePeerGroupPoliciesAnswererTest {
 
   /** Tests route-map diffs when a named-prefix list is the same. Should be no difference. */
   @Test
-  public void testMatchNamedPrefixSame() {
+  void testMatchNamedPrefixSame() {
     _policyBuilderBase
         .addStatement(
             new If(
@@ -666,7 +666,7 @@ public class ComparePeerGroupPoliciesAnswererTest {
 
   /** Tests route-maps when their community-lists differ. */
   @Test
-  public void testMatchCommunityReference() {
+  void testMatchCommunityReference() {
     _policyBuilderBase
         .addStatement(
             new If(
@@ -746,7 +746,7 @@ public class ComparePeerGroupPoliciesAnswererTest {
 
   /** Tests that table stitching works correctly. */
   @Test
-  public void testTableStitching() throws IOException {
+  void testTableStitching() throws IOException {
     _policyBuilderBase
         .addStatement(
             new If(

@@ -1,5 +1,6 @@
 package org.batfish.grammar;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -13,15 +14,13 @@ import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.juniper.JuniperConfiguration;
 import org.batfish.representation.juniper.NamedBgpGroup;
 import org.batfish.representation.juniper.RoutingInstance;
-import org.junit.rules.TemporaryFolder;
 
 /** Utilities for testing Junos configurations. */
 public final class JunosGrammarTestUtils {
 
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/juniper/testconfigs/";
 
-  public static Batfish getBatfish(TemporaryFolder folder, String... configurationNames)
-      throws IOException {
+  public static Batfish getBatfish(File folder, String... configurationNames) throws IOException {
     String[] paths =
         Arrays.stream(configurationNames)
             .map(name -> TESTCONFIGS_PREFIX + name)
@@ -29,7 +28,7 @@ public final class JunosGrammarTestUtils {
     return BatfishTestUtils.getBatfishForTextConfigs(folder, paths);
   }
 
-  public static Configuration parseConfig(TemporaryFolder folder, String hostname) {
+  public static Configuration parseConfig(File folder, String hostname) {
     try {
       Configuration configuration = parseTextConfigs(folder, hostname).get(hostname.toLowerCase());
       if (configuration == null) {
@@ -42,18 +41,18 @@ public final class JunosGrammarTestUtils {
   }
 
   public static Map<String, Configuration> parseTextConfigs(
-      TemporaryFolder folder, String... configurationNames) throws IOException {
+      File folder, String... configurationNames) throws IOException {
     Batfish batfish = getBatfish(folder, configurationNames);
     return batfish.loadConfigurations(batfish.getSnapshot());
   }
 
-  public static JuniperConfiguration parseJuniperConfig(TemporaryFolder folder, String hostname) {
+  public static JuniperConfiguration parseJuniperConfig(File folder, String hostname) {
     return parseJuniperConfig(folder, hostname, false);
   }
 
   /** Parses a Junos configuration with optional error recovery. */
   public static JuniperConfiguration parseJuniperConfig(
-      TemporaryFolder folder, String hostname, boolean allowErrors) {
+      File folder, String hostname, boolean allowErrors) {
     try {
       Batfish batfish = getBatfish(folder, hostname);
       Settings settings = batfish.getSettings();

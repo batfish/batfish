@@ -4,12 +4,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import java.util.Optional;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ForwardingClassUtilTest {
+class ForwardingClassUtilTest {
 
   @Test
-  public void testBuiltinForwardingClasses() {
+  void testBuiltinForwardingClasses() {
     // Test all built-in forwarding classes
     assertThat(ForwardingClassUtil.isBuiltin("best-effort"), equalTo(true));
     assertThat(ForwardingClassUtil.defaultQueueNumber("best-effort"), equalTo(Optional.of(0)));

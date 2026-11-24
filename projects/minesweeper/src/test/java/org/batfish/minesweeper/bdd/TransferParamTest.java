@@ -4,11 +4,11 @@ import com.google.common.testing.EqualsTester;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.minesweeper.bdd.TransferParam.CallContext;
 import org.batfish.minesweeper.bdd.TransferParam.ChainContext;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class TransferParamTest {
+class TransferParamTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     TransferParam p = new TransferParam(false);
 
     new EqualsTester()

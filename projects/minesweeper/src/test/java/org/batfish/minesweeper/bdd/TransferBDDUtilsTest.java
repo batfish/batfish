@@ -1,6 +1,6 @@
 package org.batfish.minesweeper.bdd;
 
-import static junit.framework.TestCase.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -10,16 +10,16 @@ import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class TransferBDDUtilsTest {
+class TransferBDDUtilsTest {
 
   private TransferBDD _tbdd;
   private BDDRoute _freshRoute;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     ConfigAtomicPredicates configAPs =
         new ConfigAtomicPredicates(
             ImmutableList.of(),
@@ -30,7 +30,7 @@ public class TransferBDDUtilsTest {
   }
 
   @Test
-  public void testWeakestPrecondition() {
+  void testWeakestPrecondition() {
 
     BDDFactory factory = _tbdd.getFactory();
 
@@ -88,7 +88,7 @@ public class TransferBDDUtilsTest {
   }
 
   @Test
-  public void testDeniedRoutes() {
+  void testDeniedRoutes() {
     BDDFactory factory = _tbdd.getFactory();
 
     // no paths
@@ -123,7 +123,7 @@ public class TransferBDDUtilsTest {
   }
 
   @Test
-  public void testMakeRoutePairing() {
+  void testMakeRoutePairing() {
     // Test 1: The pairing is the identity function
     BDDRoute route1 = new BDDRoute(_freshRoute);
     BDDPairing pairing1 = TransferBDDUtils.makeRoutePairing(route1, _tbdd);
@@ -144,7 +144,7 @@ public class TransferBDDUtilsTest {
   }
 
   @Test
-  public void testWeakestPreconditionForPathPostCondUpdate() {
+  void testWeakestPreconditionForPathPostCondUpdate() {
     BDDFactory factory = _tbdd.getFactory();
 
     // make sure the postcondition is not consumed by the function

@@ -5,31 +5,31 @@ import static org.batfish.vendor.check_point_management.parsing.serviceother.Ser
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link ServiceOtherMatchExpr}. */
-public final class ServiceOtherMatchExprTest {
+final class ServiceOtherMatchExprTest {
 
   @Test
-  public void testEmpty() {
+  void testEmpty() {
     assertThat(parse(""), equalTo(EmptyAstNode.instance()));
     assertThat(parse(" "), equalTo(EmptyAstNode.instance()));
   }
 
   @Test
-  public void testUnhandledWord() {
+  void testUnhandledWord() {
     assertThat(parse("blah"), equalTo(UnhandledAstNode.of("blah")));
     assertThat(parse("1"), equalTo(UnhandledAstNode.of("1")));
   }
 
   @Test
-  public void testUnhandledComparisonExpr() {
+  void testUnhandledComparisonExpr() {
     assertThat(parse("foo=bar"), equalTo(UnhandledAstNode.of("foo=bar")));
     assertThat(parse("foo = bar"), equalTo(UnhandledAstNode.of("foo = bar")));
   }
 
   @Test
-  public void testCallExpr() {
+  void testCallExpr() {
     {
       String text = "SERVICE_HANDLER(ADP_SQL_CMDS_ID, adp_mssql_monitor_code)";
       assertThat(parse(text), equalTo(UnhandledAstNode.of(text)));
@@ -41,19 +41,19 @@ public final class ServiceOtherMatchExprTest {
   }
 
   @Test
-  public void testError() {
+  void testError() {
     assertThat(parse("("), equalTo(ErrorAstNode.instance()));
   }
 
   @Test
-  public void testDport() {
+  void testDport() {
     assertThat(
         parse("dport < 5"),
         equalTo(new DportAstNode("dport < 5", LessThanAstNode.instance(), Uint16AstNode.of(5))));
   }
 
   @Test
-  public void testUhDport() {
+  void testUhDport() {
     assertThat(
         parse("uh_dport < 5"),
         equalTo(
@@ -61,7 +61,7 @@ public final class ServiceOtherMatchExprTest {
   }
 
   @Test
-  public void testDisjunction() {
+  void testDisjunction() {
     // 2 items
     assertThat(
         parse("dport < 5 or dport>1"),
@@ -83,7 +83,7 @@ public final class ServiceOtherMatchExprTest {
   }
 
   @Test
-  public void testConjunction() {
+  void testConjunction() {
     // 2 items
     assertThat(
         parse("dport < 5 , dport>1"),
@@ -105,7 +105,7 @@ public final class ServiceOtherMatchExprTest {
   }
 
   @Test
-  public void testComparator() {
+  void testComparator() {
     assertThat(parse("<", ServiceOtherMatchExpr::comparator), equalTo(LessThanAstNode.instance()));
     assertThat(
         parse(">", ServiceOtherMatchExpr::comparator), equalTo(GreaterThanAstNode.instance()));
@@ -119,7 +119,7 @@ public final class ServiceOtherMatchExprTest {
   }
 
   @Test
-  public void testUint16Expr() {
+  void testUint16Expr() {
     assertThat(parse("5", ServiceOtherMatchExpr::uint16Expr), equalTo(Uint16AstNode.of(5)));
     assertThat(
         parse("LOW_UDP_PORT", ServiceOtherMatchExpr::uint16Expr),
@@ -127,23 +127,23 @@ public final class ServiceOtherMatchExprTest {
   }
 
   @Test
-  public void testDirectionExpr() {
+  void testDirectionExpr() {
     assertThat(parse("direction=0"), equalTo(new IncomingAstNode("direction=0")));
     assertThat(parse("direction = 1"), equalTo(new OutgoingAstNode("direction = 1")));
   }
 
   @Test
-  public void testTcp() {
+  void testTcp() {
     assertThat(parse("tcp"), equalTo(TcpAstNode.instance()));
   }
 
   @Test
-  public void testUdp() {
+  void testUdp() {
     assertThat(parse("udp"), equalTo(UdpAstNode.instance()));
   }
 
   @Test
-  public void testParentheticalBooleanExpr() {
+  void testParentheticalBooleanExpr() {
     assertThat(parse("(tcp)"), equalTo(TcpAstNode.instance()));
     assertThat(parse("( tcp,udp )"), equalTo(TcpAstNode.instance().and(UdpAstNode.instance())));
     assertThat(
@@ -162,7 +162,7 @@ public final class ServiceOtherMatchExprTest {
   }
 
   @Test
-  public void testInExpr() {
+  void testInExpr() {
     {
       String text = "<src, dst, dport> in mgcp_dynamic_port";
       assertThat(parse(text), equalTo(UnhandledAstNode.of(text)));

@@ -6,6 +6,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
+import java.io.File;
 import java.io.IOException;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation.Builder;
@@ -19,14 +20,13 @@ import org.batfish.coordinator.WorkMgrTestUtils;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 import org.batfish.role.RoleDimensionMapping;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class NetworkNodeRoleDimensionResourceTest extends WorkMgrServiceV2TestBase {
+final class NetworkNodeRoleDimensionResourceTest extends WorkMgrServiceV2TestBase {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private Builder getNodeRoleDimensionTarget(String network, String dimension) {
     return target(CoordConsts.SVC_CFG_WORK_MGR2)
@@ -38,13 +38,13 @@ public final class NetworkNodeRoleDimensionResourceTest extends WorkMgrServiceV2
         .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY);
   }
 
-  @Before
-  public void initTestEnvironment() {
+  @BeforeEach
+  void initTestEnvironment() {
     WorkMgrTestUtils.initWorkManager(_folder);
   }
 
   @Test
-  public void testDelNodeRoleDimensionMissingDimension() throws IOException {
+  void testDelNodeRoleDimensionMissingDimension() throws IOException {
     String network = "network1";
     String dimension = "dimension1";
     Main.getWorkMgr().initNetwork(network, null);
@@ -56,7 +56,7 @@ public final class NetworkNodeRoleDimensionResourceTest extends WorkMgrServiceV2
   }
 
   @Test
-  public void testDelNodeRoleDimensionMissingNetwork() {
+  void testDelNodeRoleDimensionMissingNetwork() {
     String network = "network1";
     String dimension = "dimension1";
 
@@ -66,7 +66,7 @@ public final class NetworkNodeRoleDimensionResourceTest extends WorkMgrServiceV2
   }
 
   @Test
-  public void testDelNodeRoleDimensionSuccess() throws IOException {
+  void testDelNodeRoleDimensionSuccess() throws IOException {
     String network = "network1";
     String dimension = "dimension1";
     Main.getWorkMgr().initNetwork(network, null);
@@ -97,7 +97,7 @@ public final class NetworkNodeRoleDimensionResourceTest extends WorkMgrServiceV2
   }
 
   @Test
-  public void testGetNodeRoleDimensionMissingDimension() throws IOException {
+  void testGetNodeRoleDimensionMissingDimension() throws IOException {
     String network = "network1";
     String dimension = "dimension1";
     Main.getWorkMgr().initNetwork(network, null);
@@ -109,7 +109,7 @@ public final class NetworkNodeRoleDimensionResourceTest extends WorkMgrServiceV2
   }
 
   @Test
-  public void testGetNodeRoleDimensionMissingNetwork() {
+  void testGetNodeRoleDimensionMissingNetwork() {
     String network = "network1";
     String dimension = "dimension1";
 
@@ -119,7 +119,7 @@ public final class NetworkNodeRoleDimensionResourceTest extends WorkMgrServiceV2
   }
 
   @Test
-  public void testGetNodeRoleDimensionSuccess() throws IOException {
+  void testGetNodeRoleDimensionSuccess() throws IOException {
     String network = "network1";
     String dimension = "dimension1";
     Main.getWorkMgr().initNetwork(network, null);
@@ -142,7 +142,7 @@ public final class NetworkNodeRoleDimensionResourceTest extends WorkMgrServiceV2
   }
 
   @Test
-  public void testPutNodeRoleDimensionMissingNetwork() {
+  void testPutNodeRoleDimensionMissingNetwork() {
     String network = "network1";
     String dimension = "dimension1";
 
@@ -156,7 +156,7 @@ public final class NetworkNodeRoleDimensionResourceTest extends WorkMgrServiceV2
   }
 
   @Test
-  public void testPutNodeRoleDimensionSuccess() throws IOException {
+  void testPutNodeRoleDimensionSuccess() throws IOException {
     String network = "network1";
     String dimension = "dimension1";
     Main.getWorkMgr().initNetwork(network, null);

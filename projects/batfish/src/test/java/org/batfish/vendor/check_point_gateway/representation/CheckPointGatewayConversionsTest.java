@@ -22,8 +22,8 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -75,10 +75,10 @@ import org.batfish.vendor.check_point_management.ServiceUdp;
 import org.batfish.vendor.check_point_management.SimpleGateway;
 import org.batfish.vendor.check_point_management.TypedManagementObject;
 import org.batfish.vendor.check_point_management.Uid;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link CheckPointGatewayConversions}. */
-public final class CheckPointGatewayConversionsTest {
+final class CheckPointGatewayConversionsTest {
   private static final Uid UID_ACCEPT = Uid.of("99997");
   private static final Uid UID_DROP = Uid.of("99998");
   private static final Uid UID_CPMI_ANY = Uid.of("99999");
@@ -181,7 +181,7 @@ public final class CheckPointGatewayConversionsTest {
   }
 
   @Test
-  public void testToIpAccessLists() {
+  void testToIpAccessLists() {
     AtomicInteger uidGenerator = new AtomicInteger();
     // Accept anywhere -> net1
     AccessSection accessSection =
@@ -273,7 +273,7 @@ public final class CheckPointGatewayConversionsTest {
   }
 
   @Test
-  public void testAccessRuleToMatchExpr() {
+  void testAccessRuleToMatchExpr() {
     Warnings w = new Warnings();
     AclLineMatchExpr matchNet0 =
         AclLineMatchExprs.match(
@@ -373,7 +373,7 @@ public final class CheckPointGatewayConversionsTest {
   }
 
   @Test
-  public void testToIpSpace() {
+  void testToIpSpace() {
     Warnings w = new Warnings(false, true, false);
     toAddressMatchExpr(
         ImmutableList.of(Uid.of("1"), Uid.of("2"), Uid.of("3")),
@@ -397,7 +397,7 @@ public final class CheckPointGatewayConversionsTest {
   }
 
   @Test
-  public void testToAction() {
+  void testToAction() {
     Warnings w = new Warnings(false, true, false);
     assertThat(
         toAction(new RulebaseAction("Accept", Uid.of("1"), "Accept"), Uid.of("1"), w),
@@ -429,7 +429,7 @@ public final class CheckPointGatewayConversionsTest {
   }
 
   @Test
-  public void testNatOrigToMatchExpr() {
+  void testNatOrigToMatchExpr() {
     Uid uid = Uid.of("1");
     Warnings warnings = new Warnings();
     {
@@ -540,7 +540,7 @@ public final class CheckPointGatewayConversionsTest {
   }
 
   @Test
-  public void testCheckValidHeaderSpaceInputs() {
+  void testCheckValidHeaderSpaceInputs() {
     Uid uid = Uid.of("1");
     TypedManagementObject addressSpace = new Host(Ip.ZERO, NAT_SETTINGS_TEST_INSTANCE, "foo", uid);
     TypedManagementObject service = new ServiceTcp("foo", "1", uid);
@@ -553,7 +553,7 @@ public final class CheckPointGatewayConversionsTest {
   }
 
   @Test
-  public void testServicesToMatchExpr() {
+  void testServicesToMatchExpr() {
     Warnings w = new Warnings(false, true, false);
 
     assertThat(
@@ -581,7 +581,7 @@ public final class CheckPointGatewayConversionsTest {
   }
 
   @Test
-  public void testServicesToMatchExprOnlyUnknown() {
+  void testServicesToMatchExprOnlyUnknown() {
     // If the only service(s) are unknown/unhandled, then the rule shouldn't match
     assertThat(
         _tb.toBDD(
@@ -591,7 +591,7 @@ public final class CheckPointGatewayConversionsTest {
   }
 
   @Test
-  public void testAclNameAccessLayer() {
+  void testAclNameAccessLayer() {
     Uid uid = Uid.of("1234");
     String name = "Named AccessLayer";
     AccessLayer named = new AccessLayer(ImmutableMap.of(), ImmutableList.of(), uid, name);
@@ -601,7 +601,7 @@ public final class CheckPointGatewayConversionsTest {
   }
 
   @Test
-  public void testAclNameAccessSection() {
+  void testAclNameAccessSection() {
     Uid uid = Uid.of("1234");
     AccessSection unnamed =
         new AccessSection(AccessSection.generateName(uid), ImmutableList.of(), uid);
@@ -614,7 +614,7 @@ public final class CheckPointGatewayConversionsTest {
   }
 
   @Test
-  public void testToAclLine() {
+  void testToAclLine() {
     AtomicInteger uidGenerator = new AtomicInteger();
     Uid ruleUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
     Uid gatewayUid = Uid.of(String.valueOf(uidGenerator.getAndIncrement()));
@@ -718,7 +718,7 @@ public final class CheckPointGatewayConversionsTest {
   }
 
   @Test
-  public void testAppliesToGateway() {
+  void testAppliesToGateway() {
     AtomicInteger uidGenerator = new AtomicInteger();
     GatewayOrServerPolicy testPolicy = new GatewayOrServerPolicy(null, null);
 

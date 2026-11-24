@@ -22,10 +22,10 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.representation.aws.DirectConnectGatewayAssociation.AssociatedGateway;
 import org.batfish.representation.aws.DirectConnectGatewayAssociation.AssociatedGateway.GatewayType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link DirectConnectGatewayConverter}. */
-public class DirectConnectGatewayConverterTest {
+class DirectConnectGatewayConverterTest {
 
   private static final String DXGW_ID = "12345678-90ab-4cde-9f01-23456789abcd";
 
@@ -50,7 +50,7 @@ public class DirectConnectGatewayConverterTest {
    * single converter pass that aggregates VIFs and associations across all regions.
    */
   @Test
-  public void testAggregatesAcrossRegions() {
+  void testAggregatesAcrossRegions() {
     AwsConfiguration aws = new AwsConfiguration();
     Account account = aws.addOrGetAccount("123456789012");
 
@@ -106,7 +106,7 @@ public class DirectConnectGatewayConverterTest {
 
   /** When the DXGW is referenced but not declared anywhere, no node is produced. */
   @Test
-  public void testNoGatewayNoNode() {
+  void testNoGatewayNoNode() {
     AwsConfiguration aws = new AwsConfiguration();
     Account account = aws.addOrGetAccount("123456789012");
     account.addOrGetRegion("us-east-1");
@@ -119,7 +119,7 @@ public class DirectConnectGatewayConverterTest {
    * allowed-prefix filter; the VGW side advertises VPC CIDRs.
    */
   @Test
-  public void testWiresDxgwToVgwForVgwAssociation() {
+  void testWiresDxgwToVgwForVgwAssociation() {
     AwsConfiguration aws = new AwsConfiguration();
     Account account = aws.addOrGetAccount("123456789012");
     Region region = account.addOrGetRegion("us-east-1");
@@ -192,7 +192,7 @@ public class DirectConnectGatewayConverterTest {
 
   /** Two distinct DXGWs across regions each get their own node. */
   @Test
-  public void testMultipleDistinctGateways() {
+  void testMultipleDistinctGateways() {
     AwsConfiguration aws = new AwsConfiguration();
     Account account = aws.addOrGetAccount("123456789012");
     Region region = account.addOrGetRegion("us-east-1");

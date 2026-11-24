@@ -20,7 +20,7 @@ import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.Grammar;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for reference book entity auto completion in {@link ParsedAutoComplete}. The testing
@@ -36,7 +36,7 @@ import org.junit.Test;
  *       potential partial things (thus helping validate the assumptions made in testFind*)
  * </ol>
  */
-public class ParsedAutoCompleteReferenceBookEntityTest {
+class ParsedAutoCompleteReferenceBookEntityTest {
 
   private static ReferenceLibrary testLibrary =
       new ReferenceLibrary(
@@ -79,7 +79,7 @@ public class ParsedAutoCompleteReferenceBookEntityTest {
 
   /** Context-sensitive completion of entity name after book name */
   @Test
-  public void testAutoCompleteReferenceBookEntity() {
+  void testAutoCompleteReferenceBookEntity() {
     PathElement anchor = new PathElement(ADDRESS_GROUP_NAME, null, 1, 42);
     PotentialMatch pm = new PotentialMatch(anchor, "", ImmutableList.of());
 
@@ -98,7 +98,7 @@ public class ParsedAutoCompleteReferenceBookEntityTest {
    * Context-sensitive completion of entity name after book name when group name prefix is present
    */
   @Test
-  public void testAutoCompleteNodeRoleNamePrefix() {
+  void testAutoCompleteNodeRoleNamePrefix() {
     ParsedAutoComplete pac = getPAC();
 
     PathElement anchor = new PathElement(ADDRESS_GROUP_NAME, null, 1, 42);
@@ -133,7 +133,7 @@ public class ParsedAutoCompleteReferenceBookEntityTest {
    * role names
    */
   @Test
-  public void testE2eNoTailNoMatchingBook() {
+  void testE2eNoTailNoMatchingBook() {
     String query = "@addressGroup(nobook";
     assertThat(
         getPAC(query, Grammar.IP_SPACE_SPECIFIER).run(),
@@ -143,7 +143,7 @@ public class ParsedAutoCompleteReferenceBookEntityTest {
   }
 
   @Test
-  public void testE2eNoTailMatchingBook() {
+  void testE2eNoTailMatchingBook() {
     String query = "@addressGroup(b";
     assertThat(
         getPAC(query, Grammar.IP_SPACE_SPECIFIER).run(),
@@ -156,7 +156,7 @@ public class ParsedAutoCompleteReferenceBookEntityTest {
 
   /** The group name portion has started but no prefix yet */
   @Test
-  public void testE2eNoGroupNamePrefix() {
+  void testE2eNoGroupNamePrefix() {
     String query = "@addressGroup(b1a,";
 
     Set<ParsedAutoCompleteSuggestion> expected =
@@ -169,7 +169,7 @@ public class ParsedAutoCompleteReferenceBookEntityTest {
 
   /** The group name portion has started but no prefix yet */
   @Test
-  public void testE2eGroupNamePrefix() {
+  void testE2eGroupNamePrefix() {
     String query = "@addressGroup(b1a,g11";
 
     Set<ParsedAutoCompleteSuggestion> expected =
@@ -182,7 +182,7 @@ public class ParsedAutoCompleteReferenceBookEntityTest {
 
   /** Test auto completion when embedded within a function */
   @Test
-  public void testE2eEmbeddedNoGroupNamePrefix() {
+  void testE2eEmbeddedNoGroupNamePrefix() {
     String query = "@connectedTo(@addressGroup(b1a,";
     assertThat(
         getPAC(query, Grammar.INTERFACE_SPECIFIER).run(),
@@ -192,7 +192,7 @@ public class ParsedAutoCompleteReferenceBookEntityTest {
   }
 
   @Test
-  public void testE2eLocationFuncGroupNamePrefix() {
+  void testE2eLocationFuncGroupNamePrefix() {
     String query = "@connectedTo(@addressGroup(b1a,g11";
     assertThat(
         getPAC(query, Grammar.LOCATION_SPECIFIER).run(),
@@ -203,7 +203,7 @@ public class ParsedAutoCompleteReferenceBookEntityTest {
 
   /** Test that spaces do not disrupt us */
   @Test
-  public void testE2eSpacesNoGroupNamePrefix() {
+  void testE2eSpacesNoGroupNamePrefix() {
     String query = " @addressGroup ( b1a ,";
     assertThat(
         getPAC(query, Grammar.IP_SPACE_SPECIFIER).run(),
@@ -213,7 +213,7 @@ public class ParsedAutoCompleteReferenceBookEntityTest {
   }
 
   @Test
-  public void testE2eSpacesGroupNamePrefix() {
+  void testE2eSpacesGroupNamePrefix() {
     String query = " @addressGroup ( b1a , g11";
     assertThat(
         getPAC(query, Grammar.IP_SPACE_SPECIFIER).run(),
@@ -224,7 +224,7 @@ public class ParsedAutoCompleteReferenceBookEntityTest {
 
   /** A test that interface groups work as well */
   @Test
-  public void testE2eInterfaceGroup() {
+  void testE2eInterfaceGroup() {
     String query = " @interfaceGroup ( b1a ,";
     assertThat(
         getPAC(query, Grammar.INTERFACE_SPECIFIER).run(),

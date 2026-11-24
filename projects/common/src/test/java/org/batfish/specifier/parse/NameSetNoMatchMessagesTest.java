@@ -12,10 +12,10 @@ import org.batfish.common.CompletionMetadata;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.Grammar;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link NameSetNoMatchMessages} */
-public class NameSetNoMatchMessagesTest {
+class NameSetNoMatchMessagesTest {
 
   private static List<String> getMessages(
       NameSetNoMatchMessages nodeNoMatchMessages, CompletionMetadata completionMetadata) {
@@ -26,7 +26,7 @@ public class NameSetNoMatchMessagesTest {
   private static String NAME_TYPE = Grammar.getNameType(Grammar.MLAG_ID_SPECIFIER);
 
   @Test
-  public void testName() {
+  void testName() {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder().setMlagIds(ImmutableSet.of("b1", "b2")).build();
     assertThat(
@@ -43,7 +43,7 @@ public class NameSetNoMatchMessagesTest {
   }
 
   @Test
-  public void testNameRegex() {
+  void testNameRegex() {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder().setMlagIds(ImmutableSet.of("b1", "b2")).build();
     assertThat(
@@ -59,7 +59,7 @@ public class NameSetNoMatchMessagesTest {
   }
 
   @Test
-  public void testSetOp() {
+  void testSetOp() {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder().setMlagIds(ImmutableSet.of("b1", "b2")).build();
     List<String> expected =
@@ -79,7 +79,7 @@ public class NameSetNoMatchMessagesTest {
 
   /** a subset of the input is empty */
   @Test
-  public void testEmptySubset() {
+  void testEmptySubset() {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder().setMlagIds(ImmutableSet.of("b1", "b2")).build();
     assertThat(

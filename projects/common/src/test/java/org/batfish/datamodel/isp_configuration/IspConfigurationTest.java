@@ -15,13 +15,13 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.isp_configuration.IspNodeInfo.Role;
 import org.batfish.datamodel.isp_configuration.IspPeeringInfo.Peer;
 import org.batfish.datamodel.isp_configuration.traffic_filtering.IspTrafficFiltering;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link IspConfiguration} */
-public class IspConfigurationTest {
+class IspConfigurationTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new IspConfiguration(
@@ -82,7 +82,7 @@ public class IspConfigurationTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     IspConfiguration ispConfiguration =
         new IspConfiguration(
             ImmutableList.of(new BorderInterfaceInfo(NodeInterfacePair.of("node", "interface"))),
@@ -97,7 +97,7 @@ public class IspConfigurationTest {
   }
 
   @Test
-  public void testDeserializeJsonExample() throws JsonProcessingException {
+  void testDeserializeJsonExample() throws JsonProcessingException {
     String json =
         readResource("org/batfish/datamodel/isp_configuration/isp_configuration.json", UTF_8);
     IspConfiguration c = BatfishObjectMapper.mapper().readValue(json, IspConfiguration.class);

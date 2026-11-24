@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.notNullValue;
 
 import com.google.common.collect.ImmutableList;
+import java.io.File;
 import java.io.IOException;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.datamodel.DataPlane;
@@ -16,19 +17,18 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * Test that 10.2.10.0/24 is present as a BGP route on s0.
  *
  * <p>See <a href="https://github.com/batfish/batfish/issues/8588">batfish/batfish#8588</a>
  */
-public final class Gh8588AdvertiseInactiveTest {
+final class Gh8588AdvertiseInactiveTest {
 
   @Test
-  public void testGh8588AdvertiseInactive() throws IOException {
+  void testGh8588AdvertiseInactive() throws IOException {
     String snapshotName = "gh_8588_advertise_inactive";
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
@@ -50,5 +50,5 @@ public final class Gh8588AdvertiseInactiveTest {
   private static final String SNAPSHOTS_PREFIX =
       "org/batfish/grammar/cumulus_concatenated/testrigs/";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 }

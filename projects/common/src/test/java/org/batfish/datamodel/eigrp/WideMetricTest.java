@@ -7,9 +7,9 @@ import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.eigrp.WideMetric.Builder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class WideMetricTest {
+class WideMetricTest {
   private final EigrpMetricValues _values =
       EigrpMetricValues.builder()
           .setBandwidth(1)
@@ -20,7 +20,7 @@ public class WideMetricTest {
           .build();
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     Builder builder = WideMetric.builder().setValues(_values);
     WideMetric cm = builder.build();
     new EqualsTester()
@@ -32,13 +32,13 @@ public class WideMetricTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     WideMetric cm = WideMetric.builder().setValues(_values).setK1(2).setK1(2).build();
     assertThat(SerializationUtils.clone(cm), equalTo(cm));
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     WideMetric cm = WideMetric.builder().setValues(_values).setK1(2).setK1(2).build();
     assertThat(BatfishObjectMapper.clone(cm, WideMetric.class), equalTo(cm));
   }

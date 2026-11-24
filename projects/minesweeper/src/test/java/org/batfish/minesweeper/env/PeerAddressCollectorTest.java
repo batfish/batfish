@@ -1,6 +1,6 @@
 package org.batfish.minesweeper.env;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -17,11 +17,11 @@ import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
 import org.batfish.datamodel.routing_policy.expr.MatchPeerAddress;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.minesweeper.utils.Tuple;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link org.batfish.minesweeper.env.PeerAddressCollector}. */
-public class PeerAddressCollectorTest {
+class PeerAddressCollectorTest {
   private static final String HOSTNAME = "hostname";
   private Configuration _baseConfig;
   private PeerAddressCollector _collector;
@@ -32,8 +32,8 @@ public class PeerAddressCollectorTest {
   private static final MatchPeerAddress PA1 = new MatchPeerAddress(ONES, TWOS);
   private static final MatchPeerAddress PA2 = new MatchPeerAddress(THREES);
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder()
@@ -46,7 +46,7 @@ public class PeerAddressCollectorTest {
   }
 
   @Test
-  public void testVisitConjunction() {
+  void testVisitConjunction() {
 
     Conjunction c = new Conjunction(ImmutableList.of(PA1, PA2));
 
@@ -58,7 +58,7 @@ public class PeerAddressCollectorTest {
   }
 
   @Test
-  public void testVisitConjunctionChain() {
+  void testVisitConjunctionChain() {
 
     ConjunctionChain cc = new ConjunctionChain(ImmutableList.of(PA1, PA2));
 
@@ -71,7 +71,7 @@ public class PeerAddressCollectorTest {
   }
 
   @Test
-  public void testVisitDisjunction() {
+  void testVisitDisjunction() {
 
     Disjunction d = new Disjunction(ImmutableList.of(PA1, PA2));
 
@@ -83,7 +83,7 @@ public class PeerAddressCollectorTest {
   }
 
   @Test
-  public void testVisitFirstMatchChain() {
+  void testVisitFirstMatchChain() {
 
     FirstMatchChain fmc = new FirstMatchChain(ImmutableList.of(PA1, PA2));
 
@@ -96,14 +96,14 @@ public class PeerAddressCollectorTest {
   }
 
   @Test
-  public void testVisitMatchPeerAddress() {
+  void testVisitMatchPeerAddress() {
     assertEquals(
         _collector.visitMatchPeerAddress(PA1, new Tuple<>(new HashSet<>(), _baseConfig)),
         ImmutableSet.of(ONES, TWOS));
   }
 
   @Test
-  public void testVisitNot() {
+  void testVisitNot() {
 
     Not n = new Not(PA1);
 

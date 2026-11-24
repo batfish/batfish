@@ -314,9 +314,9 @@ Create: `projects/batfish/src/test/java/org/batfish/question/bgp/BgpEstablishedN
 ```java
 package org.batfish.question.bgp;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.batfish.question.Question;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class BgpEstablishedNeighborsQuestionTest {
 

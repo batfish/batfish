@@ -1,16 +1,16 @@
 package org.batfish.datamodel.vendor_family.f5_bigip;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link ManagementIp}. */
-public final class ManagementIpTest {
+final class ManagementIpTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(ManagementIp.instance(), ManagementIp.instance())
         .addEqualityGroup(new Object())
@@ -18,7 +18,7 @@ public final class ManagementIpTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     assertEquals(ManagementIp.instance(), SerializationUtils.clone(ManagementIp.instance()));
   }
 }

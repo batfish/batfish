@@ -5,12 +5,12 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableSet;
 import org.batfish.datamodel.applications.NamedApplication;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class SpecifierFactoriesTest {
+class SpecifierFactoriesTest {
 
   @Test
-  public void testGetApplicationSpecifierOrDefault() {
+  void testGetApplicationSpecifierOrDefault() {
     assertThat(
         SpecifierFactories.getApplicationSpecifierOrDefault(
                 "", NoApplicationsApplicationSpecifier.INSTANCE)

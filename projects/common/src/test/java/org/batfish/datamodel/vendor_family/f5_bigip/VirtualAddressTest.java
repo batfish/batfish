@@ -1,21 +1,21 @@
 package org.batfish.datamodel.vendor_family.f5_bigip;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link VirtualAddress}. */
-public final class VirtualAddressTest {
+final class VirtualAddressTest {
 
   private VirtualAddress.Builder _builder;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _builder =
         VirtualAddress.builder()
             .setAddress(Ip.ZERO)
@@ -29,7 +29,7 @@ public final class VirtualAddressTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     VirtualAddress obj = _builder.build();
     new EqualsTester()
         .addEqualityGroup(obj, obj, _builder.build())
@@ -46,7 +46,7 @@ public final class VirtualAddressTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     VirtualAddress obj = _builder.build();
     assertEquals(obj, SerializationUtils.clone(obj));
   }

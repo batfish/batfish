@@ -8,12 +8,12 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class PsFromStateTest {
+final class PsFromStateTest {
 
   @Test
-  public void testConversion() {
+  void testConversion() {
     assertThat(
         new PsFromState(PsFromState.State.ACTIVE)
             .toBooleanExpr(
@@ -27,7 +27,7 @@ public final class PsFromStateTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new PsFromState(PsFromState.State.ACTIVE), new PsFromState(PsFromState.State.ACTIVE))

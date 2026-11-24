@@ -19,8 +19,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -46,13 +46,13 @@ import org.batfish.referencelibrary.GeneratedRefBookUtils.BookType;
 import org.batfish.representation.aws.Instance.Status;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link Instance} */
-public class InstanceTest {
+class InstanceTest {
 
   @Test
-  public void testDeserialization() throws IOException {
+  void testDeserialization() throws IOException {
     String text = readResource("org/batfish/representation/aws/InstanceTest.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
@@ -101,7 +101,7 @@ public class InstanceTest {
   }
 
   @Test
-  public void testToConfigurationNode() {
+  void testToConfigurationNode() {
     String vpcId = "vpc";
 
     Subnet subnet =
@@ -190,7 +190,7 @@ public class InstanceTest {
   }
 
   @Test
-  public void testToConfigurationNode_multipleInterfaces() {
+  void testToConfigurationNode_multipleInterfaces() {
     String vpcId = "vpc";
 
     Subnet subnet = getTestSubnet(Prefix.parse("10.10.10.10/24"), "subnet", vpcId);

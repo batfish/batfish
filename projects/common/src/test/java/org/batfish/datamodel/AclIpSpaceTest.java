@@ -9,9 +9,9 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class AclIpSpaceTest {
+class AclIpSpaceTest {
   /*
    * Permit everything in 1.1.0.0/16 except for 1.1.1.0/24.
    */
@@ -22,14 +22,14 @@ public class AclIpSpaceTest {
           .build();
 
   @Test
-  public void testContainsIp() {
+  void testContainsIp() {
     assertThat(_aclIpSpace, not(containsIp(Ip.parse("1.1.1.0"))));
     assertThat(_aclIpSpace, containsIp(Ip.parse("1.1.0.0")));
     assertThat(_aclIpSpace, not(containsIp(Ip.parse("1.0.0.0"))));
   }
 
   @Test
-  public void testComplement() {
+  void testComplement() {
     IpSpace notIpSpace = _aclIpSpace.complement();
     assertThat(notIpSpace, containsIp(Ip.parse("1.1.1.0")));
     assertThat(notIpSpace, not(containsIp(Ip.parse("1.1.0.0"))));
@@ -39,7 +39,7 @@ public class AclIpSpaceTest {
   }
 
   @Test
-  public void testIntersection() {
+  void testIntersection() {
     IpIpSpace ipSpace = Ip.parse("1.2.3.4").toIpSpace();
     assertThat(intersection(null, null), nullValue());
     assertThat(
@@ -49,7 +49,7 @@ public class AclIpSpaceTest {
   }
 
   @Test
-  public void testUnion() {
+  void testUnion() {
     IpIpSpace ipSpace = Ip.parse("1.2.3.4").toIpSpace();
     assertThat(union(null, null), nullValue());
     assertThat(union(EmptyIpSpace.INSTANCE), equalTo(EmptyIpSpace.INSTANCE));
@@ -59,7 +59,7 @@ public class AclIpSpaceTest {
   }
 
   @Test
-  public void testUnionNested() {
+  void testUnionNested() {
     IpIpSpace a = Ip.parse("1.2.3.4").toIpSpace();
     IpIpSpace b = Ip.parse("1.2.3.5").toIpSpace();
     IpIpSpace c = Ip.parse("1.2.3.6").toIpSpace();
@@ -68,7 +68,7 @@ public class AclIpSpaceTest {
   }
 
   @Test
-  public void testStopWhenEmpty() {
+  void testStopWhenEmpty() {
     IpSpace space =
         AclIpSpace.builder()
             .thenPermitting(Prefix.parse("1.2.3.4/32").toIpSpace())
@@ -86,7 +86,7 @@ public class AclIpSpaceTest {
 
   /** Lines over addresses and prefixes take a compact serialized form; others are written whole. */
   @Test
-  public void testJavaSerializationCompactLines() {
+  void testJavaSerializationCompactLines() {
     IpSpace space =
         AclIpSpace.builder()
             .thenPermitting(Ip.parse("10.1.1.1").toIpSpace())

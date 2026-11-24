@@ -5,9 +5,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
 
 import org.batfish.datamodel.Flow;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class NotExprTest {
+class NotExprTest {
   private static Flow createFlow() {
     Flow.Builder b = Flow.builder();
     b.setIngressNode("ingressNode");
@@ -15,7 +15,7 @@ public class NotExprTest {
   }
 
   @Test
-  public void testSingleExpr() {
+  void testSingleExpr() {
     // Test that the NotMatchExpr returns the opposite of the underlying ACL line
 
     NotMatchExpr exprNotTrue = new NotMatchExpr(TrueExpr.INSTANCE);

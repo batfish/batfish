@@ -10,13 +10,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link TransitGatewayVpcAttachment} */
-public class TransitGatewayVpcAttachmentTest {
+class TransitGatewayVpcAttachmentTest {
 
   @Test
-  public void testDeserialization() throws IOException {
+  void testDeserialization() throws IOException {
     String text =
         readResource("org/batfish/representation/aws/TransitGatewayVpcAttachmentTest.json", UTF_8);
 

@@ -16,13 +16,13 @@ import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Rows;
 import org.batfish.datamodel.table.TableAnswerElement;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link ConversionWarningAnswerer}. */
-public class ConversionWarningAnswererTest {
+class ConversionWarningAnswererTest {
 
   @Test
-  public void testAnswer() {
+  void testAnswer() {
     TestBatfish batfish = new TestBatfish();
     ConversionWarningAnswerer answerer =
         new ConversionWarningAnswerer(new ConversionWarningQuestion(), batfish);

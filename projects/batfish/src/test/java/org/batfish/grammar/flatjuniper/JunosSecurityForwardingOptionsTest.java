@@ -15,6 +15,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasEntry;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import org.batfish.common.Warnings;
@@ -23,18 +24,17 @@ import org.batfish.main.Batfish;
 import org.batfish.representation.juniper.JuniperConfiguration;
 import org.batfish.representation.juniper.SecurityForwardingOptions.Family;
 import org.batfish.representation.juniper.SecurityForwardingOptions.Mode;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosSecurityForwardingOptionsTest {
+final class JunosSecurityForwardingOptionsTest {
 
   private static final String HOSTNAME = "security-forwarding-options";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testNoConversionWarnings() throws IOException {
+  void testNoConversionWarnings() throws IOException {
     Batfish batfish = getBatfish(_folder, HOSTNAME);
     batfish.loadConfigurations(batfish.getSnapshot());
     ConvertConfigurationAnswerElement ccae =
@@ -45,7 +45,7 @@ public final class JunosSecurityForwardingOptionsTest {
   }
 
   @Test
-  public void testSecurityForwardingOptions() {
+  void testSecurityForwardingOptions() {
     JuniperConfiguration config = parseJuniperConfig(_folder, HOSTNAME);
     Map<Family, Mode> modes =
         config.getMasterLogicalSystem().getSecurityForwardingOptions().getFamilyModes();
@@ -61,7 +61,7 @@ public final class JunosSecurityForwardingOptionsTest {
   }
 
   @Test
-  public void testDropMode() {
+  void testDropMode() {
     JuniperConfiguration config = parseJuniperConfig(_folder, "security-forwarding-options-drop");
 
     assertThat(

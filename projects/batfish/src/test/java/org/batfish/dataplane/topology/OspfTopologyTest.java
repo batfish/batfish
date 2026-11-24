@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.SortedMap;
@@ -36,16 +37,15 @@ import org.batfish.datamodel.ospf.OspfTopology.EdgeId;
 import org.batfish.datamodel.ospf.OspfTopologyUtils;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * A more end-to-end test of {@link OspfTopologyUtils} and computation of OSPF topology using a full
  * network (and {@link TopologyProvider})
  */
-public class OspfTopologyTest {
-  @Rule public TemporaryFolder folder = new TemporaryFolder();
+class OspfTopologyTest {
+  @TempDir public File folder;
 
   /*
 
@@ -155,7 +155,7 @@ public class OspfTopologyTest {
   }
 
   @Test
-  public void testOspfTopology() throws IOException {
+  void testOspfTopology() throws IOException {
     SortedMap<String, Configuration> configs = getBaseNetwork();
     Batfish batfish = BatfishTestUtils.getBatfish(configs, folder);
 
@@ -231,7 +231,7 @@ public class OspfTopologyTest {
   }
 
   @Test
-  public void testEdgeIdJsonSerialization() {
+  void testEdgeIdJsonSerialization() {
     final OspfNeighborConfigId r1i13 =
         new OspfNeighborConfigId(
             "r1",
@@ -251,7 +251,7 @@ public class OspfTopologyTest {
   }
 
   @Test
-  public void testInitNeighborConfigs() {
+  void testInitNeighborConfigs() {
     NetworkFactory nf = new NetworkFactory();
     Configuration configuration =
         nf.configurationBuilder()

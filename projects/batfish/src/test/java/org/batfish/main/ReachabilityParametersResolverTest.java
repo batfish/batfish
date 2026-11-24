@@ -4,10 +4,13 @@ import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
 import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilityParameters;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import java.io.File;
 import java.io.IOException;
 import java.util.SortedMap;
 import java.util.regex.Pattern;
@@ -28,24 +31,21 @@ import org.batfish.question.ResolvedReachabilityParameters;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.ConstantIpSpaceAssignmentSpecifier;
 import org.batfish.specifier.NodeNameRegexInterfaceLinkLocationSpecifier;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests of {@link ReachabilityParametersResolver}. */
-public class ReachabilityParametersResolverTest {
-  @Rule public TemporaryFolder _tempFolder = new TemporaryFolder();
-  @Rule public ExpectedException exception = ExpectedException.none();
+class ReachabilityParametersResolverTest {
+  @TempDir public File _tempFolder;
 
   private Batfish _batfish;
 
   private Configuration _node;
   private NetworkSnapshot _snapshot;
 
-  @Before
-  public void setup() throws IOException {
+  @BeforeEach
+  void setup() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     _node = nf.configurationBuilder().setConfigurationFormat(CISCO_IOS).build();
     Vrf vrf = nf.vrfBuilder().setOwner(_node).build();
@@ -61,7 +61,7 @@ public class ReachabilityParametersResolverTest {
   }
 
   @Test
-  public void testDestinationIpSpace() throws InvalidReachabilityParametersException {
+  void testDestinationIpSpace() throws InvalidReachabilityParametersException {
     Builder reachabilityParametersBuilder =
         ReachabilityParameters.builder()
             .setActions(ImmutableSortedSet.of(ACCEPTED))
@@ -94,8 +94,7 @@ public class ReachabilityParametersResolverTest {
   }
 
   @Test
-  public void testResolveDestinationIpSpace_emptyDestIpSpace()
-      throws InvalidReachabilityParametersException {
+  void testResolveDestinationIpSpace_emptyDestIpSpace() {
     ReachabilityParameters reachabilityParameters =
         ReachabilityParameters.builder()
             .setActions(ImmutableSortedSet.of(ACCEPTED))
@@ -104,15 +103,17 @@ public class ReachabilityParametersResolverTest {
                 new ConstantIpSpaceAssignmentSpecifier(EmptyIpSpace.INSTANCE))
             .build();
 
-    exception.expect(InvalidReachabilityParametersException.class);
-    exception.expectMessage("Empty destination IpSpace");
-    new ReachabilityParametersResolver(_batfish, reachabilityParameters, _snapshot)
-        .resolveDestinationIpSpace();
+    Throwable exception =
+        assertThrows(
+            InvalidReachabilityParametersException.class,
+            () ->
+                new ReachabilityParametersResolver(_batfish, reachabilityParameters, _snapshot)
+                    .resolveDestinationIpSpace());
+    assertThat(exception.getMessage(), containsString("Empty destination IpSpace"));
   }
 
   @Test
-  public void testResolveSourceIpSpace_emptyLocations()
-      throws InvalidReachabilityParametersException {
+  void testResolveSourceIpSpace_emptyLocations() {
     ReachabilityParameters reachabilityParameters =
         ReachabilityParameters.builder()
             .setActions(ImmutableSortedSet.of(ACCEPTED))
@@ -126,14 +127,15 @@ public class ReachabilityParametersResolverTest {
     ReachabilityParametersResolver resolver =
         new ReachabilityParametersResolver(_batfish, reachabilityParameters, _snapshot);
 
-    exception.expect(InvalidReachabilityParametersException.class);
-    exception.expectMessage("No matching source locations");
-    resolver.resolveSourceIpSpaceAssignment();
+    Throwable exception =
+        assertThrows(
+            InvalidReachabilityParametersException.class,
+            () -> resolver.resolveSourceIpSpaceAssignment());
+    assertThat(exception.getMessage(), containsString("No matching source locations"));
   }
 
   @Test
-  public void testResolveSourceIpSpace_emptyIpSpace()
-      throws InvalidReachabilityParametersException {
+  void testResolveSourceIpSpace_emptyIpSpace() {
     ReachabilityParameters reachabilityParameters =
         ReachabilityParameters.builder()
             .setActions(ImmutableSortedSet.of(ACCEPTED))
@@ -147,14 +149,15 @@ public class ReachabilityParametersResolverTest {
     ReachabilityParametersResolver reachabilityParametersResolver =
         new ReachabilityParametersResolver(_batfish, reachabilityParameters, _snapshot);
 
-    exception.expect(InvalidReachabilityParametersException.class);
-    exception.expectMessage("All sources have empty source IpSpaces");
-    reachabilityParametersResolver.resolveSourceIpSpaceAssignment();
+    Throwable exception =
+        assertThrows(
+            InvalidReachabilityParametersException.class,
+            () -> reachabilityParametersResolver.resolveSourceIpSpaceAssignment());
+    assertThat(exception.getMessage(), containsString("All sources have empty source IpSpaces"));
   }
 
   @Test
-  public void testResolveReachabilityParameters_conflictingTransitNodes()
-      throws InvalidReachabilityParametersException {
+  void testResolveReachabilityParameters_conflictingTransitNodes() {
     // all required transit nodes are also forbidden
     ReachabilityParameters reachabilityParameters =
         ReachabilityParameters.builder()
@@ -168,8 +171,11 @@ public class ReachabilityParametersResolverTest {
                 new NodeNameRegexInterfaceLinkLocationSpecifier(Pattern.compile(".*")))
             .build();
 
-    exception.expect(InvalidReachabilityParametersException.class);
-    exception.expectMessage("All required transit nodes are also forbidden");
-    resolveReachabilityParameters(_batfish, reachabilityParameters, _snapshot);
+    Throwable exception =
+        assertThrows(
+            InvalidReachabilityParametersException.class,
+            () -> resolveReachabilityParameters(_batfish, reachabilityParameters, _snapshot));
+    assertThat(
+        exception.getMessage(), containsString("All required transit nodes are also forbidden"));
   }
 }

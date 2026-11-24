@@ -9,12 +9,12 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.packet_policy.FibLookupOverrideLookupIp.Builder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link FibLookupOverrideLookupIp} */
-public class FibLookupOverrideLookupIpTest {
+class FibLookupOverrideLookupIpTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     Builder builder =
         FibLookupOverrideLookupIp.builder()
             .setIps(ImmutableList.of(Ip.ZERO))
@@ -35,7 +35,7 @@ public class FibLookupOverrideLookupIpTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     FibLookupOverrideLookupIp fl =
         FibLookupOverrideLookupIp.builder()
             .setIps(ImmutableList.of(Ip.ZERO))
@@ -47,7 +47,7 @@ public class FibLookupOverrideLookupIpTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     FibLookupOverrideLookupIp fl =
         FibLookupOverrideLookupIp.builder()
             .setIps(ImmutableList.of(Ip.ZERO))

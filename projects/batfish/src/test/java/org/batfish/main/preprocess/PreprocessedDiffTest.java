@@ -7,13 +7,13 @@ import static org.hamcrest.Matchers.equalTo;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link PreprocessedDiff}. */
-public class PreprocessedDiffTest {
+class PreprocessedDiffTest {
 
   @Test
-  public void testDiffStrings_identical() {
+  void testDiffStrings_identical() {
     String config1 = "hostname router1\nip route 0.0.0.0 0.0.0.0 192.168.1.1";
     String config2 = "hostname router1\nip route 0.0.0.0 0.0.0.0 192.168.1.1";
 
@@ -26,7 +26,7 @@ public class PreprocessedDiffTest {
   }
 
   @Test
-  public void testDiffStrings_different() {
+  void testDiffStrings_different() {
     String config1 = "hostname router1\nip route 0.0.0.0 0.0.0.0 192.168.1.1";
     String config2 = "hostname router2\nip route 0.0.0.0 0.0.0.0 192.168.1.1";
 
@@ -46,7 +46,7 @@ public class PreprocessedDiffTest {
   }
 
   @Test
-  public void testDiffStrings_emptyFiles() {
+  void testDiffStrings_emptyFiles() {
     String config1 = "";
     String config2 = "";
 
@@ -58,7 +58,7 @@ public class PreprocessedDiffTest {
   }
 
   @Test
-  public void testDiffOptions_contextLines() {
+  void testDiffOptions_contextLines() {
     String config1 = "line1\nline2\nline3\nline4\nline5";
     String config2 = "line1\nline2\nCHANGED\nline4\nline5";
 
@@ -75,7 +75,7 @@ public class PreprocessedDiffTest {
   }
 
   @Test
-  public void testDiffStrings_configPreprocessing() {
+  void testDiffStrings_configPreprocessing() {
     // Test that configs actually get preprocessed if they are in a supported format
     // For configs that don't get preprocessed, they should still diff correctly
     String config1 = "hostname router1\ninterface eth0\n ip address 1.1.1.1/24";
@@ -95,7 +95,7 @@ public class PreprocessedDiffTest {
   }
 
   @Test
-  public void testDiffStrings_nonPreprocessibleConfig() {
+  void testDiffStrings_nonPreprocessibleConfig() {
     // Test with config format that doesn't get preprocessed (like generic text)
     String config1 = "some random text\nthat won't be preprocessed";
     String config2 = "some different text\nthat won't be preprocessed";
@@ -112,7 +112,7 @@ public class PreprocessedDiffTest {
   }
 
   @Test
-  public void testDiffStrings_largeConfig() {
+  void testDiffStrings_largeConfig() {
     // Test with larger config to ensure it handles size reasonably
     StringBuilder config1 = new StringBuilder();
     StringBuilder config2 = new StringBuilder();
@@ -138,7 +138,7 @@ public class PreprocessedDiffTest {
   }
 
   @Test
-  public void testDiffOptions_defaultsVsCustom() {
+  void testDiffOptions_defaultsVsCustom() {
     String config1 = "line1\nline2\nline3\nline4\nline5\nline6\nline7";
     String config2 = "line1\nline2\nCHANGED\nline4\nline5\nline6\nline7";
 
@@ -165,7 +165,7 @@ public class PreprocessedDiffTest {
   // ==== Error Handling Tests ====
 
   @Test
-  public void testDiffFiles_fileNotFound() throws IOException {
+  void testDiffFiles_fileNotFound() throws IOException {
     // Create a temporary file and then delete it to simulate file not found
     Path tempFile1 = Files.createTempFile("test1", ".conf");
     Path tempFile2 = Files.createTempFile("test2", ".conf");
@@ -186,7 +186,7 @@ public class PreprocessedDiffTest {
   }
 
   @Test
-  public void testDiffFiles_successfulFileRead() throws IOException {
+  void testDiffFiles_successfulFileRead() throws IOException {
     // Create temporary files with content
     Path tempFile1 = Files.createTempFile("test1", ".conf");
     Path tempFile2 = Files.createTempFile("test2", ".conf");
@@ -207,7 +207,7 @@ public class PreprocessedDiffTest {
   }
 
   @Test
-  public void testDiffStrings_invalidFilenames() {
+  void testDiffStrings_invalidFilenames() {
     // Test with very long filenames or special characters
     String config1 = "test content 1";
     String config2 = "test content 2";
@@ -227,7 +227,7 @@ public class PreprocessedDiffTest {
   }
 
   @Test
-  public void testDiffStrings_nullContent() {
+  void testDiffStrings_nullContent() {
     // Test behavior with null content (this should cause preprocessing to fail gracefully)
     DiffResult result =
         PreprocessedDiff.diffStrings(null, "content", "file1", "file2", DiffOptions.defaults());

@@ -8,11 +8,11 @@ import java.util.List;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.JFactory;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class BDDPrimeImplicantsTest {
+class BDDPrimeImplicantsTest {
   @Test
-  public void testPrimeImplicants() {
+  void testPrimeImplicants() {
     BDDFactory factory = JFactory.init(10000, 1000);
     factory.setVarNum(5);
     BDD x = factory.ithVar(0);

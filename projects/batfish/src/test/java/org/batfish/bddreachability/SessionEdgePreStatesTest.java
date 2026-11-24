@@ -16,9 +16,9 @@ import org.batfish.symbolic.state.OriginateInterface;
 import org.batfish.symbolic.state.OriginateVrf;
 import org.batfish.symbolic.state.PreInInterface;
 import org.batfish.symbolic.state.StateExpr;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class SessionEdgePreStatesTest {
+class SessionEdgePreStatesTest {
   private static final String HOSTNAME = "node";
   private static final String VRF_NAME = "vrf";
   private static final String IFACE_NAME = "iface";
@@ -30,7 +30,7 @@ public class SessionEdgePreStatesTest {
       new SessionEdgePreStates(HOSTNAME, ImmutableSet.of(IFACE));
 
   @Test
-  public void testIncomingSessionScope() {
+  void testIncomingSessionScope() {
     // Applying visitor to IncomingSessionScope for the known interface should give PreInInterface
     IncomingSessionScope scope = new IncomingSessionScope(ImmutableSet.of(IFACE_NAME));
     StateExpr expectedState = new PreInInterface(HOSTNAME, IFACE_NAME);
@@ -39,7 +39,7 @@ public class SessionEdgePreStatesTest {
   }
 
   @Test
-  public void testOriginatingSessionScope() {
+  void testOriginatingSessionScope() {
     // Applying visitor to OriginatingSessionScope for the known VRF should give OriginateInterface
     // and OriginateVrf states
     OriginatingSessionScope scope = new OriginatingSessionScope(VRF_NAME);

@@ -11,10 +11,10 @@ import java.util.List;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link FilterNoMatchMessages} */
-public class FilterNoMatchMessagesTest {
+class FilterNoMatchMessagesTest {
 
   private static List<String> getMessages(
       FilterNoMatchMessages nodeNoMatchMessages, CompletionMetadata completionMetadata) {
@@ -23,7 +23,7 @@ public class FilterNoMatchMessagesTest {
   }
 
   @Test
-  public void testName() {
+  void testName() {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder().setFilterNames(ImmutableSet.of("b1", "b2")).build();
     assertThat(
@@ -35,7 +35,7 @@ public class FilterNoMatchMessagesTest {
   }
 
   @Test
-  public void testNameRegex() {
+  void testNameRegex() {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder().setFilterNames(ImmutableSet.of("b1", "b2")).build();
     assertThat(
@@ -47,7 +47,7 @@ public class FilterNoMatchMessagesTest {
   }
 
   @Test
-  public void testWithNode() {
+  void testWithNode() {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder()
             .setNodes(ImmutableSet.of("h1", "h2"))
@@ -81,7 +81,7 @@ public class FilterNoMatchMessagesTest {
   }
 
   @Test
-  public void testSetOp() {
+  void testSetOp() {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder().setFilterNames(ImmutableSet.of("b1", "b2")).build();
     List<String> expected =
@@ -112,7 +112,7 @@ public class FilterNoMatchMessagesTest {
 
   /** a subset of the input is empty */
   @Test
-  public void testEmptySubset() {
+  void testEmptySubset() {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder().setFilterNames(ImmutableSet.of("b1", "b2")).build();
     assertThat(

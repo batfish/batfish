@@ -36,7 +36,12 @@ BATFISH_MAVEN_ARTIFACTS = [
     "jakarta.annotation:jakarta.annotation-api:1.3.5",
     "jakarta.ws.rs:jakarta.ws.rs-api:2.1.6",
     "jakarta.xml.bind:jakarta.xml.bind-api:2.3.3",
-    "junit:junit:4.13.2",
+    "org.junit.jupiter:junit-jupiter-api:6.1.3",
+    "org.junit.jupiter:junit-jupiter-engine:6.1.3",
+    "org.junit.jupiter:junit-jupiter-params:6.1.3",
+    "org.junit.platform:junit-platform-engine:6.1.3",
+    "org.junit.platform:junit-platform-launcher:6.1.3",
+    "org.junit.platform:junit-platform-reporting:6.1.3",
     "net.sourceforge.pmd:pmd-cli:7.29.0",
     "net.sourceforge.pmd:pmd-java:7.29.0",
     "org.antlr:antlr4:4.13.2:complete",
@@ -76,6 +81,7 @@ BATFISH_MAVEN_ARTIFACTS = [
 BATFISH_MAVEN_BOMS = [
     "com.fasterxml.jackson:jackson-bom:2.23.0",
     "com.google.guava:guava-bom:33.7.2-jre",
+    "org.junit:junit-bom:6.1.3",
 ]
 
 JOL_MAVEN_ARTIFACTS = [
@@ -95,7 +101,7 @@ module(
 # Core Bazel dependencies
 bazel_dep(name = "bazel_skylib", version = "1.9.2")
 bazel_dep(name = "rules_license", version = "1.0.0")
-bazel_dep(name = "bazel_features", version = "1.55.0")
+bazel_dep(name = "bazel_features", version = "1.56.0")
 bazel_dep(name = "platforms", version = "1.1.0")
 
 # Java rules and dependencies
@@ -103,12 +109,19 @@ bazel_dep(name = "rules_java", version = "9.9.0")
 bazel_dep(name = "rules_jvm_external", version = "7.2")
 
 # Python rules
-bazel_dep(name = "rules_python", version = "2.5.0")
+bazel_dep(name = "rules_python", version = "2.5.1")
 
 # Development tools
-bazel_dep(name = "buildifier_prebuilt", version = "10.1.0", dev_dependency = True)
+bazel_dep(name = "buildifier_prebuilt", version = "10.2.0", dev_dependency = True)
 
-bazel_dep(name = "rules_shell", version = "0.8.0")
+bazel_dep(name = "rules_shell", version = "0.10.0")
+
+batfish_version = use_repo_rule("//skylark:batfish_version.bzl", "batfish_version")
+
+batfish_version(
+    name = "batfish_version",
+    version_file = "//projects:VERSION",
+)
 
 # Override rules_android to 0.7.1 for Bazel 9 compatibility (CcInfo removal)
 single_version_override(
@@ -151,10 +164,6 @@ maven.install(
 # Note: In bzlmod, exclusions cannot be inlined in the artifacts list using
 # maven.artifact() with maven.exclusion() syntax like in WORKSPACE. Instead,
 # we use maven.amend_artifact() to modify artifacts after declaration.
-maven.amend_artifact(
-    coordinates = "com.google.guava:guava-testlib",
-    exclusions = ["junit:junit"],
-)
 maven.amend_artifact(
     coordinates = "org.glassfish.jersey.test-framework:jersey-test-framework-core",
     exclusions = ["junit:junit"],

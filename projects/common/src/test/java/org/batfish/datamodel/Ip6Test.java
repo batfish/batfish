@@ -3,23 +3,20 @@ package org.batfish.datamodel;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link Ip6}. */
-@RunWith(JUnit4.class)
-public class Ip6Test {
+class Ip6Test {
 
   @Test
-  public void testToPrefix6() {
+  void testToPrefix6() {
     assertThat(
         Ip6.parse("2:8a64:c74e:8a27:f09a:1:2:3").toPrefix6(),
         equalTo(Prefix6.create(Ip6.parse("2:8a64:c74e:8a27:f09a:1:2:3"), 128)));
   }
 
   @Test
-  public void testToString() {
+  void testToString() {
     assertThat("zero address", Ip6.parse("::").toString(), equalTo("::"));
     assertThat("leading zero", Ip6.parse("0:1:2:3:4:5:6:7").toString(), equalTo("0:1:2:3:4:5:6:7"));
     assertThat(

@@ -5,12 +5,12 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.testing.EqualsTester;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class FwThenDecapsulateTest {
+final class FwThenDecapsulateTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new FwThenDecapsulate(FwThenDecapsulate.Type.GRE, null),
@@ -21,7 +21,7 @@ public final class FwThenDecapsulateTest {
   }
 
   @Test
-  public void testProperties() {
+  void testProperties() {
     FwThenDecapsulate decapsulate =
         new FwThenDecapsulate(FwThenDecapsulate.Type.MPLS_IN_UDP, "DECAP-VRF");
 

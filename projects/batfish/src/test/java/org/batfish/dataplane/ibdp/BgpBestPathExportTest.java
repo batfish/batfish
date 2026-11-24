@@ -11,6 +11,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
+import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 import org.batfish.datamodel.Bgpv4Route;
@@ -22,14 +23,13 @@ import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests of BGP best-path export logic. */
-public final class BgpBestPathExportTest {
+final class BgpBestPathExportTest {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   /*
    * Topology: {R1,R2} <=> R3 <=> R4 <=> R5
@@ -44,7 +44,7 @@ public final class BgpBestPathExportTest {
    * - R3 should only export a single best route for 10.1.0.0/24 to R5
    */
   @Test
-  public void testOnlyBestPathsExportedNewSession() throws IOException {
+  void testOnlyBestPathsExportedNewSession() throws IOException {
     String snapshotPath = "org/batfish/dataplane/ibdp/bgp-best-path-export/new-session";
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
@@ -97,7 +97,7 @@ public final class BgpBestPathExportTest {
    * - R3 should only export a single best route for 10.1.0.0/24 to R5
    */
   @Test
-  public void testOnlyBestPathsExportedOldSession() throws IOException {
+  void testOnlyBestPathsExportedOldSession() throws IOException {
     String snapshotPath = "org/batfish/dataplane/ibdp/bgp-best-path-export/old-session";
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
@@ -149,7 +149,7 @@ public final class BgpBestPathExportTest {
    *   of old best route and new best route should be identical.
    */
   @Test
-  public void testOnlyPreviousBestPathsWithdrawn() throws IOException {
+  void testOnlyPreviousBestPathsWithdrawn() throws IOException {
     String snapshotPath = "org/batfish/dataplane/ibdp/bgp-best-path-export/withdrawal";
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(

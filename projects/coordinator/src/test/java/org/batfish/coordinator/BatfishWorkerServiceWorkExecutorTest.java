@@ -9,6 +9,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.sameInstance;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -26,17 +27,13 @@ import org.batfish.common.WorkItem;
 import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link BatfishWorkerServiceWorkExecutor}. */
-public final class BatfishWorkerServiceWorkExecutorTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+final class BatfishWorkerServiceWorkExecutorTest {
 
   @Test
-  public void testProcessLaunchResult() {
+  void testProcessLaunchResult() {
     String taskId = "foo";
     {
       LaunchResult lr = LaunchResult.busy();
@@ -58,7 +55,7 @@ public final class BatfishWorkerServiceWorkExecutorTest {
   }
 
   @Test
-  public void testGetRunArgs() {
+  void testGetRunArgs() {
     Path containersLocation = Paths.get("/dev/null");
 
     assertThat(
@@ -79,20 +76,19 @@ public final class BatfishWorkerServiceWorkExecutorTest {
   }
 
   @Test
-  public void testDoSubmit() {
+  void testDoSubmit() {
     QueuedWork qw = getTestQueuedWork();
     BatfishWorkerServiceWorkExecutor we =
         new BatfishWorkerServiceWorkExecutor(
             new BatfishLogger(BatfishLogger.LEVELSTR_ERROR, false),
             Paths.get("/dev/null"),
             BATFISH_WORKER_SERVICE);
-    _thrown.expect(UnsupportedOperationException.class);
-    _thrown.expectMessage("launched");
-    we.doSubmit(qw);
+    Throwable exception = assertThrows(UnsupportedOperationException.class, () -> we.doSubmit(qw));
+    assertThat(exception.getMessage(), containsString("launched"));
   }
 
   @Test
-  public void testSubmit_success() {
+  void testSubmit_success() {
     QueuedWork qw = getTestQueuedWork();
     BatfishWorkerServiceWorkExecutor we =
         new BatfishWorkerServiceWorkExecutor(
@@ -106,7 +102,7 @@ public final class BatfishWorkerServiceWorkExecutorTest {
   }
 
   @Test
-  public void testSubmit_exception() {
+  void testSubmit_exception() {
     QueuedWork qw = getTestQueuedWork();
     BatfishWorkerServiceWorkExecutor we =
         new BatfishWorkerServiceWorkExecutor(

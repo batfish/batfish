@@ -20,13 +20,13 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.NameRegexNodeSpecifier;
 import org.batfish.specifier.NodeSpecifier;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link NodePropertiesAnswerer} */
-public class NodePropertiesAnswererTest {
+class NodePropertiesAnswererTest {
 
   @Test
-  public void getProperties() {
+  void getProperties() {
     String property1 = NodePropertySpecifier.CONFIGURATION_FORMAT;
     String property2 = NodePropertySpecifier.NTP_SERVERS;
     NodePropertySpecifier propertySpec =

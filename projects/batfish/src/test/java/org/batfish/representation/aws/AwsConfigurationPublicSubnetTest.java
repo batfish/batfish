@@ -15,6 +15,7 @@ import static org.hamcrest.Matchers.hasItem;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.batfish.common.plugin.IBatfish;
@@ -26,17 +27,16 @@ import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TransformationStep;
 import org.batfish.datamodel.flow.TransformationStep.TransformationStepDetail;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * E2e tests that connectivity to and from the internet works as expected. The configs have a single
  * public subnet. They were pulled after creating this scenario:
  * https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Scenario1.html
  */
-public class AwsConfigurationPublicSubnetTest {
+class AwsConfigurationPublicSubnetTest {
 
   private static final String TESTCONFIGS_DIR = "org/batfish/representation/aws/test-public-subnet";
 
@@ -66,17 +66,17 @@ public class AwsConfigurationPublicSubnetTest {
   private static Ip _publicIp = Ip.parse("18.216.80.133");
   private static Ip _privateIp = Ip.parse("10.0.0.91");
 
-  @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public static File _folder;
 
   private static IBatfish _batfish;
 
-  @BeforeClass
-  public static void setup() throws IOException {
+  @BeforeAll
+  static void setup() throws IOException {
     _batfish = testSetup(TESTCONFIGS_DIR, fileNames, _folder);
   }
 
   @Test
-  public void testFromInternetToValidPublicIp() {
+  void testFromInternetToValidPublicIp() {
     Trace trace =
         testTrace(
             getTcpFlow(INTERNET_HOST_NAME, Ip.parse("8.8.8.8"), _publicIp, 80),
@@ -97,7 +97,7 @@ public class AwsConfigurationPublicSubnetTest {
   }
 
   @Test
-  public void testFromInternetToInvalidPublicIp() {
+  void testFromInternetToInvalidPublicIp() {
     Flow flowFromInternet =
         Flow.builder()
             .setIngressNode(INTERNET_HOST_NAME)
@@ -112,7 +112,7 @@ public class AwsConfigurationPublicSubnetTest {
   }
 
   @Test
-  public void testFromInternetToPrivateIp() {
+  void testFromInternetToPrivateIp() {
     // we get insufficient info for private IPs that exist somewhere in the network
     testTrace(
         getAnyFlow(INTERNET_HOST_NAME, _privateIp, _batfish),
@@ -129,7 +129,7 @@ public class AwsConfigurationPublicSubnetTest {
   }
 
   @Test
-  public void testToInternet() {
+  void testToInternet() {
     Trace trace =
         testTrace(
             getAnyFlow(_instance, Ip.parse("8.8.8.8"), _batfish),
@@ -151,7 +151,7 @@ public class AwsConfigurationPublicSubnetTest {
 
   /** Packets comes with a private IP for which we don't have a public IP association */
   @Test
-  public void testToInternetInvalidPrivateIp() {
+  void testToInternetInvalidPrivateIp() {
     testTrace(
         // start the flow at subnet -- otherwise the anti-spoofing filter at the instance will block
         // and the packet won't make it to the igw

@@ -2,7 +2,7 @@ package org.batfish.datamodel.packet_policy;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
@@ -10,13 +10,13 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.TrueExpr;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link If} */
-public class IfTest {
+class IfTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     If ifExpr = new If(new PacketMatchExpr(FalseExpr.INSTANCE), ImmutableList.of());
     new EqualsTester()
         .addEqualityGroup(
@@ -31,19 +31,19 @@ public class IfTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     If ifExpr = new If(new PacketMatchExpr(FalseExpr.INSTANCE), ImmutableList.of());
     assertThat(SerializationUtils.clone(ifExpr), equalTo(ifExpr));
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     If ifExpr = new If(new PacketMatchExpr(FalseExpr.INSTANCE), ImmutableList.of());
     assertThat(BatfishObjectMapper.clone(ifExpr, If.class), equalTo(ifExpr));
   }
 
   @Test
-  public void testToString() {
+  void testToString() {
     If ifExpr = new If(new PacketMatchExpr(FalseExpr.INSTANCE), ImmutableList.of());
     assertTrue(ifExpr.toString().contains(ifExpr.getClass().getSimpleName()));
   }

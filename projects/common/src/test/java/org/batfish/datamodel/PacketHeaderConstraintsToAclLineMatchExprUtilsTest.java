@@ -6,16 +6,16 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDstPort;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcPort;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class PacketHeaderConstraintsToAclLineMatchExprUtilsTest {
+class PacketHeaderConstraintsToAclLineMatchExprUtilsTest {
 
   @Test
-  public void testDscpsToAclLineMatchExpr() {
+  void testDscpsToAclLineMatchExpr() {
     assertEquals(
         PacketHeaderConstraintsToAclLineMatchExprUtils.dscpsToAclLineMatchExpr(
             IntegerSpace.of(new SubRange(10, 11))),
@@ -23,7 +23,7 @@ public class PacketHeaderConstraintsToAclLineMatchExprUtilsTest {
   }
 
   @Test
-  public void testEcnsToAclLineMatchExpr() {
+  void testEcnsToAclLineMatchExpr() {
     assertEquals(
         PacketHeaderConstraintsToAclLineMatchExprUtils.ecnsToAclLineMatchExpr(
             IntegerSpace.of(new SubRange(10, 11))),
@@ -31,7 +31,7 @@ public class PacketHeaderConstraintsToAclLineMatchExprUtilsTest {
   }
 
   @Test
-  public void testPacketLengthToAclLineMatchExpr() {
+  void testPacketLengthToAclLineMatchExpr() {
     assertEquals(
         PacketHeaderConstraintsToAclLineMatchExprUtils.packetLengthToAclLineMatchExpr(
             IntegerSpace.of(new SubRange(10, 11))),
@@ -42,7 +42,7 @@ public class PacketHeaderConstraintsToAclLineMatchExprUtilsTest {
   }
 
   @Test
-  public void testFragmentOffsetsToAclLineMatchExpr() {
+  void testFragmentOffsetsToAclLineMatchExpr() {
     assertEquals(
         PacketHeaderConstraintsToAclLineMatchExprUtils.fragmentOffsetsToAclLineMatchExpr(
             IntegerSpace.of(new SubRange(10, 11))),
@@ -53,7 +53,7 @@ public class PacketHeaderConstraintsToAclLineMatchExprUtilsTest {
   }
 
   @Test
-  public void testIpProtocolsToAclLineMatchExpr() {
+  void testIpProtocolsToAclLineMatchExpr() {
     assertEquals(
         PacketHeaderConstraintsToAclLineMatchExprUtils.ipProtocolsToAclLineMatchExpr(
             ImmutableSet.of(IpProtocol.TCP)),
@@ -61,7 +61,7 @@ public class PacketHeaderConstraintsToAclLineMatchExprUtilsTest {
   }
 
   @Test
-  public void testIcmpCodeToAclLineMatchExpr() {
+  void testIcmpCodeToAclLineMatchExpr() {
     assertEquals(
         PacketHeaderConstraintsToAclLineMatchExprUtils.icmpCodeToAclLineMatchExpr(
             IntegerSpace.of(new SubRange(10, 11))),
@@ -69,7 +69,7 @@ public class PacketHeaderConstraintsToAclLineMatchExprUtilsTest {
   }
 
   @Test
-  public void testIcmpTypeToAclLineMatchExpr() {
+  void testIcmpTypeToAclLineMatchExpr() {
     assertEquals(
         PacketHeaderConstraintsToAclLineMatchExprUtils.icmpTypeToAclLineMatchExpr(
             IntegerSpace.of(new SubRange(10, 11))),
@@ -77,7 +77,7 @@ public class PacketHeaderConstraintsToAclLineMatchExprUtilsTest {
   }
 
   @Test
-  public void testSrcPortsToAclLineMatchExpr() {
+  void testSrcPortsToAclLineMatchExpr() {
     assertEquals(
         PacketHeaderConstraintsToAclLineMatchExprUtils.srcPortsToAclLineMatchExpr(
             IntegerSpace.of(new SubRange(10, 11))),
@@ -85,7 +85,7 @@ public class PacketHeaderConstraintsToAclLineMatchExprUtilsTest {
   }
 
   @Test
-  public void testDstPortsToAclLineMatchExpr() {
+  void testDstPortsToAclLineMatchExpr() {
     assertEquals(
         PacketHeaderConstraintsToAclLineMatchExprUtils.dstPortsToAclLineMatchExpr(
             IntegerSpace.of(new SubRange(10, 11))),
@@ -93,7 +93,7 @@ public class PacketHeaderConstraintsToAclLineMatchExprUtilsTest {
   }
 
   @Test
-  public void testApplicationsToAclLineMatchExpr() {
+  void testApplicationsToAclLineMatchExpr() {
     assertEquals(
         PacketHeaderConstraintsToAclLineMatchExprUtils.applicationsToAclLineMatchExpr(
             ImmutableSet.of(Protocol.SSH.toApplication(), Protocol.DNS.toApplication())),
@@ -103,7 +103,7 @@ public class PacketHeaderConstraintsToAclLineMatchExprUtilsTest {
   }
 
   @Test
-  public void testTcpFlagsToAclLineMatchExpr() {
+  void testTcpFlagsToAclLineMatchExpr() {
     assertEquals(
         PacketHeaderConstraintsToAclLineMatchExprUtils.tcpFlagsToAclLineMatchExpr(
             ImmutableSet.of(

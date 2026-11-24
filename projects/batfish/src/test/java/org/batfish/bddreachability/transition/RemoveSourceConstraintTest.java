@@ -4,20 +4,19 @@ import static org.batfish.common.bdd.BDDMatchers.isOne;
 import static org.batfish.common.bdd.BDDMatchers.isZero;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableSet;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-public class RemoveSourceConstraintTest {
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class RemoveSourceConstraintTest {
 
   @Test
-  public void testTransit() {
+  void testTransit() {
     BDDPacket pkt = new BDDPacket();
     BDDSourceManager mgr = BDDSourceManager.forInterfaces(pkt, ImmutableSet.of("A", "B"));
     RemoveSourceConstraint rsc = new RemoveSourceConstraint(mgr);
@@ -34,7 +33,7 @@ public class RemoveSourceConstraintTest {
   }
 
   @Test
-  public void testTransitMissingInvariants() {
+  void testTransitMissingInvariants() {
     BDDPacket pkt = new BDDPacket();
     BDDSourceManager mgr = BDDSourceManager.forInterfaces(pkt, ImmutableSet.of("A", "B"));
     RemoveSourceConstraint rsc = new RemoveSourceConstraint(mgr);
@@ -42,8 +41,9 @@ public class RemoveSourceConstraintTest {
     // an invalid source forward is zero
     assertThat(
         "invalid test, there are no 'extra' sources", mgr.isValidValue().not(), not(isZero()));
-    _thrown.expect(AssertionError.class);
-    _thrown.expectMessage("input BDD must have a valid source constraint");
-    rsc.transitForward(mgr.isValidValue().not());
+    Throwable exception =
+        assertThrows(AssertionError.class, () -> rsc.transitForward(mgr.isValidValue().not()));
+    assertThat(
+        exception.getMessage(), containsString("input BDD must have a valid source constraint"));
   }
 }

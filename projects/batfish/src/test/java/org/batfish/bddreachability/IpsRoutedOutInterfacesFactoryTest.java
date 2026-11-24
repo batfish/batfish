@@ -2,7 +2,7 @@ package org.batfish.bddreachability;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -25,14 +25,14 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopVrf;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class IpsRoutedOutInterfacesFactoryTest {
+class IpsRoutedOutInterfacesFactoryTest {
   private final BDDPacket _pkt = new BDDPacket();
   private final IpSpaceToBDD _dst = _pkt.getDstIpSpaceToBDD();
 
   @Test
-  public void testComputeIpsRoutedOutInterfacesMap() {
+  void testComputeIpsRoutedOutInterfacesMap() {
     String iface1 = "iface1";
     String iface2 = "iface2";
 

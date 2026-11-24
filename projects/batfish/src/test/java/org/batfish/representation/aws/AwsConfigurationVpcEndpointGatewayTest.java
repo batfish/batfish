@@ -8,15 +8,15 @@ import static org.batfish.representation.aws.AwsConfigurationTestUtils.testSetup
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testTrace;
 
 import com.google.common.collect.ImmutableList;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * E2e tests for VPC endpoints of type gateway. There is a single VPC with two subnets, one public
@@ -25,7 +25,7 @@ import org.junit.rules.TemporaryFolder;
  * <p>The configuration was pulled manually after deployment using the setup.tf file in {@link
  * #TESTCONFIGS_DIR}.
  */
-public class AwsConfigurationVpcEndpointGatewayTest {
+class AwsConfigurationVpcEndpointGatewayTest {
 
   private static final String TESTCONFIGS_DIR =
       "org/batfish/representation/aws/test-vpc-endpoint-gateway";
@@ -70,17 +70,17 @@ public class AwsConfigurationVpcEndpointGatewayTest {
   // one of the IPs in service prefixes for which we configured the gateway
   private static Ip _otherAwsServiceIp = Ip.parse("54.222.57.1");
 
-  @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public static File _folder;
 
   private static IBatfish _batfish;
 
-  @BeforeClass
-  public static void setup() throws IOException {
+  @BeforeAll
+  static void setup() throws IOException {
     _batfish = testSetup(TESTCONFIGS_DIR, fileNames, _folder);
   }
 
   @Test
-  public void testFromSubnetPrivate_configuredAwsService() {
+  void testFromSubnetPrivate_configuredAwsService() {
     testBidirectionalTrace(
         getTcpFlow(_instancePrivate, _configuredServiceIp, 443, _batfish),
         ImmutableList.of(_instancePrivate, _subnetPrivate, _vpc, _vpceGateway),
@@ -89,7 +89,7 @@ public class AwsConfigurationVpcEndpointGatewayTest {
   }
 
   @Test
-  public void testFromSubnetPublic_configuredAwsService() {
+  void testFromSubnetPublic_configuredAwsService() {
     testBidirectionalTrace(
         getTcpFlow(_instancePublic, _configuredServiceIp, 443, _batfish),
         ImmutableList.of(_instancePublic, _subnetPublic, _vpc, _vpceGateway),
@@ -98,7 +98,7 @@ public class AwsConfigurationVpcEndpointGatewayTest {
   }
 
   @Test
-  public void testFromSubnetPrivate_otherAwsServices() {
+  void testFromSubnetPrivate_otherAwsServices() {
     testTrace(
         getTcpFlow(_instancePrivate, _otherAwsServiceIp, 443, _batfish),
         FlowDisposition.NO_ROUTE,
@@ -107,7 +107,7 @@ public class AwsConfigurationVpcEndpointGatewayTest {
   }
 
   @Test
-  public void testFromSubnetPublic_otherAwsServices() {
+  void testFromSubnetPublic_otherAwsServices() {
     testBidirectionalTrace(
         getTcpFlow(_instancePublic, _otherAwsServiceIp, 443, _batfish),
         ImmutableList.of(

@@ -29,9 +29,9 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class InterfaceDependenciesTest {
+class InterfaceDependenciesTest {
   Layer1Topologies layer1Topologies(Layer1Topology canonicalUserL1, Layer1Topology logicalL1) {
     return new Layer1Topologies(
         canonicalUserL1, Layer1Topology.EMPTY, logicalL1, Layer1Topology.EMPTY);
@@ -46,7 +46,7 @@ public class InterfaceDependenciesTest {
   }
 
   @Test
-  public void testGetInterfacesToDeactivate_p2p() {
+  void testGetInterfacesToDeactivate_p2p() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -76,7 +76,7 @@ public class InterfaceDependenciesTest {
   }
 
   @Test
-  public void testGetInterfacesToDeactivate_aggregate() {
+  void testGetInterfacesToDeactivate_aggregate() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -113,7 +113,7 @@ public class InterfaceDependenciesTest {
   }
 
   @Test
-  public void testGetInterfacesToDeactivate_bind() {
+  void testGetInterfacesToDeactivate_bind() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -145,7 +145,7 @@ public class InterfaceDependenciesTest {
   }
 
   @Test
-  public void testGetInterfacesToDeactivate_missing_bind_physical_unknown() {
+  void testGetInterfacesToDeactivate_missing_bind_physical_unknown() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -190,7 +190,7 @@ public class InterfaceDependenciesTest {
   }
 
   @Test
-  public void testGetInterfacesToDeactivate_missing_bind_aggregated_redundant() {
+  void testGetInterfacesToDeactivate_missing_bind_aggregated_redundant() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -239,7 +239,7 @@ public class InterfaceDependenciesTest {
   }
 
   @Test
-  public void testGetInterfacesToDeactivate_missing_bind_tunnel() {
+  void testGetInterfacesToDeactivate_missing_bind_tunnel() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -270,7 +270,7 @@ public class InterfaceDependenciesTest {
   }
 
   @Test
-  public void testGetInterfacesToDeactivate_missing_aggregate() {
+  void testGetInterfacesToDeactivate_missing_aggregate() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -306,7 +306,7 @@ public class InterfaceDependenciesTest {
    * port-channels themselves, and any subinterfaces of the port-channels.
    */
   @Test
-  public void testGetInterfacesToDeactivate_transitive1() {
+  void testGetInterfacesToDeactivate_transitive1() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -439,7 +439,7 @@ public class InterfaceDependenciesTest {
    * https://github.com/intentionet/batfish-enterprise/issues/6157
    */
   @Test
-  public void testGetInterfacesToDeactivate_LACP_with_missing_neighbor() {
+  void testGetInterfacesToDeactivate_LACP_with_missing_neighbor() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -491,7 +491,7 @@ public class InterfaceDependenciesTest {
    * exclude those when looking for an unambiguous neighbor.
    */
   @Test
-  public void testGetInterfacesToDeactivate_LACP_PhysicalNeighborsInLogicalL1() {
+  void testGetInterfacesToDeactivate_LACP_PhysicalNeighborsInLogicalL1() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -548,7 +548,7 @@ public class InterfaceDependenciesTest {
 
   /** An LACP interface without a neighbor can be active if it's on the network boundary. */
   @Test
-  public void testGetInterfacesToDeactivate_LACP_on_network_boundary() {
+  void testGetInterfacesToDeactivate_LACP_on_network_boundary() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -584,7 +584,7 @@ public class InterfaceDependenciesTest {
    * that look like VPCs.
    */
   @Test
-  public void testGetInterfacesToDeactivate_VirtualPortChannel() {
+  void testGetInterfacesToDeactivate_VirtualPortChannel() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -676,7 +676,7 @@ public class InterfaceDependenciesTest {
 
   /** Test robustness to {@link Layer1Topologies#INVALID_INTERFACE} in the l1 topology. */
   @Test
-  public void testGetInterfacesToDeactivate_InvalidInterface() {
+  void testGetInterfacesToDeactivate_InvalidInterface() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);

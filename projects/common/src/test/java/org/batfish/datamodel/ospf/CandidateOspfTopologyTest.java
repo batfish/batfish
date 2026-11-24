@@ -11,10 +11,10 @@ import com.google.common.graph.ValueGraphBuilder;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link CandidateOspfTopology} */
-public class CandidateOspfTopologyTest {
+class CandidateOspfTopologyTest {
 
   private static OspfNeighborConfigId NODE_A =
       new OspfNeighborConfigId("a", "b", "c", "d", ConcreteInterfaceAddress.parse("192.0.2.0/31"));
@@ -37,18 +37,18 @@ public class CandidateOspfTopologyTest {
   }
 
   @Test
-  public void testEmptyTopology() {
+  void testEmptyTopology() {
     CandidateOspfTopology topo = EMPTY;
     assertThat(topo.getGraph().nodes(), empty());
   }
 
   @Test
-  public void testGetNeigbors() {
+  void testGetNeigbors() {
     assertThat(nonTrivialTopology().neighbors(NODE_A), contains(NODE_E));
   }
 
   @Test
-  public void testGetNeighborsNonExistentNode() {
+  void testGetNeighborsNonExistentNode() {
     OspfNeighborConfigId n =
         new OspfNeighborConfigId(
             "h1", "vrf1", "p", "i1", ConcreteInterfaceAddress.parse("192.0.2.8/31"));
@@ -56,7 +56,7 @@ public class CandidateOspfTopologyTest {
   }
 
   @Test
-  public void testGetSessionStatus() {
+  void testGetSessionStatus() {
     // Node A and E represent a valid edge, so their edge's status should be retrieved
     assertThat(
         nonTrivialTopology().getSessionStatus(NODE_A, NODE_E).orElse(null),
@@ -64,7 +64,7 @@ public class CandidateOspfTopologyTest {
   }
 
   @Test
-  public void testGetSessionStatusNonExistentEdge() {
+  void testGetSessionStatusNonExistentEdge() {
     // Node A and I do NOT represent a valid edge, so their edge's status should be empty
     assertThat(nonTrivialTopology().getSessionStatus(NODE_A, NODE_I), equalTo(Optional.empty()));
   }

@@ -11,24 +11,24 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.representation.juniper.JuniperConfiguration;
 import org.batfish.representation.juniper.RoutingInformationBase;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosRoutingOptionsMultipathTest {
+final class JunosRoutingOptionsMultipathTest {
 
   private static final String HOSTNAME = "routing-options-multipath";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testExtraction() throws IOException {
+  void testExtraction() throws IOException {
     Batfish batfish = getBatfish(_folder, HOSTNAME);
     JuniperConfiguration configuration = getVendorConfiguration(batfish, HOSTNAME);
     RoutingInformationBase inet =

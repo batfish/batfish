@@ -3,18 +3,18 @@ package org.batfish.question;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Optional;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class FilterQuestionUtilsTest {
+class FilterQuestionUtilsTest {
   @Test
-  public void testGetFlowWithPreference() {
+  void testGetFlowWithPreference() {
     BDDPacket pkt = new BDDPacket();
     Optional<Flow> maybeFlow =
         FilterQuestionUtils.getFlow(

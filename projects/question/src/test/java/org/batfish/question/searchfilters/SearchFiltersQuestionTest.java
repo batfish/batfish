@@ -5,13 +5,15 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocols;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -28,15 +30,12 @@ import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.batfish.specifier.IpSpaceAssignmentSpecifier;
 import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.MockSpecifierContext;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-public class SearchFiltersQuestionTest {
-  @Rule public ExpectedException exception = ExpectedException.none();
+class SearchFiltersQuestionTest {
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     SearchFiltersQuestion q =
         SearchFiltersQuestion.builder()
             .setAction("deny")
@@ -56,7 +55,7 @@ public class SearchFiltersQuestionTest {
   }
 
   @Test
-  public void testDeserializationDefaultValues() throws IOException {
+  void testDeserializationDefaultValues() throws IOException {
     String serialized =
         String.format("{\"class\":\"%s\"}", SearchFiltersQuestion.class.getCanonicalName());
     SearchFiltersQuestion q =
@@ -87,7 +86,7 @@ public class SearchFiltersQuestionTest {
   }
 
   @Test
-  public void testGenerateQuery() {
+  void testGenerateQuery() {
     SearchFiltersQuestion question = new SearchFiltersQuestion();
     assertThat(question.getQuery(), is(PermitQuery.INSTANCE));
 
@@ -113,20 +112,24 @@ public class SearchFiltersQuestionTest {
     assertThat(query, instanceOf(MatchLineQuery.class));
     assertThat(((MatchLineQuery) query).getLineNum(), is(5));
 
-    exception.expect(BatfishException.class);
-    exception.expectMessage("Unrecognized action 'foo'");
-    SearchFiltersQuestion.builder().setAction("foo").build();
+    Throwable exception =
+        assertThrows(
+            BatfishException.class, () -> SearchFiltersQuestion.builder().setAction("foo").build());
+    assertThat(exception.getMessage(), containsString("Unrecognized action 'foo'"));
   }
 
   @Test
-  public void testGenerateQuery_badLineIndex() {
-    exception.expect(BatfishException.class);
-    exception.expectMessage("Line index for matchLine must be zero or higher");
-    SearchFiltersQuestion.builder().setAction("matchLine -1").build();
+  void testGenerateQuery_badLineIndex() {
+    Throwable exception =
+        assertThrows(
+            BatfishException.class,
+            () -> SearchFiltersQuestion.builder().setAction("matchLine -1").build());
+    assertThat(
+        exception.getMessage(), containsString("Line index for matchLine must be zero or higher"));
   }
 
   @Test
-  public void testIpProtocols() {
+  void testIpProtocols() {
     ImmutableSortedSet<IpProtocol> ipProtocols =
         ImmutableSortedSet.of(IpProtocol.TCP, IpProtocol.ICMP);
     SearchFiltersQuestion question =

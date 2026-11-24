@@ -15,14 +15,14 @@ import org.batfish.bddreachability.transition.Transition;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.symbolic.state.OriginateVrf;
 import org.batfish.symbolic.state.StateExpr;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link BDDReachabilityUtils}. */
-public final class BDDReachabilityUtilsTest {
+final class BDDReachabilityUtilsTest {
   private final BDDPacket _pkt = new BDDPacket();
 
   @Test
-  public void testBackwardFixpointPropagates() {
+  void testBackwardFixpointPropagates() {
     StateExpr s1 = new OriginateVrf("n1", "v1");
     StateExpr s2 = new OriginateVrf("n2", "v2");
     Table<StateExpr, StateExpr, Transition> edges =
@@ -38,7 +38,7 @@ public final class BDDReachabilityUtilsTest {
   }
 
   @Test
-  public void testBackwardFixpointWithNothingReachableDoesNotReadTheTable() {
+  void testBackwardFixpointWithNothingReachableDoesNotReadTheTable() {
     Table<StateExpr, StateExpr, Transition> untouchable =
         new ForwardingTable<StateExpr, StateExpr, Transition>() {
           @Override

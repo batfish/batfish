@@ -7,12 +7,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link IspFilter} */
-public class IspFilterTest {
+class IspFilterTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new IspFilter(ImmutableList.of(1234L), ImmutableList.of(Ip.parse("1.1.1.1"))),
@@ -25,7 +25,7 @@ public class IspFilterTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     IspFilter ispFilter =
         new IspFilter(ImmutableList.of(5678L), ImmutableList.of(Ip.parse("1.1.1.1")));
 

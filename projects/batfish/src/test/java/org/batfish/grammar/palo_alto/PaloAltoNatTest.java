@@ -5,13 +5,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -36,17 +37,13 @@ import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public class PaloAltoNatTest {
+class PaloAltoNatTest {
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/palo_alto/testconfigs/";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+  @TempDir public File _folder;
 
   private @Nonnull Configuration parseConfig(String hostname) {
     try {
@@ -88,7 +85,7 @@ public class PaloAltoNatTest {
   }
 
   @Test
-  public void testNatService() throws IOException {
+  void testNatService() throws IOException {
     // Test service match condition is applied correctly for NAT rules
     Configuration c = parseConfig("nat-service");
     String outsideName = "ethernet1/2"; // 10.0.2.1/24
@@ -156,7 +153,7 @@ public class PaloAltoNatTest {
   }
 
   @Test
-  public void testSourceNat() throws IOException {
+  void testSourceNat() throws IOException {
     /* Test source NAT for traffic from inside zone to outside zone. There is one NAT rule that
       matches flows from inside to outside with src 1.1.1.2, and translates src to 1.1.1.99.
     */
@@ -207,7 +204,7 @@ public class PaloAltoNatTest {
   }
 
   @Test
-  public void testSourceNatHighAvaiability() throws IOException {
+  void testSourceNatHighAvaiability() throws IOException {
     /* Test source NAT for traffic from inside zone to outside zone with a variety of high-availability device-bindings
      */
     Configuration c = parseConfig("source-nat-high-availability");
@@ -255,7 +252,7 @@ public class PaloAltoNatTest {
   }
 
   @Test
-  public void testPanoramaSourceNatOrder() throws IOException {
+  void testPanoramaSourceNatOrder() throws IOException {
     /*
     Setup: Three NAT rules
     - Panorama pre-rulebase has a rule to translate source 1.1.1.2 to 1.1.1.99
@@ -328,7 +325,7 @@ public class PaloAltoNatTest {
   }
 
   @Test
-  public void testDestNat() throws IOException {
+  void testDestNat() throws IOException {
     // Test destination NAT is applied correctly. There are two NAT rules that matche flows from
     // outside to inside:
     // 1) src 1.1.1.2, and translates dst to 1.1.1.99
@@ -401,7 +398,7 @@ public class PaloAltoNatTest {
   }
 
   @Test
-  public void testPanoramaDestNatOrder() throws IOException {
+  void testPanoramaDestNatOrder() throws IOException {
     /* Test panorama dst NATs are applied in the right order. Each rulebase has rules:
       pre-rulebase:
         - match src 1.2.1.2 -> translate dst to 1.1.1.99
@@ -463,7 +460,7 @@ public class PaloAltoNatTest {
   }
 
   @Test
-  public void testNatNoopRules() throws IOException {
+  void testNatNoopRules() throws IOException {
     /*
     Setup: 4 NAT rules
     - First rule matches src 1.1.1.2, does nothing
@@ -534,7 +531,7 @@ public class PaloAltoNatTest {
   }
 
   @Test
-  public void testNatDisabledRule() throws IOException {
+  void testNatDisabledRule() throws IOException {
     /*
     Setup: 2 NAT rules
     - First rule is disabled, otherwise matches src 1.1.1.2/30, translates source
@@ -574,7 +571,7 @@ public class PaloAltoNatTest {
   }
 
   @Test
-  public void testNatRulesWithEmptyPools() throws IOException {
+  void testNatRulesWithEmptyPools() throws IOException {
     /*
     Setup: 2 NAT rules
     - First rule matches src 1.1.1.2, has source and dest nat but both pools are empty
@@ -629,7 +626,7 @@ public class PaloAltoNatTest {
   }
 
   @Test
-  public void testSecurityRulesMatchOnOriginalFlow() throws IOException {
+  void testSecurityRulesMatchOnOriginalFlow() throws IOException {
     /*
     Setup: 2 NAT rules
      - Transform dst 2.2.2.2 -> 3.3.3.3

@@ -1,6 +1,8 @@
 package org.batfish.datamodel.acl;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import org.batfish.common.VendorConversionException;
@@ -10,17 +12,13 @@ import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link AclReferencesVerifier}. */
-public final class AclReferencesVerifierTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+final class AclReferencesVerifierTest {
 
   @Test
-  public void testUndefinedPermittedByAcl() {
+  void testUndefinedPermittedByAcl() {
     Configuration c = new Configuration("testNode", ConfigurationFormat.CISCO_IOS);
 
     IpAccessList.builder()
@@ -29,14 +27,15 @@ public final class AclReferencesVerifierTest {
         .setLines(new ExprAclLine(LineAction.PERMIT, new PermittedByAcl("undefinedAcl"), "line1"))
         .build();
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(
+    Throwable exception =
+        assertThrows(VendorConversionException.class, () -> AclReferencesVerifier.verify(c));
+    assertThat(
+        exception.getMessage(),
         containsString("Configuration testnode has undefined ACL references: [undefinedAcl]"));
-    AclReferencesVerifier.verify(c);
   }
 
   @Test
-  public void testUndefinedDeniedByAcl() {
+  void testUndefinedDeniedByAcl() {
     Configuration c = new Configuration("testNode", ConfigurationFormat.CISCO_IOS);
 
     IpAccessList.builder()
@@ -45,14 +44,15 @@ public final class AclReferencesVerifierTest {
         .setLines(new ExprAclLine(LineAction.DENY, new DeniedByAcl("undefinedAcl"), "line1"))
         .build();
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(
+    Throwable exception =
+        assertThrows(VendorConversionException.class, () -> AclReferencesVerifier.verify(c));
+    assertThat(
+        exception.getMessage(),
         containsString("Configuration testnode has undefined ACL references: [undefinedAcl]"));
-    AclReferencesVerifier.verify(c);
   }
 
   @Test
-  public void testUndefinedAclAclLine() {
+  void testUndefinedAclAclLine() {
     Configuration c = new Configuration("testNode", ConfigurationFormat.CISCO_IOS);
 
     IpAccessList.builder()
@@ -61,14 +61,15 @@ public final class AclReferencesVerifierTest {
         .setLines(new org.batfish.datamodel.AclAclLine("line1", "undefinedAcl"))
         .build();
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(
+    Throwable exception =
+        assertThrows(VendorConversionException.class, () -> AclReferencesVerifier.verify(c));
+    assertThat(
+        exception.getMessage(),
         containsString("Configuration testnode has undefined ACL references: [undefinedAcl]"));
-    AclReferencesVerifier.verify(c);
   }
 
   @Test
-  public void testUndefinedPacketPolicyApplyFilter() {
+  void testUndefinedPacketPolicyApplyFilter() {
     Configuration c = new Configuration("testNode", ConfigurationFormat.CISCO_IOS);
 
     c.getPacketPolicies()
@@ -81,14 +82,15 @@ public final class AclReferencesVerifierTest {
                 new org.batfish.datamodel.packet_policy.Return(
                     org.batfish.datamodel.packet_policy.Drop.instance())));
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(
+    Throwable exception =
+        assertThrows(VendorConversionException.class, () -> AclReferencesVerifier.verify(c));
+    assertThat(
+        exception.getMessage(),
         containsString("Configuration testnode has undefined ACL references: [undefinedAcl]"));
-    AclReferencesVerifier.verify(c);
   }
 
   @Test
-  public void testMultipleUndefinedReferences() {
+  void testMultipleUndefinedReferences() {
     Configuration c = new Configuration("testNode", ConfigurationFormat.CISCO_IOS);
 
     IpAccessList.builder()
@@ -100,16 +102,17 @@ public final class AclReferencesVerifierTest {
             new org.batfish.datamodel.AclAclLine("line3", "undefinedAcl3"))
         .build();
 
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(
+    Throwable exception =
+        assertThrows(VendorConversionException.class, () -> AclReferencesVerifier.verify(c));
+    assertThat(
+        exception.getMessage(),
         containsString(
             "Configuration testnode has undefined ACL references: [undefinedAcl1, undefinedAcl2,"
                 + " undefinedAcl3]"));
-    AclReferencesVerifier.verify(c);
   }
 
   @Test
-  public void testDefinedReferencesNoError() {
+  void testDefinedReferencesNoError() {
     Configuration c = new Configuration("testNode", ConfigurationFormat.CISCO_IOS);
 
     // Create defined ACL

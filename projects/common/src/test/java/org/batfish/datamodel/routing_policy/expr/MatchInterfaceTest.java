@@ -2,8 +2,8 @@ package org.batfish.datamodel.routing_policy.expr;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.SerializationUtils;
@@ -15,19 +15,19 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.routing_policy.Environment;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link MatchInterface} */
-public class MatchInterfaceTest {
+class MatchInterfaceTest {
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     MatchInterface m = new MatchInterface(ImmutableSet.of("i1", "i2"));
     assertThat(BatfishObjectMapper.clone(m, BooleanExpr.class), equalTo(m));
     assertThat(SerializationUtils.clone(m), equalTo(m));
   }
 
   @Test
-  public void testEvaluate() {
+  void testEvaluate() {
     MatchInterface mi = new MatchInterface(ImmutableSet.of("e1", "e2"));
     ConnectedRoute e1 =
         ConnectedRoute.builder()

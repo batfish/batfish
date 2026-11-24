@@ -18,9 +18,9 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.NetworkFactory;
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class LocationIpSpaceSpecifierTest {
+class LocationIpSpaceSpecifierTest {
   private static final Map<String, Configuration> _configs;
 
   private static final SpecifierContext _context;
@@ -74,7 +74,7 @@ public class LocationIpSpaceSpecifierTest {
   }
 
   @Test
-  public void testResolve() {
+  void testResolve() {
     IpSpace ipSpace =
         new LocationIpSpaceSpecifier(AllInterfacesLocationSpecifier.INSTANCE).resolve(_context);
     assertThat(
@@ -86,7 +86,7 @@ public class LocationIpSpaceSpecifierTest {
   }
 
   @Test
-  public void testResolve_noLocations() {
+  void testResolve_noLocations() {
     MockSpecifierContext ctxt = MockSpecifierContext.builder().build();
     IpSpaceSpecifier specifier =
         new LocationIpSpaceSpecifier(new MockLocationSpecifier(ImmutableSet.of()));

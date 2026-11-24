@@ -13,7 +13,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
@@ -40,10 +40,10 @@ import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationEvaluator;
 import org.batfish.datamodel.transformation.TransformationEvaluator.TransformationResult;
 import org.batfish.representation.juniper.Nat.Type;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link NatRuleSet}. */
-public class NatRuleSetTest {
+class NatRuleSetTest {
   private static void setLocation(
       NatPacketLocation location, NatPacketLocation.Type type, String direction) {
     switch (type) {
@@ -92,7 +92,7 @@ public class NatRuleSetTest {
   }
 
   @Test
-  public void testComparator() {
+  void testComparator() {
     List<NatRuleSet> orderedRuleSetsList = new ArrayList<>();
     List<NatRuleSet> reverseOrderedRuleSetsList = new ArrayList<>();
 
@@ -113,7 +113,7 @@ public class NatRuleSetTest {
   }
 
   @Test
-  public void testToTransformation() {
+  void testToTransformation() {
     Prefix prefix1 = Prefix.parse("1.1.1.0/24");
     Prefix prefix2 = Prefix.parse("2.2.2.0/24");
 
@@ -184,7 +184,7 @@ public class NatRuleSetTest {
   }
 
   @Test
-  public void testTrace() {
+  void testTrace() {
     Prefix prefix1 = Prefix.parse("1.1.1.0/24");
     Prefix prefix2 = Prefix.parse("2.2.2.0/24");
 

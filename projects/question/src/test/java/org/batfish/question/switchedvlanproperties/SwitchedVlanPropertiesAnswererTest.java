@@ -48,10 +48,10 @@ import org.batfish.specifier.InterfaceSpecifier;
 import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierFactories;
 import org.batfish.specifier.TestSpecifierContext;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public final class SwitchedVlanPropertiesAnswererTest {
+final class SwitchedVlanPropertiesAnswererTest {
 
   private static final String INTERFACE = "i1";
   private static final String NODE = "n1";
@@ -61,8 +61,8 @@ public final class SwitchedVlanPropertiesAnswererTest {
   private Layer2Vni.Builder _vnb;
   private SpecifierContext _specifierContext;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
         nf.configurationBuilder()
@@ -83,7 +83,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
   }
 
   @Test
-  public void testComputeNodeVlanProperties() {
+  void testComputeNodeVlanProperties() {
     int vlan = 1;
     InterfaceSpecifier interfacesSpecifier =
         SpecifierFactories.getInterfaceSpecifierOrDefault(
@@ -115,7 +115,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
   }
 
   @Test
-  public void testCreateRowVniAbsent() {
+  void testCreateRowVniAbsent() {
     Map<String, ColumnMetadata> columns =
         createTableMetadata(new SwitchedVlanPropertiesQuestion()).toColumnMap();
     int vlan = 1;
@@ -136,7 +136,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
   }
 
   @Test
-  public void testCreateRowVniPresent() {
+  void testCreateRowVniPresent() {
     Map<String, ColumnMetadata> columns =
         createTableMetadata(new SwitchedVlanPropertiesQuestion()).toColumnMap();
     int vlan = 1;
@@ -158,7 +158,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
   }
 
   @Test
-  public void testGetProperties() {
+  void testGetProperties() {
     int vlan = 1;
     int vni = 10000;
     IntegerSpace vlans = IntegerSpace.of(vlan);
@@ -192,7 +192,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
   }
 
   @Test
-  public void testPopulateNodeRows() {
+  void testPopulateNodeRows() {
     Map<String, ColumnMetadata> columns =
         createTableMetadata(new SwitchedVlanPropertiesQuestion()).toColumnMap();
     int vlan = 1;
@@ -221,7 +221,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
   }
 
   @Test
-  public void testTryAddInterfaceToVlanExcludedVlan() {
+  void testTryAddInterfaceToVlanExcludedVlan() {
     Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces = new HashMap<>();
     Interface iface = _ib.build();
     int vlan = 1;
@@ -233,7 +233,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
   }
 
   @Test
-  public void testTryAddInterfaceToVlanIncludedVlan() {
+  void testTryAddInterfaceToVlanIncludedVlan() {
     Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces = new HashMap<>();
     Interface iface = _ib.build();
     int vlan = 1;
@@ -247,7 +247,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
   }
 
   @Test
-  public void testTryAddInterfaceToVlanNullVlan() {
+  void testTryAddInterfaceToVlanNullVlan() {
     Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces = new HashMap<>();
     Interface iface = _ib.build();
     IntegerSpace vlans = IntegerSpace.of(2);
@@ -258,7 +258,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
   }
 
   @Test
-  public void testTryAddInterfaceToVlansAccess() {
+  void testTryAddInterfaceToVlansAccess() {
     int vlan = 1;
     IntegerSpace vlans = IntegerSpace.of(vlan);
     Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces = new HashMap<>();
@@ -276,7 +276,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
   }
 
   @Test
-  public void testTryAddInterfaceToVlansExcludedInterfaceByShutdown() {
+  void testTryAddInterfaceToVlansExcludedInterfaceByShutdown() {
     int vlan = 1;
     IntegerSpace vlans = IntegerSpace.of(vlan);
     Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces = new HashMap<>();
@@ -292,7 +292,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
   }
 
   @Test
-  public void testTryAddInterfaceToVlansExcludedInterfaceBySpecifier() {
+  void testTryAddInterfaceToVlansExcludedInterfaceBySpecifier() {
     int vlan = 1;
     IntegerSpace vlans = IntegerSpace.of(vlan);
     Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces = new HashMap<>();
@@ -307,7 +307,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
   }
 
   @Test
-  public void testTryAddInterfaceToVlansExcludedInterfaceByType() {
+  void testTryAddInterfaceToVlansExcludedInterfaceByType() {
     int vlan = 1;
     IntegerSpace vlans = IntegerSpace.of(vlan);
     Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces = new HashMap<>();
@@ -321,7 +321,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
   }
 
   @Test
-  public void testTryAddInterfaceToVlansIncludeShutWithFlag() {
+  void testTryAddInterfaceToVlansIncludeShutWithFlag() {
     int vlan = 1;
     IntegerSpace vlans = IntegerSpace.of(vlan);
     Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces = new HashMap<>();
@@ -339,7 +339,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
   }
 
   @Test
-  public void testTryAddInterfaceToVlansIrb() {
+  void testTryAddInterfaceToVlansIrb() {
     int vlan = 1;
     IntegerSpace vlans = IntegerSpace.of(vlan);
     Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces = new HashMap<>();
@@ -357,7 +357,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
   }
 
   @Test
-  public void testTryAddInterfaceToVlansTrunk() {
+  void testTryAddInterfaceToVlansTrunk() {
     int vlan = 1;
     IntegerSpace vlans = IntegerSpace.of(Range.closed(1, 3));
     Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces = new HashMap<>();
@@ -377,7 +377,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
   }
 
   @Test
-  public void testTryAddVlanVniVlanPresent() {
+  void testTryAddVlanVniVlanPresent() {
     int vni = 10000;
     int vlan = 1;
     IntegerSpace vlans = IntegerSpace.of(vlan);

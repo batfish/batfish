@@ -1,18 +1,18 @@
 package org.batfish.datamodel.trace;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
 import java.util.List;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.TraceElement;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link TraceTree}. */
-public final class TraceTreeTest {
+final class TraceTreeTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     TraceElement traceElement1 = TraceElement.of("1");
     TraceElement traceElement2 = TraceElement.of("2");
     List<TraceTree> children1 = ImmutableList.of();
@@ -26,7 +26,7 @@ public final class TraceTreeTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     TraceTree traceTree =
         new TraceTree(
             TraceElement.of("a"),

@@ -36,18 +36,20 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Random;
 import java.util.Set;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.topology.GlobalBroadcastNoPointToPoint;
@@ -55,11 +57,11 @@ import org.batfish.common.topology.IpOwners;
 import org.batfish.common.topology.IpOwnersBaseImpl;
 import org.batfish.datamodel.tracking.PreDataPlaneTrackMethodEvaluator;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link ForwardingAnalysisImpl}. */
-public class ForwardingAnalysisImplTest {
+class ForwardingAnalysisImplTest {
 
   private static final String INTERFACE1 = "interface1";
 
@@ -83,8 +85,8 @@ public class ForwardingAnalysisImplTest {
 
   private Vrf.Builder _vb;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     NetworkFactory nf = new NetworkFactory();
     _cb = nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     _vb = nf.vrfBuilder();
@@ -92,7 +94,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeArpReplies() {
+  void testComputeArpReplies() {
     Configuration c1 = _cb.build();
     Configuration c2 = _cb.build();
     Map<String, Configuration> configs =
@@ -192,7 +194,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeArpRepliesByInterface() {
+  void testComputeArpRepliesByInterface() {
     Configuration config = _cb.build();
     _ib.setOwner(config);
     _vb.setOwner(config);
@@ -294,7 +296,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeArpReplies_VRRP() {
+  void testComputeArpReplies_VRRP() {
     Configuration c = _cb.build();
     Map<String, Configuration> configs = ImmutableMap.of(c.getHostname(), c);
     _ib.setOwner(c);
@@ -349,7 +351,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeArpTrueEdge() {
+  void testComputeArpTrueEdge() {
     IpSpace nextHopIpSpace = new MockIpSpace(1);
     IpSpace dstIpSpace = new MockIpSpace(2);
     Edge e1 = Edge.of("c1", "i1", "c2", "i2");
@@ -370,7 +372,7 @@ public class ForwardingAnalysisImplTest {
 
   /** Java serialization must round-trip everything, for every node. */
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     Configuration n1 = _cb.setHostname("n1").build();
     Vrf v1 = _vb.setOwner(n1).build();
     Interface i1 =
@@ -418,7 +420,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeArpTrueEdgeDestIp() {
+  void testComputeArpTrueEdgeDestIp() {
     Configuration c1 = _cb.build();
     Configuration c2 = _cb.build();
     Vrf vrf1 = _vb.setOwner(c1).build();
@@ -462,7 +464,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeArpTrueEdgeNextHopIp() {
+  void testComputeArpTrueEdgeNextHopIp() {
     Configuration c1 = _cb.build();
     Configuration c2 = _cb.build();
     Vrf vrf1 = _vb.setOwner(c1).build();
@@ -539,7 +541,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeOwnedIpsByVrf() {
+  void testComputeOwnedIpsByVrf() {
     Configuration config = _cb.build();
     _ib.setOwner(config);
     Interface iNoAddresses = _ib.build();
@@ -559,7 +561,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeInterfaceArpReplies() {
+  void testComputeInterfaceArpReplies() {
     Configuration config = _cb.build();
     _ib.setOwner(config);
     ConcreteInterfaceAddress primary =
@@ -614,7 +616,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeIpsAssignedToThisInterfaceForArpReplies() {
+  void testComputeIpsAssignedToThisInterfaceForArpReplies() {
     Configuration config = _cb.build();
     Map<String, Configuration> configs = ImmutableMap.of(config.getHostname(), config);
     _ib.setOwner(config);
@@ -638,7 +640,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeIpsRoutedOutInterfaces() {
+  void testComputeIpsRoutedOutInterfaces() {
     String c1 = "c1";
     String v1 = "v1";
     String i1 = "i1";
@@ -694,7 +696,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeNeighborUnreachableOrExitsNetwork() {
+  void testComputeNeighborUnreachableOrExitsNetwork() {
     String c1 = "c1";
     String v1 = "v1";
     String i1 = "i1";
@@ -724,7 +726,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeArpFalseDestIp() {
+  void testComputeArpFalseDestIp() {
     String c1 = "c1";
     String v1 = "v1";
     String i1 = "i1";
@@ -750,7 +752,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeArpFalseDestIpNoNeighbors() {
+  void testComputeArpFalseDestIpNoNeighbors() {
     String c1 = "c1";
     String v1 = "v1";
     String i1 = "i1";
@@ -779,7 +781,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeNeighborUnreachableArpNextHopIp() {
+  void testComputeNeighborUnreachableArpNextHopIp() {
     String c1 = "c1";
     String v1 = "v1";
     AbstractRoute r1 =
@@ -805,7 +807,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeNextVrfIpsByNodeVrf() {
+  void testComputeNextVrfIpsByNodeVrf() {
     String c1 = "c1";
     String v1 = "v1";
     String v2 = "v2";
@@ -856,7 +858,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeNullRoutedIps() {
+  void testComputeNullRoutedIps() {
     String c1 = "c1";
     String v1 = "v1";
     String i1 = "i1";
@@ -906,7 +908,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testRoutableIpSpace() {
+  void testRoutableIpSpace() {
     Fib hasDefault =
         MockFib.builder()
             .setFibEntries(
@@ -961,8 +963,156 @@ public class ForwardingAnalysisImplTest {
         routableSpace(compressibleToSingleton), equalTo(Prefix.parse("1.2.3.0/24").toIpSpace()));
   }
 
+  /**
+   * A few nearby start addresses: with random lengths, networks built on them nest, overlap only by
+   * containment, share start IPs, and repeat. Some are at the top of the address space, where the
+   * high bits of routableSpace's packed sort keys are set.
+   */
+  private static final List<Ip> ROUTABLE_TEST_START_IPS =
+      ImmutableList.of(
+          Ip.parse("10.0.0.0"),
+          Ip.parse("10.0.0.128"),
+          Ip.parse("10.0.1.0"),
+          Ip.parse("10.0.16.0"),
+          Ip.parse("10.1.0.0"),
+          Ip.parse("10.128.0.0"),
+          Ip.parse("11.0.0.0"),
+          Ip.parse("200.0.0.0"),
+          Ip.parse("255.255.255.0"),
+          Ip.parse("255.255.255.254"),
+          Ip.parse("255.255.255.255"));
+
+  /** The routable space built from exactly {@code networks}, as routableSpace builds it. */
+  private static IpSpace routableSpaceOf(Set<Prefix> networks) {
+    return networks.size() == 1
+        ? networks.iterator().next().toIpSpace()
+        : IpWildcardSetIpSpace.create(
+            ImmutableSet.of(),
+            networks.stream().map(IpWildcard::create).collect(ImmutableSet.toImmutableSet()));
+  }
+
+  /** Adjacent networks, neither containing the other, are both routable. */
   @Test
-  public void testComputeRoutableIps() {
+  void testRoutableIpSpaceAdjacentNetworks() {
+    Prefix low = Prefix.parse("10.0.0.0/25");
+    Prefix high = Prefix.parse("10.0.0.128/25");
+    Fib fib =
+        MockFib.builder()
+            .setFibEntries(
+                ImmutableMap.of(Ip.ZERO, ImmutableSet.of(mockFibEntry(low), mockFibEntry(high))))
+            .build();
+    assertThat(
+        routableSpace(fib),
+        allOf(
+            containsIp(low.getEndIp()),
+            containsIp(high.getStartIp()),
+            containsIp(high.getEndIp()),
+            not(containsIp(Ip.parse("10.0.1.0")))));
+  }
+
+  /** A network covering only the last address of another network adds nothing. */
+  @Test
+  void testRoutableIpSpaceDropsNetworkAtEndOfAnother() {
+    Prefix outer = Prefix.parse("10.0.0.0/24");
+    Prefix atEnd = Prefix.parse("10.0.0.255/32");
+    Prefix topOuter = Prefix.parse("255.255.255.254/31");
+    Prefix topAtEnd = Prefix.parse("255.255.255.255/32");
+    Fib fib =
+        MockFib.builder()
+            .setFibEntries(
+                ImmutableMap.of(
+                    Ip.ZERO,
+                    ImmutableSet.of(
+                        mockFibEntry(outer),
+                        mockFibEntry(atEnd),
+                        mockFibEntry(topOuter),
+                        mockFibEntry(topAtEnd))))
+            .build();
+    assertThat(routableSpace(fib), equalTo(routableSpaceOf(ImmutableSet.of(outer, topOuter))));
+  }
+
+  /** Networks at the very top of the address space, including 255.255.255.255/32. */
+  @Test
+  void testRoutableIpSpaceTopOfAddressSpace() {
+    Prefix lower = Prefix.parse("255.255.255.0/25");
+    Prefix secondToLast = Prefix.parse("255.255.255.254/32");
+    Prefix last = Prefix.parse("255.255.255.255/32");
+    Fib fib =
+        MockFib.builder()
+            .setFibEntries(
+                ImmutableMap.of(
+                    Ip.ZERO,
+                    ImmutableSet.of(
+                        mockFibEntry(last), mockFibEntry(lower), mockFibEntry(secondToLast))))
+            .build();
+    IpSpace routable = routableSpace(fib);
+    assertThat(routable, equalTo(routableSpaceOf(ImmutableSet.of(lower, secondToLast, last))));
+    assertThat(
+        routable,
+        allOf(
+            containsIp(Ip.MAX),
+            containsIp(secondToLast.getStartIp()),
+            not(containsIp(Ip.parse("255.255.255.253"))),
+            not(containsIp(Ip.parse("255.255.255.128")))));
+  }
+
+  /**
+   * The routable space is built from exactly the FIB networks not inside another one, so an IP is
+   * in it iff some FIB network contains it.
+   */
+  @Test
+  void testRoutableIpSpaceIsUnionOfFibNetworks() {
+    Random rng = new Random(20261121);
+    for (int trial = 0; trial < 50; trial++) {
+      List<Prefix> networks = new ArrayList<>();
+      ImmutableSet.Builder<FibEntry> entries = ImmutableSet.builder();
+      // Few networks per trial, so that a short one seldom covers all the others.
+      int count = 1 + rng.nextInt(8);
+      for (int i = 0; i < count; i++) {
+        Ip start = ROUTABLE_TEST_START_IPS.get(rng.nextInt(ROUTABLE_TEST_START_IPS.size()));
+        Prefix network = Prefix.create(start, 1 + rng.nextInt(32));
+        networks.add(network);
+        entries.add(mockFibEntry(network));
+      }
+      Fib fib = MockFib.builder().setFibEntries(ImmutableMap.of(Ip.ZERO, entries.build())).build();
+      IpSpace routable = routableSpace(fib);
+
+      // Membership alone would not notice a redundant nested network being kept.
+      Set<Prefix> outermost =
+          networks.stream()
+              .filter(p -> networks.stream().noneMatch(q -> !q.equals(p) && q.containsPrefix(p)))
+              .collect(ImmutableSet.toImmutableSet());
+      assertThat("trial " + trial, routable, equalTo(routableSpaceOf(outermost)));
+
+      // Each network's first and last IPs and the IPs just outside it, where an off-by-one in
+      // deciding which networks are redundant would show, plus a few arbitrary IPs.
+      List<Ip> probes = new ArrayList<>();
+      for (Prefix network : networks) {
+        long first = network.getStartIp().asLong();
+        long last = network.getEndIp().asLong();
+        probes.add(network.getStartIp());
+        probes.add(network.getEndIp());
+        if (first > 0) {
+          probes.add(Ip.create(first - 1));
+        }
+        if (last < Ip.MAX.asLong()) {
+          probes.add(Ip.create(last + 1));
+        }
+      }
+      for (int i = 0; i < 20; i++) {
+        probes.add(Ip.create(Integer.toUnsignedLong(rng.nextInt())));
+      }
+      for (Ip ip : probes) {
+        assertThat(
+            "trial " + trial + " " + ip,
+            routable.containsIp(ip, ImmutableMap.of()),
+            equalTo(networks.stream().anyMatch(p -> p.containsIp(ip))));
+      }
+    }
+  }
+
+  @Test
+  void testComputeRoutableIps() {
     String c1 = "c1";
     String v1 = "v1";
     Prefix prefix = Prefix.parse("1.0.0.0/8");
@@ -979,7 +1129,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeRouteMatchConditions() {
+  void testComputeRouteMatchConditions() {
     Set<AbstractRoute> routes =
         ImmutableSet.of(new ConnectedRoute(P1, INTERFACE1), new ConnectedRoute(P2, INTERFACE2));
     Fib fib = MockFib.builder().setMatchingIps(ImmutableMap.of(P1, IPSPACE1, P2, IPSPACE2)).build();
@@ -994,7 +1144,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testVrfForwardingIndexRoutesArpingForDestIp() {
+  void testVrfForwardingIndexRoutesArpingForDestIp() {
     String i1 = "i1";
     AbstractRoute r1 =
         StaticRoute.testBuilder()
@@ -1026,7 +1176,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeArpFalseNhipRoutes() {
+  void testComputeArpFalseNhipRoutes() {
     String i1 = "i1";
     AbstractRoute r1 =
         StaticRoute.testBuilder()
@@ -1050,7 +1200,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeArpFalseNhipRoutesForInterface() {
+  void testComputeArpFalseNhipRoutesForInterface() {
     String outInterface = "i1";
     AbstractRoute nextHopIpRoute1 =
         StaticRoute.testBuilder()
@@ -1102,7 +1252,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testVrfForwardingIndexRoutesArpingForNextHopIp() {
+  void testVrfForwardingIndexRoutesArpingForNextHopIp() {
     String i1 = "i1";
     AbstractRoute r1 =
         StaticRoute.testBuilder()
@@ -1153,7 +1303,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeSomeoneReplies() {
+  void testComputeSomeoneReplies() {
     String c1 = "c1";
     String i1 = "i1";
     String c2 = "c2";
@@ -1172,7 +1322,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeDeliveredToSubnetNoArpFalse() {
+  void testComputeDeliveredToSubnetNoArpFalse() {
     Ip ip = Ip.parse("10.0.0.1");
 
     IpSpace arpFalseDestIp = EmptyIpSpace.INSTANCE;
@@ -1184,7 +1334,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeDeliveredToSubnetNoInterfaceHostIps() {
+  void testComputeDeliveredToSubnetNoInterfaceHostIps() {
     Ip ip = Ip.parse("10.0.0.1");
 
     IpSpace arpFalseDestIp = ip.toIpSpace();
@@ -1196,7 +1346,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testComputeDeliveredToSubnetEqual() {
+  void testComputeDeliveredToSubnetEqual() {
     Ip ip = Ip.parse("10.0.0.1");
 
     IpSpace arpFalseDestIp = ip.toIpSpace();
@@ -1315,7 +1465,7 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
-  public void testDispositionComputation() {
+  void testDispositionComputation() {
     /*
      * Avoid the case where arp dst ip, interface is full, and dst ip is in subnet (would be accepted).
      * Avoid cases where dst ip is internal but not in subet.
@@ -1391,7 +1541,7 @@ public class ForwardingAnalysisImplTest {
    * don't get an ARP response, we get insufficient info.
    */
   @Test
-  public void testUnknownedNextHopIpOwnedArpIp() {
+  void testUnknownedNextHopIpOwnedArpIp() {
     Configuration n1 = _cb.setHostname("n1").build();
     Vrf v1 = _vb.setOwner(n1).build();
     Interface i1 =
@@ -1443,7 +1593,7 @@ public class ForwardingAnalysisImplTest {
   // If two nodes are in the same subnet but not connected per the given topology,
   // sending packets from one to the other should result in Neighbor Unreachable.
   @Test
-  public void testDispositionWithTopology() {
+  void testDispositionWithTopology() {
     Prefix prefix = Prefix.parse("1.0.0.0/24");
     IpSpace ipSpace = prefix.toIpSpace();
     Ip ip2 = Ip.parse("1.0.0.2");

@@ -6,17 +6,22 @@ import static org.batfish.datamodel.BgpRoute.PROP_COMMUNITIES;
 import static org.batfish.datamodel.BgpRoute.PROP_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.OriginMechanism.LEARNED;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_ADMINISTRATIVE_DISTANCE;
+import static org.batfish.datamodel.questions.BgpRoute.PROP_COLOR;
+import static org.batfish.datamodel.questions.BgpRoute.PROP_COLOR2;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_NEXT_HOP;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_ORIGINATOR_IP;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_ORIGIN_TYPE;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_TAG;
+import static org.batfish.datamodel.questions.BgpRoute.PROP_TAG2;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_WEIGHT;
 import static org.batfish.datamodel.questions.BgpRouteDiff.routeDiffs;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
@@ -31,22 +36,19 @@ import org.batfish.datamodel.bgp.TunnelEncapsulationAttribute;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.questions.BgpRoute.Builder;
 import org.batfish.datamodel.route.nh.NextHopIp;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link BgpRouteDiff}. */
-public class BgpRouteDiffTest {
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class BgpRouteDiffTest {
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     BgpRouteDiff diff = new BgpRouteDiff(PROP_AS_PATH, "A", "B");
     assertEquals(diff, BatfishObjectMapper.clone(diff, BgpRouteDiff.class));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new BgpRouteDiff(PROP_AS_PATH, "a", "b"), new BgpRouteDiff(PROP_AS_PATH, "a", "b"))
@@ -66,7 +68,7 @@ public class BgpRouteDiffTest {
   }
 
   @Test
-  public void testRouteDiffs() {
+  void testRouteDiffs() {
     BgpRoute route1;
     BgpRoute route2;
 
@@ -102,6 +104,16 @@ public class BgpRouteDiffTest {
     route2 = builder().setMetric(2).build();
     assertThat(
         routeDiffs(route1, route2).getDiffs(), contains(new BgpRouteDiff(PROP_METRIC, "1", "2")));
+
+    // change tag2, color and color2
+    route1 = builder().setTag2(1).setColor(2).setColor2(3).build();
+    route2 = builder().setTag2(4).setColor(5).setColor2(6).build();
+    assertThat(
+        routeDiffs(route1, route2).getDiffs(),
+        containsInAnyOrder(
+            new BgpRouteDiff(PROP_TAG2, "1", "4"),
+            new BgpRouteDiff(PROP_COLOR, "2", "5"),
+            new BgpRouteDiff(PROP_COLOR2, "3", "6")));
 
     // change administrative distance
     route1 = builder().setAdminDist(1L).build();
@@ -161,13 +173,12 @@ public class BgpRouteDiffTest {
   }
 
   @Test
-  public void testUnsupported() {
+  void testUnsupported() {
     BgpRoute r1 = builder().setProtocol(RoutingProtocol.BGP).build();
     BgpRoute r2 = builder().setProtocol(RoutingProtocol.OSPF).build();
 
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("BGP");
-    _thrown.expectMessage("OSPF");
-    routeDiffs(r1, r2);
+    Throwable exception = assertThrows(IllegalArgumentException.class, () -> routeDiffs(r1, r2));
+    assertThat(exception.getMessage(), containsString("BGP"));
+    assertThat(exception.getMessage(), containsString("OSPF"));
   }
 }

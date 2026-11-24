@@ -22,10 +22,10 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Vrf;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.RoleDimensionMapping;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for built-in location specifiers. */
-public class LocationSpecifierTest {
+class LocationSpecifierTest {
   private static final Map<String, Configuration> _testConfigs;
   private static final List<Interface> _testConfigsInterfaces;
   private static final SpecifierContext _context;
@@ -103,7 +103,7 @@ public class LocationSpecifierTest {
   }
 
   @Test
-  public void testAllInterfacesLocationSpecifiers() {
+  void testAllInterfacesLocationSpecifiers() {
 
     assertThat(
         AllInterfacesLocationSpecifier.INSTANCE.resolve(_context),
@@ -114,7 +114,7 @@ public class LocationSpecifierTest {
   }
 
   @Test
-  public void testDescriptionRegexInterfaceLocationSpecifiers() {
+  void testDescriptionRegexInterfaceLocationSpecifiers() {
     // choose 1 interface from each node
     List<Interface> interfaces =
         _testConfigs.entrySet().stream()
@@ -135,7 +135,7 @@ public class LocationSpecifierTest {
   }
 
   @Test
-  public void testIntersectionLocationSpecifier_equalsHashCode() {
+  void testIntersectionLocationSpecifier_equalsHashCode() {
     LocationSpecifier spec1a =
         new IntersectionLocationSpecifier(
             AllInterfacesLocationSpecifier.INSTANCE, NullLocationSpecifier.INSTANCE);
@@ -154,7 +154,7 @@ public class LocationSpecifierTest {
   }
 
   @Test
-  public void testNameRegexInterfaceLocationSpecifiers() {
+  void testNameRegexInterfaceLocationSpecifiers() {
     // choose 1 interface from each node
     List<Interface> interfaces =
         _testConfigs.entrySet().stream()
@@ -172,7 +172,7 @@ public class LocationSpecifierTest {
   }
 
   @Test
-  public void testNodeNameRegexInterfaceLocationSpecifiers() {
+  void testNodeNameRegexInterfaceLocationSpecifiers() {
     Configuration config = _testConfigs.values().iterator().next();
     List<Interface> ifaces = ImmutableList.copyOf(config.getAllInterfaces().values());
     Pattern pat = Pattern.compile(config.getHostname());
@@ -187,7 +187,7 @@ public class LocationSpecifierTest {
   }
 
   @Test
-  public void testNodeRoleRegexInterfaceLocationSpecifier() {
+  void testNodeRoleRegexInterfaceLocationSpecifier() {
     Set<Location> nodeInterfaceLocations =
         _roleNode.getAllInterfaces().values().stream()
             .map(iface -> new InterfaceLocation(iface.getOwner().getHostname(), iface.getName()))
@@ -209,12 +209,12 @@ public class LocationSpecifierTest {
   }
 
   @Test
-  public void testNullLocationSpecifier() {
+  void testNullLocationSpecifier() {
     assertThat(NullLocationSpecifier.INSTANCE.resolve(_context), equalTo(ImmutableSet.of()));
   }
 
   @Test
-  public void testSetTheoreticLocationSpecifiers() {
+  void testSetTheoreticLocationSpecifiers() {
     // first specifier will match interfaces 0 and 1
     List<Interface> interfaces01 = _testConfigsInterfaces.subList(0, 2);
     Pattern pattern01 =
@@ -253,7 +253,7 @@ public class LocationSpecifierTest {
   }
 
   @Test
-  public void testUnionLocationSpecifier_equalsHashCode() {
+  void testUnionLocationSpecifier_equalsHashCode() {
     LocationSpecifier spec1a =
         new UnionLocationSpecifier(
             AllInterfacesLocationSpecifier.INSTANCE, NullLocationSpecifier.INSTANCE);
@@ -272,7 +272,7 @@ public class LocationSpecifierTest {
   }
 
   @Test
-  public void testVrfNameRegexLocationSpecifiers() {
+  void testVrfNameRegexLocationSpecifiers() {
     List<Interface> interfaces = _testConfigsInterfaces.subList(1, 3);
     List<Vrf> vrfs = interfaces.stream().map(Interface::getVrf).collect(Collectors.toList());
 

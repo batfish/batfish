@@ -1,30 +1,30 @@
 package org.batfish.datamodel.tracking;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link TrackReachability}. */
-public final class TrackReachabilityTest {
+final class TrackReachabilityTest {
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     TrackReachability obj = TrackReachability.of(Ip.ZERO, "foo", Ip.ZERO);
     assertEquals(obj, SerializationUtils.clone(obj));
   }
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     TrackReachability obj = TrackReachability.of(Ip.ZERO, "foo", Ip.ZERO);
     assertEquals(obj, BatfishObjectMapper.clone(obj, TrackMethod.class));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     TrackReachability obj = TrackReachability.of(Ip.ZERO, "foo", Ip.ZERO);
     new EqualsTester()
         .addEqualityGroup(obj, TrackReachability.of(Ip.ZERO, "foo", Ip.ZERO))

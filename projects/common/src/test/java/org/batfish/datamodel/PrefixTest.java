@@ -5,9 +5,11 @@ import static org.batfish.datamodel.Prefix.parse;
 import static org.batfish.datamodel.Prefix.strict;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.sameInstance;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import net.sf.javabdd.BDD;
 import org.apache.commons.lang3.SerializationUtils;
@@ -15,26 +17,19 @@ import org.batfish.common.bdd.BDDUtils;
 import org.batfish.common.bdd.ImmutableBDDInteger;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-@RunWith(JUnit4.class)
-public class PrefixTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class PrefixTest {
 
   @Test
-  public void testCanonicalization() {
+  void testCanonicalization() {
     Prefix p = Prefix.parse("255.255.255.255/15");
     assertThat(p.getStartIp(), equalTo(Ip.parse("255.254.0.0")));
     assertThat(p.getPrefixLength(), equalTo(15));
   }
 
   @Test
-  public void testContains() {
+  void testContains() {
     IpSpace p = Prefix.parse("1.2.3.4/31").toIpSpace();
     assertThat(p, containsIp(Ip.parse("1.2.3.4")));
     assertThat(p, containsIp(Ip.parse("1.2.3.5")));
@@ -55,7 +50,7 @@ public class PrefixTest {
   }
 
   @Test
-  public void testComplement() {
+  void testComplement() {
     IpSpace ipSpace = Prefix.parse("1.2.3.4/31").toIpSpace().complement();
     assertThat(ipSpace, not(containsIp(Ip.parse("1.2.3.4"))));
     assertThat(ipSpace, not(containsIp(Ip.parse("1.2.3.5"))));
@@ -76,14 +71,14 @@ public class PrefixTest {
   }
 
   @Test
-  public void testInvalidPrefix() {
-    _thrown.expectMessage("Invalid prefix length");
-    _thrown.expect(IllegalArgumentException.class);
-    Prefix.parse("1.1.1.1/33");
+  void testInvalidPrefix() {
+    Throwable exception =
+        assertThrows(IllegalArgumentException.class, () -> Prefix.parse("1.1.1.1/33"));
+    assertThat(exception.getMessage(), containsString("Invalid prefix length"));
   }
 
   @Test
-  public void testStrictCanonical() {
+  void testStrictCanonical() {
     String canonicalStr = "1.0.0.0/8";
     Prefix canonical = strict(canonicalStr);
 
@@ -92,15 +87,14 @@ public class PrefixTest {
   }
 
   @Test
-  public void testStrictNonCanonical() {
+  void testStrictNonCanonical() {
     String nonCanonical = "1.2.0.0/8";
 
-    _thrown.expect(IllegalArgumentException.class);
-    strict(nonCanonical);
+    assertThrows(IllegalArgumentException.class, () -> strict(nonCanonical));
   }
 
   @Test
-  public void testToHostIpSpace() {
+  void testToHostIpSpace() {
     ImmutableBDDInteger ipAddrBdd =
         ImmutableBDDInteger.makeFromIndex(BDDUtils.bddFactory(32), 32, 0);
     IpSpaceToBDD toBDD = new IpSpaceToBDD(ipAddrBdd);
@@ -123,7 +117,7 @@ public class PrefixTest {
   }
 
   @Test
-  public void testLongestCommonPrefix() {
+  void testLongestCommonPrefix() {
     // p1 and p2 are equal
     Prefix p1 = Prefix.parse("1.1.1.0/24");
     assertThat(longestCommonPrefix(p1, p1), equalTo(Prefix.parse("1.1.1.0/24")));
@@ -155,7 +149,7 @@ public class PrefixTest {
   }
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     for (Prefix p :
         new Prefix[] {
           Prefix.ZERO,

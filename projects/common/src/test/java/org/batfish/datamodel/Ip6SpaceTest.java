@@ -8,11 +8,11 @@ import static org.hamcrest.Matchers.not;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class Ip6SpaceTest {
+class Ip6SpaceTest {
   @Test
-  public void testIp6Space() {
+  void testIp6Space() {
     Ip6WildcardSetIp6Space any =
         Ip6WildcardSetIp6Space.builder().including(Ip6Wildcard.ANY).build();
     Ip6WildcardSetIp6Space justMax =
@@ -40,7 +40,7 @@ public class Ip6SpaceTest {
   }
 
   @Test
-  public void testIp6SpaceJacksonSerialization() {
+  void testIp6SpaceJacksonSerialization() {
     for (Ip6Space ip6Space :
         ImmutableList.of(
             Prefix6.parse("1:1:1:1::1/64").toIp6Space(),

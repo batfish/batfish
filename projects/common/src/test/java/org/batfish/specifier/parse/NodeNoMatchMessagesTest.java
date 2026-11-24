@@ -15,10 +15,10 @@ import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 import org.batfish.role.RoleDimensionMapping;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link NodeNoMatchMessages} */
-public class NodeNoMatchMessagesTest {
+class NodeNoMatchMessagesTest {
 
   private static List<String> getMessages(
       NodeNoMatchMessages nodeNoMatchMessages, CompletionMetadata completionMetadata) {
@@ -33,7 +33,7 @@ public class NodeNoMatchMessagesTest {
   }
 
   @Test
-  public void testNodeName() {
+  void testNodeName() {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder().setNodes(ImmutableSet.of("b1", "b2")).build();
     assertThat(
@@ -45,7 +45,7 @@ public class NodeNoMatchMessagesTest {
   }
 
   @Test
-  public void testNodeRegex() {
+  void testNodeRegex() {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder().setNodes(ImmutableSet.of("b1", "b2")).build();
     assertThat(
@@ -57,7 +57,7 @@ public class NodeNoMatchMessagesTest {
   }
 
   @Test
-  public void testNodeRole() {
+  void testNodeRole() {
     NodeRolesData nodeRolesData =
         NodeRolesData.builder()
             .setRoleDimensions(
@@ -93,7 +93,7 @@ public class NodeNoMatchMessagesTest {
   }
 
   @Test
-  public void testSetOp() {
+  void testSetOp() {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder().setNodes(ImmutableSet.of("b1", "b2")).build();
     List<String> expected =
@@ -124,7 +124,7 @@ public class NodeNoMatchMessagesTest {
 
   /** a subset of the input is empty */
   @Test
-  public void testEmptySubset() {
+  void testEmptySubset() {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder().setNodes(ImmutableSet.of("b1", "b2")).build();
     assertThat(

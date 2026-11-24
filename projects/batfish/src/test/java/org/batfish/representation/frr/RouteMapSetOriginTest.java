@@ -9,18 +9,18 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class RouteMapSetOriginTest {
+class RouteMapSetOriginTest {
 
   @Test
-  public void testGetOriginType() {
+  void testGetOriginType() {
     RouteMapSetOrigin set = new RouteMapSetOrigin(OriginType.EGP);
     assertThat(set.getOriginType(), equalTo(OriginType.EGP));
   }
 
   @Test
-  public void testToStatements() {
+  void testToStatements() {
     RouteMapSetOrigin set = new RouteMapSetOrigin(OriginType.EGP);
     List<Statement> result =
         set.toStatements(null, null, null).collect(ImmutableList.toImmutableList());

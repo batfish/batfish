@@ -11,7 +11,9 @@ import static org.batfish.specifier.parse.Anchor.Type.APP_TCP;
 import static org.batfish.specifier.parse.Anchor.Type.APP_UDP;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -22,14 +24,10 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.Grammar;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link Parser} producing {@link AppAstNode}. */
-public class ParserAppTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class ParserAppTest {
 
   private static ParsedAutoComplete getPAC(String query) {
     return new ParsedAutoComplete(
@@ -56,13 +54,13 @@ public class ParserAppTest {
   }
 
   @Test
-  public void testCompletionEmpty() {
+  void testCompletionEmpty() {
     String query = "";
     assertThat(getPAC(query).run(), equalTo(getAllStartingSuggestions(query.length())));
   }
 
   @Test
-  public void testCompletionAppName_partialName() {
+  void testCompletionAppName_partialName() {
     assertThat(
         getPAC("ht").run(),
         containsInAnyOrder(
@@ -71,7 +69,7 @@ public class ParserAppTest {
   }
 
   @Test
-  public void testCompletionAppName_partialAndFullName() {
+  void testCompletionAppName_partialAndFullName() {
     assertThat(
         getPAC("http").run(), // http is both a partial name and a full name
         containsInAnyOrder(
@@ -81,7 +79,7 @@ public class ParserAppTest {
   }
 
   @Test
-  public void testCompletionAppName_fullName() {
+  void testCompletionAppName_fullName() {
     assertThat(
         getPAC("https").run(),
         containsInAnyOrder(
@@ -90,14 +88,14 @@ public class ParserAppTest {
   }
 
   @Test
-  public void testCompletionPartialProtocolName() {
+  void testCompletionPartialProtocolName() {
     assertThat(
         getPAC("ud").run(),
         containsInAnyOrder(new ParsedAutoCompleteSuggestion("udp", 0, APP_UDP)));
   }
 
   @Test
-  public void testCompletionFullProtocolName() {
+  void testCompletionFullProtocolName() {
     assertThat(
         getPAC("udp").run(),
         equalTo(
@@ -107,13 +105,13 @@ public class ParserAppTest {
   }
 
   @Test
-  public void testCompletionPortProtocolName() {
+  void testCompletionPortProtocolName() {
     // nothing to autocomplete since we don't have useful suggestions for port numbers
     assertThat(getPAC("udp / ").run(), equalTo(ImmutableSet.of()));
   }
 
   @Test
-  public void testCompletionProtocolPort() {
+  void testCompletionProtocolPort() {
     String query = "udp / 2";
     assertThat(
         getPAC(query).run(),
@@ -125,13 +123,13 @@ public class ParserAppTest {
   }
 
   @Test
-  public void testCompletionPartialProtocolPortRange() {
+  void testCompletionPartialProtocolPortRange() {
     String query = "udp / 2 - ";
     assertThat(getPAC(query).run(), equalTo(ImmutableSet.of()));
   }
 
   @Test
-  public void testCompletionFullProtocolPortRange() {
+  void testCompletionFullProtocolPortRange() {
     String query = "udp / 2 - 3";
     assertThat(
         getPAC(query).run(),
@@ -142,13 +140,13 @@ public class ParserAppTest {
   }
 
   @Test
-  public void testCompletionProtocolPortComma() {
+  void testCompletionProtocolPortComma() {
     String query = "udp / 2, ";
     assertThat(getPAC(query).run(), equalTo(getAllStartingSuggestions(query.length())));
   }
 
   @Test
-  public void testCompletionIcmp() {
+  void testCompletionIcmp() {
     String query = "icmp";
     assertThat(
         getPAC(query).run(),
@@ -159,13 +157,13 @@ public class ParserAppTest {
   }
 
   @Test
-  public void testCompletionIcmpSlash() {
+  void testCompletionIcmpSlash() {
     String query = "icmp/";
     assertThat(getPAC(query).run(), equalTo(ImmutableSet.of()));
   }
 
   @Test
-  public void testCompletionIcmpSlashType() {
+  void testCompletionIcmpSlashType() {
     String query = "icmp/2";
     assertThat(
         getPAC(query).run(),
@@ -176,13 +174,13 @@ public class ParserAppTest {
   }
 
   @Test
-  public void testCompletionIcmpSlashTypeSlash() {
+  void testCompletionIcmpSlashTypeSlash() {
     String query = "icmp/2/";
     assertThat(getPAC(query).run(), equalTo(ImmutableSet.of()));
   }
 
   @Test
-  public void testCompletionIcmpSlashTypeCode() {
+  void testCompletionIcmpSlashTypeCode() {
     String query = "icmp / 0 / 0 ";
     assertThat(
         getPAC(query).run(),
@@ -192,7 +190,7 @@ public class ParserAppTest {
 
   /** Test that we present all initial suggestions after all valid complete ICMP inputs */
   @Test
-  public void testCompletionIcmpFullSpecificationComma() {
+  void testCompletionIcmpFullSpecificationComma() {
     String query1 = "icmp,";
     assertThat(getPAC(query1).run(), equalTo(getAllStartingSuggestions(query1.length())));
 
@@ -204,7 +202,7 @@ public class ParserAppTest {
   }
 
   @Test
-  public void testParseAppRegex() {
+  void testParseAppRegex() {
     String regex = "/ht.*/";
     RegexAppAstNode expectedAst = new RegexAppAstNode("ht.*");
 
@@ -216,7 +214,7 @@ public class ParserAppTest {
   }
 
   @Test
-  public void testParseAppName() {
+  void testParseAppName() {
     String name = "http";
     NameAppAstNode expectedAst = new NameAppAstNode("http");
 
@@ -228,7 +226,7 @@ public class ParserAppTest {
   }
 
   @Test
-  public void testParseIcmp() {
+  void testParseIcmp() {
     IcmpAllAppAstNode expectedAst = new IcmpAllAppAstNode();
 
     assertThat(
@@ -240,7 +238,7 @@ public class ParserAppTest {
   }
 
   @Test
-  public void testParseIcmpType() {
+  void testParseIcmpType() {
     IcmpTypeAppAstNode expectedAst = new IcmpTypeAppAstNode(8);
 
     assertThat(
@@ -251,14 +249,16 @@ public class ParserAppTest {
   }
 
   @Test
-  public void testParseIcmpType_invalidType() {
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("Invalid ICMP type");
-    SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, "icmp/257");
+  void testParseIcmpType_invalidType() {
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, "icmp/257"));
+    assertThat(exception.getMessage(), containsString("Invalid ICMP type"));
   }
 
   @Test
-  public void testParseIcmpTypeCode() {
+  void testParseIcmpTypeCode() {
     IcmpTypeCodeAppAstNode expectedAst = new IcmpTypeCodeAppAstNode(8, 0);
 
     assertThat(
@@ -270,14 +270,16 @@ public class ParserAppTest {
   }
 
   @Test
-  public void testParseIcmpTypeCode_invalidCode() {
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("Invalid ICMP type/code");
-    SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, "icmp/8/1");
+  void testParseIcmpTypeCode_invalidCode() {
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, "icmp/8/1"));
+    assertThat(exception.getMessage(), containsString("Invalid ICMP type/code"));
   }
 
   @Test
-  public void testParseTcp() {
+  void testParseTcp() {
     TcpAppAstNode expectedAst = new TcpAppAstNode();
 
     assertThat(
@@ -289,7 +291,7 @@ public class ParserAppTest {
   }
 
   @Test
-  public void testParseUdp() {
+  void testParseUdp() {
     UdpAppAstNode expectedAst = new UdpAppAstNode();
 
     assertThat(
@@ -301,7 +303,7 @@ public class ParserAppTest {
   }
 
   @Test
-  public void testParsePort() {
+  void testParsePort() {
     TcpAppAstNode expectedAst = new TcpAppAstNode(ImmutableList.of(SubRange.singleton(80)));
 
     assertThat(
@@ -312,21 +314,25 @@ public class ParserAppTest {
   }
 
   @Test
-  public void testParsePort_invalid_max() {
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("Invalid port number");
-    SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, "tcp/808080");
+  void testParsePort_invalid_max() {
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, "tcp/808080"));
+    assertThat(exception.getMessage(), containsString("Invalid port number"));
   }
 
   @Test
-  public void testParsePort_invalid_min() {
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("Invalid port number");
-    SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, "tcp/0");
+  void testParsePort_invalid_min() {
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, "tcp/0"));
+    assertThat(exception.getMessage(), containsString("Invalid port number"));
   }
 
   @Test
-  public void testParsePortRange() {
+  void testParsePortRange() {
     TcpAppAstNode expectedAst = new TcpAppAstNode(ImmutableList.of(new SubRange(80, 82)));
 
     assertThat(
@@ -338,35 +344,43 @@ public class ParserAppTest {
   }
 
   @Test
-  public void testParsePortRange_invalid1() {
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("Invalid port number");
-    SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, "tcp/80 - 808080");
+  void testParsePortRange_invalid1() {
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, "tcp/80 - 808080"));
+    assertThat(exception.getMessage(), containsString("Invalid port number"));
   }
 
   @Test
-  public void testParsePortRange_invalid2() {
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("Invalid port number");
-    SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, "tcp/808080 - 80");
+  void testParsePortRange_invalid2() {
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, "tcp/808080 - 80"));
+    assertThat(exception.getMessage(), containsString("Invalid port number"));
   }
 
   @Test
-  public void testParsePortRange_invalid3() {
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("Invalid port range");
-    SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, "tcp/82 - 80");
+  void testParsePortRange_invalid3() {
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, "tcp/82 - 80"));
+    assertThat(exception.getMessage(), containsString("Invalid port range"));
   }
 
   @Test
-  public void testParsePortRange_invalid4() {
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("Invalid port number: 0");
-    SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, "tcp/0 - 80");
+  void testParsePortRange_invalid4() {
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> SpecifierAstBuilder.getAst(Grammar.APPLICATION_SPECIFIER, "tcp/0 - 80"));
+    assertThat(exception.getMessage(), containsString("Invalid port number: 0"));
   }
 
   @Test
-  public void testParsePortTerms() {
+  void testParsePortTerms() {
     TcpAppAstNode expectedAst =
         new TcpAppAstNode(ImmutableList.of(new SubRange(80, 82), SubRange.singleton(89)));
 
@@ -379,7 +393,7 @@ public class ParserAppTest {
   }
 
   @Test
-  public void testParseUnion() {
+  void testParseUnion() {
     UnionAppAstNode expectedNode =
         new UnionAppAstNode(new NameAppAstNode("http"), new NameAppAstNode("https"));
 
@@ -392,7 +406,7 @@ public class ParserAppTest {
   }
 
   @Test
-  public void testParseUnion2() {
+  void testParseUnion2() {
     UnionAppAstNode expectedNode =
         new UnionAppAstNode(new NameAppAstNode("http"), new TcpAppAstNode());
 

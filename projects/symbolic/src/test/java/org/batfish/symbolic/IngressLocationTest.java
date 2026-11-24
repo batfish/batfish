@@ -2,9 +2,10 @@ package org.batfish.symbolic;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -12,13 +13,13 @@ import com.google.common.testing.EqualsTester;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.batfish.symbolic.IngressLocation.Type;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link IngressLocation}. */
-public final class IngressLocationTest {
+final class IngressLocationTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             IngressLocation.interfaceLink("node", "iface"),
@@ -34,7 +35,7 @@ public final class IngressLocationTest {
   }
 
   @Test
-  public void testInterfaceLink_getters() {
+  void testInterfaceLink_getters() {
     IngressLocation link = IngressLocation.interfaceLink("node", "iface");
     assertThat(link.getNode(), equalTo("node"));
     assertThat(link.getInterface(), equalTo("iface"));
@@ -42,13 +43,15 @@ public final class IngressLocationTest {
     assertFalse(link.isIngressVrf());
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void testInterfaceLink_crash() {
-    IngressLocation.interfaceLink("node", "iface").getVrf();
+  @Test
+  void testInterfaceLink_crash() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> IngressLocation.interfaceLink("node", "iface").getVrf());
   }
 
   @Test
-  public void testVrf_getters() {
+  void testVrf_getters() {
     IngressLocation vrf = IngressLocation.vrf("node", "vrf");
     assertThat(vrf.getNode(), equalTo("node"));
     assertThat(vrf.getVrf(), equalTo("vrf"));
@@ -56,13 +59,14 @@ public final class IngressLocationTest {
     assertTrue(vrf.isIngressVrf());
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void testVrf_crash() {
-    IngressLocation.vrf("node", "vrf").getInterface();
+  @Test
+  void testVrf_crash() {
+    assertThrows(
+        IllegalArgumentException.class, () -> IngressLocation.vrf("node", "vrf").getInterface());
   }
 
   @Test
-  public void testSort() {
+  void testSort() {
     List<IngressLocation> locs =
         ImmutableList.of(
             IngressLocation.interfaceLink("n", "i"),
@@ -77,17 +81,17 @@ public final class IngressLocationTest {
   }
 
   @Test
-  public void testToString_interface() {
+  void testToString_interface() {
     assertEquals("node[iface]", IngressLocation.interfaceLink("node", "iface").toString());
   }
 
   @Test
-  public void testToString_vrf() {
+  void testToString_vrf() {
     assertEquals("node[@vrf(vrf)]", IngressLocation.vrf("node", "vrf").toString());
   }
 
   @Test
-  public void testToString_escape() {
+  void testToString_escape() {
     assertEquals("\"<\"[\",\"]", IngressLocation.interfaceLink("<", ",").toString());
   }
 }

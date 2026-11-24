@@ -7,19 +7,19 @@ import static org.batfish.common.bdd.BDDFlowConstraintGenerator.RefineAll.refine
 import static org.batfish.common.bdd.BDDFlowConstraintGenerator.RefineFirst.refineFirst;
 import static org.batfish.common.bdd.BDDFlowConstraintGenerator.isPrivateIp;
 import static org.batfish.common.bdd.BDDFlowConstraintGenerator.refine;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Prefix;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class BDDFlowConstraintGeneratorTest {
+class BDDFlowConstraintGeneratorTest {
   @Test
-  public void testIsPrivateIp() {
+  void testIsPrivateIp() {
     BDDPacket pkt = new BDDPacket();
     BDDOps ops = new BDDOps(pkt.getFactory());
     BDD isPrivateIp = isPrivateIp(ops, pkt.getDstIpSpaceToBDD());
@@ -33,7 +33,7 @@ public class BDDFlowConstraintGeneratorTest {
   }
 
   @Test
-  public void testRefineFirst() {
+  void testRefineFirst() {
     BDDPacket pkt = new BDDPacket();
     BDDFactory factory = pkt.getFactory();
 
@@ -71,7 +71,7 @@ public class BDDFlowConstraintGeneratorTest {
   }
 
   @Test
-  public void testRefineAll() {
+  void testRefineAll() {
     BDDPacket pkt = new BDDPacket();
     BDDFactory factory = pkt.getFactory();
     BDDIpProtocol ipProtocol = pkt.getIpProtocol();

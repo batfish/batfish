@@ -13,7 +13,7 @@ import static org.batfish.specifier.Location.interfaceLinkLocation;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -36,12 +36,12 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.vendor_family.AwsFamily;
 import org.batfish.specifier.LocationInfo;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class VpcEndpointGatewayTest {
+class VpcEndpointGatewayTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new VpcEndpointGateway("id", "service", "vpc", ImmutableMap.of()),
@@ -55,7 +55,7 @@ public class VpcEndpointGatewayTest {
   }
 
   @Test
-  public void testToConfiguration() {
+  void testToConfiguration() {
     Prefix vpcPrefix = Prefix.parse("10.10.10.0/24");
     Vpc vpc = getTestVpc("vpc", ImmutableSet.of(vpcPrefix));
 
@@ -132,7 +132,7 @@ public class VpcEndpointGatewayTest {
   }
 
   @Test
-  public void testComputeServicePrefixFilter() {
+  void testComputeServicePrefixFilter() {
     Ip serviceIp = Ip.parse("1.1.1.1");
     Ip nonServiceIp = Ip.parse("6.6.6.6");
     IpAccessList servicePrefixFilter = computeServicePrefixFilter(serviceIp.toIpSpace());
@@ -157,7 +157,7 @@ public class VpcEndpointGatewayTest {
   }
 
   @Test
-  public void testHumanName() {
+  void testHumanName() {
     assertThat(humanName(ImmutableMap.of(TAG_NAME, "tag"), "sname"), equalTo("tag"));
     assertThat(humanName(ImmutableMap.of(), "sname"), equalTo("sname"));
   }

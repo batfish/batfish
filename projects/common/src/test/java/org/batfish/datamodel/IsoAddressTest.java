@@ -4,18 +4,16 @@ import static org.batfish.datamodel.IsoAddress.invalidCharsMessage;
 import static org.batfish.datamodel.IsoAddress.invalidLengthMessage;
 import static org.batfish.datamodel.IsoAddress.trim;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-public final class IsoAddressTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+final class IsoAddressTest {
 
   @Test
-  public void testCanonicalization() {
+  void testCanonicalization() {
     String even = "AaccccccCcccccdD";
     String evenCanonical = "AA.CCCC.CCCC.CCCC.DD";
     String odd = "AABBCCCCCCCCCCCCDD";
@@ -31,37 +29,61 @@ public final class IsoAddressTest {
   }
 
   @Test
-  public void testRejectInvalidChar() {
+  void testRejectInvalidChar() {
     String invalidIsoAddressStr = "AA.CCCC.CCCC.CCCC.GG";
 
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage(invalidCharsMessage(invalidIsoAddressStr, trim(invalidIsoAddressStr)));
-    new IsoAddress(invalidIsoAddressStr);
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> {
+              new IsoAddress(invalidIsoAddressStr);
+            });
+    assertThat(
+        exception.getMessage(),
+        containsString(invalidCharsMessage(invalidIsoAddressStr, trim(invalidIsoAddressStr))));
   }
 
   @Test
-  public void testRejectOddDigits() {
+  void testRejectOddDigits() {
     String invalidIsoAddressStr = "AA.BBBC.CCCC.CCCC.CDD";
 
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage(invalidLengthMessage(invalidIsoAddressStr, trim(invalidIsoAddressStr)));
-    new IsoAddress(invalidIsoAddressStr);
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> {
+              new IsoAddress(invalidIsoAddressStr);
+            });
+    assertThat(
+        exception.getMessage(),
+        containsString(invalidLengthMessage(invalidIsoAddressStr, trim(invalidIsoAddressStr))));
   }
 
   @Test
-  public void testRejectTooLarge() {
+  void testRejectTooLarge() {
     String invalidIsoAddressStr = "AA.BBBB.BBBB.BBBB.BBBB.BBBB.BBBB.BBCC.CCCC.CCCC.CCDD";
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage(invalidLengthMessage(invalidIsoAddressStr, trim(invalidIsoAddressStr)));
-    new IsoAddress(invalidIsoAddressStr);
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> {
+              new IsoAddress(invalidIsoAddressStr);
+            });
+    assertThat(
+        exception.getMessage(),
+        containsString(invalidLengthMessage(invalidIsoAddressStr, trim(invalidIsoAddressStr))));
   }
 
   @Test
-  public void testRejectTooSmall() {
+  void testRejectTooSmall() {
     String invalidIsoAddressStr = "AA.CCCC.CCCC.CCDD";
 
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage(invalidLengthMessage(invalidIsoAddressStr, trim(invalidIsoAddressStr)));
-    new IsoAddress(invalidIsoAddressStr);
+    Throwable exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> {
+              new IsoAddress(invalidIsoAddressStr);
+            });
+    assertThat(
+        exception.getMessage(),
+        containsString(invalidLengthMessage(invalidIsoAddressStr, trim(invalidIsoAddressStr))));
   }
 }

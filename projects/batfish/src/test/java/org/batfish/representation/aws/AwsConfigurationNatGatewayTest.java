@@ -7,6 +7,7 @@ import static org.batfish.representation.aws.AwsConfigurationTestUtils.testSetup
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testTrace;
 
 import com.google.common.collect.ImmutableList;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.batfish.common.plugin.IBatfish;
@@ -14,10 +15,9 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * E2e tests of NAT behavior. The snapshot was created using the terraform definition file that is
@@ -30,7 +30,7 @@ import org.junit.rules.TemporaryFolder;
  * <p>There are other entities in the setup (e.g., another private subnet) that are not relevant to
  * the tests below but were part of the definition file (and pulled data) for manual testing.
  */
-public class AwsConfigurationNatGatewayTest {
+class AwsConfigurationNatGatewayTest {
 
   private static final String TESTCONFIGS_DIR = "org/batfish/representation/aws/test-nat-gateway";
 
@@ -61,15 +61,15 @@ public class AwsConfigurationNatGatewayTest {
 
   private static IBatfish _batfish;
 
-  @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public static File _folder;
 
-  @BeforeClass
-  public static void setup() throws IOException {
+  @BeforeAll
+  static void setup() throws IOException {
     _batfish = testSetup(TESTCONFIGS_DIR, fileNames, _folder);
   }
 
   @Test
-  public void testInstanceToInternet_bidirectional() {
+  void testInstanceToInternet_bidirectional() {
     Flow flow = getTcpFlow(_instanceS1, Ip.parse("8.8.8.8"), 80, _batfish);
     AwsConfigurationTestUtils.testBidirectionalTrace(
         flow,
@@ -98,7 +98,7 @@ public class AwsConfigurationNatGatewayTest {
 
   /** Test that packets for unsupported IP protocols are dropped at the NAT */
   @Test
-  public void testUnsupportedIpProtocol() {
+  void testUnsupportedIpProtocol() {
     Flow flow =
         Flow.builder()
             .setIngressNode(_instanceS1)
@@ -115,7 +115,7 @@ public class AwsConfigurationNatGatewayTest {
 
   /** Test that packets that come into the NAT without an installed session are dropped */
   @Test
-  public void testNonSessionPacket() {
+  void testNonSessionPacket() {
     Flow flow = getTcpFlow(INTERNET_HOST_NAME, Ip.parse("8.8.8.8"), _publicIpNat, 80);
     testTrace(
         flow,
@@ -132,7 +132,7 @@ public class AwsConfigurationNatGatewayTest {
 
   /** Test that packets that come into the NAT from within the subnet are dropped */
   @Test
-  public void testIntraSubnetPacket() {
+  void testIntraSubnetPacket() {
     Flow flow = getTcpFlow(_instanceNatSubnet, _privateIpNat, 80, _batfish);
     testTrace(
         flow,

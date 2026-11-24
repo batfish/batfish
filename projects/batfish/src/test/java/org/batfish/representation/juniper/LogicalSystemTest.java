@@ -3,12 +3,12 @@ package org.batfish.representation.juniper;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class LogicalSystemTest {
+final class LogicalSystemTest {
 
   @Test
-  public void testExpandInterfaceRanges() {
+  void testExpandInterfaceRanges() {
     LogicalSystem ls = new LogicalSystem("ls");
 
     // add an explicit interface with a configured MTU

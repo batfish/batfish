@@ -5,12 +5,12 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.testing.EqualsTester;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class InterfaceVlanTagTest {
+final class InterfaceVlanTagTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new InterfaceVlanTag(null, 100), new InterfaceVlanTag(null, 100))
         .addEqualityGroup(new InterfaceVlanTag(0x8100, 100))
@@ -19,7 +19,7 @@ public final class InterfaceVlanTagTest {
   }
 
   @Test
-  public void testProperties() {
+  void testProperties() {
     InterfaceVlanTag numeric = new InterfaceVlanTag(null, 100);
     InterfaceVlanTag qualified = new InterfaceVlanTag(0x88A8, 200);
 

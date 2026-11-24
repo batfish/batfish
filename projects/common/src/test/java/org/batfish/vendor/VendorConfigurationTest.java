@@ -10,8 +10,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
@@ -20,10 +20,10 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link VendorConfiguration}. */
-public final class VendorConfigurationTest {
+final class VendorConfigurationTest {
 
   private static final String FILENAME = "filename";
 
@@ -92,7 +92,7 @@ public final class VendorConfigurationTest {
   }
 
   @Test
-  public void testDeleteStructureUndefined() {
+  void testDeleteStructureUndefined() {
     String origName = "origName";
     int origLine = 1;
 
@@ -147,7 +147,7 @@ public final class VendorConfigurationTest {
   }
 
   @Test
-  public void testDeleteStructureValid() {
+  void testDeleteStructureValid() {
     String origName = "origName";
     int origLine = 1;
     int origRefLine = 11;
@@ -186,7 +186,7 @@ public final class VendorConfigurationTest {
   }
 
   @Test
-  public void testRenameStructureUndefined() {
+  void testRenameStructureUndefined() {
     String origName = "origName";
     int origLine = 1;
     String newName = "newName";
@@ -245,7 +245,7 @@ public final class VendorConfigurationTest {
   }
 
   @Test
-  public void testRenameStructureClash() {
+  void testRenameStructureClash() {
     String origName = "origName";
     int origLine = 1;
     String newName = "newName";
@@ -323,7 +323,7 @@ public final class VendorConfigurationTest {
   }
 
   @Test
-  public void testRenameStructureValid() {
+  void testRenameStructureValid() {
     String origName = "origName";
     int origLine = 1;
     String newName = "newName";

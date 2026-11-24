@@ -12,6 +12,7 @@ import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import java.io.File;
 import java.io.IOException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -32,15 +33,14 @@ import org.batfish.datamodel.questions.Variable;
 import org.batfish.datamodel.questions.Variable.Type;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Test of {@link AutocompleteResource}. */
-public final class AutocompleteResourceTest extends WorkMgrServiceV2TestBase {
+final class AutocompleteResourceTest extends WorkMgrServiceV2TestBase {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private @Nonnull Builder getTarget(
       String network,
@@ -64,13 +64,13 @@ public final class AutocompleteResourceTest extends WorkMgrServiceV2TestBase {
         .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY);
   }
 
-  @Before
-  public void initNetworkEnvironment() {
+  @BeforeEach
+  void initNetworkEnvironment() {
     WorkMgrTestUtils.initWorkManager(_folder);
   }
 
   @Test
-  public void testGetMissingNetwork() {
+  void testGetMissingNetwork() {
     String network = "network1";
     String snapshot = "snapshot1";
     try (Response response = getTarget(network, snapshot, Type.NODE_NAME, null, null).get()) {
@@ -79,7 +79,7 @@ public final class AutocompleteResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetMissingSnapshot() {
+  void testGetMissingSnapshot() {
     String network = "network1";
     Main.getWorkMgr().initNetwork(network, null);
     String snapshot = "snapshot1";
@@ -89,7 +89,7 @@ public final class AutocompleteResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGet() throws IOException {
+  void testGet() throws IOException {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
@@ -143,7 +143,7 @@ public final class AutocompleteResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetNoSnapshotButNeedsSnapshot() throws IOException {
+  void testGetNoSnapshotButNeedsSnapshot() throws IOException {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
@@ -182,7 +182,7 @@ public final class AutocompleteResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetNoSnapshot() {
+  void testGetNoSnapshot() {
     String network = "network1";
     Main.getWorkMgr().initNetwork(network, null);
 

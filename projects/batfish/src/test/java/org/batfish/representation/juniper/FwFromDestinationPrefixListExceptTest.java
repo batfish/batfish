@@ -6,19 +6,19 @@ import static org.hamcrest.Matchers.equalTo;
 
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Prefix;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link FwFromDestinationPrefixListExcept} */
-public class FwFromDestinationPrefixListExceptTest {
+class FwFromDestinationPrefixListExceptTest {
   private JuniperConfiguration _jc;
   private Warnings _w;
 
   private static final String BASE_PREFIX_LIST_NAME = "prefixList";
   private static final Prefix BASE_IP_PREFIX = Prefix.parse("1.2.3.4/32");
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _jc = new JuniperConfiguration();
     PrefixList pl = new PrefixList(BASE_PREFIX_LIST_NAME);
     pl.getPrefixes().add(BASE_IP_PREFIX);
@@ -27,7 +27,7 @@ public class FwFromDestinationPrefixListExceptTest {
   }
 
   @Test
-  public void testToHeaderSpace() {
+  void testToHeaderSpace() {
     FwFromDestinationPrefixListExcept fwFrom =
         new FwFromDestinationPrefixListExcept(BASE_PREFIX_LIST_NAME);
 

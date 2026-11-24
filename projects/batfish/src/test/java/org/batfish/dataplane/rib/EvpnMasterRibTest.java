@@ -17,13 +17,13 @@ import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.route.nh.NextHopIp;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link EvpnMasterRib}. */
-public final class EvpnMasterRibTest {
+final class EvpnMasterRibTest {
 
   @Test
-  public void testRdIndependence() {
+  void testRdIndependence() {
     EvpnMasterRib<EvpnType5Route> rib =
         new EvpnMasterRib<>(BgpTieBreaker.ROUTER_ID, null, false, NO_PREFERENCE);
     EvpnType5Route.Builder rb =
@@ -55,7 +55,7 @@ public final class EvpnMasterRibTest {
   }
 
   @Test
-  public void testMergeAndRemove() {
+  void testMergeAndRemove() {
     EvpnMasterRib<EvpnType5Route> rib =
         new EvpnMasterRib<>(BgpTieBreaker.ROUTER_ID, null, false, NO_PREFERENCE);
     EvpnType5Route route =

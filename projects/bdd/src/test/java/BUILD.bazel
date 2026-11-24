@@ -14,7 +14,7 @@ java_library(
     ),
     deps = [
         "//projects/bdd",
-        "@maven//:junit_junit",
+        "@maven//:org_junit_jupiter_junit_jupiter_api",
     ],
 )
 
@@ -27,9 +27,9 @@ junit_tests(
         ":bdd_testlib",
         "//projects/bdd",
         "@maven//:com_google_guava_guava",
-        "@maven//:junit_junit",
         "@maven//:org_apache_commons_commons_lang3",
         "@maven//:org_apache_logging_log4j_log4j_core",
         "@maven//:org_hamcrest_hamcrest",
+        "@maven//:org_junit_jupiter_junit_jupiter_api",
     ],
 )

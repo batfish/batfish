@@ -9,16 +9,16 @@ import java.util.Set;
 import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
 import org.batfish.specifier.Grammar;
 import org.batfish.specifier.RoutingProtocolSpecifier;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link ParsedEnumSetSpecifier} */
-public class ParsedEnumSetSpecifierTest {
+class ParsedEnumSetSpecifierTest {
 
   private static final Set<String> ALL_NAMED_STRUCTURE_TYPES =
       NamedStructurePropertySpecifier.JAVA_MAP.keySet();
 
   @Test
-  public void testResolveType() {
+  void testResolveType() {
     assertThat(
         new ParsedEnumSetSpecifier<>(
                 new ValueEnumSetAstNode<>(
@@ -29,7 +29,7 @@ public class ParsedEnumSetSpecifierTest {
   }
 
   @Test
-  public void testResolveTypeRegex() {
+  void testResolveTypeRegex() {
     assertThat(
         new ParsedEnumSetSpecifier<>(new RegexEnumSetAstNode("ip.*list"), ALL_NAMED_STRUCTURE_TYPES)
             .resolve(),
@@ -40,7 +40,7 @@ public class ParsedEnumSetSpecifierTest {
   }
 
   @Test
-  public void testResolveUnion() {
+  void testResolveUnion() {
     assertThat(
         new ParsedEnumSetSpecifier<String>(
                 new UnionEnumSetAstNode(
@@ -59,7 +59,7 @@ public class ParsedEnumSetSpecifierTest {
 
   /** Test for resolving a simple not value like '! IP_Access_List' */
   @Test
-  public void testResolveNotSimple() {
+  void testResolveNotSimple() {
     assertThat(
         new ParsedEnumSetSpecifier<>(
                 new NotEnumSetAstNode(
@@ -75,7 +75,7 @@ public class ParsedEnumSetSpecifierTest {
 
   /** Test for resolving a regex not value like '! /ip.*list/' */
   @Test
-  public void testResolveNotRegex() {
+  void testResolveNotRegex() {
     assertThat(
         new ParsedEnumSetSpecifier<>(
                 new NotEnumSetAstNode(new RegexEnumSetAstNode("ip.*list")),
@@ -91,7 +91,7 @@ public class ParsedEnumSetSpecifierTest {
 
   /** Test for resolving an effective subtraction as in '/ip.*list/, !IP_Access_List' */
   @Test
-  public void testResolveNotSubtraction() {
+  void testResolveNotSubtraction() {
     assertThat(
         new ParsedEnumSetSpecifier<>(
                 new UnionEnumSetAstNode(
@@ -110,7 +110,7 @@ public class ParsedEnumSetSpecifierTest {
    * /ip.*list/'
    */
   @Test
-  public void testResolveNotSubtractionReverse() {
+  void testResolveNotSubtractionReverse() {
     assertThat(
         new ParsedEnumSetSpecifier<>(
                 new UnionEnumSetAstNode(
@@ -126,7 +126,7 @@ public class ParsedEnumSetSpecifierTest {
 
   /** Test for resolving a union of nots as in '!IP_6_Access_List, !IP_Access_List' */
   @Test
-  public void testResolveNotUnion() {
+  void testResolveNotUnion() {
     assertThat(
         new ParsedEnumSetSpecifier<>(
                 new UnionEnumSetAstNode(
@@ -149,7 +149,7 @@ public class ParsedEnumSetSpecifierTest {
   }
 
   @Test
-  public void testResolveGroupsSimpleNegation() {
+  void testResolveGroupsSimpleNegation() {
     Set<String> expectedSet =
         Sets.difference(
             RoutingProtocolSpecifier.getAtomicProtocols(),
@@ -179,7 +179,7 @@ public class ParsedEnumSetSpecifierTest {
   }
 
   @Test
-  public void testResolveGroupsNegateAll() {
+  void testResolveGroupsNegateAll() {
     assertThat(
         // ! all
         new ParsedEnumSetSpecifier<>(
@@ -193,7 +193,7 @@ public class ParsedEnumSetSpecifierTest {
   }
 
   @Test
-  public void testResolveGroupsNegateSubset() {
+  void testResolveGroupsNegateSubset() {
     assertThat(
         // bgp, !ebgp
         new ParsedEnumSetSpecifier<>(
@@ -211,7 +211,7 @@ public class ParsedEnumSetSpecifierTest {
   }
 
   @Test
-  public void testResolveGroupsNegateSuperset() {
+  void testResolveGroupsNegateSuperset() {
     assertThat(
         // ebgp, !bgp
         new ParsedEnumSetSpecifier<>(
@@ -229,7 +229,7 @@ public class ParsedEnumSetSpecifierTest {
   }
 
   @Test
-  public void testResolveGroupsNegateSame() {
+  void testResolveGroupsNegateSame() {
     assertThat(
         // bgp, !bgp
         new ParsedEnumSetSpecifier<>(
@@ -247,7 +247,7 @@ public class ParsedEnumSetSpecifierTest {
   }
 
   @Test
-  public void testResolveGroupsNegateUnion() {
+  void testResolveGroupsNegateUnion() {
     assertThat(
         // bgp, !ibgp, !ebgp
         new ParsedEnumSetSpecifier<>(
@@ -270,7 +270,7 @@ public class ParsedEnumSetSpecifierTest {
   }
 
   @Test
-  public void testResolveGroupsNegateTwoLevels() {
+  void testResolveGroupsNegateTwoLevels() {
     assertThat(
         // ospf, !ospf-ext1
         new ParsedEnumSetSpecifier<>(

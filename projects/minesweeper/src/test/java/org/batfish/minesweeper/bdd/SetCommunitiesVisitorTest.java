@@ -1,6 +1,6 @@
 package org.batfish.minesweeper.bdd;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -29,11 +29,11 @@ import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.batfish.minesweeper.ConfigAtomicPredicatesTestUtils;
 import org.batfish.minesweeper.bdd.TransferBDD.Context;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link SetCommunitiesVisitor}. */
-public class SetCommunitiesVisitorTest {
+class SetCommunitiesVisitorTest {
   private static final String HOSTNAME = "hostname";
   private static final String POLICY_NAME = "policy";
   private IBatfish _batfish;
@@ -42,8 +42,8 @@ public class SetCommunitiesVisitorTest {
   private CommunitySetMatchExprToBDD.Arg _arg;
   private SetCommunitiesVisitor _scVisitor;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder()
@@ -74,7 +74,7 @@ public class SetCommunitiesVisitorTest {
   }
 
   @Test
-  public void testVisitCommunityExprsSet() {
+  void testVisitCommunityExprsSet() {
     CommunityExprsSet ces =
         CommunityExprsSet.of(
             new StandardCommunityHighLowExprs(new LiteralInt(20), new LiteralInt(30)));
@@ -90,7 +90,7 @@ public class SetCommunitiesVisitorTest {
   }
 
   @Test
-  public void testVisitCommunitySetDifference() {
+  void testVisitCommunitySetDifference() {
     CommunitySetDifference csd =
         new CommunitySetDifference(
             new LiteralCommunitySet(
@@ -109,7 +109,7 @@ public class SetCommunitiesVisitorTest {
   }
 
   @Test
-  public void testVisitCommunitySetExprReference() {
+  void testVisitCommunitySetExprReference() {
     String name = "name";
     _baseConfig.setCommunitySetExprs(
         ImmutableMap.of(
@@ -127,7 +127,7 @@ public class SetCommunitiesVisitorTest {
   }
 
   @Test
-  public void testVisitCommunitySetReference() {
+  void testVisitCommunitySetReference() {
     String name = "name";
     _baseConfig.setCommunitySets(
         ImmutableMap.of(name, CommunitySet.of(StandardCommunity.parse("20:30"))));
@@ -144,7 +144,7 @@ public class SetCommunitiesVisitorTest {
   }
 
   @Test
-  public void testVisitCommunitySetUnion() {
+  void testVisitCommunitySetUnion() {
     CommunitySetUnion csu =
         CommunitySetUnion.of(
             new LiteralCommunitySet(CommunitySet.of(StandardCommunity.parse("20:30"))),
@@ -168,7 +168,7 @@ public class SetCommunitiesVisitorTest {
   }
 
   @Test
-  public void testVisitInputCommunities() {
+  void testVisitInputCommunities() {
     CommunityAPDispositions result =
         _scVisitor.visitInputCommunities(InputCommunities.instance(), _arg);
     assertEquals(
@@ -180,7 +180,7 @@ public class SetCommunitiesVisitorTest {
   }
 
   @Test
-  public void testVisitLiteralCommunitySet() {
+  void testVisitLiteralCommunitySet() {
     LiteralCommunitySet lcs =
         new LiteralCommunitySet(CommunitySet.of(StandardCommunity.parse("20:30")));
 

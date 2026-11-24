@@ -6,13 +6,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
 
 import org.batfish.common.Warnings.ParseWarning;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link org.batfish.common.matchers.ParseWarningMatchers}. */
-public final class ParseWarningMatchersTest {
+final class ParseWarningMatchersTest {
 
   @Test
-  public void testIsTodo() {
+  void testIsTodo() {
     ParseWarning todo = new ParseWarning(1, "text", "context", TODO_COMMENT);
     assertThat(todo, isTodo());
     assertThat(todo, isTodo("text"));

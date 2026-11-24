@@ -21,7 +21,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
@@ -57,16 +57,16 @@ import org.batfish.referencelibrary.GeneratedRefBookUtils.BookType;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.representation.aws.IpPermissions.AddressType;
 import org.batfish.representation.aws.IpPermissions.IpRange;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link Region} */
-public class RegionTest {
+class RegionTest {
 
   public static final String CONFIGURATION_NAME = "c";
 
   /** Test that we don't warn the user upon encountering an empty list with an unknown key type */
   @Test
-  public void testAddConfigElementUnknownKeyEmptyList() throws IOException {
+  void testAddConfigElementUnknownKeyEmptyList() throws IOException {
 
     JsonNode json = BatfishObjectMapper.mapper().readTree("{ \"stranger\" :  [] }");
 
@@ -79,7 +79,7 @@ public class RegionTest {
 
   /** Test that we warn the user upon encountering a non-empty list with an unknown key type */
   @Test
-  public void testAddConfigElementUnknownKeyNonEmptyList() throws IOException {
+  void testAddConfigElementUnknownKeyNonEmptyList() throws IOException {
 
     JsonNode json = BatfishObjectMapper.mapper().readTree("{ \"stranger\" :  [1] }");
 
@@ -95,7 +95,7 @@ public class RegionTest {
 
   /** Test that we warn the user upon encountering a non-list with an unknown key type */
   @Test
-  public void testAddConfigElementUnknownKeyNonList() throws IOException {
+  void testAddConfigElementUnknownKeyNonList() throws IOException {
 
     JsonNode json = BatfishObjectMapper.mapper().readTree("{ \"stranger\" :  {} }");
 
@@ -148,7 +148,7 @@ public class RegionTest {
   }
 
   @Test
-  public void testApplyInstanceInterfaceAcls() {
+  void testApplyInstanceInterfaceAcls() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
         nf.configurationBuilder()
@@ -208,7 +208,7 @@ public class RegionTest {
   }
 
   @Test
-  public void testSecurityGroupAclTracer() {
+  void testSecurityGroupAclTracer() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
         nf.configurationBuilder()
@@ -292,7 +292,7 @@ public class RegionTest {
   }
 
   @Test
-  public void testComputeAntiSpoofingFilter() {
+  void testComputeAntiSpoofingFilter() {
     Ip validSourceIp = Ip.parse("10.10.10.10");
     Interface iface =
         TestInterface.builder()
@@ -319,7 +319,7 @@ public class RegionTest {
   }
 
   @Test
-  public void testGetAddresses() {
+  void testGetAddresses() {
     Address addr1 = new Address(Ip.parse("1.2.3.4"), "i-1234", Ip.parse("4.3.2.1"), "alloc-1");
     Address addr2 = new Address(Ip.parse("11.22.33.44"), null, null, "alloc-2");
     Region region =
@@ -330,7 +330,7 @@ public class RegionTest {
   }
 
   @Test
-  public void testAddPrefixListAddressBook() {
+  void testAddPrefixListAddressBook() {
     PrefixList plist1 =
         new PrefixList("plist1", ImmutableList.of(Prefix.parse("1.1.1.0/24")), "plist1Name");
     PrefixList plist2 =

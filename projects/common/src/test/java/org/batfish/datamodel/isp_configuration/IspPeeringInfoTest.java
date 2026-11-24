@@ -6,12 +6,12 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.isp_configuration.IspPeeringInfo.Peer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class IspPeeringInfoTest {
+class IspPeeringInfoTest {
 
   @Test
-  public void testEqualsIspPeeringInfo() {
+  void testEqualsIspPeeringInfo() {
     new EqualsTester()
         .addEqualityGroup(
             new IspPeeringInfo(new Peer(1), new Peer(2)),
@@ -22,7 +22,7 @@ public class IspPeeringInfoTest {
   }
 
   @Test
-  public void testEqualsPeer() {
+  void testEqualsPeer() {
     new EqualsTester()
         .addEqualityGroup(new Peer(1), new Peer(1))
         .addEqualityGroup(new Peer(2))
@@ -30,7 +30,7 @@ public class IspPeeringInfoTest {
   }
 
   @Test
-  public void testJsonSerializationIspPeeringInfo() {
+  void testJsonSerializationIspPeeringInfo() {
     IspPeeringInfo ispPeeringInfo = new IspPeeringInfo(new Peer(1L), new Peer(2L));
 
     assertThat(
@@ -38,7 +38,7 @@ public class IspPeeringInfoTest {
   }
 
   @Test
-  public void testJsonSerializationPeer() {
+  void testJsonSerializationPeer() {
     Peer peer = new Peer(1L);
     assertThat(BatfishObjectMapper.clone(peer, Peer.class), equalTo(peer));
   }

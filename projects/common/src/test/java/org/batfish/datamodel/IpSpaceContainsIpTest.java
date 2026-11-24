@@ -1,14 +1,14 @@
 package org.batfish.datamodel;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link IpSpaceContainsIp}. */
-public class IpSpaceContainsIpTest {
+class IpSpaceContainsIpTest {
   private static final String IP_SPACE_NAME = "ipSpace";
   private static final Map<String, IpSpace> NAMED_IP_SPACES =
       ImmutableMap.of(IP_SPACE_NAME, Prefix.parse("1.0.0.0/8").toIpSpace());
@@ -18,7 +18,7 @@ public class IpSpaceContainsIpTest {
   }
 
   @Test
-  public void testVisitIpSpaceReference_true() {
+  void testVisitIpSpaceReference_true() {
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("2.2.2.2");
     assertTrue(containsIp(ip1).visitIpSpaceReference(new IpSpaceReference(IP_SPACE_NAME)));

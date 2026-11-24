@@ -9,6 +9,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
 
 import com.google.common.collect.ImmutableList;
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import javax.annotation.Nonnull;
@@ -19,17 +20,16 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 @ParametersAreNonnullByDefault
-public class AristaBgpTest {
+class AristaBgpTest {
   private static final String DEFAULT_VRF_NAME = "default";
   private static final String TESTCONFIGS_PREFIX = "org/batfish/vendor/arista/grammar/testconfigs/";
   private static final String SNAPSHOTS_PREFIX = "org/batfish/vendor/arista/grammar/snapshots/";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private @Nonnull Batfish getBatfishForConfigurationNames(String... configurationNames)
       throws IOException {
@@ -40,7 +40,7 @@ public class AristaBgpTest {
 
   /** Undefined redistribute map is treated as permitting everything. */
   @Test
-  public void testBgpRedistributeUndefined() throws IOException {
+  void testBgpRedistributeUndefined() throws IOException {
     String config = "bgp-redistribute-undefined";
     Batfish batfish = getBatfishForConfigurationNames(config);
 
@@ -54,7 +54,7 @@ public class AristaBgpTest {
 
   /** BGP local-pref and export-localpref. */
   @Test
-  public void testBgpLocalPreference() throws IOException {
+  void testBgpLocalPreference() throws IOException {
     String originator = "originator";
     String listener = "listener";
     Batfish batfish =

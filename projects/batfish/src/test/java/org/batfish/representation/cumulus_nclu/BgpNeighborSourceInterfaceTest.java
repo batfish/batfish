@@ -1,13 +1,13 @@
 package org.batfish.representation.cumulus_nclu;
 
 import com.google.common.testing.EqualsTester;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link org.batfish.representation.cumulus_nclu.BgpNeighborSourceInterface} */
-public class BgpNeighborSourceInterfaceTest {
+class BgpNeighborSourceInterfaceTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     BgpNeighborSourceInterface bgpNeighborSourceInterface = new BgpNeighborSourceInterface("lo");
 
     new EqualsTester()

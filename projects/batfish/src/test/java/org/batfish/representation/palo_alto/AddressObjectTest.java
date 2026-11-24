@@ -3,20 +3,20 @@ package org.batfish.representation.palo_alto;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.google.common.collect.Range;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.representation.palo_alto.AddressObject.Type;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link AddressObject} */
-public class AddressObjectTest {
+class AddressObjectTest {
 
   @Test
-  public void testGetConcreteInterfaceAddress() {
+  void testGetConcreteInterfaceAddress() {
     AddressObject a = new AddressObject("name");
     Warnings w = new Warnings();
 
@@ -36,7 +36,7 @@ public class AddressObjectTest {
   }
 
   @Test
-  public void testSetClearsTypeAndMembers() {
+  void testSetClearsTypeAndMembers() {
     AddressObject a = new AddressObject("name");
     assertNull(a.getIp());
     assertNull(a.getType());

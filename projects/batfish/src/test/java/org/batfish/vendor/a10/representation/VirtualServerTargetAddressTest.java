@@ -6,12 +6,12 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.datamodel.Ip;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link VirtualServerTargetAddress} */
-public class VirtualServerTargetAddressTest {
+class VirtualServerTargetAddressTest {
   @Test
-  public void testEquality() {
+  void testEquality() {
     VirtualServerTargetAddress obj = new VirtualServerTargetAddress(Ip.ZERO);
     new EqualsTester()
         .addEqualityGroup(obj, new VirtualServerTargetAddress(Ip.ZERO))
@@ -20,7 +20,7 @@ public class VirtualServerTargetAddressTest {
   }
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     VirtualServerTargetAddress obj = new VirtualServerTargetAddress(Ip.ZERO);
     VirtualServerTargetAddress clone = SerializationUtils.clone(obj);
     assertThat(obj, equalTo(clone));

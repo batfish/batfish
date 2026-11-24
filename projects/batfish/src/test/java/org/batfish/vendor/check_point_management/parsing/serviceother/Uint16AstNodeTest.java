@@ -2,42 +2,36 @@ package org.batfish.vendor.check_point_management.parsing.serviceother;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.testing.EqualsTester;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link Uint16AstNode}. */
-public final class Uint16AstNodeTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+final class Uint16AstNodeTest {
 
   @Test
-  public void testOfValid() {
+  void testOfValid() {
     assertThat(Uint16AstNode.of("1"), equalTo(Uint16AstNode.of(1)));
   }
 
   @Test
-  public void testOfInvalidNotNumber() {
-    _thrown.expect(IllegalArgumentException.class);
-    Uint16AstNode.of("foo");
+  void testOfInvalidNotNumber() {
+    assertThrows(IllegalArgumentException.class, () -> Uint16AstNode.of("foo"));
   }
 
   @Test
-  public void testOfInvalidLow() {
-    _thrown.expect(IllegalArgumentException.class);
-    Uint16AstNode.of("-1");
+  void testOfInvalidLow() {
+    assertThrows(IllegalArgumentException.class, () -> Uint16AstNode.of("-1"));
   }
 
   @Test
-  public void testOfInvalidHigh() {
-    _thrown.expect(IllegalArgumentException.class);
-    Uint16AstNode.of("100000");
+  void testOfInvalidHigh() {
+    assertThrows(IllegalArgumentException.class, () -> Uint16AstNode.of("100000"));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     Uint16AstNode obj = Uint16AstNode.of(1);
     new EqualsTester()
         .addEqualityGroup(obj, Uint16AstNode.of(1))

@@ -49,10 +49,10 @@ import org.batfish.datamodel.questions.BgpPeerPropertySpecifier;
 import org.batfish.datamodel.table.Row;
 import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.NameNodeSpecifier;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link BgpPeerConfigurationAnswerer}. */
-public final class BgpPeerConfigurationAnswererTest {
+final class BgpPeerConfigurationAnswererTest {
 
   private final Configuration _c;
 
@@ -131,7 +131,7 @@ public final class BgpPeerConfigurationAnswererTest {
   }
 
   @Test
-  public void testAnswer() {
+  void testAnswer() {
     MockSpecifierContext ctxt =
         MockSpecifierContext.builder().setConfigs(ImmutableMap.of("c", _c)).build();
     List<Row> rows =
@@ -212,7 +212,7 @@ public final class BgpPeerConfigurationAnswererTest {
   }
 
   @Test
-  public void testFilteredAnswer() {
+  void testFilteredAnswer() {
     MockSpecifierContext ctxt =
         MockSpecifierContext.builder().setConfigs(ImmutableMap.of("c", _c)).build();
     List<Row> rows =
@@ -258,7 +258,7 @@ public final class BgpPeerConfigurationAnswererTest {
   }
 
   @Test
-  public void getRemoteIpActivePeer() {
+  void getRemoteIpActivePeer() {
     Ip ip = Ip.parse("1.1.1.1");
     BgpActivePeerConfig activePeerConfig =
         BgpActivePeerConfig.builder()
@@ -269,7 +269,7 @@ public final class BgpPeerConfigurationAnswererTest {
   }
 
   @Test
-  public void getRemoteIpPassivePeer() {
+  void getRemoteIpPassivePeer() {
     Prefix prefix = Prefix.create(Ip.parse("1.1.1.1"), 23);
     BgpPassivePeerConfig passivePeerConfig =
         BgpPassivePeerConfig.builder()

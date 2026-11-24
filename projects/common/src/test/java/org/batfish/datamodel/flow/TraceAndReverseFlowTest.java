@@ -10,9 +10,9 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.flow.InboundStep.InboundStepDetail;
 import org.batfish.datamodel.flow.OriginateStep.OriginateStepDetail;
 import org.batfish.datamodel.pojo.Node;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class TraceAndReverseFlowTest {
+class TraceAndReverseFlowTest {
   private static Trace trace(String hostname) {
     return new Trace(
         FlowDisposition.ACCEPTED,
@@ -38,7 +38,7 @@ public class TraceAndReverseFlowTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     Trace trace1 = trace("n1");
     Trace trace2 = trace("n2");
     Flow flow1 = Flow.builder().setIngressNode("n1").build();

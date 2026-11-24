@@ -1,10 +1,19 @@
 load("@batfish//skylark:thin_jar.bzl", "thin_jar")
+load("@batfish_version//:version.bzl", "BATFISH_VERSION")
+load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
 load("@rules_java//java:defs.bzl", "java_binary")
 
 package(default_visibility = ["//visibility:public"])
 
 java_binary(
     name = "allinone_main",
+    # SBOM scanners such as syft identify the deploy jar by these lines.
+    deploy_manifest_lines = [
+        "Implementation-Title: Batfish",
+        "Implementation-Version: " + BATFISH_VERSION,
+        "Implementation-Vendor: Batfish",
+        "Implementation-Vendor-Id: org.batfish",
+    ],
     main_class = "org.batfish.allinone.Main",
     runtime_deps = [
         "//projects/allinone/src/main/java/org/batfish/allinone",
@@ -13,6 +22,35 @@ java_binary(
         "@maven//:org_apache_logging_log4j_log4j_core",
         "@maven//:org_apache_logging_log4j_log4j_slf4j_impl",
     ],
+)
+
+# Checks allinone_main.deploy_manifest_lines against //projects:VERSION.
+genrule(
+    name = "allinone_main_deploy_manifest",
+    srcs = [":allinone_main_deploy.jar"],
+    outs = ["allinone_main_deploy_manifest.txt"],
+    cmd = "unzip -p $< META-INF/MANIFEST.MF | tr -d '\\r' | grep '^Implementation-' > $@ || true",
+)
+
+genrule(
+    name = "allinone_main_deploy_manifest_expected",
+    srcs = ["//projects:VERSION"],
+    outs = ["allinone_main_deploy_manifest_expected.txt"],
+    cmd = """
+cat > $@ <<EOF
+Implementation-Title: Batfish
+Implementation-Version: $$(cat $<)
+Implementation-Vendor: Batfish
+Implementation-Vendor-Id: org.batfish
+EOF
+""",
+)
+
+diff_test(
+    name = "allinone_main_deploy_manifest_test",
+    size = "small",
+    file1 = ":allinone_main_deploy_manifest_expected",
+    file2 = ":allinone_main_deploy_manifest",
 )
 
 # A "thin" library JAR bundling only Batfish's own modules, excluding all

@@ -2,8 +2,8 @@ package org.batfish.common.bdd;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -15,23 +15,23 @@ import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SubRange;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link BDDPrefix} */
 @ParametersAreNonnullByDefault
-public final class BDDPrefixTest {
+final class BDDPrefixTest {
 
   private BDDPrefix _bddPrefix;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     BDDPacket packet = new BDDPacket();
     _bddPrefix = new BDDPrefix(packet.getDstIp(), packet.getDscp());
   }
 
   @Test
-  public void testInPrefixRange() {
+  void testInPrefixRange() {
     PrefixRange range = PrefixRange.fromString("1.0.0.0/8:16-24");
     BDD rangeBdd = _bddPrefix.inPrefixRange(range);
     BDD notRangeBdd = rangeBdd.not();
@@ -49,7 +49,7 @@ public final class BDDPrefixTest {
   }
 
   @Test
-  public void testIsPrefix() {
+  void testIsPrefix() {
     Prefix p1 = Prefix.strict("192.0.2.0/24");
     Prefix p2 = Prefix.strict("192.0.2.0/32");
     Prefix p3 = Prefix.strict("192.0.3.0/24");
@@ -63,7 +63,7 @@ public final class BDDPrefixTest {
   }
 
   @Test
-  public void testPermittedByRouteFilterList() {
+  void testPermittedByRouteFilterList() {
     RouteFilterList routeFilterList =
         new RouteFilterList(
             "list",

@@ -4,9 +4,9 @@ import static org.batfish.minesweeper.bdd.AsPathMatchExprToRegexes.ASSUMED_MAX_A
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -31,11 +31,11 @@ import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.batfish.minesweeper.ConfigAtomicPredicatesTestUtils;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.batfish.minesweeper.bdd.TransferBDD.Context;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link AsPathMatchExprToRegexes}. */
-public class AsPathMatchExprToRegexesTest {
+class AsPathMatchExprToRegexesTest {
   private static final String HOSTNAME = "hostname";
   private static final String POLICY_NAME = "policy";
   private Configuration _baseConfig;
@@ -47,8 +47,8 @@ public class AsPathMatchExprToRegexesTest {
   private SymbolicAsPathRegex _asPath1Regex;
   private SymbolicAsPathRegex _asPath2Regex;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder()
@@ -75,7 +75,7 @@ public class AsPathMatchExprToRegexesTest {
   }
 
   @Test
-  public void testVisitAsPathMatchAny() {
+  void testVisitAsPathMatchAny() {
     assertTrue(AsPathMatchAny.of(ImmutableList.of()).accept(_matchExprToRegexes, _arg).isEmpty());
 
     Set<SymbolicAsPathRegex> result =
@@ -86,7 +86,7 @@ public class AsPathMatchExprToRegexesTest {
   }
 
   @Test
-  public void testAsPathMatchExprReference() {
+  void testAsPathMatchExprReference() {
     String name = "name";
 
     _baseConfig.setAsPathMatchExprs(ImmutableMap.of(name, AsPathMatchRegex.of(ASPATH1)));
@@ -97,14 +97,14 @@ public class AsPathMatchExprToRegexesTest {
   }
 
   @Test
-  public void testAsPathMatchRegex() {
+  void testAsPathMatchRegex() {
     assertEquals(
         ImmutableSet.of(_asPath1Regex),
         AsPathMatchRegex.of(ASPATH1).accept(_matchExprToRegexes, _arg));
   }
 
   @Test
-  public void testAsSetsMatchingRanges() {
+  void testAsSetsMatchingRanges() {
     AsSetsMatchingRanges expr =
         AsSetsMatchingRanges.of(false, true, ImmutableList.of(Range.closed(11L, 14L)));
     assertEquals(
@@ -112,7 +112,7 @@ public class AsPathMatchExprToRegexesTest {
   }
 
   @Test
-  public void testHasAsPathLength() {
+  void testHasAsPathLength() {
     // EQ is invalid
     HasAsPathLength eq10 =
         HasAsPathLength.of(new IntComparison(IntComparator.EQ, new LiteralInt(10)));

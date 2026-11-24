@@ -12,13 +12,13 @@ import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.representation.aws.TransitGatewayAttachment.ResourceType;
 import org.batfish.representation.aws.TransitGatewayPropagations.Propagation;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link TransitGatewayPropagations} */
-public class TransitGatewayPropagationsTest {
+class TransitGatewayPropagationsTest {
 
   @Test
-  public void testDeserialization() throws IOException {
+  void testDeserialization() throws IOException {
     String text =
         readResource("org/batfish/representation/aws/TransitGatewayPropagationsTest.json", UTF_8);
 

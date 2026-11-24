@@ -25,13 +25,13 @@ import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Prefix;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link Vpc} */
-public class VpcTest {
+class VpcTest {
 
   @Test
-  public void testDeserialization() throws IOException {
+  void testDeserialization() throws IOException {
     String text = readResource("org/batfish/representation/aws/VpcTest.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
@@ -54,7 +54,7 @@ public class VpcTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new Vpc("owner", "vpc", ImmutableSet.of(), ImmutableMap.of()),
@@ -69,7 +69,7 @@ public class VpcTest {
 
   /** The default VRF is properly set up */
   @Test
-  public void testToConfigurationNode_defaultVrf() {
+  void testToConfigurationNode_defaultVrf() {
     Set<Prefix> prefixes = ImmutableSet.of(Prefix.parse("1.1.1.1/32"), Prefix.parse("2.2.2.2/32"));
     Vpc vpc = getTestVpc("vpc", prefixes);
 
@@ -86,7 +86,7 @@ public class VpcTest {
 
   /** VRFs are in place for the right IGWs */
   @Test
-  public void testToConfigurationNod_igwVrfs() {
+  void testToConfigurationNod_igwVrfs() {
     Vpc vpc = getTestVpc("vpc");
 
     String gatewayId = "gateway";
@@ -111,7 +111,7 @@ public class VpcTest {
 
   /** VRFs are in place for the right VGWs */
   @Test
-  public void testToConfigurationNod_vgwVrfs() {
+  void testToConfigurationNod_vgwVrfs() {
     Vpc vpc = getTestVpc("vpc");
 
     String gatewayId = "gateway";
@@ -137,7 +137,7 @@ public class VpcTest {
 
   /** VRFs are in place for VPC Endpoint gateways */
   @Test
-  public void testToConfigurationNod_vpceGateways() {
+  void testToConfigurationNod_vpceGateways() {
     Vpc vpc = getTestVpc("vpc");
 
     String gatewayId = "gateway";
@@ -161,7 +161,7 @@ public class VpcTest {
 
   /** VRFs are in place for the right NAT gateways */
   @Test
-  public void testToConfigurationNod_ngwVrfs() {
+  void testToConfigurationNod_ngwVrfs() {
     Vpc vpc = getTestVpc("vpc");
 
     String gatewayId = "gateway";
@@ -187,7 +187,7 @@ public class VpcTest {
 
   /** VRFs are in place for the right TGW attachments */
   @Test
-  public void testToConfigurationNod_tgwAttachmentVrfs() {
+  void testToConfigurationNod_tgwAttachmentVrfs() {
     Vpc vpc = getTestVpc("vpc");
 
     String attachment = "attachment";
@@ -216,7 +216,7 @@ public class VpcTest {
 
   /** VRFs are in place for the right VPC peering connections */
   @Test
-  public void testToConfigurationNod_vpcPeeringVrfs() {
+  void testToConfigurationNod_vpcPeeringVrfs() {
     Vpc vpc = getTestVpc("vpc");
 
     String connectionRequester = "requester";

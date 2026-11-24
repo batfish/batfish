@@ -679,7 +679,7 @@ public final class FrrConversions {
     assert neighbor.getRemoteAs() != null; // precondition
 
     RoutingPolicy exportRoutingPolicy =
-        computeBgpNeighborExportRoutingPolicy(c, neighbor, bgpVrf, localAs);
+        computeBgpNeighborExportRoutingPolicy(c, neighbor, bgpVrf, localAs, w);
     @Nullable
     RoutingPolicy importRoutingPolicy = computeBgpNeighborImportRoutingPolicy(c, neighbor, bgpVrf);
 
@@ -799,7 +799,7 @@ public final class FrrConversions {
   }
 
   private static @Nonnull RoutingPolicy computeBgpNeighborExportRoutingPolicy(
-      Configuration c, BgpNeighbor neighbor, BgpVrf bgpVrf, @Nullable Long localAs) {
+      Configuration c, BgpNeighbor neighbor, BgpVrf bgpVrf, @Nullable Long localAs, Warnings w) {
     String vrfName = bgpVrf.getVrfName();
 
     RoutingPolicy.Builder peerExportPolicy =
@@ -826,9 +826,16 @@ public final class FrrConversions {
 
     // remove private as if set
     // TODO(handle different types of RemovePrivateAs)
-    if (ipv4u != null
-        && ipv4u.getRemovePrivateAsMode() != null
-        && ipv4u.getRemovePrivateAsMode() != RemovePrivateAsMode.NONE) {
+    RemovePrivateAsMode removePrivateAsMode = ipv4u == null ? null : ipv4u.getRemovePrivateAsMode();
+    if (removePrivateAsMode == RemovePrivateAsMode.REPLACE_AS
+        || removePrivateAsMode == RemovePrivateAsMode.ALL_REPLACE_AS) {
+      // FRR replaces each private AS with the local AS, which keeps the AS path length. Removing
+      // them instead would export a shorter path than the device does, so leave the path alone.
+      w.redFlagf(
+          "neighbor %s: remove-private-AS replace-AS is not yet modeled"
+              + " (private ASes will be left in exported AS paths)",
+          neighbor.getName());
+    } else if (removePrivateAsMode != null && removePrivateAsMode != RemovePrivateAsMode.NONE) {
       peerExportPolicy.addStatement(RemovePrivateAs.toStaticStatement());
     }
 

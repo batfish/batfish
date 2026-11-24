@@ -9,12 +9,12 @@ import com.google.common.testing.EqualsTester;
 import java.util.List;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class RowsTest {
+final class RowsTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     Row r1 = Row.of("val", 1);
     Row r2 = Row.of("val", 2);
     new EqualsTester()
@@ -25,7 +25,7 @@ public final class RowsTest {
   }
 
   @Test
-  public void testIterationAndSerializationPreservation() {
+  void testIterationAndSerializationPreservation() {
     // Rows are insertion-ordered, with duplicates appearing next to their first instance.
     List<Row> outOfOrderRows =
         ImmutableList.of(Row.of("val", 1), Row.of("val", 2), Row.of("val", 1));

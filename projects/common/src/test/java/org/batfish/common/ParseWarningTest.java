@@ -7,12 +7,12 @@ import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link ParseWarning}. */
-public class ParseWarningTest {
+class ParseWarningTest {
   @Test
-  public void testParseWarningsEquals() {
+  void testParseWarningsEquals() {
     ParseWarning pw = new ParseWarning(1, "", "", "");
     new EqualsTester()
         .addEqualityGroup(pw, pw, new ParseWarning(1, "", "", ""))
@@ -25,20 +25,20 @@ public class ParseWarningTest {
   }
 
   @Test
-  public void testToString() {
+  void testToString() {
     assertThat(
         new ParseWarning(1, "text", "ctx", "comment").toString(),
         equalTo("ParseWarning{line=1, text=text, comment=comment, parserContext=ctx}"));
   }
 
   @Test
-  public void testParseWarningsJavaSerialization() {
+  void testParseWarningsJavaSerialization() {
     ParseWarning pw = new ParseWarning(1, "t", "ctx", "com");
     assertThat(SerializationUtils.clone(pw), equalTo(pw));
   }
 
   @Test
-  public void testParseWarningsJsonSerialization() {
+  void testParseWarningsJsonSerialization() {
     ParseWarning pw = new ParseWarning(1, "t", "ctx", "com");
     assertThat(BatfishObjectMapper.clone(pw, ParseWarning.class), equalTo(pw));
   }

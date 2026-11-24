@@ -6,7 +6,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -20,18 +20,18 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class HeaderSpaceToBDDTest {
+class HeaderSpaceToBDDTest {
   private HeaderSpaceToBDD _toBDD;
 
   private BDDPacket _pkt;
   private BDDFactory _factory;
   private IpSpaceToBDD _dstIpSpaceToBdd;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _pkt = new BDDPacket();
     _factory = _pkt.getFactory();
     _toBDD = new HeaderSpaceToBDD(_pkt, ImmutableMap.of());
@@ -39,12 +39,12 @@ public class HeaderSpaceToBDDTest {
   }
 
   @Test
-  public void test_unconstrained() {
+  void test_unconstrained() {
     assertThat(_toBDD.toBDD(HeaderSpace.builder().build()), isOne());
   }
 
   @Test
-  public void test_negate() {
+  void test_negate() {
     IpSpace ip = Ip.parse("1.2.3.4").toIpSpace();
     BDD ipBDD = HeaderSpaceToBDD.toBDD(ip, _dstIpSpaceToBdd);
     assertThat(ipBDD, notNullValue());
@@ -54,7 +54,7 @@ public class HeaderSpaceToBDDTest {
   }
 
   @Test
-  public void test_srcOrDstIps() {
+  void test_srcOrDstIps() {
     Ip srcOrDstIp = Ip.parse("1.2.3.4");
     HeaderSpace headerSpace = HeaderSpace.builder().setSrcOrDstIps(srcOrDstIp.toIpSpace()).build();
     BDD bdd = _toBDD.toBDD(headerSpace);
@@ -87,7 +87,7 @@ public class HeaderSpaceToBDDTest {
   }
 
   @Test
-  public void test_srcOrDstPorts() {
+  void test_srcOrDstPorts() {
     SubRange portRange = new SubRange(10, 20);
     HeaderSpace headerSpace =
         HeaderSpace.builder().setSrcOrDstPorts(ImmutableList.of(portRange)).build();
@@ -101,7 +101,7 @@ public class HeaderSpaceToBDDTest {
   }
 
   @Test
-  public void test_dscps() {
+  void test_dscps() {
     HeaderSpace headerSpace =
         HeaderSpace.builder()
             .setDscps(ImmutableSet.of(1, 2, 3))
@@ -115,7 +115,7 @@ public class HeaderSpaceToBDDTest {
   }
 
   @Test
-  public void test_ecns() {
+  void test_ecns() {
     HeaderSpace headerSpace =
         HeaderSpace.builder()
             .setEcns(ImmutableSet.of(0, 1))
@@ -129,7 +129,7 @@ public class HeaderSpaceToBDDTest {
   }
 
   @Test
-  public void test_fragmentOffsets() {
+  void test_fragmentOffsets() {
     HeaderSpace headerSpace =
         HeaderSpace.builder()
             .setFragmentOffsets(ImmutableSet.of(new SubRange(0, 5)))
@@ -143,7 +143,7 @@ public class HeaderSpaceToBDDTest {
   }
 
   @Test
-  public void test_icmpType() {
+  void test_icmpType() {
     HeaderSpace headerSpace =
         HeaderSpace.builder().setIcmpTypes(ImmutableList.of(SubRange.singleton(8))).build();
     BDD matchExprBDD = _toBDD.toBDD(headerSpace);
@@ -152,7 +152,7 @@ public class HeaderSpaceToBDDTest {
   }
 
   @Test
-  public void test_ipProtocols() {
+  void test_ipProtocols() {
     IpProtocol proto1 = IpProtocol.TCP;
     IpProtocol proto2 = IpProtocol.UDP;
     HeaderSpace headerSpace =
@@ -163,7 +163,7 @@ public class HeaderSpaceToBDDTest {
   }
 
   @Test
-  public void test_packetLengths() {
+  void test_packetLengths() {
     SubRange range1 = new SubRange(20, 30);
     SubRange range2 = new SubRange(100, 200);
     HeaderSpace headerSpace =
@@ -177,7 +177,7 @@ public class HeaderSpaceToBDDTest {
   }
 
   @Test
-  public void test_notPacketLengths() {
+  void test_notPacketLengths() {
     SubRange positive = new SubRange(100, 200);
     SubRange negative = new SubRange(111, 189);
     HeaderSpace headerSpace =
@@ -198,7 +198,7 @@ public class HeaderSpaceToBDDTest {
   }
 
   @Test
-  public void test_tcpFlags() {
+  void test_tcpFlags() {
     TcpFlagsMatchConditions flags1 =
         TcpFlagsMatchConditions.builder()
             .setUseAck(true)
@@ -222,7 +222,7 @@ public class HeaderSpaceToBDDTest {
   }
 
   @Test
-  public void test_tcpFlag() {
+  void test_tcpFlag() {
     TcpFlagsMatchConditions flags1 =
         TcpFlagsMatchConditions.builder()
             .setUseAck(true)
@@ -241,19 +241,19 @@ public class HeaderSpaceToBDDTest {
   }
 
   @Test
-  public void testOrNull_null() {
+  void testOrNull_null() {
     assertThat(HeaderSpaceToBDD.orWithNull(null, null), nullValue());
   }
 
   @Test
-  public void testOrNull_one() {
+  void testOrNull_one() {
     BDD var = _factory.ithVar(0);
     assertThat(HeaderSpaceToBDD.orWithNull(var.id(), null), equalTo(var));
     assertThat(HeaderSpaceToBDD.orWithNull(null, var.id()), equalTo(var));
   }
 
   @Test
-  public void testOrNull_two() {
+  void testOrNull_two() {
     BDD var1 = _factory.ithVar(0);
     BDD var2 = _factory.ithVar(1);
     assertThat(HeaderSpaceToBDD.orWithNull(var1.id(), var2.id()), equalTo(var1.or(var2)));

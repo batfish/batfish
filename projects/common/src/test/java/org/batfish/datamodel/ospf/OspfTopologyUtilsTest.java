@@ -27,11 +27,11 @@ import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.Vrf;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link org.batfish.datamodel.ospf.OspfTopologyUtils} */
-public class OspfTopologyUtilsTest {
+class OspfTopologyUtilsTest {
 
   private static final OspfNeighborConfigId LOCAL_CONFIG_ID =
       new OspfNeighborConfigId(
@@ -386,7 +386,7 @@ public class OspfTopologyUtilsTest {
   }
 
   @Test
-  public void testTrimLinks() {
+  void testTrimLinks() {
     // Setup
     MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> graph =
         ValueGraphBuilder.directed().allowsSelfLoops(false).build();
@@ -420,7 +420,7 @@ public class OspfTopologyUtilsTest {
   }
 
   @Test
-  public void testGetSessionStatusCompatible() {
+  void testGetSessionStatusCompatible() {
     NetworkConfigurations configs =
         buildNetworkConfigurations(Ip.parse("192.0.2.0"), Ip.parse("192.0.2.1"));
 
@@ -430,7 +430,7 @@ public class OspfTopologyUtilsTest {
   }
 
   @Test
-  public void testGetSessionStatusMismatchArea() {
+  void testGetSessionStatusMismatchArea() {
     NetworkConfigurations configs =
         buildNetworkConfigurations(Ip.parse("192.0.2.0"), 0L, Ip.parse("192.0.2.1"), 1L);
 
@@ -440,7 +440,7 @@ public class OspfTopologyUtilsTest {
   }
 
   @Test
-  public void testGetSessionStatusMismatchAreaType() {
+  void testGetSessionStatusMismatchAreaType() {
     NetworkConfigurations configs =
         buildNetworkConfigurations(
             Ip.parse("192.0.2.0"), StubType.STUB, Ip.parse("192.0.2.1"), StubType.NONE);
@@ -451,7 +451,7 @@ public class OspfTopologyUtilsTest {
   }
 
   @Test
-  public void testGetSessionStatusMissingProcess() {
+  void testGetSessionStatusMissingProcess() {
     NetworkConfigurations configs =
         buildNetworkConfigurations(Ip.parse("192.0.2.0"), Ip.parse("192.0.2.1"));
     OspfNeighborConfigId bogusProcConfigId =
@@ -464,7 +464,7 @@ public class OspfTopologyUtilsTest {
   }
 
   @Test
-  public void testGetSessionStatusMissingArea() {
+  void testGetSessionStatusMissingArea() {
     Ip localIp = Ip.parse("192.0.2.0");
     Ip remoteIp = Ip.parse("192.0.2.1");
     NetworkConfigurations configs =
@@ -482,11 +482,11 @@ public class OspfTopologyUtilsTest {
     assertThat(val, equalTo(OspfSessionStatus.AREA_INVALID));
   }
 
-  @Ignore(
+  @Disabled(
       "Frame/packet MTU support not fully there, currently we optimistically leave OSPF sessions"
           + " up")
   @Test
-  public void testGetSessionStatusMtuMismatch() {
+  void testGetSessionStatusMtuMismatch() {
     NetworkConfigurations configs =
         buildNetworkConfigurations(Ip.parse("192.0.2.0"), 1234, Ip.parse("192.0.2.1"), 1500);
 
@@ -496,7 +496,7 @@ public class OspfTopologyUtilsTest {
   }
 
   @Test
-  public void testGetSessionStatusDeadIntervalMismatch() {
+  void testGetSessionStatusDeadIntervalMismatch() {
     NetworkConfigurations configs =
         buildNetworkConfigurations(
             Ip.parse("192.0.2.0"),
@@ -510,7 +510,7 @@ public class OspfTopologyUtilsTest {
   }
 
   @Test
-  public void testGetSessionStatusHelloIntervalMismatch() {
+  void testGetSessionStatusHelloIntervalMismatch() {
     NetworkConfigurations configs =
         buildNetworkConfigurations(
             Ip.parse("192.0.2.0"),
@@ -524,7 +524,7 @@ public class OspfTopologyUtilsTest {
   }
 
   @Test
-  public void testGetSessionStatusNetworkTypeMismatch() {
+  void testGetSessionStatusNetworkTypeMismatch() {
     NetworkConfigurations configs =
         buildNetworkConfigurations(
             Ip.parse("192.0.2.0"),
@@ -542,7 +542,7 @@ public class OspfTopologyUtilsTest {
   }
 
   @Test
-  public void testGetSessionStatusPassiveMismatch() {
+  void testGetSessionStatusPassiveMismatch() {
     NetworkConfigurations configs =
         buildNetworkConfigurations(Ip.parse("192.0.2.0"), true, Ip.parse("192.0.2.1"), false);
 
@@ -552,7 +552,7 @@ public class OspfTopologyUtilsTest {
   }
 
   @Test
-  public void testGetSessionStatusBothPassive() {
+  void testGetSessionStatusBothPassive() {
     NetworkConfigurations configs =
         buildNetworkConfigurations(Ip.parse("192.0.2.0"), true, Ip.parse("192.0.2.1"), true);
 
@@ -562,7 +562,7 @@ public class OspfTopologyUtilsTest {
   }
 
   @Test
-  public void testGetSessionStatusDuplicateRouterId() {
+  void testGetSessionStatusDuplicateRouterId() {
     Ip routerId = Ip.parse("192.0.2.0");
     NetworkConfigurations configs =
         buildNetworkConfigurations(
@@ -574,7 +574,7 @@ public class OspfTopologyUtilsTest {
   }
 
   @Test
-  public void testGetSessionStatusNbma() {
+  void testGetSessionStatusNbma() {
     NetworkConfigurations configs =
         buildNetworkConfigurations(
             Ip.parse("192.0.2.0"),
@@ -600,7 +600,7 @@ public class OspfTopologyUtilsTest {
   }
 
   @Test
-  public void testInitNeighborConfigsOspfAddresses() {
+  void testInitNeighborConfigsOspfAddresses() {
     NetworkConfigurations configs =
         buildNetworkConfigurations(
             LOCAL_CONFIG_ID_UNNUMBERED.getAddress().getIp(),
@@ -645,7 +645,7 @@ public class OspfTopologyUtilsTest {
   }
 
   @Test
-  public void testGetSessionStatusP2PDifferentPrefix() {
+  void testGetSessionStatusP2PDifferentPrefix() {
     NetworkConfigurations configs =
         buildNetworkConfigurations(
             LOCAL_CONFIG_ID_UNNUMBERED.getAddress().getIp(),
@@ -671,7 +671,7 @@ public class OspfTopologyUtilsTest {
   }
 
   @Test
-  public void testGetSessionStatusNonP2PDifferentPrefix() {
+  void testGetSessionStatusNonP2PDifferentPrefix() {
     NetworkConfigurations configs =
         buildNetworkConfigurations(
             LOCAL_CONFIG_ID_UNNUMBERED.getAddress().getIp(),

@@ -13,12 +13,12 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.representation.aws.LoadBalancerTargetHealth.HealthState;
 import org.batfish.representation.aws.LoadBalancerTargetHealth.TargetHealth;
 import org.batfish.representation.aws.LoadBalancerTargetHealth.TargetHealthDescription;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class LoadBalancerTargetHealthTest {
+class LoadBalancerTargetHealthTest {
 
   @Test
-  public void testDeserialization() throws IOException {
+  void testDeserialization() throws IOException {
     String text =
         readResource("org/batfish/representation/aws/LoadBalancerTargetHealthTest.json", UTF_8);
 

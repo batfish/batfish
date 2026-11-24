@@ -26,10 +26,11 @@ import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.SortedMap;
@@ -53,18 +54,17 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.vendor.sros.representation.SrosStructureType;
 import org.batfish.vendor.sros.representation.SrosStructureUsage;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests of SR-OS conversion from the typed feature model to the vendor-independent model. */
-public final class SrosConversionTest {
+final class SrosConversionTest {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   /** The captured r1 config converts to a vendor-independent {@link Configuration}. */
   @Test
-  public void testR1Conversion() throws IOException {
+  void testR1Conversion() throws IOException {
     Configuration c = parseConfig("r1_admin_show_configuration.txt");
     assertThat(c.getConfigurationFormat().getVendorString(), equalTo("nokia_sros"));
     assertThat(c.getDeviceModel(), equalTo(DeviceModel.NOKIA_SROS_UNSPECIFIED));
@@ -105,7 +105,7 @@ public final class SrosConversionTest {
 
   /** The prefix-list converts to a RouteFilterList with an exact-length permit line. */
   @Test
-  public void testPrefixListConversion() throws IOException {
+  void testPrefixListConversion() throws IOException {
     Configuration c = parseConfig("r1_admin_show_configuration.txt");
     assertThat(c.getRouteFilterLists(), hasKey("system-pfx"));
     RouteFilterList rfl = c.getRouteFilterLists().get("system-pfx");
@@ -119,7 +119,7 @@ public final class SrosConversionTest {
    * the group, is treated as eBGP, and is keyed by peer IP.
    */
   @Test
-  public void testBgpNeighborGroupInheritance() throws IOException {
+  void testBgpNeighborGroupInheritance() throws IOException {
     Configuration c = parseConfig("r1_admin_show_configuration.txt");
     org.batfish.datamodel.BgpProcess proc = c.getDefaultVrf().getBgpProcess();
     assertNotNull(proc);
@@ -150,7 +150,7 @@ public final class SrosConversionTest {
    * </ul>
    */
   @Test
-  public void testEbgpDefaultRejectAndPolicies() throws IOException {
+  void testEbgpDefaultRejectAndPolicies() throws IOException {
     Configuration c = parseConfig("r1_admin_show_configuration.txt");
     BgpActivePeerConfig peer =
         c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Ip.parse("10.0.0.1"));
@@ -184,7 +184,7 @@ public final class SrosConversionTest {
    * </ul>
    */
   @Test
-  public void testIbgpDefaultAcceptOnlyBgpRoutes() throws IOException {
+  void testIbgpDefaultAcceptOnlyBgpRoutes() throws IOException {
     Configuration c = parseConfig("ibgp_default_accept.txt");
     BgpActivePeerConfig peer =
         c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Ip.parse("10.0.1.1"));
@@ -220,7 +220,7 @@ public final class SrosConversionTest {
    * an exact length window (not the old over-approximation).
    */
   @Test
-  public void testPolicySetClausesConversion() throws IOException {
+  void testPolicySetClausesConversion() throws IOException {
     Configuration c = parseConfig("policy_set_clauses.txt");
 
     // through-length 32 on a /16 -> exact window [16,32], so a /32 inside the block matches but a
@@ -296,7 +296,7 @@ public final class SrosConversionTest {
    * routes.
    */
   @Test
-  public void testOspfConversion() throws IOException {
+  void testOspfConversion() throws IOException {
     Configuration c = parseConfig("ospf.txt");
     org.batfish.datamodel.ospf.OspfProcess proc = c.getDefaultVrf().getOspfProcesses().get("0");
     assertNotNull(proc);
@@ -329,7 +329,7 @@ public final class SrosConversionTest {
    * sros_ospf_multiarea lab).
    */
   @Test
-  public void testOspfMultiAreaConversion() throws IOException {
+  void testOspfMultiAreaConversion() throws IOException {
     Configuration c = parseConfig("ospf_multiarea.txt");
     org.batfish.datamodel.ospf.OspfProcess proc = c.getDefaultVrf().getOspfProcesses().get("0");
     assertNotNull(proc);
@@ -348,7 +348,7 @@ public final class SrosConversionTest {
    * admin distance is 18 (set via the NOKIA_SROS RoutingProtocol default).
    */
   @Test
-  public void testIsisConversion() throws IOException {
+  void testIsisConversion() throws IOException {
     Configuration c = parseConfig("isis.txt");
     org.batfish.datamodel.isis.IsisProcess proc = c.getDefaultVrf().getIsisProcess();
     assertNotNull(proc);
@@ -385,7 +385,7 @@ public final class SrosConversionTest {
    * distinct per-level costs (not the level-2 value on both).
    */
   @Test
-  public void testIsisPerLevelMetric() throws IOException {
+  void testIsisPerLevelMetric() throws IOException {
     Configuration c = parseConfig("isis_per_level_metric.txt");
     Interface toR3 = c.getAllInterfaces().get("to-r3");
     assertNotNull(toR3.getIsis());
@@ -399,7 +399,7 @@ public final class SrosConversionTest {
    * (the Nokia service_config_qrg lab omits system-id on all six routers).
    */
   @Test
-  public void testIsisDerivedSystemId() throws IOException {
+  void testIsisDerivedSystemId() throws IOException {
     Configuration c = parseConfig("isis_derived_system_id.txt");
     org.batfish.datamodel.isis.IsisProcess proc = c.getDefaultVrf().getIsisProcess();
     assertNotNull(proc);
@@ -411,7 +411,7 @@ public final class SrosConversionTest {
 
   /** VPRN conversion: a {@code service vprn "red"} becomes a separate VRF holding its interface. */
   @Test
-  public void testVprnConversion() throws IOException {
+  void testVprnConversion() throws IOException {
     Configuration c = parseConfig("vprn.txt");
     assertThat(c.getVrfs(), hasKey("red"));
     // The VPRN interface is in the "red" VRF, not the default VRF, and its VI name is qualified
@@ -437,7 +437,7 @@ public final class SrosConversionTest {
    * the first-configured one. (lab-validation#203 — pe1 reuses {@code to-cea} across RED and BLUE.)
    */
   @Test
-  public void testVprnReusedInterfaceName() throws IOException {
+  void testVprnReusedInterfaceName() throws IOException {
     Configuration c = parseConfig("vprn_reused_interface.txt");
     assertThat(c.getVrfs(), allOf(hasKey("RED"), hasKey("BLUE")));
 
@@ -457,7 +457,7 @@ public final class SrosConversionTest {
 
   /** Route-reflector conversion: an RR-client neighbor gets cluster-id + route-reflector-client. */
   @Test
-  public void testRouteReflectorConversion() throws IOException {
+  void testRouteReflectorConversion() throws IOException {
     Configuration c = parseConfig("route_reflector.txt");
     BgpActivePeerConfig peer =
         c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Ip.parse("10.0.0.1"));
@@ -472,7 +472,7 @@ public final class SrosConversionTest {
    * eBGP default-reject), so the connected interface prefix is not advertised.
    */
   @Test
-  public void testFromProtocolConversion() throws IOException {
+  void testFromProtocolConversion() throws IOException {
     Configuration c = parseConfig("redistribute_static.txt");
     BgpActivePeerConfig peer =
         c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Ip.parse("10.0.0.1"));
@@ -506,7 +506,7 @@ public final class SrosConversionTest {
    * than silently dropping it.
    */
   @Test
-  public void testHardwareConversionWarning() throws IOException {
+  void testHardwareConversionWarning() throws IOException {
     Batfish batfish =
         BatfishTestUtils.getBatfishForTextConfigs(
             _folder, TESTCONFIGS_PREFIX + "r1_admin_show_configuration.txt");
@@ -521,7 +521,7 @@ public final class SrosConversionTest {
    * {@code system-pfx}, and the policy-statements are all defined and referenced.
    */
   @Test
-  public void testStructureDefinitionsAndReferences() throws IOException {
+  void testStructureDefinitionsAndReferences() throws IOException {
     Batfish batfish =
         BatfishTestUtils.getBatfishForTextConfigs(
             _folder, TESTCONFIGS_PREFIX + "r1_admin_show_configuration.txt");
@@ -549,7 +549,7 @@ public final class SrosConversionTest {
    * (the {@code export-system} policy-statement is a multi-line brace block in r1).
    */
   @Test
-  public void testStructureDefinitionSpansBraceBlockLines() throws IOException {
+  void testStructureDefinitionSpansBraceBlockLines() throws IOException {
     Batfish batfish =
         BatfishTestUtils.getBatfishForTextConfigs(
             _folder, TESTCONFIGS_PREFIX + "r1_admin_show_configuration.txt");
@@ -568,7 +568,7 @@ public final class SrosConversionTest {
 
   /** A reference to a non-existent group/prefix-list is reported as an undefined reference. */
   @Test
-  public void testUndefinedReferences() throws IOException {
+  void testUndefinedReferences() throws IOException {
     Batfish batfish =
         BatfishTestUtils.getBatfishForTextConfigs(
             _folder, TESTCONFIGS_PREFIX + "undefined_references.txt");
@@ -593,7 +593,7 @@ public final class SrosConversionTest {
 
   /** A prefix-list defined but never referenced is recorded with zero referrers (unused). */
   @Test
-  public void testUnusedStructure() throws IOException {
+  void testUnusedStructure() throws IOException {
     Batfish batfish =
         BatfishTestUtils.getBatfishForTextConfigs(
             _folder, TESTCONFIGS_PREFIX + "unused_structure.txt");
@@ -609,7 +609,7 @@ public final class SrosConversionTest {
    * as an over-approximation and emits a warning rather than silently broadening the filter.
    */
   @Test
-  public void testUnmodeledPrefixTypeWarns() throws IOException {
+  void testUnmodeledPrefixTypeWarns() throws IOException {
     Batfish batfish =
         BatfishTestUtils.getBatfishForTextConfigs(
             _folder, TESTCONFIGS_PREFIX + "bgp_type_and_inheritance.txt");
@@ -627,7 +627,7 @@ public final class SrosConversionTest {
    * installed (matching the device).
    */
   @Test
-  public void testStaticRoutesConversion() throws IOException {
+  void testStaticRoutesConversion() throws IOException {
     Configuration c = parseConfig("static_routes.txt");
     assertThat(
         c,
@@ -669,7 +669,7 @@ public final class SrosConversionTest {
    * generated only when a contributing more-specific exists — Batfish's generated-route semantics.
    */
   @Test
-  public void testAggregateConversion() throws IOException {
+  void testAggregateConversion() throws IOException {
     Configuration c = parseConfig("aggregate.txt");
     java.util.Set<org.batfish.datamodel.GeneratedRoute> generated =
         c.getDefaultVrf().getGeneratedRoutes();
@@ -686,7 +686,7 @@ public final class SrosConversionTest {
    * L3 router-interface binds the LAG interface (the port/router-interface split).
    */
   @Test
-  public void testLagConversion() throws IOException {
+  void testLagConversion() throws IOException {
     Configuration c = parseConfig("lag.txt");
     Interface lag = c.getAllInterfaces().get("lag-1");
     assertNotNull(lag);
@@ -714,7 +714,7 @@ public final class SrosConversionTest {
    * adds 33 to its metric with origin IGP.
    */
   @Test
-  public void testComprehensivePolicyConversion() throws IOException {
+  void testComprehensivePolicyConversion() throws IOException {
     Configuration c = parseConfig("policy_comprehensive.txt");
     RoutingPolicy policy = c.getRoutingPolicies().get("import-rich");
     assertNotNull(policy);

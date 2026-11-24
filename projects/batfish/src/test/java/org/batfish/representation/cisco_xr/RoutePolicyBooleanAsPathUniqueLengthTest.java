@@ -7,20 +7,20 @@ import com.google.common.testing.EqualsTester;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link RoutePolicyBooleanAsPathUniqueLength}. */
 @ParametersAreNonnullByDefault
-public final class RoutePolicyBooleanAsPathUniqueLengthTest {
+final class RoutePolicyBooleanAsPathUniqueLengthTest {
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     RoutePolicyBooleanAsPathUniqueLength obj =
         new RoutePolicyBooleanAsPathUniqueLength(IntComparator.GT, 1, false);
     assertThat(SerializationUtils.clone(obj), equalTo(obj));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     RoutePolicyBooleanAsPathUniqueLength obj =
         new RoutePolicyBooleanAsPathUniqueLength(IntComparator.GT, 1, false);
     new EqualsTester()

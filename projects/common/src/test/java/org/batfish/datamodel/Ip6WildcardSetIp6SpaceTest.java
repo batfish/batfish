@@ -8,9 +8,9 @@ import static org.hamcrest.Matchers.not;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class Ip6WildcardSetIp6SpaceTest {
+class Ip6WildcardSetIp6SpaceTest {
   private final Ip6Space _ip6Space =
       Ip6WildcardSetIp6Space.builder()
           .including(Ip6Wildcard.parse("1:1:1:0::0/64"), Ip6Wildcard.parse("1:1:2:0::0/64"))
@@ -18,7 +18,7 @@ public class Ip6WildcardSetIp6SpaceTest {
           .build();
 
   @Test
-  public void testContainsIp() {
+  void testContainsIp() {
     assertThat(_ip6Space, containsIp6(Ip6.parse("1:1:1:0::0")));
     assertThat(_ip6Space, not(containsIp6(Ip6.parse("1:1:1:1::0"))));
     assertThat(_ip6Space, containsIp6(Ip6.parse("1:1:2:0::0")));
@@ -26,7 +26,7 @@ public class Ip6WildcardSetIp6SpaceTest {
   }
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     Ip6WildcardSetIp6Space original =
         Ip6WildcardSetIp6Space.builder()
             .including(Ip6Wildcard.parse("2001:db8::/32"))
@@ -37,7 +37,7 @@ public class Ip6WildcardSetIp6SpaceTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     Ip6Wildcard wildcard1 = Ip6Wildcard.parse("2001:db8::/32");
     Ip6Wildcard wildcard2 = Ip6Wildcard.parse("2001:db8:1::/48");
     Ip6Wildcard wildcard3 = Ip6Wildcard.parse("2001:db8:2::/48");

@@ -1,40 +1,49 @@
 package org.batfish.datamodel.table;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.batfish.datamodel.answers.Schema;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link ColumnMetadata}. */
-@RunWith(JUnit4.class)
-public class ColumnMetadataTest {
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class ColumnMetadataTest {
 
   @Test
-  public void testJacksonMissingName() {
-    _thrown.expectMessage("'name' cannot be null");
-    ColumnMetadata.jsonCreator(null, Schema.STRING, "desc", Boolean.TRUE, Boolean.FALSE);
+  void testJacksonMissingName() {
+    Throwable exception =
+        assertThrows(
+            Exception.class,
+            () ->
+                ColumnMetadata.jsonCreator(
+                    null, Schema.STRING, "desc", Boolean.TRUE, Boolean.FALSE));
+    assertThat(exception.getMessage(), containsString("'name' cannot be null"));
   }
 
   @Test
-  public void testJacksonMissingDescription() {
-    _thrown.expectMessage("'description' cannot be null");
-    ColumnMetadata.jsonCreator("name", Schema.STRING, null, Boolean.TRUE, Boolean.FALSE);
+  void testJacksonMissingDescription() {
+    Throwable exception =
+        assertThrows(
+            Exception.class,
+            () ->
+                ColumnMetadata.jsonCreator(
+                    "name", Schema.STRING, null, Boolean.TRUE, Boolean.FALSE));
+    assertThat(exception.getMessage(), containsString("'description' cannot be null"));
   }
 
   @Test
-  public void testJacksonMissingSchema() {
-    _thrown.expectMessage("'schema' cannot be null");
-    ColumnMetadata.jsonCreator("name", null, "desc", Boolean.TRUE, Boolean.FALSE);
+  void testJacksonMissingSchema() {
+    Throwable exception =
+        assertThrows(
+            Exception.class,
+            () -> ColumnMetadata.jsonCreator("name", null, "desc", Boolean.TRUE, Boolean.FALSE));
+    assertThat(exception.getMessage(), containsString("'schema' cannot be null"));
   }
 
   @Test
-  public void testJacksonDeserializeWithDefaults() {
+  void testJacksonDeserializeWithDefaults() {
     ColumnMetadata c = ColumnMetadata.jsonCreator("name", Schema.STRING, "desc", null, null);
     assertThat(c.getName(), equalTo("name"));
     assertThat(c.getDescription(), equalTo("desc"));

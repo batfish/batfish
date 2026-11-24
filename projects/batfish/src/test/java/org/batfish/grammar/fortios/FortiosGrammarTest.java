@@ -48,13 +48,14 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -139,15 +140,13 @@ import org.batfish.representation.fortios.StaticRoute;
 import org.batfish.representation.fortios.Zone;
 import org.batfish.representation.fortios.Zone.IntrazoneAction;
 import org.hamcrest.Matcher;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class FortiosGrammarTest {
+final class FortiosGrammarTest {
 
   @Test
-  public void testIgnoredConfigBlocks() {
+  void testIgnoredConfigBlocks() {
     FortiosConfiguration c = parseVendorConfig("fortios_ignored");
     // Valid syntax before ignored block is parsed
     assertThat(c.getHostname(), equalTo("ignored"));
@@ -156,34 +155,34 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testHostnameExtraction() {
+  void testHostnameExtraction() {
     String filename = "fortios_hostname";
     String hostname = "my_fortios-hostname1";
     assertThat(parseVendorConfig(filename).getHostname(), equalTo(hostname));
   }
 
   @Test
-  public void testCanonicalHostnameExtraction() {
+  void testCanonicalHostnameExtraction() {
     String hostname = "fortios_UPPER_hostname";
     assertThat(parseVendorConfig(hostname).getHostname(), equalTo(hostname.toLowerCase()));
   }
 
   @Test
-  public void testHostnameConversion() throws IOException {
+  void testHostnameConversion() throws IOException {
     String filename = "fortios_hostname";
     String hostname = "my_fortios-hostname1";
     assertThat(parseTextConfigs(filename), hasEntry(equalTo(hostname), hasHostname(hostname)));
   }
 
   @Test
-  public void testInvalidHostnameWithDotExtraction() {
+  void testInvalidHostnameWithDotExtraction() {
     String filename = "fortios_bad_hostname";
     // invalid hostname from config file is thrown away
     assertThat(parseVendorConfig(filename).getHostname(), nullValue());
   }
 
   @Test
-  public void testInvalidHostnameWithDotConversion() throws IOException {
+  void testInvalidHostnameWithDotConversion() throws IOException {
     String filename = "fortios_bad_hostname";
     Batfish batfish = getBatfishForConfigurationNames(filename);
     Warnings warnings =
@@ -196,13 +195,13 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testHumanName() throws IOException {
+  void testHumanName() throws IOException {
     Configuration c = parseConfig("humanname");
     assertThat(c.getHumanName(), equalTo("HUMANNAME"));
   }
 
   @Test
-  public void testReplacemsgExtraction() {
+  void testReplacemsgExtraction() {
     String hostname = "fortios_replacemsg";
     String majorType = "admin";
     String minorTypePre = "pre_admin-disclaimer-text";
@@ -217,7 +216,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testReplacemsgConversion() throws IOException {
+  void testReplacemsgConversion() throws IOException {
     String filename = "fortios_replacemsg";
     Batfish batfish = getBatfishForConfigurationNames(filename);
     // Should see a single conversion warning for Ethernet1/1's conflicting speeds
@@ -231,7 +230,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testInternetServiceNameExtraction() {
+  void testInternetServiceNameExtraction() {
     String hostname = "internet_service_name";
     FortiosConfiguration vc = parseVendorConfig(hostname);
 
@@ -254,7 +253,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testInternetServiceNameWarnings() throws IOException {
+  void testInternetServiceNameWarnings() throws IOException {
     String hostname = "internet_service_name_warn";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Warnings w =
@@ -275,7 +274,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testAddressExtraction() {
+  void testAddressExtraction() {
     String hostname = "address";
     FortiosConfiguration vc = parseVendorConfig(hostname);
 
@@ -368,7 +367,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testAddressTypeSwitchingExtraction() throws IOException {
+  void testAddressTypeSwitchingExtraction() throws IOException {
     String hostname = "address_type_switching";
     FortiosConfiguration vc = parseVendorConfig(hostname);
 
@@ -418,7 +417,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testAddressWarnings() throws IOException {
+  void testAddressWarnings() throws IOException {
     String hostname = "address_warnings";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Warnings w =
@@ -490,7 +489,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testAddressConversion() throws IOException {
+  void testAddressConversion() throws IOException {
     String hostname = "address";
     Configuration c = parseConfig(hostname);
 
@@ -540,7 +539,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testAddressTypeSwitchingConversion() throws IOException {
+  void testAddressTypeSwitchingConversion() throws IOException {
     String hostname = "address_type_switching";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Warnings w =
@@ -620,7 +619,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testAddrgrpExtraction() {
+  void testAddrgrpExtraction() {
     String hostname = "addrgrp";
     FortiosConfiguration vc = parseVendorConfig(hostname);
 
@@ -663,7 +662,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testAddrgrpWarnings() throws IOException {
+  void testAddrgrpWarnings() throws IOException {
     String hostname = "addrgrp_warnings";
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -704,7 +703,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testBgpRouteMapDefinitionsAndReferences() throws IOException {
+  void testBgpRouteMapDefinitionsAndReferences() throws IOException {
     String hostname = "bgp_routemap_defs_refs";
     String filename = "configs/" + hostname;
 
@@ -735,7 +734,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testBgpExtraction() throws IOException {
+  void testBgpExtraction() throws IOException {
     String hostname = "bgp";
     FortiosConfiguration vc = parseVendorConfig(hostname);
 
@@ -782,7 +781,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testBgpConversion() throws IOException {
+  void testBgpConversion() throws IOException {
     String hostname = "bgp";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
@@ -876,7 +875,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testBgpExtractionWarnings() throws IOException {
+  void testBgpExtractionWarnings() throws IOException {
     String hostname = "bgp_warnings";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Warnings parseWarnings =
@@ -907,7 +906,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testBgpConversionWarnings() throws IOException {
+  void testBgpConversionWarnings() throws IOException {
     String hostname = "bgp_conversion_warnings";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Warnings warnings =
@@ -934,7 +933,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testBgpConversionNoAs() throws IOException {
+  void testBgpConversionNoAs() throws IOException {
     String hostname = "bgp_no_as";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     // No warnings generated, indicating that BGP conversion was skipped (if it had attempted to
@@ -945,7 +944,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testBgpMultipath() throws IOException {
+  void testBgpMultipath() throws IOException {
     // Tests extraction and conversion for ebgp-multipath and ibgp-multipath properties when
     // explicitly set. Defaults are tested in testBgpExtraction/testBgpConversion. Can't test more
     // than one option per config because each config can only have one top-level BGP configuration.
@@ -983,7 +982,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testBgpConversionInvalidAs() throws IOException {
+  void testBgpConversionInvalidAs() throws IOException {
     String hostname = "bgp_invalid_as";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Warnings warnings =
@@ -999,7 +998,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testBgpConversionNoRouterId() throws IOException {
+  void testBgpConversionNoRouterId() throws IOException {
     String hostname = "bgp_no_router_id";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Warnings warnings =
@@ -1013,7 +1012,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testInterfaceExtraction() {
+  void testInterfaceExtraction() {
     String hostname = "iface";
     FortiosConfiguration vc = parseVendorConfig(hostname);
 
@@ -1107,7 +1106,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testInterfaceConversion() throws IOException {
+  void testInterfaceConversion() throws IOException {
     String hostname = "iface";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Warnings warnings =
@@ -1140,7 +1139,7 @@ public final class FortiosGrammarTest {
     // Check active
     assertFalse(tunnel.getActive()); // explicitly set to down
     Stream.of(port1, port2, longName, loopback, vlan)
-        .forEach(iface -> assertTrue(iface.getName() + " is up", iface.getActive()));
+        .forEach(iface -> assertTrue(iface.getActive(), iface.getName() + " is up"));
 
     // Check VRFs
     assertThat(longName.getVrf().getName(), equalTo(computeVrfName("root", 31)));
@@ -1203,7 +1202,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testInterfaceWarnings() throws IOException {
+  void testInterfaceWarnings() throws IOException {
     String hostname = "iface_warn";
     FortiosConfiguration vc = parseVendorConfig(hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -1258,7 +1257,7 @@ public final class FortiosGrammarTest {
 
   // Test for github.com/batfish/batfish/issues/6995
   @Test
-  public void testAggregateInterfaceExtraction() {
+  void testAggregateInterfaceExtraction() {
     String hostname = "iface_aggregate";
     FortiosConfiguration vc = parseVendorConfig(hostname);
 
@@ -1301,7 +1300,7 @@ public final class FortiosGrammarTest {
 
   // Test for github.com/batfish/batfish/issues/6995
   @Test
-  public void testAggregateInterfaceConversion() throws IOException {
+  void testAggregateInterfaceConversion() throws IOException {
     String hostname = "iface_aggregate";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
 
@@ -1359,7 +1358,7 @@ public final class FortiosGrammarTest {
 
   // Test for github.com/batfish/batfish/issues/6995
   @Test
-  public void testAggregateInferfaceWarning() throws IOException {
+  void testAggregateInferfaceWarning() throws IOException {
     // https://docs.fortinet.com/document/fortigate/7.6.2/administration-guide/567758/aggregation-and-redundancy
     // An interface is available to be an aggregate/redondante interface if:
     // - It is a physical interface and not a VLAN interface or subinterface.
@@ -1397,7 +1396,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testZoneExtraction() {
+  void testZoneExtraction() {
     String hostname = "zone";
     FortiosConfiguration vc = parseVendorConfig(hostname);
 
@@ -1427,7 +1426,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testZoneConversion() throws IOException {
+  void testZoneConversion() throws IOException {
     String hostname = "zone";
     Configuration c = parseConfig(hostname);
 
@@ -1455,7 +1454,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testZoneWarnings() throws IOException {
+  void testZoneWarnings() throws IOException {
     String hostname = "zone_warn";
 
     FortiosConfiguration vc = parseVendorConfig(hostname);
@@ -1496,7 +1495,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testServiceCustomExtraction() {
+  void testServiceCustomExtraction() {
     String hostname = "service_custom";
     FortiosConfiguration vc = parseVendorConfig(hostname);
 
@@ -1625,7 +1624,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testServiceWarnings() throws IOException {
+  void testServiceWarnings() throws IOException {
     String hostname = "service_warnings";
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -1670,7 +1669,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testServiceGroupExtraction() {
+  void testServiceGroupExtraction() {
     String hostname = "service_group";
     FortiosConfiguration vc = parseVendorConfig(hostname);
 
@@ -1697,7 +1696,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testServiceGroupWarnings() throws IOException {
+  void testServiceGroupWarnings() throws IOException {
     String hostname = "service_group_warnings";
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -1729,7 +1728,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testServiceGroupRename() throws IOException {
+  void testServiceGroupRename() throws IOException {
     String hostname = "service_group_rename";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     FortiosConfiguration vc =
@@ -1746,7 +1745,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testServiceGroupRenameWarnings() throws IOException {
+  void testServiceGroupRenameWarnings() throws IOException {
     String hostname = "service_group_rename";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Warnings warnings =
@@ -1786,7 +1785,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testServiceGroupRenameReferences() throws IOException {
+  void testServiceGroupRenameReferences() throws IOException {
     String hostname = "service_group_rename";
     String filename = "configs/" + hostname;
 
@@ -1825,7 +1824,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testAddrgrpRename() throws IOException {
+  void testAddrgrpRename() throws IOException {
     String hostname = "addrgrp_rename";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     FortiosConfiguration vc =
@@ -1843,7 +1842,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testAddrgrpRenameWarnings() throws IOException {
+  void testAddrgrpRenameWarnings() throws IOException {
     String hostname = "addrgrp_rename";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Warnings warnings =
@@ -1881,7 +1880,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testAddrgrpRenameReferences() throws IOException {
+  void testAddrgrpRenameReferences() throws IOException {
     String hostname = "addrgrp_rename";
     String filename = "configs/" + hostname;
 
@@ -1916,7 +1915,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testFirewallPolicyExtraction() {
+  void testFirewallPolicyExtraction() {
     String hostname = "firewall_policy";
     FortiosConfiguration vc = parseVendorConfig(hostname);
 
@@ -1996,7 +1995,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testFirewallPolicyConversion() {
+  void testFirewallPolicyConversion() {
     String hostname = "firewall_policy";
     FortiosConfiguration vc = parseVendorConfig(hostname);
 
@@ -2076,7 +2075,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testFirewallPolicyAddrgrpConversion() {
+  void testFirewallPolicyAddrgrpConversion() {
     String hostname = "firewall_policy_addrgrp";
     FortiosConfiguration vc = parseVendorConfig(hostname);
 
@@ -2130,7 +2129,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testViAcls() throws IOException {
+  void testViAcls() throws IOException {
     String hostname = "firewall_vi_policy";
     Configuration c = parseConfig(hostname);
 
@@ -2210,7 +2209,7 @@ public final class FortiosGrammarTest {
    * Test extraction of firewall policy when warnings are generated for invalid / pruned properties.
    */
   @Test
-  public void testFirewallPolicyExtractionWithWarnings() {
+  void testFirewallPolicyExtractionWithWarnings() {
     String hostname = "firewall_policy_warn";
     FortiosConfiguration vc = parseVendorConfig(hostname);
 
@@ -2244,7 +2243,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testFirewallPolicyWarnings() throws IOException {
+  void testFirewallPolicyWarnings() throws IOException {
     String hostname = "firewall_policy_warn";
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -2317,7 +2316,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testStaticRouteExtraction() {
+  void testStaticRouteExtraction() {
     String hostname = "static_routes";
     FortiosConfiguration vc = parseVendorConfig(hostname);
 
@@ -2356,7 +2355,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testStaticRouteConversion() throws IOException {
+  void testStaticRouteConversion() throws IOException {
     String hostname = "static_routes";
     Configuration c = parseConfig(hostname);
 
@@ -2387,7 +2386,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testStaticRouteWarnings() throws IOException {
+  void testStaticRouteWarnings() throws IOException {
     String hostname = "static_route_warnings";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Warnings parseWarnings =
@@ -2430,7 +2429,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testSystemRecovery() throws IOException {
+  void testSystemRecovery() throws IOException {
     String hostname = "fortios_system_recovery";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     batfish.getSettings().setDisableUnrecognized(false);
@@ -2455,7 +2454,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testNestedConfigRecovery() throws IOException {
+  void testNestedConfigRecovery() throws IOException {
     String hostname = "nested_config_recovery";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     batfish.getSettings().setDisableUnrecognized(false);
@@ -2487,7 +2486,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testRouteMapExtraction() {
+  void testRouteMapExtraction() {
     String hostname = "route_map";
     FortiosConfiguration vc = parseVendorConfig(hostname);
 
@@ -2518,7 +2517,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testRouteMapConversion() throws IOException {
+  void testRouteMapConversion() throws IOException {
     String hostname = "route_map";
     Configuration c = parseConfig(hostname);
 
@@ -2569,7 +2568,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testRouteMapWarnings() throws IOException {
+  void testRouteMapWarnings() throws IOException {
     String hostname = "route_map_warnings";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Warnings warnings =
@@ -2606,7 +2605,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testRename() throws IOException {
+  void testRename() throws IOException {
     String hostname = "rename";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     // batfish.getSettings().setDisableUnrecognized(false);
@@ -2631,7 +2630,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testRenameWarnings() throws IOException {
+  void testRenameWarnings() throws IOException {
     String hostname = "rename";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Warnings warnings =
@@ -2668,7 +2667,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testRenameReferences() throws IOException {
+  void testRenameReferences() throws IOException {
     String hostname = "rename";
     String filename = "configs/" + hostname;
 
@@ -2724,7 +2723,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testAddressDefinitionsAndReferences() throws IOException {
+  void testAddressDefinitionsAndReferences() throws IOException {
     String hostname = "address_defs_refs";
     String filename = "configs/" + hostname;
 
@@ -2750,7 +2749,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testPolicyDefinitionsAndReferences() throws IOException {
+  void testPolicyDefinitionsAndReferences() throws IOException {
     String hostname = "policy_defs_refs";
     String filename = "configs/" + hostname;
 
@@ -2848,7 +2847,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testEditRecovery() throws IOException {
+  void testEditRecovery() throws IOException {
     String hostname = "edit_recovery";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     batfish.getSettings().setDisableUnrecognized(false);
@@ -2905,7 +2904,7 @@ public final class FortiosGrammarTest {
 
   /** Test that policies are converted correctly for use as interface outgoing filters. */
   @Test
-  public void testInterfaceOutgoingFilterPolicyConversion() throws IOException {
+  void testInterfaceOutgoingFilterPolicyConversion() throws IOException {
     String hostname = "policy";
     Configuration c = parseConfig(hostname);
 
@@ -2953,7 +2952,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testPolicyClone() throws IOException {
+  void testPolicyClone() throws IOException {
     String hostname = "policy_clone";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     FortiosConfiguration vc =
@@ -2974,7 +2973,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testPolicyDelete() throws IOException {
+  void testPolicyDelete() throws IOException {
     String hostname = "policy_delete";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     FortiosConfiguration vc =
@@ -2987,7 +2986,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testPolicyMove() throws IOException {
+  void testPolicyMove() throws IOException {
     String hostname = "policy_move";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     FortiosConfiguration vc =
@@ -2998,7 +2997,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testAccessListExtraction() throws IOException {
+  void testAccessListExtraction() throws IOException {
     String hostname = "access_list";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     FortiosConfiguration vc =
@@ -3044,7 +3043,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testAccessListConversion() throws IOException {
+  void testAccessListConversion() throws IOException {
     String hostname = "access_list";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
@@ -3067,7 +3066,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testAccessListReference() throws IOException {
+  void testAccessListReference() throws IOException {
     String hostname = "access_list_reference";
     String filename = "configs/" + hostname;
 
@@ -3097,7 +3096,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testAccessListWarnings() throws IOException {
+  void testAccessListWarnings() throws IOException {
     String hostname = "access_list_warnings";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Warnings warnings =
@@ -3131,9 +3130,7 @@ public final class FortiosGrammarTest {
   // Setup / test infra //
   ////////////////////////
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+  @TempDir public File _folder;
 
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/fortios/testconfigs/";
 

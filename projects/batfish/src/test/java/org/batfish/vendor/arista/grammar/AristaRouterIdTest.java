@@ -8,6 +8,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
@@ -18,14 +19,13 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests of router ID computation on Arista. */
-public class AristaRouterIdTest {
+class AristaRouterIdTest {
   private static final String TESTCONFIGS_PREFIX = "org/batfish/vendor/arista/grammar/testconfigs/";
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private @Nonnull Batfish getBatfishForConfigurationNames(String... configurationNames)
       throws IOException {
@@ -51,7 +51,7 @@ public class AristaRouterIdTest {
   }
 
   @Test
-  public void testRouterId() throws IOException {
+  void testRouterId() throws IOException {
     Configuration c = parseConfig("arista_router_id");
     // default VRF uses the highest loopback IP
     assertThat(c, hasVrf("default", hasBgpProcess(hasRouterId(Ip.parse("4.4.4.5")))));

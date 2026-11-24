@@ -8,6 +8,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
+import java.io.File;
 import java.io.IOException;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation.Builder;
@@ -22,14 +23,13 @@ import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 import org.batfish.role.RoleDimensionMapping;
 import org.batfish.role.RoleMapping;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase {
+final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private Builder getNodeRolesTarget(String container) {
     return target(CoordConsts.SVC_CFG_WORK_MGR2)
@@ -40,13 +40,13 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
         .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY);
   }
 
-  @Before
-  public void initTestEnvironment() {
+  @BeforeEach
+  void initTestEnvironment() {
     WorkMgrTestUtils.initWorkManager(_folder);
   }
 
   @Test
-  public void testAddNodeRoleDimension() throws IOException {
+  void testAddNodeRoleDimension() throws IOException {
     String container = "someContainer";
     Main.getWorkMgr().initNetwork(container, null);
 
@@ -71,7 +71,7 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
   }
 
   @Test
-  public void testGetNodeRolesDefault() {
+  void testGetNodeRolesDefault() {
     String network = "someContainer";
     Main.getWorkMgr().initNetwork(network, null);
     NodeRolesData nodeRolesData = NodeRolesData.builder().build();
@@ -83,7 +83,7 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
   }
 
   @Test
-  public void testGetNodeRolesMissingNetwork() {
+  void testGetNodeRolesMissingNetwork() {
     String network = "someContainer";
     try (Response response = getNodeRolesTarget(network).get()) {
       assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
@@ -91,7 +91,7 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
   }
 
   @Test
-  public void testGetNodeRolesPresent() throws IOException {
+  void testGetNodeRolesPresent() throws IOException {
     String network = "someContainer";
     Main.getWorkMgr().initNetwork(network, null);
     NodeRolesData nodeRolesData =
@@ -108,7 +108,7 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
   }
 
   @Test
-  public void testNoDuplicateRoleMappingsSameName() {
+  void testNoDuplicateRoleMappingsSameName() {
     String name = "auto0";
     NodeRolesDataBean nodeRolesDataBean =
         new NodeRolesDataBean(
@@ -124,7 +124,7 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
   }
 
   @Test
-  public void testNoDuplicateRoleMappingsSameNameDifferentCase() {
+  void testNoDuplicateRoleMappingsSameNameDifferentCase() {
     String name1 = "auto0";
     String name2 = "AuTo0";
     NodeRolesDataBean nodeRolesDataBean =
@@ -141,7 +141,7 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
   }
 
   @Test
-  public void testNoDuplicateRoleMappingsValid() {
+  void testNoDuplicateRoleMappingsValid() {
     String name1 = "auto0";
     String name2 = "manual0";
     NodeRolesDataBean nodeRolesDataBean =
@@ -158,7 +158,7 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
   }
 
   @Test
-  public void testPutNodeRolesDuplicateRoleMappings() {
+  void testPutNodeRolesDuplicateRoleMappings() {
     String network = "someContainer";
     Main.getWorkMgr().initNetwork(network, null);
     String name = "auto0";
@@ -179,7 +179,7 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
   }
 
   @Test
-  public void testPutNodeRolesMissingNetwork() {
+  void testPutNodeRolesMissingNetwork() {
     String network = "someContainer";
     NodeRolesDataBean nodeRolesDataBean =
         new NodeRolesDataBean(NodeRolesData.builder().build(), null);
@@ -191,7 +191,7 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
   }
 
   @Test
-  public void testPutNodeRolesNull() {
+  void testPutNodeRolesNull() {
     String network = "someContainer";
     Main.getWorkMgr().initNetwork(network, null);
     try (Response response =
@@ -201,7 +201,7 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
   }
 
   @Test
-  public void testPutNodeRolesSuccess() throws IOException {
+  void testPutNodeRolesSuccess() throws IOException {
     String network = "someContainer";
     Main.getWorkMgr().initNetwork(network, null);
     NodeRolesData nodeRolesData =

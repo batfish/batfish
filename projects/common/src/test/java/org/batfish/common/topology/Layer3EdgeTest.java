@@ -9,12 +9,12 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link Layer3Edge} */
-public class Layer3EdgeTest {
+class Layer3EdgeTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new Layer3Edge(
@@ -37,7 +37,7 @@ public class Layer3EdgeTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     Layer3Edge layer3Edge =
         new Layer3Edge(
             NodeInterfacePair.of("node1", "interface1"),

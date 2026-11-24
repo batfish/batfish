@@ -6,12 +6,12 @@ import static org.hamcrest.Matchers.equalTo;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.referencelibrary.ServiceObject;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ServiceObjectBeanTest {
+class ServiceObjectBeanTest {
 
   @Test
-  public void conversionToAndFrom() {
+  void conversionToAndFrom() {
     ServiceObject serviceObject = new ServiceObject(IpProtocol.TCP, "so", new SubRange(1, 2));
     ServiceObjectBean bean = new ServiceObjectBean(serviceObject);
     assertThat(new ServiceObjectBean(bean.toServiceObject()), equalTo(bean));

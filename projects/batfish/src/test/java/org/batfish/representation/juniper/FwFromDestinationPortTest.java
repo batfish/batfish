@@ -14,10 +14,10 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.trace.TraceTree;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link FwFromDestinationPort} */
-public class FwFromDestinationPortTest {
+class FwFromDestinationPortTest {
   private static void assertMatches(AclLineMatchExpr expr, Flow flow) {
     List<TraceTree> trace =
         AclTracer.trace(expr, flow, null, ImmutableMap.of(), ImmutableMap.of(), ImmutableMap.of());
@@ -33,7 +33,7 @@ public class FwFromDestinationPortTest {
   }
 
   @Test
-  public void testConversion() {
+  void testConversion() {
     AclLineMatchExpr converted =
         new FwFromDestinationPort(new SubRange(1, 2)).toAclLineMatchExpr(null, null, null);
     Flow testFlow =

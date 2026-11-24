@@ -1,7 +1,7 @@
 package org.batfish.representation.juniper;
 
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import org.batfish.common.Warnings;
@@ -11,10 +11,10 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class FwFromDscpTest {
+class FwFromDscpTest {
   private JuniperConfiguration _jc;
   private Warnings _w;
   private Configuration _c;
@@ -22,8 +22,8 @@ public class FwFromDscpTest {
   private static final String BASE_ALIAS = "alias";
   private static final int BASE_VALUE = 3;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _jc = new JuniperConfiguration();
     _jc.getMasterLogicalSystem().getDscpAliases().put(BASE_ALIAS, BASE_VALUE);
     _w = new Warnings(true, true, true);
@@ -31,7 +31,7 @@ public class FwFromDscpTest {
   }
 
   @Test
-  public void testToAclLineMatchExpr() {
+  void testToAclLineMatchExpr() {
     // configured custom alias
     assertEquals(
         new FwFromDscp(BASE_ALIAS).toAclLineMatchExpr(_jc, _c, _w),
@@ -59,14 +59,14 @@ public class FwFromDscpTest {
   }
 
   @Test
-  public void testToAclLineMatchExpr_undefinedAlias() {
+  void testToAclLineMatchExpr_undefinedAlias() {
     assertEquals(
         new FwFromDscp("other").toAclLineMatchExpr(_jc, _c, _w),
         new FalseExpr(TraceElement.of("Treated undefined DSCP alias 'other' as not matching")));
   }
 
   @Test
-  public void testToAclLineMatchExpr_badConstant() {
+  void testToAclLineMatchExpr_badConstant() {
     assertEquals(
         new FwFromDscp("93").toAclLineMatchExpr(_jc, _c, _w),
         new FalseExpr(TraceElement.of("Treated illegal DSCP value '93' as not matching")));

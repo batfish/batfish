@@ -5,8 +5,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.lessThan;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.testing.EqualsTester;
@@ -14,10 +14,10 @@ import java.util.Optional;
 import java.util.SortedSet;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link StructuredBgpRouteDiffs} */
-public class StructuredBgpRouteDiffsTest {
+class StructuredBgpRouteDiffsTest {
   private static SortedSet<Community> makeCommSet(int... comms) {
     checkArgument(comms.length % 2 == 0, "expecting even number of community parts");
     ImmutableSortedSet.Builder<Community> b = ImmutableSortedSet.naturalOrder();
@@ -28,7 +28,7 @@ public class StructuredBgpRouteDiffsTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     // [0:0, 1:1] -> [1:1, 2:2]
     SortedSet<Community> oldComms1 = makeCommSet(0, 0, 1, 1);
     SortedSet<Community> newComms1 = makeCommSet(1, 1, 2, 2);
@@ -56,7 +56,7 @@ public class StructuredBgpRouteDiffsTest {
   }
 
   @Test
-  public void testCompareTo() {
+  void testCompareTo() {
     // [0:0, 1:1] -> []
     SortedSet<Community> oldComms1 = makeCommSet(0, 0, 1, 1);
     SortedSet<Community> newComms1 = makeCommSet();
@@ -87,7 +87,7 @@ public class StructuredBgpRouteDiffsTest {
   }
 
   @Test
-  public void testHasDifferences() {
+  void testHasDifferences() {
 
     StructuredBgpRouteDiffs d1 = new StructuredBgpRouteDiffs();
     assertFalse(d1.hasDifferences());

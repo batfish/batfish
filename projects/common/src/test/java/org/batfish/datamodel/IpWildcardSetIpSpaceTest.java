@@ -6,9 +6,9 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class IpWildcardSetIpSpaceTest {
+class IpWildcardSetIpSpaceTest {
   private final IpSpace _ipSpace =
       IpWildcardSetIpSpace.builder()
           .including(IpWildcard.parse("1.1.1.0/24"), IpWildcard.parse("1.1.2.0/24"))
@@ -16,7 +16,7 @@ public class IpWildcardSetIpSpaceTest {
           .build();
 
   @Test
-  public void testContainsIp() {
+  void testContainsIp() {
     assertThat(_ipSpace, containsIp(Ip.parse("1.1.1.0")));
     assertThat(_ipSpace, not(containsIp(Ip.parse("1.1.1.1"))));
     assertThat(_ipSpace, containsIp(Ip.parse("1.1.2.0")));
@@ -24,7 +24,7 @@ public class IpWildcardSetIpSpaceTest {
   }
 
   @Test
-  public void testComplement() {
+  void testComplement() {
     IpSpace notIpSpace = _ipSpace.complement();
     assertThat(notIpSpace, not(containsIp(Ip.parse("1.1.1.0"))));
     assertThat(notIpSpace, containsIp(Ip.parse("1.1.1.1")));
@@ -45,7 +45,7 @@ public class IpWildcardSetIpSpaceTest {
   }
 
   @Test
-  public void testJavaSerializationCompact() {
+  void testJavaSerializationCompact() {
     IpWildcardSetIpSpace space =
         IpWildcardSetIpSpace.builder()
             .including(

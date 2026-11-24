@@ -14,9 +14,9 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.RoleDimensionMapping;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class NodeSpecifierTest {
+class NodeSpecifierTest {
   private static final Map<String, Configuration> _configs;
   private static final SpecifierContext _context;
   private static final String _roleDim;
@@ -57,12 +57,12 @@ public class NodeSpecifierTest {
   }
 
   @Test
-  public void testAllNodesNodeSpecifier() {
+  void testAllNodesNodeSpecifier() {
     assertThat(AllNodesNodeSpecifier.INSTANCE.resolve(_context), equalTo(_configs.keySet()));
   }
 
   @Test
-  public void testDifferenceNodeSpecifier() {
+  void testDifferenceNodeSpecifier() {
     String excludedNodeName = _roleNode.getHostname();
     assertThat(
         new DifferenceNodeSpecifier(
@@ -73,7 +73,7 @@ public class NodeSpecifierTest {
   }
 
   @Test
-  public void testNameRegexNodeSpecifier() {
+  void testNameRegexNodeSpecifier() {
     String name = _roleNode.getHostname();
     Pattern pattern = Pattern.compile(name);
     assertThat(
@@ -81,7 +81,7 @@ public class NodeSpecifierTest {
   }
 
   @Test
-  public void testRoleRegexNodeSpecifier() {
+  void testRoleRegexNodeSpecifier() {
     assertThat(
         new RoleRegexNodeSpecifier(_rolePattern, _roleDim).resolve(_context),
         equalTo(ImmutableSet.of(_roleNode.getHostname())));

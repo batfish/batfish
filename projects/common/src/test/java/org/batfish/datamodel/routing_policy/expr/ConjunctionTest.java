@@ -11,46 +11,43 @@ import static org.hamcrest.Matchers.is;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link Conjunction} */
-@RunWith(JUnit4.class)
-public class ConjunctionTest {
+class ConjunctionTest {
 
   @Test
-  public void simplifyEmpty() {
+  void simplifyEmpty() {
     Conjunction empty = new Conjunction();
     assertThat(empty.simplify(), is(TRUE));
   }
 
   @Test
-  public void simplifyFalse() {
+  void simplifyFalse() {
     Conjunction falseS = new Conjunction(ImmutableList.of(FALSE));
     assertThat(falseS.simplify(), is(FALSE));
   }
 
   @Test
-  public void simplifyTrue() {
+  void simplifyTrue() {
     Conjunction trueS = new Conjunction(ImmutableList.of(TRUE));
     assertThat(trueS.simplify(), is(TRUE));
   }
 
   @Test
-  public void simplifySingleStatement() {
+  void simplifySingleStatement() {
     Conjunction single = new Conjunction(ImmutableList.of(CALL_EXPR_CONTEXT));
     assertThat(single.simplify(), is(CALL_EXPR_CONTEXT));
   }
 
   @Test
-  public void simplifySkipTrue() {
+  void simplifySkipTrue() {
     Conjunction manyTrue = new Conjunction(ImmutableList.of(TRUE, TRUE, CALL_EXPR_CONTEXT, TRUE));
     assertThat(manyTrue.simplify(), is(CALL_EXPR_CONTEXT));
   }
 
   @Test
-  public void simplifyTwoStatements() {
+  void simplifyTwoStatements() {
     Conjunction two = new Conjunction(ImmutableList.of(CALL_EXPR_CONTEXT, CALL_STATEMENT_CONTEXT));
     BooleanExpr simplified = two.simplify();
     assertThat(simplified, equalTo(two));
@@ -58,7 +55,7 @@ public class ConjunctionTest {
   }
 
   @Test
-  public void simplifyShortCircuit() {
+  void simplifyShortCircuit() {
     Conjunction shortCircuit =
         new Conjunction(ImmutableList.of(CALL_EXPR_CONTEXT, FALSE, CALL_STATEMENT_CONTEXT));
     BooleanExpr simplified = shortCircuit.simplify();
@@ -68,7 +65,7 @@ public class ConjunctionTest {
   }
 
   @Test
-  public void simplifyInnerStatements() {
+  void simplifyInnerStatements() {
     Conjunction innerSimplifiable = new Conjunction(ImmutableList.of(new Conjunction()));
     assertThat(innerSimplifiable.simplify(), equalTo(BooleanExprs.TRUE));
   }

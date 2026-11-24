@@ -7,25 +7,25 @@ import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link NextHopVtep}. */
-public final class NextHopVtepTest {
+final class NextHopVtepTest {
 
   @Test
-  public void testJavaSerialiation() {
+  void testJavaSerialiation() {
     NextHopVtep obj = NextHopVtep.of(100, Ip.parse("1.1.1.1"));
     assertThat(SerializationUtils.clone(obj), equalTo(obj));
   }
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     NextHopVtep obj = NextHopVtep.of(100, Ip.parse("1.1.1.1"));
     assertThat(BatfishObjectMapper.clone(obj, NextHop.class), equalTo(obj));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     NextHopVtep obj = NextHopVtep.of(100, Ip.parse("1.1.1.1"));
     new EqualsTester()
         .addEqualityGroup(obj, NextHopVtep.of(100, Ip.parse("1.1.1.1")))

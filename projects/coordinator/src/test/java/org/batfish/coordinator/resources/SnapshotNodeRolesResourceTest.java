@@ -6,6 +6,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableSet;
+import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 import javax.ws.rs.client.Invocation.Builder;
@@ -16,13 +17,12 @@ import org.batfish.coordinator.Main;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
 import org.batfish.role.NodeRolesData;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class SnapshotNodeRolesResourceTest extends WorkMgrServiceV2TestBase {
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+final class SnapshotNodeRolesResourceTest extends WorkMgrServiceV2TestBase {
+  @TempDir public File _folder;
 
   private Builder getNodeRolesTarget(String network, String snapshot, boolean inferred) {
     return target(CoordConsts.SVC_CFG_WORK_MGR2)
@@ -35,13 +35,13 @@ public final class SnapshotNodeRolesResourceTest extends WorkMgrServiceV2TestBas
         .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY);
   }
 
-  @Before
-  public void initTestEnvironment() {
+  @BeforeEach
+  void initTestEnvironment() {
     WorkMgrTestUtils.initWorkManager(_folder);
   }
 
   @Test
-  public void testInferredGetMissingNetwork() {
+  void testInferredGetMissingNetwork() {
     String network = "network1";
     String snapshot = "snapshot1";
     try (Response response = getNodeRolesTarget(network, snapshot, true).get()) {
@@ -50,7 +50,7 @@ public final class SnapshotNodeRolesResourceTest extends WorkMgrServiceV2TestBas
   }
 
   @Test
-  public void testInferredGetMissingSnapshot() {
+  void testInferredGetMissingSnapshot() {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
@@ -60,7 +60,7 @@ public final class SnapshotNodeRolesResourceTest extends WorkMgrServiceV2TestBas
   }
 
   @Test
-  public void testInferredGetPresent() throws IOException {
+  void testInferredGetPresent() throws IOException {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
@@ -77,7 +77,7 @@ public final class SnapshotNodeRolesResourceTest extends WorkMgrServiceV2TestBas
   }
 
   @Test
-  public void testNetworkGetMissingNetwork() {
+  void testNetworkGetMissingNetwork() {
     String network = "network1";
     String snapshot = "snapshot1";
     try (Response response = getNodeRolesTarget(network, snapshot, false).get()) {
@@ -86,7 +86,7 @@ public final class SnapshotNodeRolesResourceTest extends WorkMgrServiceV2TestBas
   }
 
   @Test
-  public void testNetworkGetMissingSnapshot() {
+  void testNetworkGetMissingSnapshot() {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
@@ -96,7 +96,7 @@ public final class SnapshotNodeRolesResourceTest extends WorkMgrServiceV2TestBas
   }
 
   @Test
-  public void testNetworkGetPresent() throws IOException {
+  void testNetworkGetPresent() throws IOException {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);

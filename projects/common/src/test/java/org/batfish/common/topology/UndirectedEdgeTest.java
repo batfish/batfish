@@ -1,18 +1,18 @@
 package org.batfish.common.topology;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link UndirectedEdge}. */
-public final class UndirectedEdgeTest {
+final class UndirectedEdgeTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     UndirectedEdge<Ip> edge1 = new UndirectedEdge<>(Ip.ZERO, Ip.ZERO);
     UndirectedEdge<Ip> edge2 = new UndirectedEdge<>(Ip.ZERO, Ip.FIRST_CLASS_A_PRIVATE_IP);
     UndirectedEdge<Ip> edge3 =
@@ -27,7 +27,7 @@ public final class UndirectedEdgeTest {
   }
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     UndirectedEdge<Ip> edge = new UndirectedEdge<>(Ip.ZERO, Ip.ZERO);
 
     assertEquals(edge, BatfishObjectMapper.clone(edge, new TypeReference<UndirectedEdge<Ip>>() {}));

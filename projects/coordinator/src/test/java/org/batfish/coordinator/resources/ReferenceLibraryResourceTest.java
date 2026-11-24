@@ -6,6 +6,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
+import java.io.File;
 import java.io.IOException;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation.Builder;
@@ -18,17 +19,16 @@ import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public class ReferenceLibraryResourceTest extends WorkMgrServiceV2TestBase {
+class ReferenceLibraryResourceTest extends WorkMgrServiceV2TestBase {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
-  @Before
-  public void initTestEnvironment() {
+  @BeforeEach
+  void initTestEnvironment() {
     WorkMgrTestUtils.initWorkManager(_folder);
   }
 
@@ -42,7 +42,7 @@ public class ReferenceLibraryResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void addReferenceBook() throws IOException {
+  void addReferenceBook() throws IOException {
     String network = "someNetwork";
     Main.getWorkMgr().initNetwork(network, null);
 
@@ -65,7 +65,7 @@ public class ReferenceLibraryResourceTest extends WorkMgrServiceV2TestBase {
 
   /** Test that we get back the reference library */
   @Test
-  public void getReferenceLibrary() {
+  void getReferenceLibrary() {
     String network = "someNetwork";
     Main.getWorkMgr().initNetwork(network, null);
 

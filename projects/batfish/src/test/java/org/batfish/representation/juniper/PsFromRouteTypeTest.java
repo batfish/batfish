@@ -10,11 +10,11 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.representation.juniper.PsFromRouteType.Type;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class PsFromRouteTypeTest {
+class PsFromRouteTypeTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new PsFromRouteType(Type.EXTERNAL), new PsFromRouteType(Type.EXTERNAL))
         .addEqualityGroup(new PsFromRouteType(Type.INTERNAL))
@@ -22,7 +22,7 @@ public class PsFromRouteTypeTest {
   }
 
   @Test
-  public void testConversion() {
+  void testConversion() {
     JuniperConfiguration jc = new JuniperConfiguration();
     Configuration c =
         Configuration.builder()

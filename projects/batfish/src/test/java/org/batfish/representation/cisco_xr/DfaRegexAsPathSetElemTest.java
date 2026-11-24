@@ -6,20 +6,20 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.testing.EqualsTester;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link DfaRegexAsPathSetElem}. */
 @ParametersAreNonnullByDefault
-public final class DfaRegexAsPathSetElemTest {
+final class DfaRegexAsPathSetElemTest {
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     DfaRegexAsPathSetElem obj = new DfaRegexAsPathSetElem("a");
     assertThat(SerializationUtils.clone(obj), equalTo(obj));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     DfaRegexAsPathSetElem obj = new DfaRegexAsPathSetElem("a");
     new EqualsTester()
         .addEqualityGroup(obj, new DfaRegexAsPathSetElem("a"))

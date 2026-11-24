@@ -12,12 +12,12 @@ import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.representation.aws.LoadBalancer.Protocol;
 import org.batfish.representation.aws.TargetGroup.Type;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class TargetGroupTest {
+class TargetGroupTest {
 
   @Test
-  public void testDeserialization() throws IOException {
+  void testDeserialization() throws IOException {
     String text = readResource("org/batfish/representation/aws/TargetGroupTest.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);

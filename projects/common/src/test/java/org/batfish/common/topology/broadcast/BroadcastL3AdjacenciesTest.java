@@ -1,8 +1,8 @@
 package org.batfish.common.topology.broadcast;
 
 import static org.batfish.datamodel.InterfaceType.PHYSICAL;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import org.batfish.common.topology.Layer1Edge;
@@ -14,12 +14,12 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.vxlan.VxlanTopology;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class BroadcastL3AdjacenciesTest {
+class BroadcastL3AdjacenciesTest {
   /** A simple test that the code works end-to-end. */
   @Test
-  public void testE2e() {
+  void testE2e() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c1 = nf.configurationBuilder().build();
     Interface i1 =

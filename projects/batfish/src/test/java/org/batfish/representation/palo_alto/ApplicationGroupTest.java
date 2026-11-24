@@ -9,12 +9,12 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.HashSet;
 import java.util.Map;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link ApplicationGroup}. */
-public class ApplicationGroupTest {
+class ApplicationGroupTest {
   @Test
-  public void testGetDescendantObjectsBase() {
+  void testGetDescendantObjectsBase() {
     ApplicationGroup ag = new ApplicationGroup("group");
     Application a1 = Application.builder("a1").build();
     Application a2 = Application.builder("a2").build();
@@ -28,7 +28,7 @@ public class ApplicationGroupTest {
   }
 
   @Test
-  public void testGetDescendantObjectsBuiltIn() {
+  void testGetDescendantObjectsBuiltIn() {
     ApplicationGroup ag = new ApplicationGroup("group");
     // Built-in application
     ag.getMembers().add("ftp");
@@ -39,7 +39,7 @@ public class ApplicationGroupTest {
   }
 
   @Test
-  public void testGetDescendantObjectsCircular() {
+  void testGetDescendantObjectsCircular() {
     Application a1 = Application.builder("a1").build();
     Application a2 = Application.builder("a2").build();
     Map<String, ApplicationGroup> applicationGroups =
@@ -69,7 +69,7 @@ public class ApplicationGroupTest {
   }
 
   @Test
-  public void testGetDescendantObjectsEmpty() {
+  void testGetDescendantObjectsEmpty() {
     ApplicationGroup ag = new ApplicationGroup("group");
     assertThat(
         ag.getDescendantObjects(ImmutableMap.of(), ImmutableMap.of(), new HashSet<>()),
@@ -77,7 +77,7 @@ public class ApplicationGroupTest {
   }
 
   @Test
-  public void testGetDescendantObjectsIndirect() {
+  void testGetDescendantObjectsIndirect() {
     Application a1 = Application.builder("a1").build();
     Application a2 = Application.builder("a2").build();
     Map<String, ApplicationGroup> applicationGroups =

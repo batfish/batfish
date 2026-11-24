@@ -8,23 +8,23 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.main.Batfish;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosSxeInterfaceTest {
+final class JunosSxeInterfaceTest {
 
   private static final String HOSTNAME = "junos-sxe-interface";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testSxeInterface() throws IOException {
+  void testSxeInterface() throws IOException {
     Batfish batfish = getBatfish(_folder, HOSTNAME);
     assertThat(getParseWarnings(batfish, HOSTNAME), empty());
     assertThat(

@@ -5,15 +5,15 @@ import static org.batfish.representation.aws.AwsConfigurationTestUtils.testSetup
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testTrace;
 
 import com.google.common.collect.ImmutableList;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * E2e tests for transit gateway configuration with multiple gateways and asymmetric paths. There
@@ -25,7 +25,7 @@ import org.junit.rules.TemporaryFolder;
  * <p>The configuration was pulled * manually after deployment using the setup.tf file in {@link
  * #TESTCONFIGS_DIR}.
  */
-public class AwsConfigurationTransitGatewayAsymmetricPathsTest {
+class AwsConfigurationTransitGatewayAsymmetricPathsTest {
 
   private static final String TESTCONFIGS_DIR =
       "org/batfish/representation/aws/test-transit-gateway-asymmetric-paths";
@@ -65,17 +65,17 @@ public class AwsConfigurationTransitGatewayAsymmetricPathsTest {
   private static Ip _instanceBatIp = Ip.parse("10.1.1.100");
   private static Ip _instanceFishIp = Ip.parse("10.2.1.100");
 
-  @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public static File _folder;
 
   private static IBatfish _batfish;
 
-  @BeforeClass
-  public static void setup() throws IOException {
+  @BeforeAll
+  static void setup() throws IOException {
     _batfish = testSetup(TESTCONFIGS_DIR, fileNames, _folder);
   }
 
   @Test
-  public void testBatToFish() {
+  void testBatToFish() {
     testTrace(
         getAnyFlow(_instanceBat, _instanceFishIp, _batfish),
         FlowDisposition.DENIED_IN,
@@ -85,7 +85,7 @@ public class AwsConfigurationTransitGatewayAsymmetricPathsTest {
   }
 
   @Test
-  public void testFishToBat() {
+  void testFishToBat() {
     testTrace(
         getAnyFlow(_instanceFish, _instanceBatIp, _batfish),
         FlowDisposition.DENIED_IN,

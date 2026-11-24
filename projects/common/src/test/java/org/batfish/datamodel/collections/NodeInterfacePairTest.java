@@ -8,11 +8,11 @@ import com.google.common.testing.EqualsTester;
 import java.util.List;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class NodeInterfacePairTest {
+class NodeInterfacePairTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             NodeInterfacePair.of("host", "iface"),
@@ -26,7 +26,7 @@ public class NodeInterfacePairTest {
   }
 
   @Test
-  public void testCompareTo() {
+  void testCompareTo() {
     List<NodeInterfacePair> ordered =
         ImmutableList.of(
             NodeInterfacePair.of("a", "a1"),
@@ -45,13 +45,13 @@ public class NodeInterfacePairTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     NodeInterfacePair nip = NodeInterfacePair.of("host", "iface");
     assertThat(SerializationUtils.clone(nip), equalTo(nip));
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     NodeInterfacePair nip = NodeInterfacePair.of("host", "iface");
     assertThat(BatfishObjectMapper.clone(nip, NodeInterfacePair.class), equalTo(nip));
   }

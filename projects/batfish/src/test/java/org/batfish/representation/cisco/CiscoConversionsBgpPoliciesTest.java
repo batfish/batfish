@@ -43,14 +43,11 @@ import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statements;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link CiscoConversions} class */
-@RunWith(JUnit4.class)
-public class CiscoConversionsBgpPoliciesTest {
+class CiscoConversionsBgpPoliciesTest {
 
   private static final Ip PEER_ADDRESS = Ip.parse("1.2.3.4");
   private static final String PREFIX_LIST_NAME = "PREFIX_LIST";
@@ -78,8 +75,8 @@ public class CiscoConversionsBgpPoliciesTest {
    *       #PERMITTED_PREFIX} and denies routes to {@link #DENIED_PREFIX}
    * </ul>
    */
-  @Before
-  public void before() {
+  @BeforeEach
+  void before() {
     _w = new Warnings(true, true, true);
     _peerGroup = new IpBgpPeerGroup(PEER_ADDRESS);
 
@@ -161,7 +158,7 @@ public class CiscoConversionsBgpPoliciesTest {
   }
 
   @Test
-  public void testGenerateBgpImportPolicyWithNoConstraints() {
+  void testGenerateBgpImportPolicyWithNoConstraints() {
     // Create a BGP import policy from a peer group with no constraints on incoming routes.
     // Resulting import policy should be null.
     String bgpImportPolicyName = generateBgpImportPolicy(_peerGroup, DEFAULT_VRF_NAME, _c, _w);
@@ -170,7 +167,7 @@ public class CiscoConversionsBgpPoliciesTest {
   }
 
   @Test
-  public void testGenerateBgpExportPolicyWithNoConstraints() {
+  void testGenerateBgpExportPolicyWithNoConstraints() {
     // Create a BGP export policy from a peer group with no constraints on outgoing routes.
     // Resulting export policy should accept any BGP routes.
     _peerGroup.setDefaultOriginate(false);
@@ -191,7 +188,7 @@ public class CiscoConversionsBgpPoliciesTest {
   }
 
   @Test
-  public void testGenerateBgpImportPolicyWithPrefixList() {
+  void testGenerateBgpImportPolicyWithPrefixList() {
     // Create a BGP import policy from a peer group that uses the prefix-list to filter incoming
     // routes. Resulting import policy should match prefix-list.
     _peerGroup.setInboundPrefixList(PREFIX_LIST_NAME);
@@ -207,7 +204,7 @@ public class CiscoConversionsBgpPoliciesTest {
   }
 
   @Test
-  public void testGenerateBgpExportPolicyWithPrefixList() {
+  void testGenerateBgpExportPolicyWithPrefixList() {
     // Create a BGP export policy from a peer group that uses the prefix-list to filter outgoing
     // routes. Resulting export policy should match prefix-list.
     _peerGroup.setDefaultOriginate(false);
@@ -225,7 +222,7 @@ public class CiscoConversionsBgpPoliciesTest {
   }
 
   @Test
-  public void testGenerateBgpImportPolicyWithRouteMap() {
+  void testGenerateBgpImportPolicyWithRouteMap() {
     // Create a BGP import policy from a peer group that uses the route-map to filter incoming
     // routes. Resulting import policy should be the route-map.
     _peerGroup.setInboundRouteMap(ROUTE_MAP_NAME);
@@ -240,7 +237,7 @@ public class CiscoConversionsBgpPoliciesTest {
   }
 
   @Test
-  public void testGenerateBgpExportPolicyWithRouteMap() {
+  void testGenerateBgpExportPolicyWithRouteMap() {
     // Create a BGP export policy from a peer group that uses the route-map to filter outgoing
     // routes. Resulting export policy should match the route-map.
     _peerGroup.setOutboundRouteMap(ROUTE_MAP_NAME);
@@ -258,7 +255,7 @@ public class CiscoConversionsBgpPoliciesTest {
   }
 
   @Test
-  public void testGenerateBgpImportPolicyWithRouteMapAndPrefixList() {
+  void testGenerateBgpImportPolicyWithRouteMapAndPrefixList() {
     // Create a BGP import policy from a peer group that uses both to filter incoming routes.
     // Resulting import policy should be the route-map, and a warning should be generated indicating
     // the prefix-list was ignored.
@@ -283,7 +280,7 @@ public class CiscoConversionsBgpPoliciesTest {
   }
 
   @Test
-  public void testGenerateBgpExportPolicyWithRouteMapAndPrefixList() {
+  void testGenerateBgpExportPolicyWithRouteMapAndPrefixList() {
     // Create a BGP export policy from a peer group that uses both to filter outgoing routes.
     // Resulting export policy should match the route-map, and a warning should be generated
     // indicating the prefix-list was ignored.

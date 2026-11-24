@@ -43,14 +43,15 @@ import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
@@ -129,21 +130,17 @@ import org.batfish.representation.f5_bigip.UpdateSource;
 import org.batfish.representation.f5_bigip.UpdateSourceInterface;
 import org.batfish.representation.f5_bigip.UpdateSourceIp;
 import org.batfish.vendor.VendorConfiguration;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class F5BigipImishGrammarTest {
+final class F5BigipImishGrammarTest {
   private static final String SNAPSHOTS_PREFIX = "org/batfish/grammar/f5_bigip_imish/snapshots/";
   private static final String TESTCONFIGS_PREFIX =
       "org/batfish/grammar/f5_bigip_imish/testconfigs/";
 
   private BDDPrefix _bddPrefix;
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+  @TempDir public File _folder;
 
   private void assertAcceptsKernelRoute(RoutingPolicy rp) {
     Bgpv4Route.Builder outputBuilder = makeBgpOutputRouteBuilder();
@@ -250,7 +247,7 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
-  public void testAccessList() throws IOException {
+  void testAccessList() throws IOException {
     Configuration c = parseConfig("f5_bigip_imish_access_list");
     String acl1Name = "acl1";
     String acl2Name = "acl2";
@@ -286,7 +283,7 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
-  public void testAccessListToRouteFilter() throws IOException {
+  void testAccessListToRouteFilter() throws IOException {
     Configuration c = parseConfig("f5_bigip_imish_route_map");
     String acl1RfName = computeAccessListRouteFilterName("acl1");
     String acl2RfName = computeAccessListRouteFilterName("acl2");
@@ -329,7 +326,7 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
-  public void testBgpAggregateAddressExtraction() {
+  void testBgpAggregateAddressExtraction() {
     F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_bgp_aggregate_address");
 
     Map<Prefix, AggregateAddress> aggregateAddresses =
@@ -364,7 +361,7 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
-  public void testBgpAggregateAddressConversion() throws IOException {
+  void testBgpAggregateAddressConversion() throws IOException {
     Configuration c = parseConfig("f5_bigip_imish_bgp_aggregate_address");
     String routingPolicyName = computeBgpCommonExportPolicyName("65001");
     RoutingPolicy exportPolicy = c.getRoutingPolicies().get(routingPolicyName);
@@ -423,22 +420,22 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
-  public void testBgpNullParsing() {
+  void testBgpNullParsing() {
     // test that ignored BGP lines parse successfully
     assertNotNull(parseVendorConfig("f5_bigip_imish_bgp_null"));
   }
 
   @Test
-  public void testBgpAlwaysCompareMedExtraction() {
+  void testBgpAlwaysCompareMedExtraction() {
     F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_bgp_always_compare_med");
 
     assertTrue(
-        "Ensure always-compare-med is extracted",
-        vc.getBgpProcesses().get("123").getAlwaysCompareMed());
+        vc.getBgpProcesses().get("123").getAlwaysCompareMed(),
+        "Ensure always-compare-med is extracted");
   }
 
   @Test
-  public void testBgpConfederationExtraction() {
+  void testBgpConfederationExtraction() {
     F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_bgp_confederation");
     assertThat(vc.getBgpProcesses().get("65001").getConfederation().getId(), equalTo(65010L));
     assertThat(vc.getBgpProcesses(), hasKeys("65001"));
@@ -449,7 +446,7 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
-  public void testBgpConfederationConversion() throws IOException {
+  void testBgpConfederationConversion() throws IOException {
     Configuration c = parseConfig("f5_bigip_imish_bgp_confederation");
     BgpProcess bgpProcess = c.getDefaultVrf().getBgpProcess();
     assertThat(
@@ -476,16 +473,16 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
-  public void testBgpDeterministicMedExtraction() {
+  void testBgpDeterministicMedExtraction() {
     F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_bgp_deterministic_med");
 
     assertTrue(
-        "Ensure deterministic-med is extracted",
-        vc.getBgpProcesses().get("123").getDeterministicMed());
+        vc.getBgpProcesses().get("123").getDeterministicMed(),
+        "Ensure deterministic-med is extracted");
   }
 
   @Test
-  public void testBgpKernelRouteRedistribution() throws IOException {
+  void testBgpKernelRouteRedistribution() throws IOException {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
@@ -508,7 +505,7 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
-  public void testBgpKernelRouteRedistributionNoRouteMap() throws IOException {
+  void testBgpKernelRouteRedistributionNoRouteMap() throws IOException {
     Configuration c = parseConfig("f5_bigip_imish_bgp_redistribute_kernel_no_route_map");
     Ip peerAddress = Ip.parse("192.0.2.2");
     String rpName = computeBgpPeerExportPolicyName("1", peerAddress);
@@ -521,7 +518,7 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
-  public void testBgpKernelRouteRedistributionRouteMapAccept() throws IOException {
+  void testBgpKernelRouteRedistributionRouteMapAccept() throws IOException {
     Configuration c = parseConfig("f5_bigip_imish_bgp_redistribute_kernel_route_map_accept");
     Ip peerAddress = Ip.parse("192.0.2.2");
     String rpName = computeBgpPeerExportPolicyName("1", peerAddress);
@@ -534,7 +531,7 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
-  public void testBgpKernelRouteRedistributionRouteMapReject() throws IOException {
+  void testBgpKernelRouteRedistributionRouteMapReject() throws IOException {
     Configuration c = parseConfig("f5_bigip_imish_bgp_redistribute_kernel_route_map_reject");
     Ip peerAddress = Ip.parse("192.0.2.2");
     String rpName = computeBgpPeerExportPolicyName("1", peerAddress);
@@ -547,7 +544,7 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
-  public void testBgpConnectedRouteRedistributionNoRouteMap() throws IOException {
+  void testBgpConnectedRouteRedistributionNoRouteMap() throws IOException {
     Configuration c = parseConfig("f5_bigip_imish_bgp_redistribute_connected_no_route_map");
     Ip peerAddress = Ip.parse("192.0.2.2");
     String rpName = computeBgpPeerExportPolicyName("1", peerAddress);
@@ -561,7 +558,7 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
-  public void testBgpConnectedRouteRedistributionRouteMapAccept() throws IOException {
+  void testBgpConnectedRouteRedistributionRouteMapAccept() throws IOException {
     Configuration c = parseConfig("f5_bigip_imish_bgp_redistribute_connected_route_map_accept");
     Ip peerAddress = Ip.parse("192.0.2.2");
     String rpName = computeBgpPeerExportPolicyName("1", peerAddress);
@@ -575,7 +572,7 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
-  public void testBgpConnectedRouteRedistributionRouteMapReject() throws IOException {
+  void testBgpConnectedRouteRedistributionRouteMapReject() throws IOException {
     Configuration c = parseConfig("f5_bigip_imish_bgp_redistribute_connected_route_map_reject");
     Ip peerAddress = Ip.parse("192.0.2.2");
     String rpName = computeBgpPeerExportPolicyName("1", peerAddress);
@@ -590,7 +587,7 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
-  public void testBgpNextHopSelfConversion() throws IOException {
+  void testBgpNextHopSelfConversion() throws IOException {
     Configuration c = parseConfig("f5_bigip_imish_bgp_next_hop_self");
 
     Ip localIp = Ip.parse("192.0.2.254");
@@ -624,18 +621,18 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
-  public void testBgpNextHopSelfExtraction() {
+  void testBgpNextHopSelfExtraction() {
     F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_bgp_next_hop_self");
 
     assertThat(
         vc.getBgpProcesses().get("65501").getNeighbors(),
         hasKeys("192.0.2.1", "192.0.2.2", "192.0.2.3"));
     assertTrue(
-        "Ensure next-hop-self is extracted for ip neighbor",
-        vc.getBgpProcesses().get("65501").getNeighbors().get("192.0.2.1").getNextHopSelf());
+        vc.getBgpProcesses().get("65501").getNeighbors().get("192.0.2.1").getNextHopSelf(),
+        "Ensure next-hop-self is extracted for ip neighbor");
     assertTrue(
-        "Ensure next-hop-self is extracted for peer-group",
-        vc.getBgpProcesses().get("65501").getPeerGroups().get("pg1").getNextHopSelf());
+        vc.getBgpProcesses().get("65501").getPeerGroups().get("pg1").getNextHopSelf(),
+        "Ensure next-hop-self is extracted for peer-group");
     assertThat(
         "Ensure next-hop-self is non-inherited in VS for ip neighbor",
         vc.getBgpProcesses().get("65501").getNeighbors().get("192.0.2.2").getNextHopSelf(),
@@ -647,7 +644,7 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
-  public void testBgpProcessExtractionGh5721() {
+  void testBgpProcessExtractionGh5721() {
     String hostname = "f5_bigip_imish_bgp_gh_5721";
     F5BigipConfiguration c = parseVendorConfig(hostname);
     assertThat(c.getBgpProcesses(), hasKey("11111"));
@@ -675,7 +672,7 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
-  public void testBgpProcessConversionGh5721() throws IOException {
+  void testBgpProcessConversionGh5721() throws IOException {
     String hostname = "f5_bigip_imish_bgp_gh_5721";
     Configuration c = parseConfig(hostname);
     BgpProcess p = c.getDefaultVrf().getBgpProcess();
@@ -704,7 +701,7 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
-  public void testBgpProcessConversion() throws IOException {
+  void testBgpProcessConversion() throws IOException {
     String hostname = "f5_bigip_imish_bgp";
     Configuration c = parseConfig(hostname);
 
@@ -870,7 +867,7 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
-  public void testBgpProcessReferences() throws IOException {
+  void testBgpProcessReferences() throws IOException {
     String hostname = "f5_bigip_imish_bgp_process_references";
     String file = "configs/" + hostname;
     String used = "123";
@@ -884,7 +881,7 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
-  public void testBgpRouterIdAuto() throws IOException {
+  void testBgpRouterIdAuto() throws IOException {
     Configuration c = parseConfig("f5_bigip_imish_bgp_router_id_auto");
 
     // BGP Router-ID automatically chosen from highest IP address
@@ -892,7 +889,7 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
-  public void testBgpRouterIdManual() throws IOException {
+  void testBgpRouterIdManual() throws IOException {
     Configuration c = parseConfig("f5_bigip_imish_bgp_router_id_manual");
 
     // BGP Router-ID manually set
@@ -900,13 +897,13 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
-  public void testHumanName() throws IOException {
+  void testHumanName() throws IOException {
     Configuration c = parseConfig("f5_bigip_imish_humanname");
     assertThat(c.getHumanName(), equalTo("F5_BIGIP_imish_humanname"));
   }
 
   @Test
-  public void testOspfExtraction() {
+  void testOspfExtraction() {
     F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_ospf");
 
     assertThat(vc.getImishInterfaces(), hasKeys("vlan_active", "vlan_active_nbma", "vlan_passive"));
@@ -949,7 +946,7 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
-  public void testOspfConversion() throws IOException {
+  void testOspfConversion() throws IOException {
     Configuration c = parseConfig("f5_bigip_imish_ospf");
 
     assertThat(c.getDefaultVrf().getOspfProcesses(), hasKeys("1"));
@@ -1007,7 +1004,7 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
-  public void testPrefixListExtraction() {
+  void testPrefixListExtraction() {
     F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_prefix_list");
 
     // check all lists are extracted
@@ -1062,7 +1059,7 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
-  public void testRecovery() throws IOException {
+  void testRecovery() throws IOException {
     String hostname = "f5_bigip_imish_recovery";
     String filename = String.format("configs/%s", hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -1076,7 +1073,7 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
-  public void testRouteMap() throws IOException {
+  void testRouteMap() throws IOException {
     Configuration c = parseConfig("f5_bigip_imish_route_map");
     String acceptAllName = "ACCEPT_ALL";
     String rm1Name = "rm1";
@@ -1084,7 +1081,6 @@ public final class F5BigipImishGrammarTest {
     // ACCEPT_ALL
     assertThat(c.getRoutingPolicies(), hasKey(acceptAllName));
     assertTrue(
-        "ACCEPT_ALL accepts arbitrary prefix 10.0.0.0/24",
         c.getRoutingPolicies()
             .get(acceptAllName)
             .call(
@@ -1093,7 +1089,8 @@ public final class F5BigipImishGrammarTest {
                     .setOriginalRoute(
                         new ConnectedRoute(Prefix.strict("10.0.0.0/24"), "/Common/outint"))
                     .build())
-            .getBooleanValue());
+            .getBooleanValue(),
+        "ACCEPT_ALL accepts arbitrary prefix 10.0.0.0/24");
 
     // rm1
     assertThat(c.getRoutingPolicies(), hasKey(rm1Name));
@@ -1101,14 +1098,14 @@ public final class F5BigipImishGrammarTest {
     RoutingPolicy rm1 = c.getRoutingPolicies().get(rm1Name);
 
     assertFalse(
-        "rm1 denies prefix 10.0.0.0/24 (via 10)",
         rm1.call(
                 Environment.builder(c)
                     .setDirection(Direction.OUT)
                     .setOriginalRoute(
                         new ConnectedRoute(Prefix.strict("10.0.0.0/24"), "/Common/outint"))
                     .build())
-            .getBooleanValue());
+            .getBooleanValue(),
+        "rm1 denies prefix 10.0.0.0/24 (via 10)");
 
     ConnectedRoute acceptedRoute =
         new ConnectedRoute(Prefix.strict("10.0.1.0/24"), "/Common/outint");
@@ -1126,25 +1123,25 @@ public final class F5BigipImishGrammarTest {
             .build();
     Result acceptedBy20 = rm1.call(acceptedPrefixEnvironment);
 
-    assertTrue("rm1 accepts prefix 10.0.1.0/24 (via 20)", acceptedBy20.getBooleanValue());
+    assertTrue(acceptedBy20.getBooleanValue(), "rm1 accepts prefix 10.0.1.0/24 (via 20)");
     assertThat(
         "rm1 sets communities 1:2 and 33:44 on the output route",
         outputRoute.build().getCommunities().getCommunities(),
         equalTo(ImmutableSet.of(StandardCommunity.of(1, 2), StandardCommunity.of(33, 44))));
 
     assertFalse(
-        "rm1 rejects prefix 10.0.2.0/24 (no matching entry)",
         rm1.call(
                 Environment.builder(c)
                     .setDirection(Direction.OUT)
                     .setOriginalRoute(
                         new ConnectedRoute(Prefix.strict("10.0.2.0/24"), "/Common/outint"))
                     .build())
-            .getBooleanValue());
+            .getBooleanValue(),
+        "rm1 rejects prefix 10.0.2.0/24 (no matching entry)");
   }
 
   @Test
-  public void testRouteMapMatchIpAddressPrefixListConversion() throws IOException {
+  void testRouteMapMatchIpAddressPrefixListConversion() throws IOException {
     Configuration c = parseConfig("f5_bigip_imish_route_map_match_ip_address_prefix_list");
     String rp1Name = "rm1";
     String rp2Name = "rm2";
@@ -1158,7 +1155,7 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
-  public void testRouteMapMatchIpAddressPrefixListExtraction() {
+  void testRouteMapMatchIpAddressPrefixListExtraction() {
     F5BigipConfiguration vc =
         parseVendorConfig("f5_bigip_imish_route_map_match_ip_address_prefix_list");
     String rm1Name = "rm1";
@@ -1187,7 +1184,7 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
-  public void testRouteMapReferences() throws IOException {
+  void testRouteMapReferences() throws IOException {
     String hostname = "f5_bigip_imish_route_map_references";
     String file = "configs/" + hostname;
     String undefined = "route-map-undefined";
@@ -1208,7 +1205,7 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
-  public void testRouteMapSetMetricConversion() throws IOException {
+  void testRouteMapSetMetricConversion() throws IOException {
     Configuration c = parseConfig("f5_bigip_imish_route_map_set_metric");
     String rpName = "rm1";
 
@@ -1218,7 +1215,7 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
-  public void testRouteMapSetMetricExtraction() {
+  void testRouteMapSetMetricExtraction() {
     F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_route_map_set_metric");
     String rmName = "rm1";
 
@@ -1238,7 +1235,7 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
-  public void testRouteMapSetOriginConversion() throws IOException {
+  void testRouteMapSetOriginConversion() throws IOException {
     Configuration c = parseConfig("f5_bigip_imish_route_map_set_origin");
     String rpName = "rm1";
 
@@ -1250,7 +1247,7 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
-  public void testRouteMapSetOriginExtraction() {
+  void testRouteMapSetOriginExtraction() {
     F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_route_map_set_origin");
     String rmName = "rm1";
 
@@ -1270,13 +1267,13 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
-  public void testBgpNeighborNull() {
+  void testBgpNeighborNull() {
     F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_bgp_neighbor_null");
     assertNotNull(vc);
   }
 
   @Test
-  public void testBgpNeighborUpdateSourceExtraction() {
+  void testBgpNeighborUpdateSourceExtraction() {
     F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_bgp_neighbor_update_source");
     assertNotNull(vc.getBgpProcesses().get("65001"));
     assertNotNull(vc.getBgpProcesses().get("65001").getNeighbors().get("10.0.1.10"));
@@ -1293,7 +1290,7 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
-  public void testBgpNeighborUpdateSourceConversion() throws IOException {
+  void testBgpNeighborUpdateSourceConversion() throws IOException {
     Configuration c = parseConfig("f5_bigip_imish_bgp_neighbor_update_source");
     BgpActivePeerConfig peer1 =
         c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Ip.parse("10.0.1.10"));
@@ -1325,7 +1322,7 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
-  public void testRouteMapSetNextHopExtraction() {
+  void testRouteMapSetNextHopExtraction() {
     F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_route_map_set_next_hop");
     assertNotNull(vc.getRouteMaps().get("rm1"));
 
@@ -1338,7 +1335,7 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
-  public void testRouteMapSetNextHopConversion() throws IOException {
+  void testRouteMapSetNextHopConversion() throws IOException {
     Configuration c = parseConfig("f5_bigip_imish_route_map_set_next_hop");
     String rpName = "rm1";
 

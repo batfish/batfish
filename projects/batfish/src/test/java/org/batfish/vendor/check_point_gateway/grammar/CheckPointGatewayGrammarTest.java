@@ -54,14 +54,15 @@ import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -158,19 +159,18 @@ import org.batfish.vendor.check_point_management.SimpleGateway;
 import org.batfish.vendor.check_point_management.TypedManagementObject;
 import org.batfish.vendor.check_point_management.Uid;
 import org.batfish.vendor.check_point_management.UnknownTypedManagementObject;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 @ParametersAreNonnullByDefault
-public class CheckPointGatewayGrammarTest {
+class CheckPointGatewayGrammarTest {
 
   private static final String TESTCONFIGS_PREFIX =
       "org/batfish/vendor/check_point_gateway/grammar/testconfigs/";
   private static final String SNAPSHOTS_PREFIX =
       "org/batfish/vendor/check_point_gateway/grammar/snapshots/";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private static @Nonnull CheckPointGatewayConfiguration parseVendorConfig(String hostname) {
     String src = readResource(TESTCONFIGS_PREFIX + hostname, UTF_8);
@@ -286,7 +286,7 @@ public class CheckPointGatewayGrammarTest {
   }
 
   @Test
-  public void testHostname() {
+  void testHostname() {
     String hostname = "hostname";
     CheckPointGatewayConfiguration c = parseVendorConfig(hostname);
     assertThat(c, notNullValue());
@@ -295,7 +295,7 @@ public class CheckPointGatewayGrammarTest {
   }
 
   @Test
-  public void testHostnameChassis() {
+  void testHostnameChassis() {
     String hostname = "hostname_chassis";
     CheckPointGatewayConfiguration c = parseVendorConfig(hostname);
     assertThat(c, notNullValue());
@@ -304,7 +304,7 @@ public class CheckPointGatewayGrammarTest {
   }
 
   @Test
-  public void testHumanName() {
+  void testHumanName() {
     Configuration c = parseConfig("hostname");
     assertThat(c, notNullValue());
     assertThat(c.getHostname(), equalTo("hostname"));
@@ -317,7 +317,7 @@ public class CheckPointGatewayGrammarTest {
   }
 
   @Test
-  public void testDeviceModel() {
+  void testDeviceModel() {
     String hostname = "hostname";
     Configuration c = parseConfig(hostname);
     assertThat(c, notNullValue());
@@ -325,7 +325,7 @@ public class CheckPointGatewayGrammarTest {
   }
 
   @Test
-  public void testHostnameInvalid() throws IOException {
+  void testHostnameInvalid() throws IOException {
     String filename = "hostname_invalid";
     Batfish batfish = getBatfishForConfigurationNames(filename);
     Warnings warnings =
@@ -338,7 +338,7 @@ public class CheckPointGatewayGrammarTest {
   }
 
   @Test
-  public void testInterfaceExtraction() {
+  void testInterfaceExtraction() {
     String hostname = "interface";
     CheckPointGatewayConfiguration c = parseVendorConfig(hostname);
     assertThat(c, notNullValue());
@@ -380,7 +380,7 @@ public class CheckPointGatewayGrammarTest {
   }
 
   @Test
-  public void testInterfaceConversion() {
+  void testInterfaceConversion() {
     String hostname = "interface_conversion";
     Configuration c = parseConfig(hostname);
     assertThat(c, notNullValue());
@@ -418,7 +418,7 @@ public class CheckPointGatewayGrammarTest {
   }
 
   @Test
-  public void testInterfaceWarning() throws IOException {
+  void testInterfaceWarning() throws IOException {
     String hostname = "interface_warn";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Warnings warnings =
@@ -442,7 +442,7 @@ public class CheckPointGatewayGrammarTest {
   }
 
   @Test
-  public void testStaticRouteExtraction() {
+  void testStaticRouteExtraction() {
     String hostname = "static_route";
     CheckPointGatewayConfiguration c = parseVendorConfig(hostname);
 
@@ -511,7 +511,7 @@ public class CheckPointGatewayGrammarTest {
   }
 
   @Test
-  public void testStaticRouteOffExtraction() {
+  void testStaticRouteOffExtraction() {
     String hostname = "static_route_off";
     CheckPointGatewayConfiguration c = parseVendorConfig(hostname);
 
@@ -537,7 +537,7 @@ public class CheckPointGatewayGrammarTest {
   }
 
   @Test
-  public void testStaticRouteWarning() throws IOException {
+  void testStaticRouteWarning() throws IOException {
     String hostname = "static_route_warn";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Warnings warnings =
@@ -562,7 +562,7 @@ public class CheckPointGatewayGrammarTest {
   }
 
   @Test
-  public void testStaticRouteConversion() {
+  void testStaticRouteConversion() {
     String hostname = "static_route_convert";
     Configuration c = parseConfig(hostname);
     Vrf vrf = c.getDefaultVrf();
@@ -617,7 +617,7 @@ public class CheckPointGatewayGrammarTest {
   }
 
   @Test
-  public void testBondInterfaceExtraction() {
+  void testBondInterfaceExtraction() {
     String hostname = "bond_interface";
     CheckPointGatewayConfiguration c = parseVendorConfig(hostname);
     assertThat(c, notNullValue());
@@ -661,7 +661,7 @@ public class CheckPointGatewayGrammarTest {
   }
 
   @Test
-  public void testBondInterfaceWarning() throws IOException {
+  void testBondInterfaceWarning() throws IOException {
     String hostname = "bond_interface_warn";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Warnings warnings =
@@ -721,7 +721,7 @@ public class CheckPointGatewayGrammarTest {
   }
 
   @Test
-  public void testBondInterfaceConversion() {
+  void testBondInterfaceConversion() {
     String hostname = "bond_interface_conversion";
     Configuration c = parseConfig(hostname);
 
@@ -782,7 +782,7 @@ public class CheckPointGatewayGrammarTest {
   }
 
   @Test
-  public void testBondInterfaceConversionWarn() throws IOException {
+  void testBondInterfaceConversionWarn() throws IOException {
     String hostname = "bond_interface_conversion_warn";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
@@ -801,7 +801,7 @@ public class CheckPointGatewayGrammarTest {
   }
 
   @Test
-  public void testVlanInterfaceExtraction() {
+  void testVlanInterfaceExtraction() {
     String hostname = "vlan_interface";
     CheckPointGatewayConfiguration c = parseVendorConfig(hostname);
     assertThat(
@@ -856,7 +856,7 @@ public class CheckPointGatewayGrammarTest {
   }
 
   @Test
-  public void testVlanInterfaceConversion() {
+  void testVlanInterfaceConversion() {
     String hostname = "vlan_interface";
     Configuration c = parseConfig(hostname);
     assertThat(
@@ -921,7 +921,7 @@ public class CheckPointGatewayGrammarTest {
   }
 
   @Test
-  public void testConvertWithCorrectPackage() throws IOException {
+  void testConvertWithCorrectPackage() throws IOException {
     // Create a checkpoint mangement config with the following gateways:
     // - g1 uses access policy p1, which contains a network n1
     // - g2 uses access policy p2, which contains a network n2
@@ -1030,7 +1030,7 @@ public class CheckPointGatewayGrammarTest {
   }
 
   @Test
-  public void testConvertDomainObjects() throws IOException {
+  void testConvertDomainObjects() throws IOException {
     ImmutableMap<Uid, GatewayOrServer> gateways =
         ImmutableMap.of(
             Uid.of("1"),
@@ -1073,7 +1073,7 @@ public class CheckPointGatewayGrammarTest {
   }
 
   @Test
-  public void testConvertGatewaysAndServers() throws IOException {
+  void testConvertGatewaysAndServers() throws IOException {
     ImmutableMap<Uid, GatewayOrServer> gateways =
         ImmutableMap.of(
             Uid.of("1"),
@@ -1107,7 +1107,7 @@ public class CheckPointGatewayGrammarTest {
   }
 
   @Test
-  public void testAccessRulesConversion() throws IOException {
+  void testAccessRulesConversion() throws IOException {
     Uid cpmiAnyUid = Uid.of("99999");
     CpmiAnyObject any = new CpmiAnyObject(cpmiAnyUid);
     Uid acceptUid = Uid.of("31");
@@ -1219,7 +1219,7 @@ public class CheckPointGatewayGrammarTest {
    * their cluster.
    */
   @Test
-  public void testAccessRulesForClusterMember() throws IOException {
+  void testAccessRulesForClusterMember() throws IOException {
     Uid cpmiAnyUid = Uid.of("99999");
     CpmiAnyObject any = new CpmiAnyObject(cpmiAnyUid);
     Uid acceptUid = Uid.of("10");
@@ -1286,7 +1286,7 @@ public class CheckPointGatewayGrammarTest {
   }
 
   @Test
-  public void testObjectConversionWarnings() throws IOException {
+  void testObjectConversionWarnings() throws IOException {
     Uid unknownUid = Uid.of("10");
     Uid packageUid = Uid.of("12");
     String accessLayerName = "accessLayerFoo";
@@ -1338,7 +1338,7 @@ public class CheckPointGatewayGrammarTest {
   }
 
   @Test
-  public void testNatConversion() throws IOException {
+  void testNatConversion() throws IOException {
     /*
     NAT rules:
     1. Manual static: Destination 5.5.5.5 is translated to 6.6.6.6
@@ -1816,7 +1816,7 @@ public class CheckPointGatewayGrammarTest {
   }
 
   @Test
-  public void testAutomaticHideBehindGatewayNatConversion() throws IOException {
+  void testAutomaticHideBehindGatewayNatConversion() throws IOException {
     String hostname = "nat_rules";
     AtomicInteger uidGenerator = new AtomicInteger();
 
@@ -2058,7 +2058,7 @@ public class CheckPointGatewayGrammarTest {
   }
 
   @Test
-  public void testParsingMgmtAndGateway() throws IOException {
+  void testParsingMgmtAndGateway() throws IOException {
     String snapshotName = "parsetest";
     List<String> checkpointMgmtFiles =
         ImmutableList.of(
@@ -2103,7 +2103,7 @@ public class CheckPointGatewayGrammarTest {
   }
 
   @Test
-  public void testClusterVirtualIpAssignment() throws IOException {
+  void testClusterVirtualIpAssignment() throws IOException {
     String hostname = "cluster_member";
     Uid memberUid = Uid.of("1");
     Uid clusterUid = Uid.of("2");
@@ -2157,7 +2157,7 @@ public class CheckPointGatewayGrammarTest {
   }
 
   @Test
-  public void testClusterGeneratedEdges() throws IOException {
+  void testClusterGeneratedEdges() throws IOException {
     // Test generation of L1 edges between Sync interfaces
     // There should be edges only between cluster members 1 and 2.
     // - member 3 is missing a sync interface
@@ -2254,7 +2254,7 @@ public class CheckPointGatewayGrammarTest {
    * Test that appropriate conversion warnings are added when different management data is missing.
    */
   @Test
-  public void testManagementConfigurationWarnings() throws IOException {
+  void testManagementConfigurationWarnings() throws IOException {
     // Any config will do, just need to check mgmt warnings
     String gatewayName = "access_rules";
 

@@ -10,7 +10,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import org.batfish.common.Warnings;
@@ -25,10 +25,10 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.representation.host.HostInterface;
 import org.hamcrest.FeatureMatcher;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class HostInterfaceTest {
+class HostInterfaceTest {
 
   public static class IsShared extends FeatureMatcher<HostInterface, Boolean> {
 
@@ -52,8 +52,8 @@ public class HostInterfaceTest {
 
   private Warnings _w;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _factory = new NetworkFactory();
     _c =
         _factory
@@ -65,7 +65,7 @@ public class HostInterfaceTest {
   }
 
   @Test
-  public void testToInterface() {
+  void testToInterface() {
     String name = "eth0";
     HostInterface hi = new HostInterface(name);
     hi.setCanonicalName(name);
@@ -76,7 +76,7 @@ public class HostInterfaceTest {
   }
 
   @Test
-  public void testShared() throws IOException {
+  void testShared() throws IOException {
     Ip sharedIp = Ip.parse("1.0.0.1");
     InterfaceAddress sharedAddress = ConcreteInterfaceAddress.create(sharedIp, 24);
     String nonShared1Prefix = "2.0.0.2/24";
@@ -119,7 +119,7 @@ public class HostInterfaceTest {
   }
 
   @Test
-  public void testEncapsulationVlan() {
+  void testEncapsulationVlan() {
     Integer encapsulationVlan = 5;
     HostInterface hi = new HostInterface("e0");
     hi.setEncapsulationVlan(encapsulationVlan);

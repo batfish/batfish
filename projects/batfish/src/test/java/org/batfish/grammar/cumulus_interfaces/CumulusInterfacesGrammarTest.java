@@ -7,10 +7,10 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -36,18 +36,18 @@ import org.batfish.representation.cumulus_concatenated.InterfaceBridgeSettings;
 import org.batfish.representation.cumulus_concatenated.InterfaceClagSettings;
 import org.batfish.representation.cumulus_concatenated.InterfacesInterface;
 import org.batfish.representation.frr.StaticRoute;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link CumulusInterfacesParser}. */
-public class CumulusInterfacesGrammarTest {
+class CumulusInterfacesGrammarTest {
   private static final String FILENAME = "";
   private static CumulusConcatenatedConfiguration _config;
   private static CumulusInterfacesConfiguration _ic;
   private static Warnings _warnings;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _config = new CumulusConcatenatedConfiguration();
     _ic = _config.getInterfacesConfiguration();
     _warnings = new Warnings();
@@ -91,20 +91,20 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
-  public void testAuto() {
+  void testAuto() {
     String input = "auto swp1\n";
     CumulusInterfacesConfiguration interfaces = parse(input);
     assertThat(interfaces.getAutoIfaces(), contains("swp1"));
   }
 
   @Test
-  public void testBlankLines() {
+  void testBlankLines() {
     String input = "\n\n\n";
     parse(input);
   }
 
   @Test
-  public void testIface() {
+  void testIface() {
     String input = "iface swp1\n";
     CumulusInterfacesConfiguration interfaces = parse(input);
     assertThat(interfaces.getInterfaces(), hasKeys("swp1"));
@@ -120,7 +120,7 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
-  public void testIfaceDescription() {
+  void testIfaceDescription() {
     String description = "foo hey 123!#?<>";
     String input = "iface swp1\n alias " + description + "\n";
     InterfacesInterface iface = parse(input).getInterfaces().get("swp1");
@@ -128,12 +128,12 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
-  public void testBondLacpBypassAllow() {
+  void testBondLacpBypassAllow() {
     parse("iface swp1\n bond-lacp-bypass-allow yes\n");
   }
 
   @Test
-  public void testBondMaster() {
+  void testBondMaster() {
     parse("iface swp1\n bond-master bond0\n");
     assertThat(_warnings.getParseWarnings().size(), equalTo(1));
     assertEquals(
@@ -142,22 +142,22 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
-  public void testBondMiimon() {
+  void testBondMiimon() {
     parse("iface swp1\n bond-miimon 100\n");
   }
 
   @Test
-  public void testBondMode() {
+  void testBondMode() {
     parse("iface swp1\n bond-mode 802.3ad\n");
   }
 
   @Test
-  public void testBondMinLinks() {
+  void testBondMinLinks() {
     parse("iface swp1\n bond-min-links 1\n");
   }
 
   @Test
-  public void testIfaceBondSlaves() {
+  void testIfaceBondSlaves() {
     String input = "iface swp1\n bond-slaves i2 i3 i4\n";
     CumulusInterfacesConfiguration interfaces = parse(input);
     assertThat(
@@ -181,7 +181,7 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
-  public void testIfaceBondSlaves2() {
+  void testIfaceBondSlaves2() {
     String input = "iface swp1\n bond-slaves s1\n iface swp2\n bond-slaves s2\n";
     CumulusInterfacesConfiguration interfaces = parse(input);
     assertThat(
@@ -197,38 +197,38 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
-  public void testBondXmitHashPolicy() {
+  void testBondXmitHashPolicy() {
     parse("iface swp1\n bond-xmit-hash-policy layer3+4\n");
   }
 
   @Test
-  public void testIfaceAddress() {
+  void testIfaceAddress() {
     String input = "iface swp1\n address 10.12.13.14/24\n";
     InterfacesInterface iface = parse(input).getInterfaces().get("swp1");
     assertThat(iface.getAddresses(), contains(ConcreteInterfaceAddress.parse("10.12.13.14/24")));
   }
 
   @Test
-  public void testIfaceAddress32() {
+  void testIfaceAddress32() {
     String input = "iface swp1\n address 10.12.13.14\n";
     InterfacesInterface iface = parse(input).getInterfaces().get("swp1");
     assertThat(iface.getAddresses(), contains(ConcreteInterfaceAddress.parse("10.12.13.14/32")));
   }
 
   @Test
-  public void testIfaceAddressV6() {
+  void testIfaceAddressV6() {
     parse("iface swp1\n address ::1/128\n");
     assertThat(_warnings.getParseWarnings().size(), equalTo(0));
   }
 
   @Test
-  public void testIfaceAddressV6_128() {
+  void testIfaceAddressV6_128() {
     parse("iface swp1\n address ::1\n");
     assertThat(_warnings.getParseWarnings().size(), equalTo(0));
   }
 
   @Test
-  public void testIfaceAddressVirtual() {
+  void testIfaceAddressVirtual() {
     String prefix1 = "10.0.0.254/24";
     String prefix2 = "10.0.1.254/24";
     String mac = "00:00:00:00:00:00";
@@ -245,7 +245,7 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
-  public void testIfaceAddressVirtual_32() {
+  void testIfaceAddressVirtual_32() {
     String input = "iface vlan1\n address-virtual 00:00:00:00:00:00 1.2.3.4\n";
     InterfacesInterface iface = parse(input).getInterfaces().get("vlan1");
     assertThat(
@@ -257,7 +257,7 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
-  public void testIfaceBridgeAccess() {
+  void testIfaceBridgeAccess() {
     String input = "iface swp1\n bridge-access 1234\n";
     CumulusInterfacesConfiguration interfaces = parse(input);
     InterfaceBridgeSettings bridgeSettings =
@@ -266,31 +266,31 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
-  public void testIfaceBridgeArpNdSuppress() {
+  void testIfaceBridgeArpNdSuppress() {
     parse("iface vni1\n bridge-arp-nd-suppress on\n");
   }
 
   @Test
-  public void testIfaceBridgeLearning() {
+  void testIfaceBridgeLearning() {
     parse("iface vni1\n bridge-learning on\n");
   }
 
   @Test
-  public void testIfaceBridgePorts_multiline() {
+  void testIfaceBridgePorts_multiline() {
     String input = "iface bridge\n bridge-ports i2 \\\n i3 i4\n";
     InterfacesInterface iface = parse(input).getInterfaces().get("bridge");
     assertThat(iface.getBridgePorts(), contains("i2", "i3", "i4"));
   }
 
   @Test
-  public void testIfaceBridgePorts() {
+  void testIfaceBridgePorts() {
     String input = "iface bridge\n bridge-ports i2 i3 i4\n";
     InterfacesInterface iface = parse(input).getInterfaces().get("bridge");
     assertThat(iface.getBridgePorts(), contains("i2", "i3", "i4"));
   }
 
   @Test
-  public void testIfaceBridgePvid() {
+  void testIfaceBridgePvid() {
     String input = "iface bridge\n bridge-pvid 1\n";
     InterfaceBridgeSettings bridgeSettings =
         parse(input).getInterfaces().get("bridge").getBridgeSettings();
@@ -298,7 +298,7 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
-  public void testIfaceBridgeVids() {
+  void testIfaceBridgeVids() {
     String input = "iface swp1\n bridge-vids 1 2 5-8 4\n";
     InterfaceBridgeSettings bridgeSettings =
         parse(input).getInterfaces().get("swp1").getBridgeSettings();
@@ -306,26 +306,26 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
-  public void testIfaceBridgeVlanAware_no() {
+  void testIfaceBridgeVlanAware_no() {
     parse("iface bridge\n bridge-vlan-aware no\n");
     assertThat(_warnings.getParseWarnings().size(), equalTo(1));
   }
 
   @Test
-  public void testIfaceBridgeVlanAware_yes() {
+  void testIfaceBridgeVlanAware_yes() {
     parse("iface bridge\n bridge-vlan-aware yes\n");
     assertThat(_warnings.getParseWarnings(), empty());
   }
 
   @Test
-  public void testIfaceClagId() {
+  void testIfaceClagId() {
     String input = "iface swp1\n clag-id 123\n";
     InterfacesInterface iface = parse(input).getInterfaces().get("swp1");
     assertThat(iface.getClagId(), equalTo(123));
   }
 
   @Test
-  public void testIfaceClagBackupIpAndVrf() {
+  void testIfaceClagBackupIpAndVrf() {
     String input = "iface swp1\n clagd-backup-ip 1.2.3.4 vrf v1\n";
     InterfaceClagSettings clag = parse(input).getInterfaces().get("swp1").getClagSettings();
     assertThat(clag.getBackupIp(), equalTo(Ip.parse("1.2.3.4")));
@@ -337,7 +337,7 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
-  public void testIfaceClagBackupIpWithoutVrf() {
+  void testIfaceClagBackupIpWithoutVrf() {
     String input = "iface swp1\n clagd-backup-ip 1.2.3.4\n";
     InterfaceClagSettings clag = parse(input).getInterfaces().get("swp1").getClagSettings();
     assertThat(clag.getBackupIp(), equalTo(Ip.parse("1.2.3.4")));
@@ -345,45 +345,45 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
-  public void testIfaceClagdPeerIp() {
+  void testIfaceClagdPeerIp() {
     String input = "iface swp1\n clagd-peer-ip 1.2.3.4\n";
     InterfaceClagSettings clag = parse(input).getInterfaces().get("swp1").getClagSettings();
     assertThat(clag.getPeerIp(), equalTo(Ip.parse("1.2.3.4")));
   }
 
   @Test
-  public void testIfaceClagdPeerIpLinkLocal() {
+  void testIfaceClagdPeerIpLinkLocal() {
     String input = "iface swp1\n clagd-peer-ip linklocal\n";
     InterfaceClagSettings clag = parse(input).getInterfaces().get("swp1").getClagSettings();
     assertTrue(clag.isPeerIpLinkLocal());
   }
 
   @Test
-  public void testIfaceClagdPriority() {
+  void testIfaceClagdPriority() {
     String input = "iface swp1\n clagd-priority 42\n";
     InterfaceClagSettings clag = parse(input).getInterfaces().get("swp1").getClagSettings();
     assertThat(clag.getPriority(), equalTo(42));
   }
 
   @Test
-  public void testClagdSysMac() {
+  void testClagdSysMac() {
     String input = "iface swp1\n clagd-sys-mac 00:00:00:00:00:00\n";
     InterfaceClagSettings clag = parse(input).getInterfaces().get("swp1").getClagSettings();
     assertThat(clag.getSysMac(), equalTo(MacAddress.parse("00:00:00:00:00:00")));
   }
 
   @Test
-  public void testIfaceGateway() {
+  void testIfaceGateway() {
     parse("iface eth0\n gateway 1.2.3.4\n");
   }
 
   @Test
-  public void testIfaceHwaddress() {
+  void testIfaceHwaddress() {
     parse("iface vlan1\n hwaddress 00:00:00:00:00:00\n");
   }
 
   @Test
-  public void testIfaceLinkSpeed() {
+  void testIfaceLinkSpeed() {
     String input = "iface swp1\n link-speed 10000\n";
     CumulusInterfacesConfiguration interfaces = parse(input);
     InterfacesInterface iface = interfaces.getInterfaces().get("swp1");
@@ -391,7 +391,7 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
-  public void testIfaceLinkSpeed_null() {
+  void testIfaceLinkSpeed_null() {
     String input = "iface swp1\n";
     CumulusInterfacesConfiguration interfaces = parse(input);
     InterfacesInterface iface = interfaces.getInterfaces().get("swp1");
@@ -399,7 +399,7 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
-  public void testIfaceMtu() {
+  void testIfaceMtu() {
     String input = "iface swp1\n mtu 9000\n";
     CumulusInterfacesConfiguration interfaces = parse(input);
     InterfacesInterface iface = interfaces.getInterfaces().get("swp1");
@@ -407,7 +407,7 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
-  public void testIfaceMtu_null() {
+  void testIfaceMtu_null() {
     String input = "iface swp1\n";
     CumulusInterfacesConfiguration interfaces = parse(input);
     InterfacesInterface iface = interfaces.getInterfaces().get("swp1");
@@ -415,22 +415,22 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
-  public void testMstpctlBpduguard() {
+  void testMstpctlBpduguard() {
     parse("iface vni1\n mstpctl-bpduguard yes\n");
   }
 
   @Test
-  public void testMstpctlPortadminedge() {
+  void testMstpctlPortadminedge() {
     parse("iface vni1\n mstpctl-portadminedge yes\n");
   }
 
   @Test
-  public void testMstpctlPortpdufilter() {
+  void testMstpctlPortpdufilter() {
     parse("iface vni1\n mstpctl-portbpdufilter yes\n");
   }
 
   @Test
-  public void testPostUpLinkPromisc() {
+  void testPostUpLinkPromisc() {
     parse("iface eth0 inet static\npost-up ip link set promisc on dev swp4\n");
     assertThat(_warnings.getParseWarnings().size(), equalTo(0));
     parse("iface eth0 inet static\npost-up ip link set swp1 promisc on\n");
@@ -438,7 +438,7 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
-  public void testPostUpIpRouteAddDev() {
+  void testPostUpIpRouteAddDev() {
     String input = "iface eth0 inet static\n post-up ip route add 10.10.10.0/24 dev eth0\n";
     CumulusInterfacesConfiguration interfaces = parse(input);
     InterfacesInterface iface = interfaces.getInterfaces().get("eth0");
@@ -449,7 +449,7 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
-  public void testPostUpIpRouteAddVia() {
+  void testPostUpIpRouteAddVia() {
     String input = "iface eth0 inet static\n post-up ip route add 10.10.10.0/24 via 10.1.1.1\n";
     CumulusInterfacesConfiguration interfaces = parse(input);
     InterfacesInterface iface = interfaces.getInterfaces().get("eth0");
@@ -461,7 +461,7 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
-  public void testIfaceVlanId() {
+  void testIfaceVlanId() {
     String input = "iface vlan1\n vlan-id 1\n";
     CumulusInterfacesConfiguration interfaces = parse(input);
     InterfacesInterface iface = interfaces.getInterfaces().get("vlan1");
@@ -476,7 +476,7 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
-  public void testIfaceVlanRawDevice() {
+  void testIfaceVlanRawDevice() {
     String input = "iface vlan1\n vlan-raw-device bridge\n";
     CumulusInterfacesConfiguration interfaces = parse(input);
     InterfacesInterface iface = interfaces.getInterfaces().get("vlan1");
@@ -484,7 +484,7 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
-  public void testIfaceVrf() {
+  void testIfaceVrf() {
     String input = "iface swp1\n vrf v1\n";
     CumulusInterfacesConfiguration interfaces = parse(input);
     InterfacesInterface iface = interfaces.getInterfaces().get("swp1");
@@ -495,7 +495,7 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
-  public void testIfaceVrfTable() {
+  void testIfaceVrfTable() {
     String input = "iface vrf1\n vrf-table auto\n";
     CumulusInterfacesConfiguration interfaces = parse(input);
     InterfacesInterface iface = interfaces.getInterfaces().get("vrf1");
@@ -510,13 +510,13 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
-  public void testLoopback() {
+  void testLoopback() {
     parse("iface lo inet loopback\n");
     assertTrue(_ic.getInterfaces().containsKey("lo"));
   }
 
   @Test
-  public void testLoopbackAddress() {
+  void testLoopbackAddress() {
     parse("iface lo inet loopback\n address 1.2.3.4/24\n");
     assertThat(
         _ic.getInterfaces().get("lo").getAddresses(),
@@ -524,19 +524,19 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
-  public void testLoopbackAlias() {
+  void testLoopbackAlias() {
     parse("iface lo inet loopback\n alias my aliases\n");
     assertThat(_ic.getInterfaces().get("lo").getDescription(), equalTo("my aliases"));
   }
 
   @Test
-  public void testLoopbackClagdVxlanAnycastIp() {
+  void testLoopbackClagdVxlanAnycastIp() {
     parse("iface lo inet loopback\n clagd-vxlan-anycast-ip 1.2.3.4\n");
     assertThat(_ic.getInterfaces().get("lo").getClagVxlanAnycastIp(), equalTo(Ip.parse("1.2.3.4")));
   }
 
   @Test
-  public void testVxlanId() {
+  void testVxlanId() {
     String input = "iface swp1\n vxlan-id 123\n";
     CumulusInterfacesConfiguration interfaces = parse(input);
     InterfacesInterface iface = interfaces.getInterfaces().get("swp1");
@@ -551,7 +551,7 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
-  public void testVxlanLocalTunnelIp() {
+  void testVxlanLocalTunnelIp() {
     String input = "iface swp1\n vxlan-local-tunnelip 1.2.3.4\n";
     CumulusInterfacesConfiguration interfaces = parse(input);
     InterfacesInterface iface = interfaces.getInterfaces().get("swp1");
@@ -559,7 +559,7 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
-  public void testStaticInterface() {
+  void testStaticInterface() {
     String input = "iface swp1 inet static\n link-speed 10000\n";
     CumulusInterfacesConfiguration interfaces = parse(input);
     InterfacesInterface iface = interfaces.getInterfaces().get("swp1");
@@ -567,7 +567,7 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
-  public void testDhcpInterface() {
+  void testDhcpInterface() {
     String input = "iface eth0 inet dhcp\n link-speed 10000\n";
     CumulusInterfacesConfiguration interfaces = parse(input);
     InterfacesInterface iface = interfaces.getInterfaces().get("eth0");
@@ -576,7 +576,7 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
-  public void testManualInterface() {
+  void testManualInterface() {
     String input = "iface eth0 inet manual\n link-speed 10000\n";
     CumulusInterfacesConfiguration interfaces = parse(input);
     InterfacesInterface iface = interfaces.getInterfaces().get("eth0");
@@ -585,14 +585,14 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
-  public void testLinkAutoNeg() {
+  void testLinkAutoNeg() {
     String input = "iface swp1 inet static\n link-autoneg on\n";
     // assert we can parse the input text
     parse(input);
   }
 
   @Test
-  public void testInterfaceInitOrderSimple() {
+  void testInterfaceInitOrderSimple() {
     String input = "iface swp1\n iface swp3\n iface swp1\n iface swp2\n";
     CumulusInterfacesConfiguration interfaces = parse(input);
 

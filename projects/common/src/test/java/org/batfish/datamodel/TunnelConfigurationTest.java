@@ -7,12 +7,12 @@ import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.TunnelConfiguration.Builder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link TunnelConfiguration} */
-public class TunnelConfigurationTest {
+class TunnelConfigurationTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     Builder builder =
         TunnelConfiguration.builder()
             .setDestinationAddress(Ip.parse("1.1.1.1"))
@@ -27,7 +27,7 @@ public class TunnelConfigurationTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     TunnelConfiguration tc =
         TunnelConfiguration.builder()
             .setDestinationAddress(Ip.parse("1.1.1.1"))
@@ -37,7 +37,7 @@ public class TunnelConfigurationTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     TunnelConfiguration tc =
         TunnelConfiguration.builder()
             .setDestinationAddress(Ip.parse("1.1.1.1"))

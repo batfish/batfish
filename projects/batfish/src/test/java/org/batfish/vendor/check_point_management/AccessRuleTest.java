@@ -2,20 +2,20 @@ package org.batfish.vendor.check_point_management;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link AccessRule}. */
-public final class AccessRuleTest {
+final class AccessRuleTest {
 
   @Test
-  public void testJacksonDeserialization() throws JsonProcessingException {
+  void testJacksonDeserialization() throws JsonProcessingException {
     {
       String input =
           "{"
@@ -102,7 +102,7 @@ public final class AccessRuleTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     AccessRule obj =
         AccessRule.testBuilder()
             .setAction(Uid.of("1"))
@@ -123,7 +123,7 @@ public final class AccessRuleTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     AccessRule.Builder builder =
         AccessRule.testBuilder()
             .setAction(Uid.of("1"))

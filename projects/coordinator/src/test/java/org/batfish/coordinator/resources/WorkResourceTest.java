@@ -7,10 +7,11 @@ import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
@@ -34,16 +35,15 @@ import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
 import org.batfish.datamodel.pojo.WorkStatus;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Test of {@link WorkResource}. */
 @ParametersAreNonnullByDefault
-public final class WorkResourceTest extends WorkMgrServiceV2TestBase {
+final class WorkResourceTest extends WorkMgrServiceV2TestBase {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private @Nonnull Builder getWorkTarget(
       String network, @Nullable String snapshot, @Nullable WorkType workType) {
@@ -71,13 +71,13 @@ public final class WorkResourceTest extends WorkMgrServiceV2TestBase {
         .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY);
   }
 
-  @Before
-  public void initTestEnvironment() {
+  @BeforeEach
+  void initTestEnvironment() {
     WorkMgrTestUtils.initWorkManager(_folder);
   }
 
   @Test
-  public void testQueueWorkDuplicate() throws IOException {
+  void testQueueWorkDuplicate() throws IOException {
     String network = "network1";
     String snapshot = "snapshot1";
     UUID workId = UUID.randomUUID();
@@ -101,7 +101,7 @@ public final class WorkResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testQueueWork() throws IOException {
+  void testQueueWork() throws IOException {
     String network = "network1";
     String snapshot = "snapshot1";
     UUID workId = UUID.randomUUID();
@@ -128,7 +128,7 @@ public final class WorkResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetWorkStatusMissingNetwork() {
+  void testGetWorkStatusMissingNetwork() {
     String network = "network1";
     UUID workId = UUID.randomUUID();
     try (Response response = getWorkItemTarget(network, workId.toString()).get()) {
@@ -137,7 +137,7 @@ public final class WorkResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetWorkStatusMissingWorkItem() {
+  void testGetWorkStatusMissingWorkItem() {
     String network = "network1";
     UUID workId = UUID.randomUUID();
     Main.getWorkMgr().initNetwork(network, null);
@@ -147,7 +147,7 @@ public final class WorkResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetWorkStatusInvalidUuid() {
+  void testGetWorkStatusInvalidUuid() {
     String network = "network1";
     Main.getWorkMgr().initNetwork(network, null);
     try (Response response = getWorkItemTarget(network, "@@@").get()) {
@@ -156,7 +156,7 @@ public final class WorkResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetWorkStatusWrongNetwork() throws IOException {
+  void testGetWorkStatusWrongNetwork() throws IOException {
     String network1 = "network1";
     String network2 = "network2";
     String snapshot = "snapshot1";
@@ -175,7 +175,7 @@ public final class WorkResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testGetWorkStatusPresent() throws IOException {
+  void testGetWorkStatusPresent() throws IOException {
     String network = "network1";
     String snapshot = "snapshot1";
     UUID workId = UUID.randomUUID();
@@ -195,7 +195,7 @@ public final class WorkResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testListIncompleteWorkNoSnapshotNoWorkType() throws IOException {
+  void testListIncompleteWorkNoSnapshotNoWorkType() throws IOException {
     String network = "network1";
     String snapshot = "snapshot1";
     UUID workId = UUID.randomUUID();
@@ -214,7 +214,7 @@ public final class WorkResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testListIncompleteWorkWorkTypeNoSnapshot() throws IOException {
+  void testListIncompleteWorkWorkTypeNoSnapshot() throws IOException {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
@@ -246,7 +246,7 @@ public final class WorkResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void testListIncompleteWorkSnapshotNoWorkType() throws IOException {
+  void testListIncompleteWorkSnapshotNoWorkType() throws IOException {
     String network = "network1";
     String snapshot1 = "snapshot1";
     String snapshot2 = "snapshot2";

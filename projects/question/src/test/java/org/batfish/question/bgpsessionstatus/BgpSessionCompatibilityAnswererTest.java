@@ -76,13 +76,13 @@ import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.SpecifierContext;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link BgpSessionCompatibilityAnswerer} */
-public class BgpSessionCompatibilityAnswererTest {
+class BgpSessionCompatibilityAnswererTest {
 
   @Test
-  public void testCreateMetadata() {
+  void testCreateMetadata() {
     BgpSessionCompatibilityQuestion q = new BgpSessionCompatibilityQuestion();
     TableMetadata metadata = createMetadata(q);
     assertThat(
@@ -98,7 +98,7 @@ public class BgpSessionCompatibilityAnswererTest {
   }
 
   @Test
-  public void testGetActivePeerRowNoLocalIp() {
+  void testGetActivePeerRowNoLocalIp() {
     Ip remoteIp = Ip.parse("2.2.2.2");
 
     // Active peer missing local IP for which we're generating a row
@@ -132,7 +132,7 @@ public class BgpSessionCompatibilityAnswererTest {
   }
 
   @Test
-  public void testGetActivePeerRowUniqueMatch() {
+  void testGetActivePeerRowUniqueMatch() {
     Ip localIp = Ip.parse("1.1.1.1");
     Ip remoteIp = Ip.parse("2.2.2.2");
 
@@ -191,7 +191,7 @@ public class BgpSessionCompatibilityAnswererTest {
   }
 
   @Test
-  public void testGetDynamicPeerRowNoRemoteAs() {
+  void testGetDynamicPeerRowNoRemoteAs() {
     Prefix remotePrefix = Prefix.parse("2.2.2.0/24");
 
     // Dynamic peer missing remote AS for which we're generating a row
@@ -224,7 +224,7 @@ public class BgpSessionCompatibilityAnswererTest {
   }
 
   @Test
-  public void testGetDynamicPeerRowNoCompatiblePeers() {
+  void testGetDynamicPeerRowNoCompatiblePeers() {
     Prefix remotePrefix = Prefix.parse("2.2.2.0/24");
     LongSpace remoteAsns = LongSpace.of(Range.closed(2L, 3L));
 
@@ -263,7 +263,7 @@ public class BgpSessionCompatibilityAnswererTest {
   }
 
   @Test
-  public void testGetDynamicPeerRowTwoCompatiblePeers() {
+  void testGetDynamicPeerRowTwoCompatiblePeers() {
     Ip localIp = Ip.parse("1.1.1.1");
     Prefix localAddress = localIp.toPrefix();
     Prefix remotePrefix = Prefix.parse("2.2.2.0/24");
@@ -345,7 +345,7 @@ public class BgpSessionCompatibilityAnswererTest {
   }
 
   @Test
-  public void testGetUnnumberedPeerRowNoRemoteAs() {
+  void testGetUnnumberedPeerRowNoRemoteAs() {
     // Unnumbered peer missing remote AS for which we're generating a row
     BgpPeerConfigId peerId = new BgpPeerConfigId("c1", "vrf1", "iface");
     BgpUnnumberedPeerConfig peer =
@@ -376,7 +376,7 @@ public class BgpSessionCompatibilityAnswererTest {
   }
 
   @Test
-  public void testGetUnnumberedPeerRowUniqueMatch() {
+  void testGetUnnumberedPeerRowUniqueMatch() {
     Ip unnumIp = Ip.parse("169.254.0.1");
 
     // Unnumbered peer for which we're generating a row
@@ -427,7 +427,7 @@ public class BgpSessionCompatibilityAnswererTest {
   }
 
   @Test
-  public void testEndToEndAnswerAndFilters() {
+  void testEndToEndAnswerAndFilters() {
     // Setup: Two correctly configured active peers
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("2.2.2.2");

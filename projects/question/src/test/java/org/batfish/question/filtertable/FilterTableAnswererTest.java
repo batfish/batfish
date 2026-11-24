@@ -8,12 +8,12 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Rows;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class FilterTableAnswererTest {
+class FilterTableAnswererTest {
 
   @Test
-  public void filterRows() {
+  void filterRows() {
     Filter filter = new Filter("col >= 42");
     Rows rows = new Rows();
     rows.add(Row.builder().put("col", null).build());
@@ -33,7 +33,7 @@ public class FilterTableAnswererTest {
   }
 
   @Test
-  public void selectColumns() {
+  void selectColumns() {
     Multiset<Row> rows =
         ImmutableMultiset.of(
             Row.builder().put("col1", null).put("col2", 12).put("col3", 13).build(),

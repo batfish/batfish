@@ -1,6 +1,6 @@
 package org.batfish.minesweeper.collectors;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -28,11 +28,11 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetNot;
 import org.batfish.datamodel.routing_policy.communities.HasCommunity;
 import org.batfish.datamodel.routing_policy.communities.TypesFirstAscendingSpaceSeparated;
 import org.batfish.minesweeper.utils.Tuple;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link CommunitySetMatchExprCollector}. */
-public class CommunitySetMatchExprCollectorTest {
+class CommunitySetMatchExprCollectorTest {
   private static final String HOSTNAME = "hostname";
   private static final String COMM_LST_1 = "comm1";
   private static final String COMM_LST_2 = "comm2";
@@ -44,8 +44,8 @@ public class CommunitySetMatchExprCollectorTest {
 
   private Configuration _config;
 
-  @Before
-  public void setup() throws IOException {
+  @BeforeEach
+  void setup() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder()
@@ -69,7 +69,7 @@ public class CommunitySetMatchExprCollectorTest {
   }
 
   @Test
-  public void testVisitCommunitySetAcl() {
+  void testVisitCommunitySetAcl() {
     CommunitySetAcl csacl =
         new CommunitySetAcl(
             ImmutableList.of(
@@ -84,7 +84,7 @@ public class CommunitySetMatchExprCollectorTest {
   }
 
   @Test
-  public void testVisitCommunitySetMatchAll() {
+  void testVisitCommunitySetMatchAll() {
     CommunitySetMatchAll csma =
         new CommunitySetMatchAll(
             ImmutableList.of(
@@ -98,7 +98,7 @@ public class CommunitySetMatchExprCollectorTest {
   }
 
   @Test
-  public void testVisitCommunitySetMatchAny() {
+  void testVisitCommunitySetMatchAny() {
     CommunitySetMatchAny csma =
         new CommunitySetMatchAny(
             ImmutableList.of(
@@ -112,7 +112,7 @@ public class CommunitySetMatchExprCollectorTest {
   }
 
   @Test
-  public void testVisitCommunitySetMatchExprReference() {
+  void testVisitCommunitySetMatchExprReference() {
     CommunitySetMatchExprReference csmer = new CommunitySetMatchExprReference(COMM_LST_2);
 
     Set<String> result =
@@ -123,7 +123,7 @@ public class CommunitySetMatchExprCollectorTest {
   }
 
   @Test
-  public void testVisitCommunitySetMatchRegex() {
+  void testVisitCommunitySetMatchRegex() {
     CommunitySetMatchRegex cmsr =
         new CommunitySetMatchRegex(
             new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()),
@@ -133,7 +133,7 @@ public class CommunitySetMatchExprCollectorTest {
   }
 
   @Test
-  public void testVisitCommunitySetNot() {
+  void testVisitCommunitySetNot() {
     CommunitySetNot csn = new CommunitySetNot(new CommunitySetMatchExprReference(COMM_LST_1));
 
     Set<String> result =
@@ -143,7 +143,7 @@ public class CommunitySetMatchExprCollectorTest {
   }
 
   @Test
-  public void testVisitHasCommunity() {
+  void testVisitHasCommunity() {
     HasCommunity hc = new HasCommunity(new CommunityIs(COMM1));
 
     Set<String> result = _collector.visitHasCommunity(hc, new Tuple<>(new HashSet<>(), _config));

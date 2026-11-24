@@ -9,13 +9,13 @@ import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
 import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.Statement;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link RouteMapSetPrependAsPath} */
-public class RouteMapSetPrependAsPathTest {
+class RouteMapSetPrependAsPathTest {
 
   @Test
-  public void testToStatements() {
+  void testToStatements() {
     RouteMapSetPrependAsPath set = new RouteMapSetPrependAsPath(ImmutableList.of(1L, 2L, 3L));
     List<Statement> result =
         set.toStatements(null, null, null).collect(ImmutableList.toImmutableList());

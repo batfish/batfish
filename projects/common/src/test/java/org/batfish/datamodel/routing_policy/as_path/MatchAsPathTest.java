@@ -4,8 +4,8 @@ import static org.batfish.datamodel.Bgpv4Route.testBuilder;
 import static org.batfish.datamodel.routing_policy.expr.IntComparator.EQ;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
@@ -19,13 +19,13 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.expr.IntComparison;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link MatchAsPath}. */
-public final class MatchAsPathTest {
+final class MatchAsPathTest {
 
   @Test
-  public void testEvaluate() {
+  void testEvaluate() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c = nf.configurationBuilder().build();
 
@@ -67,7 +67,7 @@ public final class MatchAsPathTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     MatchAsPath obj =
         MatchAsPath.of(
             InputAsPath.instance(), AsSetsMatchingRanges.of(false, false, ImmutableList.of()));
@@ -75,7 +75,7 @@ public final class MatchAsPathTest {
   }
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     MatchAsPath obj =
         MatchAsPath.of(
             InputAsPath.instance(), AsSetsMatchingRanges.of(false, false, ImmutableList.of()));
@@ -83,7 +83,7 @@ public final class MatchAsPathTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     MatchAsPath obj =
         MatchAsPath.of(
             InputAsPath.instance(), AsSetsMatchingRanges.of(false, false, ImmutableList.of()));

@@ -7,11 +7,11 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.routing_policy.expr.MatchSourceVrf;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class PsFromInstanceTest {
+class PsFromInstanceTest {
   @Test
-  public void testConversion() {
+  void testConversion() {
     JuniperConfiguration jc = new JuniperConfiguration();
     Configuration c =
         Configuration.builder()

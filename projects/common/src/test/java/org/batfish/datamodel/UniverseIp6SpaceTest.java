@@ -8,17 +8,17 @@ import static org.hamcrest.Matchers.sameInstance;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class UniverseIp6SpaceTest {
+class UniverseIp6SpaceTest {
 
   @Test
-  public void testSingletonBehavior() {
+  void testSingletonBehavior() {
     assertThat(UniverseIp6Space.INSTANCE, sameInstance(UniverseIp6Space.INSTANCE));
   }
 
   @Test
-  public void testInterning() {
+  void testInterning() {
     assertThat(
         BatfishObjectMapper.clone(UniverseIp6Space.INSTANCE, Ip6Space.class),
         sameInstance(UniverseIp6Space.INSTANCE));
@@ -28,12 +28,12 @@ public class UniverseIp6SpaceTest {
   }
 
   @Test
-  public void testComplement() {
+  void testComplement() {
     assertThat(UniverseIp6Space.INSTANCE.complement(), equalTo(EmptyIp6Space.INSTANCE));
   }
 
   @Test
-  public void testContainsIp() {
+  void testContainsIp() {
     // UniverseIp6Space should contain all IPs
     assertThat(UniverseIp6Space.INSTANCE, containsIp6(Ip6.ZERO));
     assertThat(UniverseIp6Space.INSTANCE, containsIp6(Ip6.MAX));
@@ -43,7 +43,7 @@ public class UniverseIp6SpaceTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(UniverseIp6Space.INSTANCE, UniverseIp6Space.INSTANCE)
         .addEqualityGroup(EmptyIp6Space.INSTANCE)

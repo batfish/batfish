@@ -1,24 +1,24 @@
 package org.batfish.datamodel.vendor_family.f5_bigip;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link HaGroupPool}. */
-public final class HaGroupPoolTest {
+final class HaGroupPoolTest {
 
   private HaGroupPool.Builder _builder;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _builder = HaGroupPool.builder().setName("n").setWeight(1);
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     HaGroupPool obj = _builder.build();
     new EqualsTester()
         .addEqualityGroup(obj, obj, _builder.build())
@@ -29,7 +29,7 @@ public final class HaGroupPoolTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     HaGroupPool obj = _builder.build();
     assertEquals(obj, SerializationUtils.clone(obj));
   }

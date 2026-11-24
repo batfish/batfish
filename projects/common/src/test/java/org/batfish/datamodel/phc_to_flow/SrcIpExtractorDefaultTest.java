@@ -9,10 +9,10 @@ import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.MockSpecifierContext;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link SrcIpExtractorDefault} */
-public class SrcIpExtractorDefaultTest {
+class SrcIpExtractorDefaultTest {
   private static Location LOC = new InterfaceLocation("host1", "interface1");
   private static IpFieldExtractorContext HELPER =
       new IpFieldExtractorContext(
@@ -22,19 +22,19 @@ public class SrcIpExtractorDefaultTest {
   private static SrcIpExtractorDefault SRC_IP_EXTRACTOR = new SrcIpExtractorDefault(HELPER);
 
   @Test
-  public void testGetValue_inferFromPhc() {
+  void testGetValue_inferFromPhc() {
     PacketHeaderConstraints phc = PacketHeaderConstraints.builder().setSrcIp("2.3.4.5").build();
     assertThat(SRC_IP_EXTRACTOR.getValue(phc, LOC), equalTo(Ip.parse("2.3.4.5")));
   }
 
   @Test
-  public void testGetValue_inferFromLocation() {
+  void testGetValue_inferFromLocation() {
     PacketHeaderConstraints phc = PacketHeaderConstraints.unconstrained();
     assertThat(SRC_IP_EXTRACTOR.getValue(phc, LOC), equalTo(Ip.parse("1.2.3.4")));
   }
 
   @Test
-  public void testGetValue_default() {
+  void testGetValue_default() {
     PacketHeaderConstraints phc = PacketHeaderConstraints.unconstrained();
     assertThat(SRC_IP_EXTRACTOR.getValue(phc, null), equalTo(Ip.parse("8.8.8.8")));
   }

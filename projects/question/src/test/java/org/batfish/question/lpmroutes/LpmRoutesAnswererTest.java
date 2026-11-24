@@ -29,10 +29,10 @@ import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link LpmRoutesAnswerer} */
-public class LpmRoutesAnswererTest {
+class LpmRoutesAnswererTest {
 
   private static FinalMainRib getMockRib() {
     return FinalMainRib.of(
@@ -41,7 +41,7 @@ public class LpmRoutesAnswererTest {
   }
 
   @Test
-  public void testGetColumnMetadata() {
+  void testGetColumnMetadata() {
     List<ColumnMetadata> metadata = getColumnMetadata();
     assertThat(
         metadata,
@@ -67,7 +67,7 @@ public class LpmRoutesAnswererTest {
   }
 
   @Test
-  public void testToRow() {
+  void testToRow() {
     final ImmutableMap<String, ColumnMetadata> columnMap =
         getColumnMetadata().stream()
             .collect(ImmutableMap.toImmutableMap(ColumnMetadata::getName, Function.identity()));
@@ -94,7 +94,7 @@ public class LpmRoutesAnswererTest {
   }
 
   @Test
-  public void testFilteringByNodes() {
+  void testFilteringByNodes() {
     final ImmutableMap<String, ColumnMetadata> columnMap =
         getColumnMetadata().stream()
             .collect(ImmutableMap.toImmutableMap(ColumnMetadata::getName, Function.identity()));
@@ -114,7 +114,7 @@ public class LpmRoutesAnswererTest {
   }
 
   @Test
-  public void testFilteringByVrfs() {
+  void testFilteringByVrfs() {
     final ImmutableMap<String, ColumnMetadata> columnMap =
         getColumnMetadata().stream()
             .collect(ImmutableMap.toImmutableMap(ColumnMetadata::getName, Function.identity()));

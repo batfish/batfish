@@ -15,9 +15,9 @@ import org.batfish.datamodel.IpWildcardIpSpace;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.UniverseIpSpace;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class IpSpaceRenamerTest {
+class IpSpaceRenamerTest {
   private static final String FOO = "foo";
   private static final IpSpaceReference FOO_REFERENCE = new IpSpaceReference(FOO);
 
@@ -37,7 +37,7 @@ public class IpSpaceRenamerTest {
           .build();
 
   @Test
-  public void testIdentities() {
+  void testIdentities() {
     assertThat(RENAMER.apply(UniverseIpSpace.INSTANCE), equalTo(UniverseIpSpace.INSTANCE));
     assertThat(RENAMER.apply(EmptyIpSpace.INSTANCE), equalTo(EmptyIpSpace.INSTANCE));
     assertThat(RENAMER.apply(IP_IP_SPACE), equalTo(IP_IP_SPACE));
@@ -47,12 +47,12 @@ public class IpSpaceRenamerTest {
   }
 
   @Test
-  public void testIpSpaceReference() {
+  void testIpSpaceReference() {
     assertThat(RENAMER.apply(FOO_REFERENCE), equalTo(BAR_REFERENCE));
   }
 
   @Test
-  public void testAclIpSpace() {
+  void testAclIpSpace() {
     IpSpace input =
         AclIpSpace.builder()
             .thenPermitting(IP_IP_SPACE)

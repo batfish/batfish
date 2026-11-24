@@ -5,11 +5,11 @@ import static org.hamcrest.Matchers.sameInstance;
 
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class UniverseIpSpaceTest {
+class UniverseIpSpaceTest {
   @Test
-  public void testInterning() {
+  void testInterning() {
     assertThat(
         BatfishObjectMapper.clone(UniverseIpSpace.INSTANCE, IpSpace.class),
         sameInstance(UniverseIpSpace.INSTANCE));

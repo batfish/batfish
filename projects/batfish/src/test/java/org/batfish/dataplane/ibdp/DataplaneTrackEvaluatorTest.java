@@ -10,8 +10,8 @@ import static org.batfish.datamodel.tracking.TrackMethods.negated;
 import static org.batfish.datamodel.tracking.TrackMethods.reachability;
 import static org.batfish.datamodel.tracking.TrackMethods.reference;
 import static org.batfish.datamodel.tracking.TrackMethods.route;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -24,13 +24,13 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.tracking.TrackMethod;
 import org.batfish.datamodel.tracking.TrackReachability;
 import org.batfish.datamodel.tracking.TrackRoute;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link DataplaneTrackEvaluator}. */
-public final class DataplaneTrackEvaluatorTest {
+final class DataplaneTrackEvaluatorTest {
 
   @Test
-  public void testVisitTrackInterface() {
+  void testVisitTrackInterface() {
     Configuration c =
         Configuration.builder().setHostname("foo").setConfigurationFormat(CISCO_IOS).build();
     Vrf.builder().setOwner(c).setName(DEFAULT_VRF_NAME).build();
@@ -56,7 +56,7 @@ public final class DataplaneTrackEvaluatorTest {
   }
 
   @Test
-  public void testTrackReachability() {
+  void testTrackReachability() {
     Configuration c =
         Configuration.builder().setHostname("foo").setConfigurationFormat(CISCO_IOS).build();
     // contents don't matter
@@ -69,7 +69,7 @@ public final class DataplaneTrackEvaluatorTest {
   }
 
   @Test
-  public void testTrackRoute() {
+  void testTrackRoute() {
     Configuration c =
         Configuration.builder().setHostname("foo").setConfigurationFormat(CISCO_IOS).build();
     // contents don't matter
@@ -82,7 +82,7 @@ public final class DataplaneTrackEvaluatorTest {
   }
 
   @Test
-  public void testVisitTrackMethodReference() {
+  void testVisitTrackMethodReference() {
     Configuration c =
         Configuration.builder().setHostname("foo").setConfigurationFormat(CISCO_IOS).build();
     TrackMethod base = alwaysTrue();
@@ -94,7 +94,7 @@ public final class DataplaneTrackEvaluatorTest {
   }
 
   @Test
-  public void testVisitNegatedTrackMethod() {
+  void testVisitNegatedTrackMethod() {
     Configuration c =
         Configuration.builder().setHostname("foo").setConfigurationFormat(CISCO_IOS).build();
     DataplaneTrackEvaluator e =
@@ -104,7 +104,7 @@ public final class DataplaneTrackEvaluatorTest {
   }
 
   @Test
-  public void testVisitTrackAll() {
+  void testVisitTrackAll() {
     Configuration c =
         Configuration.builder().setHostname("c").setConfigurationFormat(CISCO_IOS).build();
     DataplaneTrackEvaluator e =
@@ -121,7 +121,7 @@ public final class DataplaneTrackEvaluatorTest {
   }
 
   @Test
-  public void testVisitTrackTrue() {
+  void testVisitTrackTrue() {
     Configuration c =
         Configuration.builder().setHostname("c").setConfigurationFormat(CISCO_IOS).build();
     DataplaneTrackEvaluator evaluator =

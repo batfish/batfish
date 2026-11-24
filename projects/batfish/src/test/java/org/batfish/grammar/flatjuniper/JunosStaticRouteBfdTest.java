@@ -11,6 +11,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Ip;
@@ -24,18 +25,17 @@ import org.batfish.representation.juniper.QualifiedNextHop;
 import org.batfish.representation.juniper.StaticRoute;
 import org.batfish.representation.juniper.StaticRouteV4;
 import org.batfish.representation.juniper.StaticRouteV6;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosStaticRouteBfdTest {
+final class JunosStaticRouteBfdTest {
 
   private static final String HOSTNAME = "junos-static-route-bfd";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testStaticRouteBfd() throws IOException {
+  void testStaticRouteBfd() throws IOException {
     Batfish batfish = getBatfish(_folder, HOSTNAME);
     batfish.loadConfigurations(batfish.getSnapshot());
 

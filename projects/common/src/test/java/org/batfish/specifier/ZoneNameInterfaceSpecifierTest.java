@@ -13,12 +13,12 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ZoneNameInterfaceSpecifierTest {
+class ZoneNameInterfaceSpecifierTest {
 
   @Test
-  public void resolve() {
+  void resolve() {
 
     Configuration node1 = new Configuration("node1", ConfigurationFormat.CISCO_IOS);
     Configuration node2 = new Configuration("node2", ConfigurationFormat.CISCO_IOS);

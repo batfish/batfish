@@ -16,10 +16,10 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class PermittedByAclTest {
+class PermittedByAclTest {
   private NetworkFactory _nf;
 
   private static Flow createFlow(String ipAddrStr) {
@@ -53,13 +53,13 @@ public class PermittedByAclTest {
     return ImmutableMap.of(aclName, aclb.build());
   }
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _nf = new NetworkFactory();
   }
 
   @Test
-  public void testAclMatch() {
+  void testAclMatch() {
     // Test ACL line expressions which are permitted by other ACLs
 
     Map<String, IpAccessList> acceptAcl = createAclMap("acl1", "1.2.3.4/32", LineAction.PERMIT);

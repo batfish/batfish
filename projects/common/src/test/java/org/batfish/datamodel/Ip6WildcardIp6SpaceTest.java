@@ -9,12 +9,12 @@ import static org.hamcrest.Matchers.sameInstance;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class Ip6WildcardIp6SpaceTest {
+class Ip6WildcardIp6SpaceTest {
 
   @Test
-  public void testContainsIp() {
+  void testContainsIp() {
     Ip6 ip1 = Ip6.parse("2001:db8::1");
     Ip6 ip2 = Ip6.parse("2001:db8::2");
     Ip6Wildcard wildcard = Ip6Wildcard.parse("2001:db8::1/128");
@@ -30,7 +30,7 @@ public class Ip6WildcardIp6SpaceTest {
   }
 
   @Test
-  public void testContainsIpRange() {
+  void testContainsIpRange() {
     Ip6 ip1 = Ip6.parse("2001:db8::0");
     Ip6 ip2 = Ip6.parse("2001:db8::1");
     Ip6 ip3 = Ip6.parse("2001:db8::2");
@@ -50,7 +50,7 @@ public class Ip6WildcardIp6SpaceTest {
   }
 
   @Test
-  public void testCaching() {
+  void testCaching() {
     Ip6Wildcard wildcard = Ip6Wildcard.parse("2001:db8::1/128");
     Ip6WildcardIp6Space ipSpace1 = Ip6WildcardIp6Space.create(wildcard);
     Ip6WildcardIp6Space ipSpace2 = Ip6WildcardIp6Space.create(wildcard);
@@ -60,14 +60,14 @@ public class Ip6WildcardIp6SpaceTest {
   }
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     Ip6WildcardIp6Space original = Ip6WildcardIp6Space.create(Ip6Wildcard.parse("2001:db8::1/128"));
     assertThat(BatfishObjectMapper.clone(original, Ip6Space.class), equalTo(original));
     assertThat(SerializationUtils.clone(original), equalTo(original));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     Ip6Wildcard wildcard1 = Ip6Wildcard.parse("2001:db8::1/128");
     Ip6Wildcard wildcard2 = Ip6Wildcard.parse("2001:db8::2/128");
 
@@ -79,7 +79,7 @@ public class Ip6WildcardIp6SpaceTest {
   }
 
   @Test
-  public void testComplement() {
+  void testComplement() {
     Ip6Wildcard wildcard = Ip6Wildcard.parse("2001:db8::1/128");
     Ip6WildcardIp6Space ipSpace = Ip6WildcardIp6Space.create(wildcard);
     Ip6Space complement = ipSpace.complement();

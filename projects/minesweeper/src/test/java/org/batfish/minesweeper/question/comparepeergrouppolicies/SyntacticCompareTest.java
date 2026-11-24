@@ -1,8 +1,8 @@
 package org.batfish.minesweeper.question.comparepeergrouppolicies;
 
 import static org.batfish.datamodel.LineAction.PERMIT;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -27,10 +27,10 @@ import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statements;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class SyntacticCompareTest {
+class SyntacticCompareTest {
   private static final String HOSTNAME = "hostname";
   private static final String AS_PATH_1 = "asPath1";
   private static final String AS_PATH_2 = "asPath2";
@@ -45,8 +45,8 @@ public class SyntacticCompareTest {
   private Configuration _baseConfig;
   private Configuration _deltaConfig;
 
-  @Before
-  public void setup() throws IOException {
+  @BeforeEach
+  void setup() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder()
@@ -119,7 +119,7 @@ public class SyntacticCompareTest {
   }
 
   @Test
-  public void testNoDifference() {
+  void testNoDifference() {
     RoutingPolicy base =
         _policyBuilderBase
             .addStatement(new Statements.StaticStatement(Statements.ExitAccept))
@@ -134,7 +134,7 @@ public class SyntacticCompareTest {
   }
 
   @Test
-  public void testSyntacticDifference() {
+  void testSyntacticDifference() {
     RoutingPolicy base =
         _policyBuilderBase
             .addStatement(new Statements.StaticStatement(Statements.ExitAccept))
@@ -149,7 +149,7 @@ public class SyntacticCompareTest {
   }
 
   @Test
-  public void testContextDifference() {
+  void testContextDifference() {
     RoutingPolicy base =
         _policyBuilderBase
             .addStatement(
@@ -171,7 +171,7 @@ public class SyntacticCompareTest {
 
   /** Tests that difference in called policies result in differences in the callers */
   @Test
-  public void testCalleeDifference() {
+  void testCalleeDifference() {
     RoutingPolicy calledPolicyBase =
         _policyBuilderBase
             .setName("RM2")
@@ -206,7 +206,7 @@ public class SyntacticCompareTest {
    * multiple levels of nesting
    */
   @Test
-  public void testNestedCalleeDifference() {
+  void testNestedCalleeDifference() {
     RoutingPolicy calledPolicyBase1 =
         _policyBuilderBase
             .setName("RM2")

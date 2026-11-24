@@ -29,13 +29,13 @@ import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.NameNodeSpecifier;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link BgpProcessConfigurationAnswerer} */
-public class BgpProcessConfigurationAnswererTest {
+class BgpProcessConfigurationAnswererTest {
 
   @Test
-  public void testWithNeighbors() {
+  void testWithNeighbors() {
     // Create process with active, passive, and unnumbered peers
     BgpProcess proc = BgpProcess.testBgpProcess(Ip.ZERO);
     proc.setConfederation(new BgpConfederation(1L, ImmutableSet.of(2L, 3L)));
@@ -103,7 +103,7 @@ public class BgpProcessConfigurationAnswererTest {
   }
 
   @Test
-  public void getProperties() {
+  void getProperties() {
 
     BgpProcess bgp1 = BgpProcess.testBgpProcess(Ip.parse("1.1.1.1"));
     bgp1.setMultipathEbgp(true);

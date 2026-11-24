@@ -31,14 +31,15 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -83,18 +84,14 @@ import org.batfish.representation.palo_alto.PaloAltoConfiguration;
 import org.batfish.representation.palo_alto.SecurityRule;
 import org.batfish.representation.palo_alto.Service;
 import org.batfish.representation.palo_alto.Vsys;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public class PaloAltoSecurityRuleTest {
+class PaloAltoSecurityRuleTest {
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/palo_alto/testconfigs/";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+  @TempDir public File _folder;
 
   private @Nonnull Configuration parseConfig(String hostname) {
     try {
@@ -155,7 +152,7 @@ public class PaloAltoSecurityRuleTest {
   }
 
   @Test
-  public void testDeviceGroupSharedInheritance() throws IOException {
+  void testDeviceGroupSharedInheritance() throws IOException {
     String panoramaHostname = "device-group-shared-inheritance";
     String firewallId = "00000001";
     PaloAltoConfiguration c = parsePaloAltoConfig(panoramaHostname);
@@ -203,7 +200,7 @@ public class PaloAltoSecurityRuleTest {
   }
 
   @Test
-  public void testDeviceGroupInheritance() throws IOException {
+  void testDeviceGroupInheritance() throws IOException {
     String panoramaHostname = "device-group-inheritance";
     String firewallId = "00000002";
     Ip parentAddr1 = Ip.parse("10.10.2.21");
@@ -253,7 +250,7 @@ public class PaloAltoSecurityRuleTest {
   }
 
   @Test
-  public void testApplicationAny() throws IOException {
+  void testApplicationAny() throws IOException {
     String hostname = "any-application";
     Configuration c = parseConfig(hostname);
 
@@ -297,7 +294,7 @@ public class PaloAltoSecurityRuleTest {
   }
 
   @Test
-  public void testRulebaseTracing() {
+  void testRulebaseTracing() {
     String hostname = "rulebase-tracing";
     String filename = "configs/" + hostname;
     Configuration c = parseConfig(hostname);
@@ -443,7 +440,7 @@ public class PaloAltoSecurityRuleTest {
    * namespace.
    */
   @Test
-  public void testPanoramaRulebaseTracing() throws IOException {
+  void testPanoramaRulebaseTracing() throws IOException {
     String hostname = "panorama-rulebase-tracing";
     String filename = "configs/" + hostname;
     Configuration c = parseTextConfigs(hostname).get("00000001");
@@ -544,7 +541,7 @@ public class PaloAltoSecurityRuleTest {
   }
 
   @Test
-  public void testSecurityRules() throws IOException {
+  void testSecurityRules() throws IOException {
     String hostname = "security-rules";
     Configuration c = parseConfig(hostname);
 
@@ -596,7 +593,7 @@ public class PaloAltoSecurityRuleTest {
   }
 
   @Test
-  public void testApplicationOverrideConditions() throws IOException {
+  void testApplicationOverrideConditions() throws IOException {
     String hostname = "application-override-conditions";
     Configuration c = parseConfig(hostname);
 
@@ -660,7 +657,7 @@ public class PaloAltoSecurityRuleTest {
   }
 
   @Test
-  public void testApplicationOverrideShadowing() throws IOException {
+  void testApplicationOverrideShadowing() throws IOException {
     String hostname = "application-override-shadowing";
     Configuration c = parseConfig(hostname);
 
@@ -750,7 +747,7 @@ public class PaloAltoSecurityRuleTest {
   }
 
   @Test
-  public void testApplicationOverrideNatInteraction() throws IOException {
+  void testApplicationOverrideNatInteraction() throws IOException {
     String hostname = "application-override-nat-interaction";
     Configuration c = parseConfig(hostname);
 
@@ -799,7 +796,7 @@ public class PaloAltoSecurityRuleTest {
   }
 
   @Test
-  public void testApplicationOverrideServiceInteraction() throws IOException {
+  void testApplicationOverrideServiceInteraction() throws IOException {
     String hostname = "application-override-service-interaction";
     Configuration c = parseConfig(hostname);
 
@@ -868,9 +865,9 @@ public class PaloAltoSecurityRuleTest {
   }
 
   /** Test that application-groups with members in different namespaces are handled correctly. */
-  @Ignore("https://github.com/batfish/batfish/issues/7698")
+  @Disabled("https://github.com/batfish/batfish/issues/7698")
   @Test
-  public void testPanoramaRulebaseMixedNamespace() throws IOException {
+  void testPanoramaRulebaseMixedNamespace() throws IOException {
     String hostname = "panorama-rulebase-mixed-namespace";
     Configuration c = parseTextConfigs(hostname).get("00000001");
     Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
@@ -937,7 +934,7 @@ public class PaloAltoSecurityRuleTest {
   }
 
   @Test
-  public void testAclLineMatchExprForApplication() {
+  void testAclLineMatchExprForApplication() {
     // test combinations of accept/deny, app Id/app override, and default/not default
     String vsysName = "vsys1";
     TraceElement te = matchBuiltInApplicationTraceElement("bittorrent");

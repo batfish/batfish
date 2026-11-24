@@ -3,7 +3,8 @@ package org.batfish.specifier.parse;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -31,17 +32,13 @@ import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.Grammar;
 import org.batfish.specifier.RoutingProtocolSpecifier;
 import org.batfish.specifier.parse.Anchor.Type;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests of {@link Parser} producing {@link EnumSetAstNode}. It uses NamedStructureType as the enum
  * set for most examples, and has one test to check that things work for non-string values.
  */
-public class ParserEnumSetTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class ParserEnumSetTest {
 
   private static final Collection<?> ALL_NAMED_STRUCTURE_TYPES =
       Grammar.getEnumValues(Grammar.NAMED_STRUCTURE_SPECIFIER);
@@ -73,7 +70,7 @@ public class ParserEnumSetTest {
   }
 
   @Test
-  public void testCompletionEmpty() {
+  void testCompletionEmpty() {
     String query = "";
 
     Set<ParsedAutoCompleteSuggestion> suggestions =
@@ -104,7 +101,7 @@ public class ParserEnumSetTest {
   }
 
   @Test
-  public void testCompletionPartialName() {
+  void testCompletionPartialName() {
     String query = "IKE";
 
     Set<ParsedAutoCompleteSuggestion> suggestions =
@@ -131,7 +128,7 @@ public class ParserEnumSetTest {
   }
 
   @Test
-  public void testParseNamedStructureType() {
+  void testParseNamedStructureType() {
     String query = NamedStructurePropertySpecifier.IP_ACCESS_LIST;
     EnumSetAstNode expectedAst = new ValueEnumSetAstNode<>(query, ALL_NAMED_STRUCTURE_TYPES);
 
@@ -143,14 +140,15 @@ public class ParserEnumSetTest {
   }
 
   @Test
-  public void testParseNamedStructureBad() {
+  void testParseNamedStructureBad() {
     String query = "faux";
-    _thrown.expect(IllegalArgumentException.class);
-    SpecifierAstBuilder.getAst(Grammar.NAMED_STRUCTURE_SPECIFIER, query);
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> SpecifierAstBuilder.getAst(Grammar.NAMED_STRUCTURE_SPECIFIER, query));
   }
 
   @Test
-  public void testParseNamedStructureTypeCaseInsensitive() {
+  void testParseNamedStructureTypeCaseInsensitive() {
     String query = NamedStructurePropertySpecifier.IP_ACCESS_LIST.toLowerCase();
     EnumSetAstNode expectedAst = new ValueEnumSetAstNode<>(query, ALL_NAMED_STRUCTURE_TYPES);
 
@@ -162,7 +160,7 @@ public class ParserEnumSetTest {
   }
 
   @Test
-  public void testParseNamedStructureTypeRegex() {
+  void testParseNamedStructureTypeRegex() {
     String query = "/IP/";
     RegexEnumSetAstNode expectedAst = new RegexEnumSetAstNode("IP");
 
@@ -174,7 +172,7 @@ public class ParserEnumSetTest {
   }
 
   @Test
-  public void testParseNamedStructureTypeRegexDeprecated() {
+  void testParseNamedStructureTypeRegexDeprecated() {
     String query = "/ip.*/";
     RegexEnumSetAstNode expectedAst = new RegexEnumSetAstNode("ip.*");
 
@@ -187,7 +185,7 @@ public class ParserEnumSetTest {
 
   /** Test the base case of not expression and tolerance to spaces with it */
   @Test
-  public void testParseNamedStructureTypeNotSimple() {
+  void testParseNamedStructureTypeNotSimple() {
     String value = NamedStructurePropertySpecifier.IP_ACCESS_LIST;
     NotEnumSetAstNode expectedAst =
         new NotEnumSetAstNode(new ValueEnumSetAstNode<>(value, ALL_NAMED_STRUCTURE_TYPES));
@@ -202,7 +200,7 @@ public class ParserEnumSetTest {
 
   /** Test the not expression with regex */
   @Test
-  public void testParseNamedStructureTypeNotRegex() {
+  void testParseNamedStructureTypeNotRegex() {
     String regex = "ip.*list";
     NotEnumSetAstNode expectedAst = new NotEnumSetAstNode(new RegexEnumSetAstNode(regex));
 
@@ -218,7 +216,7 @@ public class ParserEnumSetTest {
 
   /** Test expressions where '!' appears as (at least) one part within a union */
   @Test
-  public void testParseNamedStructureTypeNotUnion() {
+  void testParseNamedStructureTypeNotUnion() {
     // !a, !b
     assertThat(
         SpecifierAstBuilder.getAst(
@@ -270,7 +268,7 @@ public class ParserEnumSetTest {
   }
 
   @Test
-  public void testParseSuperStrings() {
+  void testParseSuperStrings() {
     Collection<String> allValues = ImmutableList.of("long", "longer");
 
     assertThat(
@@ -282,7 +280,7 @@ public class ParserEnumSetTest {
   }
 
   @Test
-  public void testParseFilterUnion() {
+  void testParseFilterUnion() {
     String t1 = NamedStructurePropertySpecifier.IP_ACCESS_LIST;
     String t2Regex = "ip";
     UnionEnumSetAstNode expectedNode =
@@ -302,7 +300,7 @@ public class ParserEnumSetTest {
 
   /** Test that enums that are not strings work */
   @Test
-  public void testNonStringEnums() {
+  void testNonStringEnums() {
     String query = "";
     Set<ParsedAutoCompleteSuggestion> suggestions =
         getPAC("", Grammar.BGP_SESSION_STATUS_SPECIFIER).run();
@@ -327,7 +325,7 @@ public class ParserEnumSetTest {
    * properly, instead of limiting ourselves to the first match.
    */
   @Test
-  public void testAutoCompleteSuperStrings() {
+  void testAutoCompleteSuperStrings() {
     assertThat(
         getPAC("est", Grammar.BGP_SESSION_STATUS_SPECIFIER).run(),
         containsInAnyOrder(
@@ -355,7 +353,7 @@ public class ParserEnumSetTest {
 
   /** Test that we auto complete properly when the query is a non-prefix substring */
   @Test
-  public void testAutoCompleteNonPrefixSubstrings() {
+  void testAutoCompleteNonPrefixSubstrings() {
     assertThat(
         getPAC("tab", Grammar.BGP_SESSION_STATUS_SPECIFIER).run(),
         containsInAnyOrder(
@@ -367,7 +365,7 @@ public class ParserEnumSetTest {
 
   /** Test that bgp peer properties are being parsed */
   @Test
-  public void testParseBgpPeerProperties() {
+  void testParseBgpPeerProperties() {
     testParseOtherProperties(
         BgpPeerPropertySpecifier.LOCAL_IP,
         BgpPeerPropertySpecifier.LOCAL_AS,
@@ -376,7 +374,7 @@ public class ParserEnumSetTest {
 
   /** Test that bgp process properties are being parsed */
   @Test
-  public void testParseBgpProcessProperties() {
+  void testParseBgpProcessProperties() {
     testParseOtherProperties(
         BgpProcessPropertySpecifier.ROUTE_REFLECTOR,
         BgpProcessPropertySpecifier.TIE_BREAKER,
@@ -384,7 +382,7 @@ public class ParserEnumSetTest {
   }
 
   @Test
-  public void testParseBgpRouteStatus() {
+  void testParseBgpRouteStatus() {
     testParseOtherProperties(
         BgpRouteStatus.BEST.toString(),
         BgpRouteStatus.BACKUP.toString(),
@@ -392,7 +390,7 @@ public class ParserEnumSetTest {
   }
 
   @Test
-  public void testParseBgpSessionCompatibilityStatus() {
+  void testParseBgpSessionCompatibilityStatus() {
     testParseOtherProperties(
         ConfiguredSessionStatus.UNIQUE_MATCH.toString(),
         ConfiguredSessionStatus.NO_REMOTE_AS.toString(),
@@ -400,7 +398,7 @@ public class ParserEnumSetTest {
   }
 
   @Test
-  public void testParseBgpSessionStatus() {
+  void testParseBgpSessionStatus() {
     testParseOtherProperties(
         BgpSessionStatus.NOT_COMPATIBLE.toString(),
         BgpSessionStatus.ESTABLISHED.toString(),
@@ -408,7 +406,7 @@ public class ParserEnumSetTest {
   }
 
   @Test
-  public void testParseBgpSessionType() {
+  void testParseBgpSessionType() {
     testParseOtherProperties(
         SessionType.EBGP_SINGLEHOP.toString(),
         SessionType.EBGP_MULTIHOP.toString(),
@@ -417,7 +415,7 @@ public class ParserEnumSetTest {
 
   /** Test that interface properties are being parsed */
   @Test
-  public void testParseInterfaceProperties() {
+  void testParseInterfaceProperties() {
     testParseOtherProperties(
         InterfacePropertySpecifier.DESCRIPTION,
         InterfacePropertySpecifier.ACCESS_VLAN,
@@ -425,7 +423,7 @@ public class ParserEnumSetTest {
   }
 
   @Test
-  public void testParseIpsecSessionStatus() {
+  void testParseIpsecSessionStatus() {
     testParseOtherProperties(
         IpsecSessionStatus.MISSING_END_POINT.toString(),
         IpsecSessionStatus.IKE_PHASE1_FAILED.toString(),
@@ -433,7 +431,7 @@ public class ParserEnumSetTest {
   }
 
   @Test
-  public void testParseNodeProperties() {
+  void testParseNodeProperties() {
     testParseOtherProperties(
         NodePropertySpecifier.NTP_SERVERS,
         NodePropertySpecifier.DNS_SERVERS,
@@ -441,7 +439,7 @@ public class ParserEnumSetTest {
   }
 
   @Test
-  public void testParseOspfInterfaceProperties() {
+  void testParseOspfInterfaceProperties() {
     testParseOtherProperties(
         OspfInterfacePropertySpecifier.OSPF_AREA_NAME,
         OspfInterfacePropertySpecifier.OSPF_COST,
@@ -449,7 +447,7 @@ public class ParserEnumSetTest {
   }
 
   @Test
-  public void testParseOspfProcessProperties() {
+  void testParseOspfProcessProperties() {
     testParseOtherProperties(
         OspfProcessPropertySpecifier.AREA_BORDER_ROUTER,
         OspfProcessPropertySpecifier.AREAS,
@@ -457,7 +455,7 @@ public class ParserEnumSetTest {
   }
 
   @Test
-  public void testParseOspfSessionStatus() {
+  void testParseOspfSessionStatus() {
     testParseOtherProperties(
         OspfSessionStatus.NETWORK_TYPE_MISMATCH.toString(),
         OspfSessionStatus.ESTABLISHED.toString(),
@@ -465,16 +463,16 @@ public class ParserEnumSetTest {
   }
 
   @Test
-  public void testParseRoutingProtocol() {
+  void testParseRoutingProtocol() {
     // pre conditions for this test is that the keys we use are valid
     assertTrue(
-        "ospf is a valid key", RoutingProtocolSpecifier.getAllProtocolKeys().contains("ospf"));
-    assertTrue("bgp is a valid key", RoutingProtocolSpecifier.getAllProtocolKeys().contains("bgp"));
+        RoutingProtocolSpecifier.getAllProtocolKeys().contains("ospf"), "ospf is a valid key");
+    assertTrue(RoutingProtocolSpecifier.getAllProtocolKeys().contains("bgp"), "bgp is a valid key");
     testParseOtherProperties("ospf", "bgp", Grammar.ROUTING_PROTOCOL_SPECIFIER);
   }
 
   @Test
-  public void testVxlanVniProperties() {
+  void testVxlanVniProperties() {
     testParseOtherProperties(
         VxlanVniPropertySpecifier.VTEP_FLOOD_LIST,
         VxlanVniPropertySpecifier.VXLAN_PORT,

@@ -6,6 +6,7 @@ import static org.batfish.datamodel.transformation.IpField.SOURCE;
 import static org.batfish.representation.juniper.Nat.Type.STATIC;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.testing.EqualsTester;
@@ -17,12 +18,12 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.transformation.ShiftIpAddressIntoSubnet;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.representation.juniper.Nat.Type;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class NatRuleThenPrefixNameTest {
+class NatRuleThenPrefixNameTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     String prefixName1 = "prefix1";
     String prefixName2 = "prefix2";
     NatRuleThenPrefixName thenPrefixName1 = new NatRuleThenPrefixName(prefixName1, DESTINATION);
@@ -36,7 +37,7 @@ public class NatRuleThenPrefixNameTest {
   }
 
   @Test
-  public void testToTransformationSteps() {
+  void testToTransformationSteps() {
     String prefixName = "entry";
     Prefix prefix = Prefix.parse("1.1.1.1/24");
     Map<String, AddressBookEntry> entryMap =
@@ -54,32 +55,48 @@ public class NatRuleThenPrefixNameTest {
     assertThat(steps, contains(new ShiftIpAddressIntoSubnet(STATIC_NAT, SOURCE, prefix)));
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void testToTransformationStepsNotStaticNat() {
-    NatRuleThenPrefixName thenPrefix1 = new NatRuleThenPrefixName("prefix", DESTINATION);
-    thenPrefix1.toTransformationSteps(new Nat(Type.SOURCE), null, null, null);
+  @Test
+  void testToTransformationStepsNotStaticNat() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> {
+          NatRuleThenPrefixName thenPrefix1 = new NatRuleThenPrefixName("prefix", DESTINATION);
+          thenPrefix1.toTransformationSteps(new Nat(Type.SOURCE), null, null, null);
+        });
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void testToTransformationStepsNotStaticNat2() {
-    NatRuleThenPrefixName thenPrefix1 = new NatRuleThenPrefixName("prefix", DESTINATION);
-    thenPrefix1.toTransformationSteps(new Nat(Type.DESTINATION), null, null, null);
+  @Test
+  void testToTransformationStepsNotStaticNat2() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> {
+          NatRuleThenPrefixName thenPrefix1 = new NatRuleThenPrefixName("prefix", DESTINATION);
+          thenPrefix1.toTransformationSteps(new Nat(Type.DESTINATION), null, null, null);
+        });
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void testToTransformationStepsNullAddressMap() {
-    String prefixName = "prefix";
-    NatRuleThenPrefixName then = new NatRuleThenPrefixName(prefixName, DESTINATION);
-    then.toTransformationSteps(new Nat(STATIC), null, null, null);
+  @Test
+  void testToTransformationStepsNullAddressMap() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> {
+          String prefixName = "prefix";
+          NatRuleThenPrefixName then = new NatRuleThenPrefixName(prefixName, DESTINATION);
+          then.toTransformationSteps(new Nat(STATIC), null, null, null);
+        });
   }
 
-  @Test(expected = BatfishException.class)
-  public void testToTransformationStepsAddressEntryTypeNotMatch() {
-    String prefixName = "prefix";
-    Map<String, AddressBookEntry> entryMap =
-        ImmutableMap.of(prefixName, new AddressSetAddressBookEntry("name"));
+  @Test
+  void testToTransformationStepsAddressEntryTypeNotMatch() {
+    assertThrows(
+        BatfishException.class,
+        () -> {
+          String prefixName = "prefix";
+          Map<String, AddressBookEntry> entryMap =
+              ImmutableMap.of(prefixName, new AddressSetAddressBookEntry("name"));
 
-    NatRuleThenPrefixName then = new NatRuleThenPrefixName(prefixName, DESTINATION);
-    then.toTransformationSteps(new Nat(STATIC), entryMap, null, null);
+          NatRuleThenPrefixName then = new NatRuleThenPrefixName(prefixName, DESTINATION);
+          then.toTransformationSteps(new Nat(STATIC), entryMap, null, null);
+        });
   }
 }

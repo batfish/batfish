@@ -2,7 +2,9 @@ package org.batfish.specifier.parse;
 
 import static org.batfish.specifier.parse.ParsedIpSpaceSpecifier.computeIpSpace;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -23,16 +25,14 @@ import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.LocationInfo;
 import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.SpecifierContext;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-public class ParsedIpSpaceSpecifierTest {
+class ParsedIpSpaceSpecifierTest {
 
   private MockSpecifierContext _emptyCtxt = MockSpecifierContext.builder().build();
 
   @Test
-  public void testComputeIpSpaceAddressGroup() {
+  void testComputeIpSpaceAddressGroup() {
     String ip = "8.8.8.8";
     String addressGroup = "ag";
     String book = "book";
@@ -63,13 +63,13 @@ public class ParsedIpSpaceSpecifierTest {
   }
 
   @Test
-  public void testComputeIpSpaceIp() {
+  void testComputeIpSpaceIp() {
     Ip ip = Ip.parse("1.1.1.1");
     assertThat(computeIpSpace(new IpAstNode(ip), _emptyCtxt), equalTo(ip.toIpSpace()));
   }
 
   @Test
-  public void testComputeIpSpaceIpRange() {
+  void testComputeIpSpaceIpRange() {
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("1.1.1.10");
     assertThat(
@@ -77,7 +77,7 @@ public class ParsedIpSpaceSpecifierTest {
   }
 
   @Test
-  public void testComputeIpSpaceLocation() {
+  void testComputeIpSpaceLocation() {
     String node1 = "node1";
     String iface1 = "eth1";
 
@@ -109,20 +109,20 @@ public class ParsedIpSpaceSpecifierTest {
   }
 
   @Test
-  public void testComputeIpSpaceIpWildcard() {
+  void testComputeIpSpaceIpWildcard() {
     IpWildcard wildcard = IpWildcard.parse("1.1.1.1:255.255.255.255");
     assertThat(
         computeIpSpace(new IpWildcardAstNode(wildcard), _emptyCtxt), equalTo(wildcard.toIpSpace()));
   }
 
   @Test
-  public void testComputeIpSpacePrefix() {
+  void testComputeIpSpacePrefix() {
     Prefix pfx = Prefix.parse("1.1.1.1/24");
     assertThat(computeIpSpace(new PrefixAstNode(pfx), _emptyCtxt), equalTo(pfx.toIpSpace()));
   }
 
   @Test
-  public void testComputeIpSpaceSetDifference() {
+  void testComputeIpSpaceSetDifference() {
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("1.1.1.10");
     assertThat(
@@ -132,7 +132,7 @@ public class ParsedIpSpaceSpecifierTest {
   }
 
   @Test
-  public void testComputeIpSpaceSetIntersection() {
+  void testComputeIpSpaceSetIntersection() {
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("1.1.1.10");
     assertThat(
@@ -142,7 +142,7 @@ public class ParsedIpSpaceSpecifierTest {
   }
 
   @Test
-  public void testComputeIpSpaceSetUnion() {
+  void testComputeIpSpaceSetUnion() {
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("1.1.1.10");
     assertThat(
@@ -150,17 +150,15 @@ public class ParsedIpSpaceSpecifierTest {
         equalTo(AclIpSpace.union(ip1.toIpSpace(), ip2.toIpSpace())));
   }
 
-  @Rule public ExpectedException _thrown = ExpectedException.none();
-
   @Test
-  public void testParseBadInput() {
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("Error parsing");
-    ParsedIpSpaceSpecifier.parse("@..");
+  void testParseBadInput() {
+    Throwable exception =
+        assertThrows(IllegalArgumentException.class, () -> ParsedIpSpaceSpecifier.parse("@.."));
+    assertThat(exception.getMessage(), containsString("Error parsing"));
   }
 
   @Test
-  public void testParseGoodInput() {
+  void testParseGoodInput() {
     assertThat(
         ParsedIpSpaceSpecifier.parse("1.1.1.1"),
         equalTo(new ParsedIpSpaceSpecifier(new IpAstNode("1.1.1.1"))));

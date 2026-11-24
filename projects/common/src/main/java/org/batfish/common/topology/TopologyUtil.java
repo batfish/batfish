@@ -468,7 +468,7 @@ public final class TopologyUtil {
     Stream<Edge> pointToPointEdges =
         configurations.values().stream()
             .flatMap(Configuration::activeInterfaces)
-            .filter(TopologyUtil::hasPointToPointAddress)
+            .filter(Interface::hasPointToPointAddress)
             .map(i -> NodeInterfacePair.of(i.getOwner().getHostname(), i.getName()))
             .flatMap(nip -> {
               @Nullable
@@ -477,7 +477,7 @@ public final class TopologyUtil {
                       .pairedPointToPointL3Interface(nip)
                       .filter(other ->
                           nc.getInterface(other.getHostname(), other.getInterface())
-                              .map(i -> i.getActive() && hasPointToPointAddress(i))
+                              .map(i -> i.getActive() && i.hasPointToPointAddress())
                               .orElse(false))
                       .orElse(null);
               if (paired == null) {
@@ -650,17 +650,6 @@ public final class TopologyUtil {
       }
     });
     return prefixInterfaces;
-  }
-
-  /**
-   * Returns true if the interface has link-local or unnumbered addresses (i.e., addresses that
-   * don't participate in subnet-based L3 topology synthesis and need point-to-point physical
-   * adjacency edges instead).
-   */
-  @VisibleForTesting
-  static boolean hasPointToPointAddress(Interface iface) {
-    return !iface.getAllLinkLocalAddresses().isEmpty()
-        || !iface.getAllUnnumberedAddresses().isEmpty();
   }
 
   /**

@@ -21,14 +21,15 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import javax.annotation.Nonnull;
@@ -62,15 +63,14 @@ import org.batfish.vendor.sonic.representation.L3Interface;
 import org.batfish.vendor.sonic.representation.MgmtVrf;
 import org.batfish.vendor.sonic.representation.Port;
 import org.batfish.vendor.sonic.representation.SonicConfiguration;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public class SonicGrammarTest {
+class SonicGrammarTest {
 
   private static final String SNAPSHOTS_PREFIX = "org/batfish/vendor/sonic/grammar/snapshots/";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private Batfish getBatfish(String snapshotName, String... files) throws IOException {
     return BatfishTestUtils.getBatfishFromTestrigText(
@@ -82,7 +82,7 @@ public class SonicGrammarTest {
 
   /** A basic test that configdb files are read and properly linked to the FRR files. */
   @Test
-  public void testBasic() throws IOException {
+  void testBasic() throws IOException {
     String snapshotName = "basic";
     Batfish batfish = getBatfish(snapshotName, "device/frr.conf", "device/config_db.json");
 
@@ -120,7 +120,7 @@ public class SonicGrammarTest {
 
   /** Test that loopback interfaces are created and put in the right VRF. */
   @Test
-  public void testLoopback() throws IOException {
+  void testLoopback() throws IOException {
     String snapshotName = "loopback";
     Batfish batfish = getBatfish(snapshotName, "device/frr.conf", "device/config_db.json");
 
@@ -137,7 +137,7 @@ public class SonicGrammarTest {
 
   /** Test that management interfaces are created and put in the right VRF. */
   @Test
-  public void testMgmt() throws IOException {
+  void testMgmt() throws IOException {
     String snapshotName = "mgmt";
     Batfish batfish = getBatfish(snapshotName, "device/frr.conf", "device/config_db.json");
 
@@ -176,7 +176,7 @@ public class SonicGrammarTest {
    * configured.
    */
   @Test
-  public void testMgmtNoVrf() throws IOException {
+  void testMgmtNoVrf() throws IOException {
     Batfish batfish = getBatfish("mgmt-novrf", "device/frr.conf", "device/config_db.json");
 
     NetworkSnapshot snapshot = batfish.getSnapshot();
@@ -207,7 +207,7 @@ public class SonicGrammarTest {
   }
 
   @Test
-  public void testNtpServer() throws IOException {
+  void testNtpServer() throws IOException {
     String snapshotName = "ntp_server";
     Batfish batfish = getBatfish(snapshotName, "device/frr.conf", "device/config_db.json");
 
@@ -222,7 +222,7 @@ public class SonicGrammarTest {
 
   /** Test that TACPLUS related tables are processed. */
   @Test
-  public void testTacplus() throws IOException {
+  void testTacplus() throws IOException {
     String snapshotName = "tacplus";
     Batfish batfish = getBatfish(snapshotName, "device/frr.conf", "device/config_db.json");
 
@@ -237,7 +237,7 @@ public class SonicGrammarTest {
   }
 
   @Test
-  public void testSyslogServer() throws IOException {
+  void testSyslogServer() throws IOException {
     String snapshotName = "syslog_server";
     Batfish batfish = getBatfish(snapshotName, "device/frr.conf", "device/config_db.json");
 
@@ -252,7 +252,7 @@ public class SonicGrammarTest {
 
   /** Test that VLAN related tables are processed. */
   @Test
-  public void testVlan() throws IOException {
+  void testVlan() throws IOException {
     String snapshotName = "vlan";
     Batfish batfish = getBatfish(snapshotName, "device/frr.conf", "device/config_db.json");
 
@@ -286,7 +286,7 @@ public class SonicGrammarTest {
   }
 
   @Test
-  public void testAcl() throws IOException {
+  void testAcl() throws IOException {
     String snapshotName = "acl";
     Batfish batfish = getBatfish(snapshotName, "device/frr.conf", "device/config_db.json");
 
@@ -333,7 +333,7 @@ public class SonicGrammarTest {
   }
 
   @Test
-  public void testCommunityListReferenceTracking() throws IOException {
+  void testCommunityListReferenceTracking() throws IOException {
     String snapshotName = "community_list_reference_tracking";
     Batfish batfish = getBatfish(snapshotName, "device/frr.conf", "device/config_db.json");
 
@@ -345,7 +345,7 @@ public class SonicGrammarTest {
 
   /** Test that resolv.conf files are parsed and its contents are converted. */
   @Test
-  public void testResolvConf() throws IOException {
+  void testResolvConf() throws IOException {
     String snapshotName = "resolv_conf";
     Batfish batfish =
         getBatfish(snapshotName, "device/frr.conf", "device/config_db.json", "device/resolv.conf");
@@ -364,7 +364,7 @@ public class SonicGrammarTest {
 
   /** Test that resolve.conf files are parsed and its contents are converted. */
   @Test
-  public void testSnmpYml() throws IOException {
+  void testSnmpYml() throws IOException {
     String snapshotName = "snmp_yml";
     Batfish batfish =
         getBatfish(snapshotName, "device/frr.conf", "device/config_db.json", "device/snmp.yml");

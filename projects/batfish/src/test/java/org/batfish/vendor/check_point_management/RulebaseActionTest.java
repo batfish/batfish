@@ -4,20 +4,20 @@ import static org.batfish.vendor.check_point_management.RulebaseAction.NAME_ACCE
 import static org.batfish.vendor.check_point_management.RulebaseAction.NAME_DROP;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.vendor.check_point_management.RulebaseAction.Action;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link RulebaseAction}. */
-public final class RulebaseActionTest {
+final class RulebaseActionTest {
 
   @Test
-  public void testJacksonDeserialization() throws JsonProcessingException {
+  void testJacksonDeserialization() throws JsonProcessingException {
     String input =
         "{"
             + "\"GARBAGE\":0,"
@@ -32,13 +32,13 @@ public final class RulebaseActionTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     RulebaseAction obj = new RulebaseAction("foo", Uid.of("0"), "some type that isn't handled yet");
     assertEquals(obj, SerializationUtils.clone(obj));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     RulebaseAction obj = new RulebaseAction("foo", Uid.of("1"), "comments");
     new EqualsTester()
         .addEqualityGroup(obj, new RulebaseAction("foo", Uid.of("1"), "comments"))
@@ -49,7 +49,7 @@ public final class RulebaseActionTest {
   }
 
   @Test
-  public void testGetAction() {
+  void testGetAction() {
     assertThat(
         new RulebaseAction(NAME_ACCEPT, Uid.of("0"), "").getAction(), equalTo(Action.ACCEPT));
     assertThat(new RulebaseAction(NAME_DROP, Uid.of("0"), "").getAction(), equalTo(Action.DROP));

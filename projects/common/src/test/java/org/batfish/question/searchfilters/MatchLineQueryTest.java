@@ -4,8 +4,8 @@ import static org.batfish.datamodel.ExprAclLine.acceptingHeaderSpace;
 import static org.batfish.datamodel.ExprAclLine.rejectingHeaderSpace;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -20,12 +20,12 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Prefix;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link MatchLineQuery} */
-public class MatchLineQueryTest {
+class MatchLineQueryTest {
   @Test
-  public void testCanQuery() {
+  void testCanQuery() {
     IpAccessList acl =
         IpAccessList.builder()
             .setName("acl")
@@ -40,7 +40,7 @@ public class MatchLineQueryTest {
   }
 
   @Test
-  public void testGetMatchingBdd() {
+  void testGetMatchingBdd() {
     BDDPacket pkt = new BDDPacket();
     IpAccessListToBdd ipAccessListToBdd =
         new IpAccessListToBddImpl(

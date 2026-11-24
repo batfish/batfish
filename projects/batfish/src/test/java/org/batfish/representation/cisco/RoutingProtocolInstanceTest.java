@@ -7,13 +7,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.testing.EqualsTester;
 import java.util.List;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link RoutingProtocolInstance}. */
-public class RoutingProtocolInstanceTest {
+class RoutingProtocolInstanceTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(RoutingProtocolInstance.bgp(10L), RoutingProtocolInstance.bgp(10L))
         .addEqualityGroup(RoutingProtocolInstance.bgp(20L))
@@ -28,7 +28,7 @@ public class RoutingProtocolInstanceTest {
   }
 
   @Test
-  public void testSorting() {
+  void testSorting() {
     List<RoutingProtocolInstance> entries =
         ImmutableList.of(
             RoutingProtocolInstance.bgp(5),

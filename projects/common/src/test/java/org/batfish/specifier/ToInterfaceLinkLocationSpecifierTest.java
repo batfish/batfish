@@ -4,15 +4,15 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableSet;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ToInterfaceLinkLocationSpecifierTest {
+class ToInterfaceLinkLocationSpecifierTest {
 
   MockSpecifierContext _mockContext = MockSpecifierContext.builder().build();
 
   /** Do we resolve empty sets properly? */
   @Test
-  public void resolveEmptySet() {
+  void resolveEmptySet() {
     LocationSpecifier inner = new MockLocationSpecifier(ImmutableSet.of());
     assertThat(
         new ToInterfaceLinkLocationSpecifier(inner).resolve(_mockContext),
@@ -21,7 +21,7 @@ public class ToInterfaceLinkLocationSpecifierTest {
 
   /** Do we resolve non empty sets properly? */
   @Test
-  public void resolveNonEmptySet() {
+  void resolveNonEmptySet() {
     LocationSpecifier inner =
         new MockLocationSpecifier(
             ImmutableSet.of(
@@ -36,7 +36,7 @@ public class ToInterfaceLinkLocationSpecifierTest {
 
   /** Do we convert locations properly? */
   @Test
-  public void toInterfaceLinkLocation() {
+  void toInterfaceLinkLocation() {
     InterfaceLocation ifaceLocation = new InterfaceLocation("foo", "bar");
     InterfaceLinkLocation ifaceLinkLocation = new InterfaceLinkLocation("foo", "bar");
 

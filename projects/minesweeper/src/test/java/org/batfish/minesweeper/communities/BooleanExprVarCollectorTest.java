@@ -2,7 +2,7 @@ package org.batfish.minesweeper.communities;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -30,11 +30,11 @@ import org.batfish.datamodel.routing_policy.expr.TrackSucceeded;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.utils.Tuple;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link BooleanExprVarCollector}. */
-public class BooleanExprVarCollectorTest {
+class BooleanExprVarCollectorTest {
 
   private static final String HOSTNAME = "hostname";
   private Configuration _baseConfig;
@@ -43,8 +43,8 @@ public class BooleanExprVarCollectorTest {
   private static final Community COMM1 = StandardCommunity.parse("20:30");
   private static final Community COMM2 = StandardCommunity.parse("21:30");
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder()
@@ -57,7 +57,7 @@ public class BooleanExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitConjunction() {
+  void testVisitConjunction() {
 
     Conjunction c =
         new Conjunction(
@@ -77,7 +77,7 @@ public class BooleanExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitConjunctionChain() {
+  void testVisitConjunctionChain() {
 
     ConjunctionChain cc =
         new ConjunctionChain(
@@ -97,7 +97,7 @@ public class BooleanExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitDisjunction() {
+  void testVisitDisjunction() {
 
     Disjunction d =
         new Disjunction(
@@ -117,7 +117,7 @@ public class BooleanExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitFirstMatchChain() {
+  void testVisitFirstMatchChain() {
 
     FirstMatchChain fmc =
         new FirstMatchChain(
@@ -137,7 +137,7 @@ public class BooleanExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitTrackSucceeded() {
+  void testVisitTrackSucceeded() {
     assertThat(
         _varCollector.visitTrackSucceeded(
             new TrackSucceeded("foo"), new Tuple<>(new HashSet<>(), _baseConfig)),
@@ -145,7 +145,7 @@ public class BooleanExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitMatchCommunities() {
+  void testVisitMatchCommunities() {
 
     MatchCommunities mc =
         new MatchCommunities(
@@ -162,7 +162,7 @@ public class BooleanExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitNot() {
+  void testVisitNot() {
 
     Not n =
         new Not(
@@ -177,7 +177,7 @@ public class BooleanExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitWithEnvironmentExpr() {
+  void testVisitWithEnvironmentExpr() {
 
     Community comm3 = StandardCommunity.parse("22:30");
     Community comm4 = StandardCommunity.parse("23:30");
@@ -205,7 +205,7 @@ public class BooleanExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitCallMissingPolicy() {
+  void testVisitCallMissingPolicy() {
     assertThat(
         _varCollector.visitCallExpr(new CallExpr("foo"), new Tuple<>(new HashSet<>(), _baseConfig)),
         empty());

@@ -14,8 +14,8 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -41,10 +41,10 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link BDDOutgoingOriginalFlowFilterManager}. */
-public class BDDOutgoingOriginalFlowFilterManagerTest {
+class BDDOutgoingOriginalFlowFilterManagerTest {
   private final BDDPacket _pkt = new BDDPacket();
 
   private static final String ACTIVE_IFACE_WITH_FILTER_1 = "activeWithFilter1";
@@ -122,13 +122,13 @@ public class BDDOutgoingOriginalFlowFilterManagerTest {
   }
 
   @Test
-  public void testEmpty() {
+  void testEmpty() {
     BDDOutgoingOriginalFlowFilterManager empty = BDDOutgoingOriginalFlowFilterManager.empty(_pkt);
     assertTrue(empty.isTrivial());
   }
 
   @Test
-  public void testOutgoingInterfaceBDD_trivial() {
+  void testOutgoingInterfaceBDD_trivial() {
     // No interfaces/no active interfaces/etc. The constraint is true.
     Configuration c = createConfig(new NetworkFactory(), ImmutableSet.of());
     BDDOutgoingOriginalFlowFilterManager mgr = getMgrForConfig(c);
@@ -136,7 +136,7 @@ public class BDDOutgoingOriginalFlowFilterManagerTest {
   }
 
   @Test
-  public void testOutgoingInterfaceBDD_activeAndInactive() {
+  void testOutgoingInterfaceBDD_activeAndInactive() {
     // If one active interface with a filter is present and no other active interfaces are present,
     // the interface's constraint BDD should be ONE.
     {
@@ -163,7 +163,7 @@ public class BDDOutgoingOriginalFlowFilterManagerTest {
   }
 
   @Test
-  public void testFiniteDomainValues_managerTrivial() {
+  void testFiniteDomainValues_managerTrivial() {
     // If no active interfaces are present, finite domain should be empty.
     {
       Set<String> ifaces = ImmutableSet.of(INACTIVE_IFACE_WITH_FILTER);
@@ -190,7 +190,7 @@ public class BDDOutgoingOriginalFlowFilterManagerTest {
   }
 
   @Test
-  public void testFiniteDomainValues_oneActiveIfaceWithFilter() {
+  void testFiniteDomainValues_oneActiveIfaceWithFilter() {
     // If one active interface with a filter is present and no other active interfaces are present,
     // the interface's selection BDD should be ONE.
     {
@@ -217,7 +217,7 @@ public class BDDOutgoingOriginalFlowFilterManagerTest {
   }
 
   @Test
-  public void testFiniteDomainValues_twoActiveIfacesWithFilter() {
+  void testFiniteDomainValues_twoActiveIfacesWithFilter() {
     // If two active interfaces with filters are present and no other active interfaces are present,
     // the active interfaces' selection BDDs should be nontrivial and should together make up the
     // entire space of finite domain values.
@@ -266,7 +266,7 @@ public class BDDOutgoingOriginalFlowFilterManagerTest {
   }
 
   @Test
-  public void testForNetwork() {
+  void testForNetwork() {
     // Create a network with three configs
     NetworkFactory nf = new NetworkFactory();
     Configuration c1 = createConfig(nf, ALL_IFACES);
@@ -303,7 +303,7 @@ public class BDDOutgoingOriginalFlowFilterManagerTest {
   }
 
   @Test
-  public void testTransitions() {
+  void testTransitions() {
     /*
     Test that outgoingOriginalFlowFiltersConstraint correctly constrains flows. Will use a variety
     of flows, some of which will undergo transformations. The initial flows are:
@@ -455,7 +455,7 @@ public class BDDOutgoingOriginalFlowFilterManagerTest {
   }
 
   @Test
-  public void testErase() {
+  void testErase() {
     Configuration c = createConfig(new NetworkFactory(), ALL_IFACES);
     BDDOutgoingOriginalFlowFilterManager mgr = getMgrForConfig(c);
 

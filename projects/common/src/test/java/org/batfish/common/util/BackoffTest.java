@@ -4,18 +4,15 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.lessThan;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Duration;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-@RunWith(JUnit4.class)
-public class BackoffTest {
+class BackoffTest {
   @Test
-  public void testAttemptLimited() {
+  void testAttemptLimited() {
     int attemptLimit = 5;
     Backoff backoff = Backoff.builder().withAttemptLimit(attemptLimit).build();
     int i = 1;
@@ -27,7 +24,7 @@ public class BackoffTest {
   }
 
   @Test
-  public void testTimeLimited() {
+  void testTimeLimited() {
     Duration cumulativeLimit = Duration.ofMinutes(1);
     Backoff backoff = Backoff.builder().withCumulativeBackoffLimit(cumulativeLimit).build();
     Duration totalSoFar = Duration.ZERO;
@@ -40,7 +37,7 @@ public class BackoffTest {
   }
 
   @Test
-  public void testExpansion() {
+  void testExpansion() {
     Backoff backoff = Backoff.builder().withExpansion(2.0).withAttemptLimit(5).build();
     assertTrue(backoff.hasNext());
     Duration lastBackoff = backoff.nextBackoff();
@@ -54,14 +51,14 @@ public class BackoffTest {
   }
 
   @Test
-  public void testInitialBackoff() {
+  void testInitialBackoff() {
     Backoff backoff = Backoff.builder().withInitialBackoff(Duration.ofSeconds(17)).build();
     assertTrue(backoff.hasNext());
     assertThat(backoff.nextBackoff(), equalTo(Duration.ofSeconds(17)));
   }
 
   @Test
-  public void testMaximumBackoffAndSeveralSteps() {
+  void testMaximumBackoffAndSeveralSteps() {
     Backoff backoff =
         Backoff.builder()
             .withInitialBackoff(Duration.ofSeconds(1))

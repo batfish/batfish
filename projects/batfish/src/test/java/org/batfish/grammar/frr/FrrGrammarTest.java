@@ -52,11 +52,11 @@ import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -65,6 +65,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.graph.ValueGraph;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -159,18 +160,15 @@ import org.batfish.representation.frr.RouteMapMatchSourceProtocol.Protocol;
 import org.batfish.representation.frr.RouteMapMetricType;
 import org.batfish.representation.frr.StaticRoute;
 import org.batfish.representation.frr.Vrf;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests for {@link FrrParser}. */
-public class FrrGrammarTest {
+class FrrGrammarTest {
   private static final String FILENAME = "";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+  @TempDir public File _folder;
 
   // TODO: Shouldn't depend directly on Cumulus concatenated
   private static CumulusConcatenatedConfiguration _config;
@@ -180,8 +178,8 @@ public class FrrGrammarTest {
 
   private static final String SNAPSHOTS_PREFIX = "org/batfish/grammar/frr/snapshots/";
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _config = new CumulusConcatenatedConfiguration();
     _config.setHostname("c");
     _frr = _config.getFrrConfiguration();
@@ -253,13 +251,13 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgp_defaultVrf() {
+  void testBgp_defaultVrf() {
     parse("router bgp 12345\n");
     assertThat(_frr.getBgpProcess().getDefaultVrf().getAutonomousSystem(), equalTo(12345L));
   }
 
   @Test
-  public void testBgp_vrf() {
+  void testBgp_vrf() {
     parse("router bgp 12345 vrf foo\n");
     assertThat(_frr.getBgpProcess().getVrfs().get("foo").getAutonomousSystem(), equalTo(12345L));
     assertThat(
@@ -268,37 +266,37 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpAddressFamily_ipv4Unicast() {
+  void testBgpAddressFamily_ipv4Unicast() {
     parse("router bgp 1\n address-family ipv4 unicast\n exit-address-family\n");
     assertNotNull(_frr.getBgpProcess().getDefaultVrf().getIpv4Unicast());
   }
 
   @Test
-  public void testBgpAddressFamily_ipv4UnicastMaximumPaths() {
+  void testBgpAddressFamily_ipv4UnicastMaximumPaths() {
     // do not crash
     parse("router bgp 1\n address-family ipv4 unicast\n maximum-paths 4\nexit-address-family\n");
   }
 
   @Test
-  public void testBgpAddressFamily_ipv6UnicastMaximumPaths() {
+  void testBgpAddressFamily_ipv6UnicastMaximumPaths() {
     parse("router bgp 1\n address-family ipv6 unicast\n maximum-paths 4\nexit-address-family\n");
   }
 
   @Test
-  public void testBgpAddressFamily_ipv4UnicastMaximumPathsIbgp() {
+  void testBgpAddressFamily_ipv4UnicastMaximumPathsIbgp() {
     parse(
         "router bgp 1\n address-family ipv4 unicast\n maximum-paths ibgp 4\nexit-address-family\n");
   }
 
   @Test
-  public void testBgpAddressFamily_ipv6UnicastMaximumPathsIbgp() {
+  void testBgpAddressFamily_ipv6UnicastMaximumPathsIbgp() {
     parse(
         "router bgp 1\n address-family ipv6 unicast\n maximum-paths ibgp 4\nexit-address-family\n");
   }
 
   /** Make sure that we warn when import statements are ignored but still do reference counting */
   @Test
-  public void testBgpAddressFamilyIpv4UnicastImport() {
+  void testBgpAddressFamilyIpv4UnicastImport() {
     parseLines(
         "router bgp 1",
         " address-family ipv4 unicast",
@@ -320,7 +318,7 @@ public class FrrGrammarTest {
 
   /** Make sure we do reference counting for import statements */
   @Test
-  public void testBgpAddressFamilyIpv6UnicastImport() {
+  void testBgpAddressFamilyIpv6UnicastImport() {
     parseLines(
         "router bgp 1",
         " address-family ipv6 unicast",
@@ -337,7 +335,7 @@ public class FrrGrammarTest {
 
   /** Make sure that we warn when no statements are ignored */
   @Test
-  public void testBgpAddressFamilyIpv4UnicastNo() {
+  void testBgpAddressFamilyIpv4UnicastNo() {
     parseLines(
         "router bgp 1",
         "neighbor N interface description N",
@@ -352,7 +350,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpAddressFamilyIpv4UnicastNetwork() {
+  void testBgpAddressFamilyIpv4UnicastNetwork() {
     parseLines(
         "router bgp 1", "address-family ipv4 unicast", "network 1.2.3.4/24", "exit-address-family");
     assertThat(
@@ -361,7 +359,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpAddressFamilyIpv4UnicastNetworkWithRouteMap() {
+  void testBgpAddressFamilyIpv4UnicastNetworkWithRouteMap() {
     parseLines(
         "router bgp 1",
         "address-family ipv4 unicast",
@@ -374,7 +372,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpAddressFamilyIpv4UnicastRedistributeConnected() {
+  void testBgpAddressFamilyIpv4UnicastRedistributeConnected() {
     parseLines(
         "router bgp 1",
         "address-family ipv4 unicast",
@@ -391,7 +389,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpAddressFamilyIpv4UnicastRedistributeRouteMap() {
+  void testBgpAddressFamilyIpv4UnicastRedistributeRouteMap() {
     parseLines(
         "router bgp 1",
         "address-family ipv4 unicast",
@@ -408,7 +406,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpAddressFamilyIpv4UnicastMultipleDefinitions() {
+  void testBgpAddressFamilyIpv4UnicastMultipleDefinitions() {
     parseLines(
         "router bgp 1",
         " address-family ipv4 unicast",
@@ -423,7 +421,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpRedistributeOspfRouteMap() {
+  void testBgpRedistributeOspfRouteMap() {
     parseLines("router bgp 1", "redistribute ospf route-map foo");
     BgpRedistributionPolicy policy =
         _frr.getBgpProcess().getDefaultVrf().getIpv4Unicast().getRedistributionPolicies().get(OSPF);
@@ -432,7 +430,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpRedistributeOspf() {
+  void testBgpRedistributeOspf() {
     parseLines("router bgp 1", "redistribute ospf");
     BgpRedistributionPolicy policy =
         _frr.getBgpProcess().getDefaultVrf().getIpv4Unicast().getRedistributionPolicies().get(OSPF);
@@ -441,7 +439,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpAddressFamilyIpv4UnicastRedistributeOspfRouteMap() {
+  void testBgpAddressFamilyIpv4UnicastRedistributeOspfRouteMap() {
     parseLines(
         "router bgp 1",
         "address-family ipv4 unicast",
@@ -454,7 +452,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpAddressFamilyIpv4UnicastRedistributeOspf() {
+  void testBgpAddressFamilyIpv4UnicastRedistributeOspf() {
     parseLines(
         "router bgp 1", "address-family ipv4 unicast", "redistribute ospf", "exit-address-family");
     BgpRedistributionPolicy policy =
@@ -464,7 +462,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpAddressFamilyIpv4UnicastRedistributeStatic() {
+  void testBgpAddressFamilyIpv4UnicastRedistributeStatic() {
     parseLines(
         "router bgp 1",
         "address-family ipv4 unicast",
@@ -481,7 +479,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpAddressFamilyIpv4UnicastAggregateAddress() {
+  void testBgpAddressFamilyIpv4UnicastAggregateAddress() {
     parseLines(
         "router bgp 1",
         "address-family ipv4 unicast",
@@ -495,27 +493,27 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpAddressFamily_l2vpn_evpn() {
+  void testBgpAddressFamily_l2vpn_evpn() {
     parse("router bgp 1\n address-family l2vpn evpn\n exit-address-family\n");
     assertNotNull(_frr.getBgpProcess().getDefaultVrf().getL2VpnEvpn());
   }
 
   @Test
-  public void testBgpAddressFamilyL2vpnEvpnAdvertiseAllVni() {
+  void testBgpAddressFamilyL2vpnEvpnAdvertiseAllVni() {
     parseLines(
         "router bgp 1", "address-family l2vpn evpn", "advertise-all-vni", "exit-address-family");
     assertTrue(_frr.getBgpProcess().getDefaultVrf().getL2VpnEvpn().getAdvertiseAllVni());
   }
 
   @Test
-  public void testBgpAddressFamilyL2vpnEvpnAdvertiseDefaultGw() {
+  void testBgpAddressFamilyL2vpnEvpnAdvertiseDefaultGw() {
     parseLines(
         "router bgp 1", "address-family l2vpn evpn", "advertise-default-gw", "exit-address-family");
     assertTrue(_frr.getBgpProcess().getDefaultVrf().getL2VpnEvpn().getAdvertiseDefaultGw());
   }
 
   @Test
-  public void testBgpAddressFamilyL2vpnEvpnAdvertiseIpv4Unicast() {
+  void testBgpAddressFamilyL2vpnEvpnAdvertiseIpv4Unicast() {
     parseLines(
         "router bgp 1",
         "address-family l2vpn evpn",
@@ -525,7 +523,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpAddressFamilyL2vpnEvpnAdvertiseIpv4UnicastRouteMap() {
+  void testBgpAddressFamilyL2vpnEvpnAdvertiseIpv4UnicastRouteMap() {
     parseLines(
         "router bgp 1",
         "address-family l2vpn evpn",
@@ -543,7 +541,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpAddressFamilyL2vpnEvpnAdvertiseIpv6Unicast() {
+  void testBgpAddressFamilyL2vpnEvpnAdvertiseIpv6Unicast() {
     parseLines(
         "router bgp 1",
         "address-family l2vpn evpn",
@@ -560,7 +558,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpAddressFamilyL2vpnEvpnNeighborActivate() {
+  void testBgpAddressFamilyL2vpnEvpnNeighborActivate() {
     parseLines(
         "router bgp 1",
         "neighbor n interface description a",
@@ -576,7 +574,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpAddressFamilyL2vpnEvpnNeighborRouteMap() {
+  void testBgpAddressFamilyL2vpnEvpnNeighborRouteMap() {
     parseLines(
         "router bgp 1",
         " neighbor n interface description a",
@@ -602,7 +600,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpAddressFamilyL2vpnEvpnNeighborRouteReflectorClient() {
+  void testBgpAddressFamilyL2vpnEvpnNeighborRouteReflectorClient() {
     parseLines(
         "router bgp 1",
         "neighbor n interface description a",
@@ -614,7 +612,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpAddressFamilyL2vpnEvpnMultipleDefinitions() {
+  void testBgpAddressFamilyL2vpnEvpnMultipleDefinitions() {
     parseLines(
         "router bgp 1",
         " neighbor n interface description a",
@@ -630,7 +628,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpAddressFamilyNeighborNextHopSelf() {
+  void testBgpAddressFamilyNeighborNextHopSelf() {
     parseLines(
         "router bgp 1",
         "neighbor 10.0.0.1 description x",
@@ -645,12 +643,12 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpAlwaysCompareMed() {
+  void testBgpAlwaysCompareMed() {
     parse("router bgp 1\n bgp always-compare-med\n");
   }
 
   @Test
-  public void testBgpAddressFamilyNeighborActivate() {
+  void testBgpAddressFamilyNeighborActivate() {
     parseLines(
         "router bgp 1",
         "neighbor N interface description N",
@@ -662,7 +660,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpAddressFamilyNeighborAllowAsIn() {
+  void testBgpAddressFamilyNeighborAllowAsIn() {
     parseLines(
         "router bgp 1",
         "neighbor N interface description N",
@@ -675,7 +673,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpNeighborDoesntCheckLocalIp() {
+  void testBgpNeighborDoesntCheckLocalIp() {
     parseLines(
         "router bgp 1",
         "neighbor 10.0.0.1 remote-as 1",
@@ -692,7 +690,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpAddressFamilyNeighborAllowAsInDefault() {
+  void testBgpAddressFamilyNeighborAllowAsInDefault() {
     parseLines(
         "router bgp 1",
         "neighbor N interface description N",
@@ -705,7 +703,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpAddressFamilyNeighborDefaultOriginate_parsing() {
+  void testBgpAddressFamilyNeighborDefaultOriginate_parsing() {
     parseLines(
         "router bgp 1",
         "  neighbor N interface description N",
@@ -723,7 +721,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpAddressFamilyNeighborDefaultOriginate_behavior() throws IOException {
+  void testBgpAddressFamilyNeighborDefaultOriginate_behavior() throws IOException {
     /*
      There are four nodes in the topology arranged in a line.
        - frr-originator -- frr-reoriginator -- frr-propagator -- ios-listener
@@ -812,7 +810,7 @@ public class FrrGrammarTest {
    * maps.
    */
   @Test
-  public void testBgpAddressFamilyNeighborDefaultOriginate_routeMap() throws IOException {
+  void testBgpAddressFamilyNeighborDefaultOriginate_routeMap() throws IOException {
     /*
      The topology has one originator and three listeners: 1, 3, 4
       - listener1 has default-originate with empty match conditions.
@@ -874,16 +872,18 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpAddressFamilyNeighborRemovePrivateAs() {
+  void testBgpAddressFamilyNeighborRemovePrivateAs() {
     parseLines(
         "router bgp 1",
         "  neighbor N1 interface description N",
         "  neighbor N2 interface description N",
         "  neighbor N3 interface description N",
+        "  neighbor N4 interface description N",
         "  address-family ipv4 unicast",
         "    neighbor N1 remove-private-AS",
         "    neighbor N2 remove-private-AS all",
-        "    neighbor N3 remove-private-AS all replace-as",
+        "    neighbor N3 remove-private-AS replace-AS",
+        "    neighbor N4 remove-private-AS all replace-AS",
         "  exit-address-family");
     assertThat(
         _frr.getBgpProcess()
@@ -903,10 +903,16 @@ public class FrrGrammarTest {
             .getIpv4UnicastConfiguration("N3")
             .getRemovePrivateAsMode(),
         equalTo(RemovePrivateAsMode.REPLACE_AS));
+    assertThat(
+        _frr.getBgpProcess()
+            .getDefaultVrf()
+            .getIpv4UnicastConfiguration("N4")
+            .getRemovePrivateAsMode(),
+        equalTo(RemovePrivateAsMode.ALL_REPLACE_AS));
   }
 
   @Test
-  public void testBgpAddressFamilyNeighborRouteReflectorClient() {
+  void testBgpAddressFamilyNeighborRouteReflectorClient() {
     parseLines(
         "router bgp 1",
         "neighbor N interface description N",
@@ -921,7 +927,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpAddressFamilyNeighborSendCommunity() {
+  void testBgpAddressFamilyNeighborSendCommunity() {
     // No extraction because these are already enabled by default
     parseLines(
         "router bgp 1",
@@ -936,7 +942,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpAddressFamilyNeighborSoftReconfiguration() {
+  void testBgpAddressFamilyNeighborSoftReconfiguration() {
     parseLines(
         "router bgp 1",
         "address-family ipv4 unicast",
@@ -950,13 +956,13 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpAddressFamilyNoExit() {
+  void testBgpAddressFamilyNoExit() {
     parseLines(
         "router bgp 1", "address-family ipv4 unicast", "neighbor N soft-reconfiguration inbound");
   }
 
   @Test
-  public void testBgpNeighbor_peerGroup() {
+  void testBgpNeighbor_peerGroup() {
     parse("router bgp 1\n neighbor foo peer-group\n");
     Map<String, BgpNeighbor> neighbors = _frr.getBgpProcess().getDefaultVrf().getNeighbors();
     assertThat(neighbors.keySet(), contains("foo"));
@@ -964,7 +970,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpNeighbor_peerGroup_remote_as() {
+  void testBgpNeighbor_peerGroup_remote_as() {
     parse("router bgp 1\n neighbor foo peer-group\n neighbor foo remote-as 2\n");
     Map<String, BgpNeighbor> neighbors = _frr.getBgpProcess().getDefaultVrf().getNeighbors();
     assertThat(neighbors.keySet(), contains("foo"));
@@ -974,7 +980,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpNeighbor_interface() {
+  void testBgpNeighbor_interface() {
     parse("router bgp 1\n neighbor foo interface remote-as 2\n");
     Map<String, BgpNeighbor> neighbors = _frr.getBgpProcess().getDefaultVrf().getNeighbors();
     assertThat(neighbors.keySet(), contains("foo"));
@@ -982,14 +988,14 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpNeighborProperty_descrption() {
+  void testBgpNeighborProperty_descrption() {
     parse("router bgp 1\n neighbor n interface description a b c! d\n");
     BgpNeighbor neighbor = _frr.getBgpProcess().getDefaultVrf().getNeighbors().get("n");
     assertThat(neighbor.getDescription(), equalTo("a b c! d"));
   }
 
   @Test
-  public void testBgpNeighborProperty_remoteAs_explicit() {
+  void testBgpNeighborProperty_remoteAs_explicit() {
     parse("router bgp 1\n neighbor n interface remote-as 2\n");
     Map<String, BgpNeighbor> neighbors = _frr.getBgpProcess().getDefaultVrf().getNeighbors();
     assertThat(neighbors.keySet(), contains("n"));
@@ -998,7 +1004,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpNeighborProperty_remoteAs_external() {
+  void testBgpNeighborProperty_remoteAs_external() {
     parse("router bgp 1\n neighbor n interface remote-as external\n");
     Map<String, BgpNeighbor> neighbors = _frr.getBgpProcess().getDefaultVrf().getNeighbors();
     assertThat(neighbors.keySet(), contains("n"));
@@ -1007,7 +1013,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpNeighborProperty_remoteAs_internal() {
+  void testBgpNeighborProperty_remoteAs_internal() {
     parse("router bgp 1\n neighbor n interface remote-as internal\n");
     Map<String, BgpNeighbor> neighbors = _frr.getBgpProcess().getDefaultVrf().getNeighbors();
     assertThat(neighbors.keySet(), contains("n"));
@@ -1016,7 +1022,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpNeighborProperty_peerGroup() {
+  void testBgpNeighborProperty_peerGroup() {
     parse("router bgp 1\n neighbor n interface peer-group pg\n");
     Map<String, BgpNeighbor> neighbors = _frr.getBgpProcess().getDefaultVrf().getNeighbors();
     assertThat(neighbors.keySet(), contains("n"));
@@ -1025,7 +1031,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpNeighbor_ip() {
+  void testBgpNeighbor_ip() {
     parse("router bgp 1\n neighbor 1.2.3.4 remote-as 2\n");
     Map<String, BgpNeighbor> neighbors = _frr.getBgpProcess().getDefaultVrf().getNeighbors();
     assertThat(neighbors.keySet(), contains("1.2.3.4"));
@@ -1035,7 +1041,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpNeighborCompatiblity() throws IOException {
+  void testBgpNeighborCompatiblity() throws IOException {
     String snapshotName = "bgp-neighbor-compatibility";
     /*
     There are two nodes in the snapshot, each with XX interfaces
@@ -1093,7 +1099,7 @@ public class FrrGrammarTest {
 
   /** Test that passive neighbors can establish sessions. */
   @Test
-  public void testBgpDynamicNeighbor() throws IOException {
+  void testBgpDynamicNeighbor() throws IOException {
     String snapshotName = "bgp-passive";
     List<String> configurationNames = ImmutableList.of("frr-passive", "frr-active");
     Batfish batfish =
@@ -1116,7 +1122,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpListenParsing() {
+  void testBgpListenParsing() {
     parseLines(
         "router bgp 1",
         "  neighbor PG peer-group",
@@ -1138,7 +1144,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpNeighbor_refs() {
+  void testBgpNeighbor_refs() {
     parseLines(
         "router bgp 1",
         "neighbor 1.1.1.1 description ip-neighbor",
@@ -1188,7 +1194,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgp_Ipv6() {
+  void testBgp_Ipv6() {
     parseLines(
         "router bgp 1",
         "  neighbor 2001:100:1:31::2 remote-as 2",
@@ -1217,73 +1223,73 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpBestpathAsPathMultipathRelax() {
+  void testBgpBestpathAsPathMultipathRelax() {
     parse("router bgp 1\n bgp bestpath as-path multipath-relax\n");
     assertTrue(_frr.getBgpProcess().getDefaultVrf().getAsPathMultipathRelax());
   }
 
   @Test
-  public void testBgpMaxMedAdministrative_value() {
+  void testBgpMaxMedAdministrative_value() {
     parse("router bgp 1\n bgp max-med administrative 12345\n");
     assertThat(_frr.getBgpProcess().getDefaultVrf().getMaxMedAdministrative(), equalTo(12345L));
   }
 
   @Test
-  public void testBgpMaxMedAdministrative_default() {
+  void testBgpMaxMedAdministrative_default() {
     parse("router bgp 1\n bgp max-med administrative\n");
     assertThat(
         _frr.getBgpProcess().getDefaultVrf().getMaxMedAdministrative(), equalTo(4294967294L));
   }
 
   @Test
-  public void testBgpMaxMedAdministrative_unset() {
+  void testBgpMaxMedAdministrative_unset() {
     parse("router bgp 1\n");
     assertThat(_frr.getBgpProcess().getDefaultVrf().getMaxMedAdministrative(), equalTo(null));
   }
 
   @Test
-  public void testBgpMaxMedOnStartup_timeonly() {
+  void testBgpMaxMedOnStartup_timeonly() {
     parse("router bgp 1\n bgp max-med on-startup 15\n");
     assertThat(_frr.getBgpProcess().getDefaultVrf().getMaxMedAdministrative(), nullValue());
   }
 
   @Test
-  public void testBgpMaxMedOnStartup_timeandmed() {
+  void testBgpMaxMedOnStartup_timeandmed() {
     parse("router bgp 1\n bgp max-med on-startup 15 4000000000\n");
     assertThat(_frr.getBgpProcess().getDefaultVrf().getMaxMedAdministrative(), nullValue());
   }
 
   @Test
-  public void testBgpRouterId() {
+  void testBgpRouterId() {
     parse("router bgp 1\n bgp router-id 1.2.3.4\n");
     assertThat(_frr.getBgpProcess().getDefaultVrf().getRouterId(), equalTo(Ip.parse("1.2.3.4")));
   }
 
   @Test
-  public void testBgpClusterId_set() {
+  void testBgpClusterId_set() {
     parse("router bgp 1\n bgp router-id 1.2.3.4\n bgp cluster-id 2.2.2.2\n");
     assertThat(_frr.getBgpProcess().getDefaultVrf().getClusterId(), equalTo(Ip.parse("2.2.2.2")));
   }
 
   @Test
-  public void testBgpClusterId_unset() {
+  void testBgpClusterId_unset() {
     parse("router bgp 1\n bgp router-id 1.2.3.4\n");
     assertThat(_frr.getBgpProcess().getDefaultVrf().getClusterId(), equalTo(null));
   }
 
   @Test
-  public void testBgpNoDefaultIpv4Unicast() {
+  void testBgpNoDefaultIpv4Unicast() {
     parse("router bgp 1\n no bgp default ipv4-unicast\n");
     assertFalse(_frr.getBgpProcess().getDefaultVrf().getDefaultIpv4Unicast());
   }
 
   @Test
-  public void testHostname() {
+  void testHostname() {
     parse("hostname asdf235jgij981\n");
   }
 
   @Test
-  public void testFrrVrf() {
+  void testFrrVrf() {
     _frr.getVrfs().put("NAME", new Vrf("NAME"));
     parse("vrf NAME\n exit-vrf\n");
     assertThat(
@@ -1292,7 +1298,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testFrrVrfVni() {
+  void testFrrVrfVni() {
     Vrf vrf = new Vrf("NAME");
     _frr.getVrfs().put("NAME", vrf);
     parse("vrf NAME\n vni 170000\n exit-vrf\n");
@@ -1300,7 +1306,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testFrrVrfIpRoutes() {
+  void testFrrVrfIpRoutes() {
     Vrf vrf = new Vrf("NAME");
     _frr.getVrfs().put("NAME", vrf);
     parse("vrf NAME\n ip route 1.0.0.0/8 10.0.2.1\n ip route 0.0.0.0/0 10.0.0.1\n exit-vrf\n");
@@ -1313,7 +1319,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testFrrVrfIpRoutes_blackhole() {
+  void testFrrVrfIpRoutes_blackhole() {
     Vrf vrf = new Vrf("NAME");
     _frr.getVrfs().put("NAME", vrf);
     parse("vrf NAME\n ip route 1.0.0.0/8 blackhole\n exit-vrf\n");
@@ -1324,7 +1330,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testFrrVrf_noExit() {
+  void testFrrVrf_noExit() {
     Vrf vrf = new Vrf("NAME");
     _frr.getVrfs().put("NAME", vrf);
     parse("vrf NAME\n vni 170000\n");
@@ -1332,7 +1338,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testFrrRouteMap() {
+  void testFrrRouteMap() {
     String name = "ROUTE-MAP-NAME";
     parse(String.format("route-map %s permit 10\nroute-map %s deny 20\n", name, name));
     assertThat(_frr.getRouteMaps().keySet(), equalTo(ImmutableSet.of(name)));
@@ -1364,7 +1370,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testFrrVrfRouteMapDescription() {
+  void testFrrVrfRouteMapDescription() {
     String name = "ROUTE-MAP-NAME";
     String description = "PERmit Xxx Yy_+!@#$%^&*()";
 
@@ -1376,18 +1382,18 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testRouteMapMatchAsPathAccessList() {
+  void testRouteMapMatchAsPathAccessList() {
     parseLines("route-map ROUTE_MAP permit 10", "match as-path AS_PATH_ACCESS_LIST");
   }
 
   @Test
-  public void testRouteMapMatchIpv6() {
+  void testRouteMapMatchIpv6() {
     parseLines("route-map ROUTE_MAP permit 10", "match ipv6 address prefix-list pfx6-vrf-deny");
     assertTrue(_warnings.getParseWarnings().isEmpty());
   }
 
   @Test
-  public void testFrrVrfRouteMapMatchCallExtraction() {
+  void testFrrVrfRouteMapMatchCallExtraction() {
     String name = "ROUTE-MAP-NAME";
 
     parse(String.format("route-map %s permit 10\ncall SUB-MAP\n", name));
@@ -1401,7 +1407,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testFrrVrfRouteMapOnMatchNext() {
+  void testFrrVrfRouteMapOnMatchNext() {
     String name = "ROUTE-MAP-NAME";
     parse(String.format("route-map %s permit 10\non-match next\n", name));
     RouteMapEntry entry = _frr.getRouteMaps().get(name).getEntries().get(10);
@@ -1410,7 +1416,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testFrrVrfRouteMapOnMatchGoto() {
+  void testFrrVrfRouteMapOnMatchGoto() {
     String name = "ROUTE-MAP-NAME";
     parse(String.format("route-map %s permit 10\non-match goto 20\n", name));
     RouteMapEntry entry = _frr.getRouteMaps().get(name).getEntries().get(10);
@@ -1419,7 +1425,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testFrrVrfRouteMapMatchAsPath() {
+  void testFrrVrfRouteMapMatchAsPath() {
     String routeMapName = "ROUTE-MAP-NAME";
     String asPathName1 = "AS-PATH-1";
     String asPathName2 = "AS-PATH-2";
@@ -1443,7 +1449,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testFrrVrfRouteMapMatchCommunity() {
+  void testFrrVrfRouteMapMatchCommunity() {
     String name = "ROUTE-MAP-NAME";
 
     parse(String.format("route-map %s permit 10\nmatch community CN1 CN2\n", name));
@@ -1460,7 +1466,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testFrrVrfRouteMapMatchCommunity_multiline() {
+  void testFrrVrfRouteMapMatchCommunity_multiline() {
     parseLines("route-map RM permit 10", "match community CN1", "match community CN2");
 
     RouteMapEntry entry = _frr.getRouteMaps().get("RM").getEntries().get(10);
@@ -1475,7 +1481,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testFrrVrfRouteMapMatchPrefixLen() {
+  void testFrrVrfRouteMapMatchPrefixLen() {
     String name = "ROUTE-MAP-NAME";
     String match1 = "match ip address prefix-len 7";
     String match2 = "match ip address prefix-len 8";
@@ -1489,7 +1495,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testFrrVrfRouteMapMatchPrefixList() {
+  void testFrrVrfRouteMapMatchPrefixList() {
     String name = "ROUTE-MAP-NAME";
     String match1 = "match ip address prefix-list PREFIX_LIST1";
     String match2 = "match ip address prefix-list PREFIX_LIST2";
@@ -1517,7 +1523,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testFrrRouteMapMatchIpv6PrefixListRefTracking() {
+  void testFrrRouteMapMatchIpv6PrefixListRefTracking() {
     parseLines("route-map ROUTE_MAP1 permit 10", "match ipv6 address prefix-list PREFIX_LIST1");
     Set<Integer> reference =
         getStructureReferences(
@@ -1528,7 +1534,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testFrrVrfRouteMapMatchSourceProtocol() {
+  void testFrrVrfRouteMapMatchSourceProtocol() {
     String name = "ROUTE-MAP-NAME";
     StringBuilder sb = new StringBuilder();
     List<String> protocols =
@@ -1553,7 +1559,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testFrrVrfRouteMapSetAsPath() {
+  void testFrrVrfRouteMapSetAsPath() {
     String name = "ROUTE-MAP-NAME";
     parse(String.format("route-map %s permit 10\nset as-path prepend 11111 22222 33333\n", name));
     RouteMapEntry entry = _frr.getRouteMaps().get(name).getEntries().get(10);
@@ -1561,7 +1567,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testFrrVrfRouteMapSetExcludeAsPath() {
+  void testFrrVrfRouteMapSetExcludeAsPath() {
     String name = "ROUTE-MAP-NAME";
     parse(String.format("route-map %s permit 10\nset as-path exclude 11111 22222 33333\n", name));
     RouteMapEntry entry = _frr.getRouteMaps().get(name).getEntries().get(10);
@@ -1569,7 +1575,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testFrrVrfRouteMapSetMetric() {
+  void testFrrVrfRouteMapSetMetric() {
     String name = "ROUTE-MAP-NAME";
 
     parse(String.format("route-map %s permit 10\nset metric 30\n", name));
@@ -1579,7 +1585,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testFrrRouteMapSetMetricType() {
+  void testFrrRouteMapSetMetricType() {
     String name = "ROUTE-MAP-NAME";
 
     parse(
@@ -1598,7 +1604,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testFrrRouteMapSetOrigin() {
+  void testFrrRouteMapSetOrigin() {
     String name = "ROUTE-MAP-NAME";
     parseLines(
         "route-map ROUTE-MAP-NAME permit 10",
@@ -1622,7 +1628,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testFrrRouteMapSetSrc() {
+  void testFrrRouteMapSetSrc() {
     _warnings = new Warnings(false, true, false);
     parseLines("route-map RM permit 10", "set src 1.1.1.1", "set src 2a02:4780:9:ffff::1");
     // there should be only one warning, for v4 line
@@ -1631,7 +1637,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testFrrVrfRouteMapSetWeight() {
+  void testFrrVrfRouteMapSetWeight() {
     String name = "ROUTE-MAP-NAME";
 
     parse(String.format("route-map %s permit 10\nset weight 30\n", name));
@@ -1641,7 +1647,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testFrrBgpCommunityListExpanded() {
+  void testFrrBgpCommunityListExpanded() {
     String name = "NAME";
 
     parse(String.format("bgp community-list expanded %s permit 10000:10 20000:20\n", name));
@@ -1659,7 +1665,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testFrrIpCommunityListExpanded() {
+  void testFrrIpCommunityListExpanded() {
     // check that the old syntax still parses into a BGP community list
     String name = "NAME";
     parse(String.format("ip community-list expanded %s permit 10000:10 20000:20\n", name));
@@ -1669,7 +1675,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testFrrVrfRouteMapMatchInterface() {
+  void testFrrVrfRouteMapMatchInterface() {
     String name = "ROUTE-MAP-NAME";
 
     parse(String.format("route-map %s permit 10\nmatch interface lo\n", name));
@@ -1684,7 +1690,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testFrrRouteMapMatchTagExtraction() {
+  void testFrrRouteMapMatchTagExtraction() {
     String name = "ROUTE-MAP-NAME";
 
     parse(String.format("route-map %s permit 10\nmatch tag 65555\n", name));
@@ -1695,7 +1701,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testFrrRouteMapMatchTagConversion() {
+  void testFrrRouteMapMatchTagConversion() {
     String name = "ROUTE-MAP-NAME";
 
     parse(String.format("route-map %s permit 10\nmatch tag 65555\n", name));
@@ -1717,12 +1723,12 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testRouteMapSetAsPath() {
+  void testRouteMapSetAsPath() {
     parseLines("route-map ROUTE_MAP permit 10", "set as-path prepend 11111 22222");
   }
 
   @Test
-  public void testFrrRouteMapSetLocalPref() {
+  void testFrrRouteMapSetLocalPref() {
     String name = "ROUTE-MAP-NAME";
 
     parse(String.format("route-map %s permit 10\nset local-preference 200\n", name));
@@ -1733,7 +1739,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testFrrRouteMapSetTagPref() {
+  void testFrrRouteMapSetTagPref() {
     String name = "ROUTE-MAP-NAME";
 
     parse(String.format("route-map %s permit 10\nset tag 999\n", name));
@@ -1744,7 +1750,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testRouteMapSetIpv6() {
+  void testRouteMapSetIpv6() {
     // parsing only
     parseLines(
         "route-map ROUTE_MAP permit 10",
@@ -1755,7 +1761,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testFrrVrfRouteMapSetIpNextHop() {
+  void testFrrVrfRouteMapSetIpNextHop() {
     String name = "ROUTE-MAP-NAME";
     String clause1 = "set ip next-hop 10.0.0.1";
 
@@ -1766,7 +1772,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testFrrVrfRouteMapSetCommunity() {
+  void testFrrVrfRouteMapSetCommunity() {
     String name = "ROUTE-MAP-NAME";
 
     parse(
@@ -1789,7 +1795,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testFrrBgpAsPathAccessList() {
+  void testFrrBgpAsPathAccessList() {
     String name = "NAME";
     String as1 = "^11111$";
     String as2 = "_1_";
@@ -1850,7 +1856,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testFrrIpAsPathAccessList() {
+  void testFrrIpAsPathAccessList() {
     // check that old syntax parses into BgpAsPathAccessList
     String name = "NAME";
     parse(String.format("ip as-path access-list %s permit ^$\n", name));
@@ -1858,7 +1864,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testFrrIpPrefixList() {
+  void testFrrIpPrefixList() {
     String name = "PREFIX_10.0.0.0/23";
     String prefix1 = "10.0.0.1/24";
     String prefix2 = "10.0.1.2/24";
@@ -1887,7 +1893,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testFrrIpPrefixListIPv6() {
+  void testFrrIpPrefixListIPv6() {
     String name = "2001:db8::/32";
     String prefix = "2001:db8:1::/48";
     parse(String.format("ipv6 prefix-list %s seq 10 permit %s\n", name, prefix));
@@ -1904,7 +1910,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testFrrIpPrefixListNoSeqOnFirstEntry() {
+  void testFrrIpPrefixListNoSeqOnFirstEntry() {
     String name = "NAME";
     String prefix1 = "10.0.0.1/24";
     parse(String.format("ip prefix-list %s permit %s\n", name, prefix1));
@@ -1918,7 +1924,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testFrrIpPrefixListNoSeqOnLaterEntry() {
+  void testFrrIpPrefixListNoSeqOnLaterEntry() {
     String name = "NAME";
     String prefix1 = "10.0.0.1/24";
     String prefix2 = "10.0.1.2/24";
@@ -1942,7 +1948,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testFrrIpPrefixListAny() {
+  void testFrrIpPrefixListAny() {
     String name = "NAME";
     parse(String.format("ip prefix-list %s seq 5 permit any\n", name));
     assertThat(_frr.getIpPrefixLists().keySet(), equalTo(ImmutableSet.of(name)));
@@ -1954,24 +1960,24 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testFrrIpPrefixListDescription() {
+  void testFrrIpPrefixListDescription() {
     String name = "NAME";
     // Don't crash
     parse(String.format("ip prefix-list %s description FOO\n", name));
   }
 
   @Test
-  public void testFrrAgentx() {
+  void testFrrAgentx() {
     parse("agentx\n");
   }
 
   @Test
-  public void testCumulusService() {
+  void testCumulusService() {
     parse("service integrated-vtysh-config\n");
   }
 
   @Test
-  public void testFrrSyslog() {
+  void testFrrSyslog() {
     parse("log syslog\n");
     parse("log syslog alerts\n");
     parse("log syslog critical\n");
@@ -1983,34 +1989,34 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testLineVty() {
+  void testLineVty() {
     parse("line vty\n");
   }
 
   @Test
-  public void testFrrUsername() {
+  void testFrrUsername() {
     parse("username cumulus nopassword\n");
   }
 
   @Test
-  public void testFrrVersion() {
+  void testFrrVersion() {
     parse("frr version\n");
     parse("frr version sV4@%)!@#$%^&**()_+|\n");
   }
 
   @Test
-  public void testFrrBgpNeighborBfd() {
+  void testFrrBgpNeighborBfd() {
     parse("router bgp 10000 vrf VRF\nneighbor N bfd 1 10 20\n");
     parse("router bgp 10000 vrf VRF\nneighbor N bfd\n");
   }
 
   @Test
-  public void testFrrNeightborPassword() {
+  void testFrrNeightborPassword() {
     parse("router bgp 10000\nneighbor N password sV4@%)!@#$%^&**()_+|\n");
   }
 
   @Test
-  public void testBgpNeighborEbgpMultihopPeerGroup() {
+  void testBgpNeighborEbgpMultihopPeerGroup() {
     _warnings = new Warnings(false, true, false);
     parseLines(
         "router bgp 10000",
@@ -2034,7 +2040,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpNeighborEbgpMultihopPeer() {
+  void testBgpNeighborEbgpMultihopPeer() {
     _warnings = new Warnings(false, true, false);
     parseLines(
         "router bgp 10000",
@@ -2060,7 +2066,7 @@ public class FrrGrammarTest {
    * interface
    */
   @Test
-  public void testBgpNeighborMissingInterface() {
+  void testBgpNeighborMissingInterface() {
     parseLines(
         "router bgp 65003",
         "  neighbor leaf peer-group",
@@ -2073,7 +2079,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpNetwork() {
+  void testBgpNetwork() {
     Prefix network = Prefix.parse("10.0.0.0/8");
     parseLines("router bgp 10000", "network 10.0.0.0/8");
     assertThat(
@@ -2082,7 +2088,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testNetworkConversion() throws IOException {
+  void testNetworkConversion() throws IOException {
     parseLines("router bgp 10000", "network 10.0.0.0/24");
     Configuration c = _config.toVendorIndependentConfigurations().get(0);
     assertThat(
@@ -2118,7 +2124,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpNetworkWithRouteMap() {
+  void testBgpNetworkWithRouteMap() {
     Prefix network = Prefix.parse("10.0.0.0/8");
     parseLines("router bgp 10000", "network 10.0.0.0/8 route-map FOO");
     assertThat(
@@ -2128,7 +2134,7 @@ public class FrrGrammarTest {
 
   /** FRR does not crash if undeclared peer-group has a route-map configured. */
   @Test
-  public void testIp4vUnicastRoutemap_error() {
+  void testIp4vUnicastRoutemap_error() {
     parseLines(
         "router bgp 10000",
         "address-family ipv4 unicast",
@@ -2138,7 +2144,7 @@ public class FrrGrammarTest {
 
   /** FRR allows route-map to be configured before neighbor exists. */
   @Test
-  public void testIp4vUnicastRoutemap_out_of_order() {
+  void testIp4vUnicastRoutemap_out_of_order() {
     parseLines(
         "router bgp 10000",
         "address-family ipv4 unicast",
@@ -2157,7 +2163,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testIp4vUnicastRoutemap_in() {
+  void testIp4vUnicastRoutemap_in() {
     parseLines(
         "router bgp 10000",
         "neighbor N peer-group",
@@ -2176,7 +2182,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testIp4vUnicastRoutemap_out() {
+  void testIp4vUnicastRoutemap_out() {
     parseLines(
         "router bgp 10000",
         "neighbor N2 peer-group",
@@ -2195,13 +2201,13 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testInterface_IPv6() {
+  void testInterface_IPv6() {
     parseLines("interface swp1", "ipv6 nd ra-interval 10", "ipv6 address 172:65:1::3/128");
     assertTrue(_warnings.getParseWarnings().isEmpty());
   }
 
   @Test
-  public void testInterface_No() {
+  void testInterface_No() {
     parseLines("interface swp1", "no ipv6 nd suppress-ra");
     assertTrue(_warnings.getParseWarnings().isEmpty());
   }
@@ -2211,7 +2217,7 @@ public class FrrGrammarTest {
    * haven't seen the configured VRF before.
    */
   @Test
-  public void testInterface_InterfaceVrfWithoutVrfDefinition() {
+  void testInterface_InterfaceVrfWithoutVrfDefinition() {
     parseLines("interface swp1 vrf VRF", "description rt1010svc01 swp1s1");
     assertThat(
         Iterables.getOnlyElement(_warnings.getParseWarnings()).getComment(),
@@ -2225,7 +2231,7 @@ public class FrrGrammarTest {
    * file).
    */
   @Test
-  public void testInterface_InterfaceVrfWithVrfDefinition() {
+  void testInterface_InterfaceVrfWithVrfDefinition() {
     _frr.getVrfs().put("VRF", new Vrf("VRF"));
     parseLines("interface swp1 vrf VRF", "description rt1010svc01 swp1s1");
     assertThat(_warnings.getParseWarnings(), empty());
@@ -2235,7 +2241,7 @@ public class FrrGrammarTest {
 
   /** Interface has a vrf definition that does not match what we saw earlier */
   @Test
-  public void testInterface_InterfaceVrfNotMatch() {
+  void testInterface_InterfaceVrfNotMatch() {
     // has vrf but not match
     FrrInterface i1 = new FrrInterface("swp1", "VRF2");
     i1.setAlias("old alias");
@@ -2250,7 +2256,7 @@ public class FrrGrammarTest {
 
   /** Two interface definitions in FRR with different VRFs */
   @Test
-  public void testInterface_InterfaceVrfNotMatchWithinFrr() {
+  void testInterface_InterfaceVrfNotMatchWithinFrr() {
     _frr.getVrfs().put("VRF1", new Vrf("VRF1"));
     _frr.getVrfs().put("VRF2", new Vrf("VRF2"));
     parseLines(
@@ -2267,7 +2273,7 @@ public class FrrGrammarTest {
 
   /** Two interface definitions in FRR, with the second one missing explicit VRF */
   @Test
-  public void testInterface_InterfaceVrfNotMatchWithinFrrSecondDefault() {
+  void testInterface_InterfaceVrfNotMatchWithinFrrSecondDefault() {
     _frr.getVrfs().put("VRF", new Vrf("VRF"));
     parseLines(
         "interface swp1 vrf VRF", "description first", "interface swp1", "description second");
@@ -2279,7 +2285,7 @@ public class FrrGrammarTest {
 
   /** Interface vrf is configured in the interfaces file and is not explicitly configured in FRR */
   @Test
-  public void testInterface_InterfaceDefaultVrf() {
+  void testInterface_InterfaceDefaultVrf() {
     InterfacesInterface i2 = new InterfacesInterface("swp2");
     i2.setVrf("VRF2");
     _config.getInterfacesConfiguration().getInterfaces().put("swp2", i2);
@@ -2293,7 +2299,7 @@ public class FrrGrammarTest {
    * interfaces or in FRR.
    */
   @Test
-  public void testInterface_InterfaceVrfMatch() {
+  void testInterface_InterfaceVrfMatch() {
     FrrInterface i1 = new FrrInterface("swp1", "VRF");
     i1.setAlias("rt1010svc01 swp1s1");
     _frr.getInterfaces().put("swp1", i1);
@@ -2302,27 +2308,27 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testIpv6PrefixList() {
+  void testIpv6PrefixList() {
     parseLines("ipv6 prefix-list allow-loc-storage-v6 seq 10 permit 2001:100:100:20::/64");
     assertTrue(_warnings.getParseWarnings().isEmpty());
   }
 
   @Test
-  public void testRouterOspf() {
+  void testRouterOspf() {
     parse("router ospf\n log-adjacency-changes detail\n");
     assertThat(_warnings.getParseWarnings(), empty());
     assertNotNull(_frr.getOspfProcess());
   }
 
   @Test
-  public void testInterface_ospf_area() {
+  void testInterface_ospf_area() {
     parse("interface swp1\n ip ospf area 0.0.0.0\n");
     assertThat(_warnings.getParseWarnings(), empty());
     assertThat(_frr.getInterfaces().get("swp1").getOspf().getOspfArea(), equalTo(0L));
   }
 
   @Test
-  public void testInterface_ospf_area_subnet_mask() {
+  void testInterface_ospf_area_subnet_mask() {
     parse("interface swp1\n ip ospf area 255.0.0.0\n");
     assertThat(_warnings.getParseWarnings(), empty());
     assertThat(
@@ -2331,35 +2337,35 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testInterface_ospf_area_num() {
+  void testInterface_ospf_area_num() {
     parse("interface swp1\n ip ospf area 0\n");
     assertThat(_warnings.getParseWarnings(), empty());
     assertThat(_frr.getInterfaces().get("swp1").getOspf().getOspfArea(), equalTo(0L));
   }
 
   @Test
-  public void testInterface_ospf_area_num32bit() {
+  void testInterface_ospf_area_num32bit() {
     parse("interface swp1\n ip ospf area 4000000000\n");
     assertThat(_warnings.getParseWarnings(), empty());
     assertThat(_frr.getInterfaces().get("swp1").getOspf().getOspfArea(), equalTo(4000000000L));
   }
 
   @Test
-  public void testInterface_ospf_authentication() {
+  void testInterface_ospf_authentication() {
     FrrInterface i1 = new FrrInterface("swp1");
     _frr.getInterfaces().put("swp1", i1);
     parse("interface swp1\n ip ospf authentication message-digest\n");
   }
 
   @Test
-  public void testInterface_ospf_authentication_key() {
+  void testInterface_ospf_authentication_key() {
     FrrInterface i1 = new FrrInterface("swp1");
     _frr.getInterfaces().put("swp1", i1);
     parse("interface swp1\n ip ospf message-digest-key 1 md5 <SCRUBBED>\n");
   }
 
   @Test
-  public void testInterface_ospf_p2p() {
+  void testInterface_ospf_p2p() {
     parse("interface swp1\n ip ospf network point-to-point\n");
     assertThat(
         _frr.getInterfaces().get("swp1").getOspf().getNetwork(),
@@ -2367,19 +2373,19 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testInterface_ospf_cost() {
+  void testInterface_ospf_cost() {
     parse("interface swp1\n ip ospf cost 100\n");
     assertThat(_frr.getInterfaces().get("swp1").getOspf().getCost(), equalTo(100));
   }
 
   @Test
-  public void testInterface_ospf_cost_null() {
+  void testInterface_ospf_cost_null() {
     parse("interface swp1\n ip ospf area 0\n");
     assertThat(_frr.getInterfaces().get("swp1").getOspf().getCost(), equalTo(null));
   }
 
   @Test
-  public void testRouterOspfAreaRange() {
+  void testRouterOspfAreaRange() {
     parse(
         "router ospf\n"
             + " area 1.1.1.0 range 1.255.0.0/17 cost 10\n"
@@ -2397,7 +2403,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testRouterOspfAreaRangeConversion() {
+  void testRouterOspfAreaRangeConversion() {
     parse(
         "interface swp1\n"
             + " ip address 1.2.3.4/5\n"
@@ -2440,7 +2446,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testRouterOspfNetwork() {
+  void testRouterOspfNetwork() {
     parse(
         "router ospf\n"
             + " network 10.0.0.0/8 area 0.0.0.0\n"
@@ -2462,7 +2468,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testRouterOspfNoNetwork() {
+  void testRouterOspfNoNetwork() {
     parse(
         "router ospf\n"
             + " network 10.0.0.0/8 area 0.0.0.0\n"
@@ -2485,7 +2491,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testRouterOspfPassiveInterface_NoInterface() {
+  void testRouterOspfPassiveInterface_NoInterface() {
     parse("router ospf\n passive-interface lo\n");
     assertThat(_warnings.getParseWarnings(), hasSize(1));
     assertThat(
@@ -2493,7 +2499,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testRouterOspfPassiveInterface() {
+  void testRouterOspfPassiveInterface() {
     FrrInterface iface = new FrrInterface("lo");
     _frr.getInterfaces().put("lo", iface);
     parse("router ospf\n passive-interface lo\n");
@@ -2501,7 +2507,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testRouterOspfPassiveInterfaceDefault() {
+  void testRouterOspfPassiveInterfaceDefault() {
     _frr.getOrCreateInterface("ifaceTrue").getOrCreateOspf().setPassive(true);
     _frr.getOrCreateInterface("ifaceFalse").getOrCreateOspf().setPassive(false);
     parse("router ospf\n passive-interface default\n");
@@ -2511,7 +2517,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testRouterOspfNoPassiveInterfaceDefault() {
+  void testRouterOspfNoPassiveInterfaceDefault() {
     _frr.getOrCreateInterface("ifaceTrue").getOrCreateOspf().setPassive(true);
     _frr.getOrCreateInterface("ifaceFalse").getOrCreateOspf().setPassive(false);
     parse("router ospf\n no passive-interface default\n");
@@ -2521,20 +2527,20 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testRouterOspfRouterId() {
+  void testRouterOspfRouterId() {
     parse("router ospf\n ospf router-id 1.1.1.3\n");
     assertThat(_frr.getOspfProcess().getDefaultVrf().getRouterId(), equalTo(Ip.parse("1.1.1.3")));
   }
 
   @Test
-  public void testRouterOspfRouterId_noOspf() {
+  void testRouterOspfRouterId_noOspf() {
     // router-id without preceding OSPF is legal
     parse("router ospf\n router-id 1.1.1.3\n");
     assertThat(_frr.getOspfProcess().getDefaultVrf().getRouterId(), equalTo(Ip.parse("1.1.1.3")));
   }
 
   @Test
-  public void testOspfRedistributeConnected() {
+  void testOspfRedistributeConnected() {
     parseLines("router ospf", "redistribute connected");
     RedistributionPolicy policy =
         _frr.getOspfProcess().getRedistributionPolicies().get(FrrRoutingProtocol.CONNECTED);
@@ -2543,7 +2549,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testOspfRedistributeConnectedRouteMap() {
+  void testOspfRedistributeConnectedRouteMap() {
     parseLines("router ospf", "redistribute connected route-map foo");
     RedistributionPolicy policy =
         _frr.getOspfProcess().getRedistributionPolicies().get(FrrRoutingProtocol.CONNECTED);
@@ -2552,7 +2558,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testOspfRedistributeStatic() {
+  void testOspfRedistributeStatic() {
     parseLines("router ospf", "redistribute static");
     RedistributionPolicy policy =
         _frr.getOspfProcess().getRedistributionPolicies().get(FrrRoutingProtocol.STATIC);
@@ -2561,7 +2567,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testOspfRedistributeStaticRouteMap() {
+  void testOspfRedistributeStaticRouteMap() {
     parseLines("router ospf", "redistribute static route-map foo");
     RedistributionPolicy policy =
         _frr.getOspfProcess().getRedistributionPolicies().get(FrrRoutingProtocol.STATIC);
@@ -2570,7 +2576,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testOspfRedistributeBgp() {
+  void testOspfRedistributeBgp() {
     parseLines("router ospf", "redistribute bgp");
     RedistributionPolicy policy =
         _frr.getOspfProcess().getRedistributionPolicies().get(FrrRoutingProtocol.BGP);
@@ -2579,7 +2585,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testOspfRedistributeBgpRouteMap() {
+  void testOspfRedistributeBgpRouteMap() {
     parseLines("router ospf", "redistribute bgp route-map foo");
     RedistributionPolicy policy =
         _frr.getOspfProcess().getRedistributionPolicies().get(FrrRoutingProtocol.BGP);
@@ -2588,19 +2594,19 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testOspfMaxMetricRouterLsaAdministrativeDefault() {
+  void testOspfMaxMetricRouterLsaAdministrativeDefault() {
     parseLines("router ospf");
     assertThat(_frr.getOspfProcess().getMaxMetricRouterLsa(), equalTo(null));
   }
 
   @Test
-  public void testOspfMaxMetricRouterLsaAdministrative() {
+  void testOspfMaxMetricRouterLsaAdministrative() {
     parseLines("router ospf", "max-metric router-lsa administrative");
     assertThat(_frr.getOspfProcess().getMaxMetricRouterLsa(), equalTo(true));
   }
 
   @Test
-  public void testOspfRedistributeBgpSetMetric_behavior() throws IOException {
+  void testOspfRedistributeBgpSetMetric_behavior() throws IOException {
     /*
       Three nodes in a line - frr-originator spawns a route into BGP, redistributor redistributes this route into OSPF and sets metric of 10k
       We expect to see 10.2.2.2/32 with a Metric Type of E2 and Ospf Cost of 10k in frr-listener.
@@ -2638,7 +2644,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testOspfMaxMetricRouterLsa_behavior() throws IOException {
+  void testOspfMaxMetricRouterLsa_behavior() throws IOException {
     /*
       r0 (area 0) and r1 (area 1) are connected through two ABRs: abr1 over cost-10 links and abr2
       over cost-40000 links. abr1 has max-metric router-lsa administrative, so FRR advertises its
@@ -2686,7 +2692,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testCreatePhysicalInterfaceInFRR() {
+  void testCreatePhysicalInterfaceInFRR() {
     String name = "eth1";
     parse(String.format("interface %s\n", name));
     assertThat(_warnings.getParseWarnings(), empty());
@@ -2694,7 +2700,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testCreateLoopbackInterfaceInFRR() {
+  void testCreateLoopbackInterfaceInFRR() {
     String name = "lo";
     parse(String.format("interface %s\n", name));
     assertThat(_warnings.getParseWarnings(), empty());
@@ -2702,7 +2708,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testSetInterfaceIpAddress() {
+  void testSetInterfaceIpAddress() {
     parseLines("interface eth1", "ip address 1.1.1.1/30");
     assertThat(
         _frr.getInterfaces().get("eth1").getIpAddresses(),
@@ -2710,7 +2716,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testConvertSetInterfaceIpAddress() {
+  void testConvertSetInterfaceIpAddress() {
     parseLines("interface eth1", "ip address 1.1.1.1/24");
     Configuration c = _config.toVendorIndependentConfigurations().get(0);
     assertThat(c.getAllInterfaces(), hasKey("eth1"));
@@ -2722,63 +2728,63 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testSetInterfaceShutdown() {
+  void testSetInterfaceShutdown() {
     parseLines("interface eth1", "shutdown");
     assertTrue(_frr.getInterfaces().get("eth1").getShutdown());
   }
 
   @Test
-  public void testGetInterfaceShutdown() {
+  void testGetInterfaceShutdown() {
     parseLines("interface eth1", "ip address 1.1.1.1/30");
     assertFalse(_frr.getInterfaces().get("eth1").getShutdown());
   }
 
   @Test
-  public void testFRRDefaultTraditional() {
+  void testFRRDefaultTraditional() {
     parse("frr defaults traditional\n");
   }
 
   @Test
-  public void testIpForwarding() {
+  void testIpForwarding() {
     // does not crash
     parseLines("ip forwarding\n");
   }
 
   @Test
-  public void testNoIpForwarding() {
+  void testNoIpForwarding() {
     parseLines("no ip forwarding\n");
     assertThat(Iterables.getOnlyElement(_warnings.getParseWarnings()), isTodo());
   }
 
   @Test
-  public void testNoIpv6Forwarding() {
+  void testNoIpv6Forwarding() {
     parse("no ipv6 forwarding\n");
   }
 
   @Test
-  public void testPasswordEncryption() {
+  void testPasswordEncryption() {
     parse("service password-encryption\n");
   }
 
   @Test
-  public void testLog() {
+  void testLog() {
     parse("log file /var/log/frr/frr.log\n");
     parse("log commands\n");
     parse("log timestamp precision 6\n");
   }
 
   @Test
-  public void testEnd() {
+  void testEnd() {
     parseLines("frr version", "end");
   }
 
   @Test
-  public void testPasswordParsing() {
+  void testPasswordParsing() {
     parseLines("password 8 geC4x9Mm5HYDE", "enable password 8 <SCRUBBED>");
   }
 
   @Test
-  public void testNextMultipleOfFive() {
+  void testNextMultipleOfFive() {
     assertThat(nextMultipleOfFive(null), equalTo(5L));
     assertThat(nextMultipleOfFive(0L), equalTo(5L));
     assertThat(nextMultipleOfFive(1L), equalTo(5L));
@@ -2788,18 +2794,18 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpLogNeighborChanges() {
+  void testBgpLogNeighborChanges() {
     parseLines("router bgp 1", "bgp log-neighbor-changes");
   }
 
   @Test
-  public void testBgpConfederationId() {
+  void testBgpConfederationId() {
     parseLines("router bgp 65001", "bgp confederation identifier 100");
     assertThat(_frr.getBgpProcess().getDefaultVrf().getConfederationId(), equalTo(100L));
   }
 
   @Test
-  public void testStaticRoute_vrf_noDefinition() {
+  void testStaticRoute_vrf_noDefinition() {
     _warnings = new Warnings(false, true, false);
     parseLines("ip route 1.2.3.4/24 1.1.1.1 vrf VRF");
 
@@ -2812,7 +2818,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testStaticRoute_vrf_withDefinition() {
+  void testStaticRoute_vrf_withDefinition() {
     _warnings = new Warnings(false, true, false);
 
     _frr.getVrfs().put("VRF", new Vrf("VRF"));
@@ -2826,7 +2832,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testStaticRoute_vrf_withDefinition_withDistance() {
+  void testStaticRoute_vrf_withDefinition_withDistance() {
     _warnings = new Warnings(false, true, false);
 
     _frr.getVrfs().put("VRF", new Vrf("VRF"));
@@ -2840,7 +2846,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testStaticRoute_defaultVrf() {
+  void testStaticRoute_defaultVrf() {
     parseLines("ip route 1.2.3.4/24 1.1.1.1");
     assertThat(
         _frr.getStaticRoutes(),
@@ -2850,7 +2856,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testStaticRoute_defaultVrf_withDistance() {
+  void testStaticRoute_defaultVrf_withDistance() {
     parseLines("ip route 1.2.3.4/24 1.1.1.1 75");
     assertThat(
         _frr.getStaticRoutes(),
@@ -2860,7 +2866,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpNeighborUpdateSource_Address() {
+  void testBgpNeighborUpdateSource_Address() {
     parseLines("router bgp 65001", "neighbor 1.1.1.1 update-source 2.2.2.2");
 
     assertNotNull(_frr.getBgpProcess());
@@ -2870,7 +2876,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpNeighborUpdateSource_Interface() {
+  void testBgpNeighborUpdateSource_Interface() {
     parseLines("router bgp 65001", "neighbor 1.1.1.1 update-source lo");
 
     assertNotNull(_frr.getBgpProcess());
@@ -2880,7 +2886,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testStaticRouteNull0_defaultVrf() {
+  void testStaticRouteNull0_defaultVrf() {
     parseLines("ip route 1.2.3.4/24 Null0");
     assertThat(
         _frr.getStaticRoutes(),
@@ -2888,7 +2894,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testStaticRouteReject_defaultVrf() {
+  void testStaticRouteReject_defaultVrf() {
     parseLines("ip route 1.2.3.4/24 reject");
     assertThat(
         _frr.getStaticRoutes(),
@@ -2897,7 +2903,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testStaticRouteBlackhole_defaultVrf() {
+  void testStaticRouteBlackhole_defaultVrf() {
     parseLines("ip route 1.2.3.4/24 blackhole");
     assertThat(
         _frr.getStaticRoutes(),
@@ -2906,7 +2912,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testStaticRouteInterface_defaultVrf() {
+  void testStaticRouteInterface_defaultVrf() {
     parseLines("ip route 1.2.3.4/24 eth0 100");
     assertThat(
         _frr.getStaticRoutes(),
@@ -2914,7 +2920,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testStaticRouteInterface_vrf_withDefinition() {
+  void testStaticRouteInterface_vrf_withDefinition() {
     _warnings = new Warnings(false, true, false);
 
     _frr.getVrfs().put("VRF", new Vrf("VRF"));
@@ -2928,7 +2934,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpcommunityMatchSetTagAndWeight_behavior() throws IOException {
+  void testBgpcommunityMatchSetTagAndWeight_behavior() throws IOException {
     /*
      There are two nodes in the topology arranged in a line.
        - frr-originator -- frr-listener
@@ -2978,7 +2984,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpRedistribution_behavior() throws IOException {
+  void testBgpRedistribution_behavior() throws IOException {
     /*
      There are four nodes in the topology arranged in a line.
        - frr-ospf-originator -- frr-redistributor -- frr-listener
@@ -3022,7 +3028,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testStaticRouteNetworkStatementInteraction_behavior() throws IOException {
+  void testStaticRouteNetworkStatementInteraction_behavior() throws IOException {
     String snapshotName = "static-route-network-statement";
     List<String> configurationNames =
         ImmutableList.of("frr-t1-r1", "frr-t1-r2", "frr-t2-r1", "frr-t2-r2");
@@ -3057,7 +3063,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testMainRibIndependentNetworkStatements() throws IOException {
+  void testMainRibIndependentNetworkStatements() throws IOException {
     String snapshotName = "main-rib-independent-network-statement";
     List<String> configurationNames = ImmutableList.of("frr-network");
     Batfish batfish =
@@ -3093,7 +3099,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testInterfaceInitOrderNoVrfs() {
+  void testInterfaceInitOrderNoVrfs() {
     parseLines("interface swp1", "interface swp2", "interface swp1", "interface swp3");
 
     // init from the back
@@ -3101,7 +3107,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testInterfaceInitOrderVrfs() {
+  void testInterfaceInitOrderVrfs() {
     _frr.getVrfs().put("v1", new Vrf("v1"));
     parseLines(
         "interface swp1 vrf v1",
@@ -3114,13 +3120,13 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpTimers() {
+  void testBgpTimers() {
     // does not crash
     parseLines("router bgp 65432", "  timers bgp 3 15");
   }
 
   @Test
-  public void testBgpNeighborTimers() {
+  void testBgpNeighborTimers() {
     // does not crash
     parseLines(
         "router bgp 65432",
@@ -3130,13 +3136,13 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpNeighborAdvertisementInterval() {
+  void testBgpNeighborAdvertisementInterval() {
     // does not crash
     parseLines("router bgp 65432", "  neighbor swp49 advertisement-interval 0");
   }
 
   @Test
-  public void testIpv6_noWarnings() {
+  void testIpv6_noWarnings() {
     // top-level ipv6 commands are not warned
     _warnings = new Warnings(false, true, false);
     parseLines("ipv6 protocol route-map set-src-address");
@@ -3144,7 +3150,7 @@ public class FrrGrammarTest {
   }
 
   @Test
-  public void testBgpTableMap() {
+  void testBgpTableMap() {
     parse("router bgp 1\n table-map MY_TABLE_MAP\n");
     assertThat(_frr.getBgpProcess().getDefaultVrf().getTableMap(), equalTo("MY_TABLE_MAP"));
   }

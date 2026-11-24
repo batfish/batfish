@@ -8,20 +8,20 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.routing_policy.expr.IpNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.Statement;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class RouteMapSetIpNextHopLiteralTest {
+class RouteMapSetIpNextHopLiteralTest {
 
   private static final Ip IP = Ip.parse("10.0.0.1");
 
   @Test
-  public void testGetNextHops() {
+  void testGetNextHops() {
     RouteMapSetIpNextHopLiteral set = new RouteMapSetIpNextHopLiteral(IP);
     assertThat(set.getNextHop(), equalTo(IP));
   }
 
   @Test
-  public void testToStatements() {
+  void testToStatements() {
     RouteMapSetIpNextHopLiteral set = new RouteMapSetIpNextHopLiteral(IP);
 
     ImmutableList<Statement> result =

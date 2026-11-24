@@ -7,11 +7,11 @@ import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.eigrp.EigrpMetricValues.Builder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class EigrpMetricValuesTest {
+class EigrpMetricValuesTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     Builder builder =
         EigrpMetricValues.builder()
             .setBandwidth(1)
@@ -32,7 +32,7 @@ public class EigrpMetricValuesTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     EigrpMetricValues v =
         EigrpMetricValues.builder()
             .setBandwidth(1)
@@ -45,7 +45,7 @@ public class EigrpMetricValuesTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     EigrpMetricValues v =
         EigrpMetricValues.builder()
             .setBandwidth(1)

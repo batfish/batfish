@@ -2,6 +2,7 @@ package org.batfish.datamodel.pojo;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.io.IOException;
@@ -9,23 +10,20 @@ import java.util.HashMap;
 import java.util.Map;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.InterfaceType;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-public class InterfaceTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class InterfaceTest {
 
   @Test
-  public void constructorFail() throws IOException {
+  void constructorFail() {
     String ifaceStr = "{\"nofield\" : \"test\"}";
-    _thrown.expect(com.fasterxml.jackson.databind.exc.ValueInstantiationException.class);
-    BatfishObjectMapper.mapper().readValue(ifaceStr, Interface.class);
+    assertThrows(
+        com.fasterxml.jackson.databind.exc.ValueInstantiationException.class,
+        () -> BatfishObjectMapper.mapper().readValue(ifaceStr, Interface.class));
   }
 
   @Test
-  public void constructorBasic() throws IOException {
+  void constructorBasic() throws IOException {
     String ifaceStr = "{\"nodeId\" : \"node\", \"name\" : \"iname\"}";
     Interface iface = BatfishObjectMapper.mapper().readValue(ifaceStr, Interface.class);
 
@@ -35,7 +33,7 @@ public class InterfaceTest {
   }
 
   @Test
-  public void constructorProperties() throws IOException {
+  void constructorProperties() throws IOException {
     String ifaceStr =
         "{\"nodeId\" : \"node\", \"name\" : \"name\", \"properties\" : { \"key\": \"value\"}}";
     Interface iface = BatfishObjectMapper.mapper().readValue(ifaceStr, Interface.class);
@@ -48,7 +46,7 @@ public class InterfaceTest {
   }
 
   @Test
-  public void serialization() {
+  void serialization() {
     Interface iface = new Interface("node", "name", InterfaceType.PHYSICAL);
     Map<String, String> properties = new HashMap<>();
     properties.put("key", "value");

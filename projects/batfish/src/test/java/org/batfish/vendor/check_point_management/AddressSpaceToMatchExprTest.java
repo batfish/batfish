@@ -24,10 +24,10 @@ import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.trace.TraceTree;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link AddressSpaceToMatchExpr}. */
-public final class AddressSpaceToMatchExprTest {
+final class AddressSpaceToMatchExprTest {
   private static final AddressSpaceToIpSpace ADDR_SPACE_TO_IP_SPACE =
       new AddressSpaceToIpSpace(ImmutableMap.of());
 
@@ -112,7 +112,7 @@ public final class AddressSpaceToMatchExprTest {
           .build();
 
   @Test
-  public void testCpmiAnyObject() {
+  void testCpmiAnyObject() {
     AddressSpaceToMatchExpr addrSpaceToMatchExpr = new AddressSpaceToMatchExpr(ImmutableMap.of());
     CpmiAnyObject any = new CpmiAnyObject(Uid.of("1"));
     AclLineMatchExpr dstExpr = addrSpaceToMatchExpr.convertDest(any);
@@ -134,27 +134,27 @@ public final class AddressSpaceToMatchExprTest {
   }
 
   @Test
-  public void testAddressRange() {
+  void testAddressRange() {
     checkAddrSpaceExprAndSimpleTrace(ADDR_RANGE, ADDR_RANGE_NAME, Ip.parse("10.0.0.1"));
   }
 
   @Test
-  public void testGatewayOrServer() {
+  void testGatewayOrServer() {
     checkAddrSpaceExprAndSimpleTrace(GATEWAY, GATEWAY_NAME, Ip.parse("10.1.1.1"));
   }
 
   @Test
-  public void testHost() {
+  void testHost() {
     checkAddrSpaceExprAndSimpleTrace(HOST1, HOST1_NAME, Ip.parse("10.2.1.1"));
   }
 
   @Test
-  public void testNetwork() {
+  void testNetwork() {
     checkAddrSpaceExprAndSimpleTrace(NETWORK, NETWORK_NAME, Ip.parse("10.3.1.1"));
   }
 
   @Test
-  public void testGroup() {
+  void testGroup() {
     Uid group1Uid = Uid.of("1001");
     Uid group2Uid = Uid.of("1002");
     Uid group3Uid = Uid.of("1003");
@@ -208,7 +208,7 @@ public final class AddressSpaceToMatchExprTest {
   }
 
   @Test
-  public void testGroupInvalidMember() {
+  void testGroupInvalidMember() {
     Uid unknown1Uid = Uid.of("1");
     Uid group1Uid = Uid.of("11");
     Group group1 = new Group("group1", ImmutableList.of(unknown1Uid), group1Uid);

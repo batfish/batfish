@@ -8,12 +8,12 @@ import static org.hamcrest.Matchers.matchesRegex;
 import java.util.ServiceLoader;
 import java.util.regex.Pattern;
 import org.batfish.version.Versioned;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link ApiVersion}. */
-public final class ApiVersionTest {
+final class ApiVersionTest {
   @Test
-  public void testApiVersionIsLoaded() {
+  void testApiVersionIsLoaded() {
     // Make sure that ApiVersion is found by the service loader
     assertThat(
         ServiceLoader.load(Versioned.class, ClassLoader.getSystemClassLoader()),
@@ -21,7 +21,7 @@ public final class ApiVersionTest {
   }
 
   @Test
-  public void testMajorVersion() {
+  void testMajorVersion() {
     assertThat(ApiVersion.getVersionStatic(), matchesRegex(SEMVER));
   }
 

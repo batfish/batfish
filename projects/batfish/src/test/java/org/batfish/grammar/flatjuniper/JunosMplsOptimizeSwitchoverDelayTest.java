@@ -6,20 +6,20 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasKey;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.main.Batfish;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosMplsOptimizeSwitchoverDelayTest {
+final class JunosMplsOptimizeSwitchoverDelayTest {
 
   private static final String HOSTNAME = "mpls-optimize-switchover-delay";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testParsing() throws IOException {
+  void testParsing() throws IOException {
     Batfish batfish = getBatfish(_folder, HOSTNAME);
 
     assertThat(batfish.loadConfigurations(batfish.getSnapshot()), hasKey(HOSTNAME));

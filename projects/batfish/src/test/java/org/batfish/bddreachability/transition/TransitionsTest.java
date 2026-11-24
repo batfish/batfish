@@ -15,8 +15,8 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -29,10 +29,10 @@ import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDPairingFactory;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.datamodel.Ip;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link Transitions}. */
-public class TransitionsTest {
+class TransitionsTest {
   private final BDDPacket _pkt = new BDDPacket();
   private final BDDFactory _factory = _pkt.getFactory();
   private final BDD _zero = _factory.zero();
@@ -56,7 +56,7 @@ public class TransitionsTest {
 
   // Any composition containing ZERO is zero
   @Test
-  public void composeWithZero() {
+  void composeWithZero() {
     assertThat(compose(ZERO), sameInstance(ZERO));
     assertThat(compose(IDENTITY, ZERO, IDENTITY), sameInstance(ZERO));
     assertThat(compose(ZERO, ZERO), sameInstance(ZERO));
@@ -66,7 +66,7 @@ public class TransitionsTest {
 
   // Composing with IDENTITY is a no-op.
   @Test
-  public void composeWithIdentity() {
+  void composeWithIdentity() {
     assertThat(compose(IDENTITY), sameInstance(IDENTITY));
     assertThat(compose(IDENTITY, IDENTITY), sameInstance(IDENTITY));
     assertThat(
@@ -77,7 +77,7 @@ public class TransitionsTest {
 
   // Composing with Compose flattens
   @Test
-  public void composeWithCompose() {
+  void composeWithCompose() {
     Transition eas = eraseAndSet(var(0), var(0));
     Transition or = or(constraint(var(1)), eas);
     assertThat(or, instanceOf(Or.class));
@@ -90,7 +90,7 @@ public class TransitionsTest {
 
   /** Compose simplifies to zero. */
   @Test
-  public void composeToZero() {
+  void composeToZero() {
     BDD v0 = var(0);
     BDD v1 = var(1);
     assertEquals(
@@ -104,7 +104,7 @@ public class TransitionsTest {
 
   // Or with ZERO is a no-op
   @Test
-  public void orWithZero() {
+  void orWithZero() {
     assertThat(or(ZERO), sameInstance(ZERO));
     assertThat(or(IDENTITY, ZERO), sameInstance(IDENTITY));
     assertThat(or(ZERO, ZERO), sameInstance(ZERO));
@@ -114,7 +114,7 @@ public class TransitionsTest {
 
   // Or with Or flattens and uniquifies
   @Test
-  public void orWithOr() {
+  void orWithOr() {
     Transition t1 = eraseVar(0);
     Transition t2 = eraseVar(1);
     Transition o1 = or(t1, IDENTITY);
@@ -127,35 +127,35 @@ public class TransitionsTest {
   }
 
   @Test
-  public void testBranchGuardIsOne() {
+  void testBranchGuardIsOne() {
     Transition thenTrans = constraint(var(0));
     Transition elseTrans = constraint(var(1));
     assertEquals(thenTrans, branch(_one, thenTrans, elseTrans));
   }
 
   @Test
-  public void testBranchGuardIsZero() {
+  void testBranchGuardIsZero() {
     Transition thenTrans = constraint(var(0));
     Transition elseTrans = constraint(var(1));
     assertEquals(elseTrans, branch(_zero, thenTrans, elseTrans));
   }
 
   @Test
-  public void testBranchThenIsZero() {
+  void testBranchThenIsZero() {
     BDD guard = var(0);
     Transition elseTrans = constraint(var(1));
     assertEquals(compose(constraint(guard.not()), elseTrans), branch(guard, ZERO, elseTrans));
   }
 
   @Test
-  public void testBranchElseIsZero() {
+  void testBranchElseIsZero() {
     BDD guard = var(0);
     Transition thenTrans = constraint(var(1));
     assertEquals(compose(constraint(guard), thenTrans), branch(guard, thenTrans, ZERO));
   }
 
   @Test
-  public void testBranchConstraints() {
+  void testBranchConstraints() {
     BDD guard = var(0);
     BDD thn = var(1);
     BDD els = var(2);
@@ -163,35 +163,35 @@ public class TransitionsTest {
   }
 
   @Test
-  public void testBranchThenEqualsElse() {
+  void testBranchThenEqualsElse() {
     BDD guard = var(0);
     Transition trans = constraint(var(1));
     assertEquals(trans, branch(guard, trans, trans));
   }
 
   @Test
-  public void testMergeComposedZero() {
+  void testMergeComposedZero() {
     Transition t = constraint(var(0));
     assertEquals(ZERO, mergeComposed(ZERO, t));
     assertEquals(ZERO, mergeComposed(t, ZERO));
   }
 
   @Test
-  public void testMergeComposedIdentity() {
+  void testMergeComposedIdentity() {
     Transition t = constraint(var(0));
     assertEquals(t, mergeComposed(IDENTITY, t));
     assertEquals(t, mergeComposed(t, IDENTITY));
   }
 
   @Test
-  public void testMergeComposedConstraints() {
+  void testMergeComposedConstraints() {
     BDD v0 = var(0);
     BDD v1 = var(1);
     assertEquals(constraint(v0.and(v1)), mergeComposed(constraint(v0), constraint(v1)));
   }
 
   @Test
-  public void testMergeComposed_Constraint_EraseAndSet() {
+  void testMergeComposed_Constraint_EraseAndSet() {
     BDD v0 = var(0);
     BDD v1 = var(1);
     Constraint constraint = new Constraint(v0);
@@ -202,7 +202,7 @@ public class TransitionsTest {
   }
 
   @Test
-  public void testMergeComposed_Constraint_RemoveSourceConstraint() {
+  void testMergeComposed_Constraint_RemoveSourceConstraint() {
     BDDSourceManager mgr =
         BDDSourceManager.forSources(
             _pkt, ImmutableSet.of("a", "b", "c", "d"), ImmutableSet.of("a", "b"));
@@ -220,7 +220,7 @@ public class TransitionsTest {
   }
 
   @Test
-  public void testMergeComposedEraseAndSetSameVars() {
+  void testMergeComposedEraseAndSetSameVars() {
     BDD v0 = var(0);
     BDD v1 = var(1);
     Transition t1 = eraseAndSet(v0.and(v1), v0);
@@ -229,7 +229,7 @@ public class TransitionsTest {
   }
 
   @Test
-  public void testMergeComposedEraseAndSetDiffVars() {
+  void testMergeComposedEraseAndSetDiffVars() {
     BDD v0 = var(0);
     BDD v1 = var(1);
     Transition t1 = eraseAndSet(v0, v0);
@@ -239,7 +239,7 @@ public class TransitionsTest {
   }
 
   @Test
-  public void testMergeComposedEraseAndSetOverlappingVars() {
+  void testMergeComposedEraseAndSetOverlappingVars() {
     BDD v0 = var(0);
     BDD v1 = var(1);
     BDD v2 = var(2);
@@ -250,7 +250,7 @@ public class TransitionsTest {
   }
 
   @Test
-  public void testMergeComposed_Or_Constraint() {
+  void testMergeComposed_Or_Constraint() {
     BDD v0 = var(0);
     BDD v1 = var(1);
     BDD v2 = var(2);
@@ -263,7 +263,7 @@ public class TransitionsTest {
   }
 
   @Test
-  public void testMergeComposed_RemoveSourceConstraint_AddSourceConstraint_merge() {
+  void testMergeComposed_RemoveSourceConstraint_AddSourceConstraint_merge() {
     BDDSourceManager mgr =
         BDDSourceManager.forSources(
             _pkt, ImmutableSet.of("a", "b", "c", "d"), ImmutableSet.of("a", "b", "c"));
@@ -278,7 +278,7 @@ public class TransitionsTest {
   }
 
   @Test
-  public void testMergeComposed_RemoveSourceConstraint_AddSourceConstraint_no_merge() {
+  void testMergeComposed_RemoveSourceConstraint_AddSourceConstraint_no_merge() {
     BDDSourceManager mgr =
         BDDSourceManager.forSources(
             _pkt, ImmutableSet.of("a", "b", "c", "d"), ImmutableSet.of("a", "b"));
@@ -290,7 +290,7 @@ public class TransitionsTest {
   }
 
   @Test
-  public void testCompose1() {
+  void testCompose1() {
     BDD v0 = var(0);
     BDD v1 = var(1);
     BDD v2 = var(2);
@@ -302,7 +302,7 @@ public class TransitionsTest {
   }
 
   @Test
-  public void testCompose2() {
+  void testCompose2() {
     BDD v1 = var(1);
     BDD v2 = var(2);
     BDD v3 = var(3);
@@ -317,7 +317,7 @@ public class TransitionsTest {
   }
 
   @Test
-  public void testCompose_Constraint_Transform() {
+  void testCompose_Constraint_Transform() {
     BDD v0 = var(0);
     BDD v0Prime = var(1);
     BDD v1 = var(2);
@@ -345,7 +345,7 @@ public class TransitionsTest {
   }
 
   @Test
-  public void testCompose_Transform_Transform() {
+  void testCompose_Transform_Transform() {
     BDD v0 = var(0);
     BDD v0Prime = var(1);
     BDD v1 = var(2);
@@ -364,24 +364,24 @@ public class TransitionsTest {
   }
 
   @Test
-  public void testOr_Identity_Constraint() {
+  void testOr_Identity_Constraint() {
     assertEquals(IDENTITY, or(IDENTITY, constraint(var(0))));
   }
 
   @Test
-  public void testOr_Constraint_Identity() {
+  void testOr_Constraint_Identity() {
     assertEquals(IDENTITY, or(constraint(var(0)), IDENTITY));
   }
 
   @Test
-  public void testOr_Constraint_Constraint() {
+  void testOr_Constraint_Constraint() {
     BDD v0 = var(0);
     BDD v1 = var(1);
     assertEquals(constraint(v0.or(v1)), or(constraint(v0), constraint(v1)));
   }
 
   @Test
-  public void testOr_EraseAndSet_EraseAndSet_SameVars() {
+  void testOr_EraseAndSet_EraseAndSet_SameVars() {
     BDD v0 = var(0);
     BDD v1 = var(1);
     BDD vars = v0.and(v1);
@@ -391,7 +391,7 @@ public class TransitionsTest {
   }
 
   @Test
-  public void testOr_EraseAndSet_EraseAndSet_DiffVars() {
+  void testOr_EraseAndSet_EraseAndSet_DiffVars() {
     BDD v0 = var(0);
     BDD v1 = var(1);
     EraseAndSet t1 = new EraseAndSet(v0, v0);
@@ -400,7 +400,7 @@ public class TransitionsTest {
   }
 
   @Test
-  public void testOrConstraints() {
+  void testOrConstraints() {
     BDD v0 = var(0);
     BDD v1 = var(1);
     BDD v2 = var(2);
@@ -410,7 +410,7 @@ public class TransitionsTest {
   }
 
   @Test
-  public void testOr() {
+  void testOr() {
     BDD v0 = var(0);
     BDD v1 = var(1);
 

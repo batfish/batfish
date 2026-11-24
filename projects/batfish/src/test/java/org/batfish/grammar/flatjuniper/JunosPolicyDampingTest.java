@@ -14,6 +14,7 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -21,20 +22,19 @@ import org.batfish.main.Batfish;
 import org.batfish.representation.juniper.DampingProfile;
 import org.batfish.representation.juniper.JuniperConfiguration;
 import org.batfish.representation.juniper.PsThenDamping;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosPolicyDampingTest {
+final class JunosPolicyDampingTest {
 
   private static final String POLICY_DAMPING = "policy-options-damping";
   private static final String ROUTE_FILTER_DAMPING = "policy-route-filter-damping";
   private static final String THEN_DAMPING = "policy-statement-then-damping";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testProfileExtractionAndReferences() throws IOException {
+  void testProfileExtractionAndReferences() throws IOException {
     Batfish batfish = getBatfish(_folder, POLICY_DAMPING);
     JuniperConfiguration configuration = getVendorConfiguration(batfish, POLICY_DAMPING);
 
@@ -84,7 +84,7 @@ public final class JunosPolicyDampingTest {
   }
 
   @Test
-  public void testRouteFilterAction() throws IOException {
+  void testRouteFilterAction() throws IOException {
     Batfish batfish = getBatfish(_folder, ROUTE_FILTER_DAMPING);
     batfish.loadConfigurations(batfish.getSnapshot());
     ConvertConfigurationAnswerElement ccae =
@@ -99,7 +99,7 @@ public final class JunosPolicyDampingTest {
   }
 
   @Test
-  public void testNoneAction() throws IOException {
+  void testNoneAction() throws IOException {
     Batfish batfish = getBatfish(_folder, THEN_DAMPING);
     JuniperConfiguration configuration = getVendorConfiguration(batfish, THEN_DAMPING);
 

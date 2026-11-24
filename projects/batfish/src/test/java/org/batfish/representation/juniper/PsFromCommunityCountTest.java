@@ -15,12 +15,12 @@ import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IntComparison;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.representation.juniper.PsFromCommunityCount.Mode;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link PsFromCommunityCount}. */
-public class PsFromCommunityCountTest {
+class PsFromCommunityCountTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new PsFromCommunityCount(5, Mode.EXACT), new PsFromCommunityCount(5, Mode.EXACT))
@@ -30,7 +30,7 @@ public class PsFromCommunityCountTest {
   }
 
   @Test
-  public void testConversion() { // Set up
+  void testConversion() { // Set up
     JuniperConfiguration jc = new JuniperConfiguration();
     Configuration c =
         Configuration.builder()

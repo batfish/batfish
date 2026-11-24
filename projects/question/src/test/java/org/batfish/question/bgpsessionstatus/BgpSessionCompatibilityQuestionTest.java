@@ -2,20 +2,20 @@ package org.batfish.question.bgpsessionstatus;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.questions.ConfiguredSessionStatus;
 import org.batfish.specifier.AllNodesNodeSpecifier;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link BgpSessionCompatibilityQuestion} */
-public class BgpSessionCompatibilityQuestionTest {
+class BgpSessionCompatibilityQuestionTest {
 
   @Test
-  public void testDefaultParameters() {
+  void testDefaultParameters() {
     BgpSessionCompatibilityQuestion question = new BgpSessionCompatibilityQuestion();
 
     assertThat(question.getDataPlane(), equalTo(false));
@@ -25,7 +25,7 @@ public class BgpSessionCompatibilityQuestionTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     BgpSessionCompatibilityQuestion q =
         new BgpSessionCompatibilityQuestion(
             "nodes",
@@ -37,26 +37,26 @@ public class BgpSessionCompatibilityQuestionTest {
 
   /** Null status should match everything */
   @Test
-  public void testMatchesStatusNullStatus() {
+  void testMatchesStatusNullStatus() {
     BgpSessionCompatibilityQuestion q = new BgpSessionCompatibilityQuestion(null, null, null, null);
 
     for (ConfiguredSessionStatus status : ConfiguredSessionStatus.values()) {
-      assertTrue(status.toString(), q.matchesStatus(status));
+      assertTrue(q.matchesStatus(status), status.toString());
     }
   }
 
   /** Specific status string should match specific statuses */
   @Test
-  public void testMatchesStatusNonNullStatus() {
+  void testMatchesStatusNonNullStatus() {
     BgpSessionCompatibilityQuestion q =
         new BgpSessionCompatibilityQuestion(
             null, null, ConfiguredSessionStatus.NO_REMOTE_AS.toString(), null);
 
     for (ConfiguredSessionStatus status : ConfiguredSessionStatus.values()) {
       if (status == ConfiguredSessionStatus.NO_REMOTE_AS) {
-        assertTrue(status.toString(), q.matchesStatus(status));
+        assertTrue(q.matchesStatus(status), status.toString());
       } else {
-        assertFalse(status.toString(), q.matchesStatus(status));
+        assertFalse(q.matchesStatus(status), status.toString());
       }
     }
   }

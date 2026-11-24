@@ -7,27 +7,27 @@ import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link RouteTargetExtendedCommunityExpr}. */
-public final class RouteTargetExtendedCommunityExprTest {
+final class RouteTargetExtendedCommunityExprTest {
 
   private static final RouteTargetExtendedCommunityExpr OBJ =
       new RouteTargetExtendedCommunityExpr(new LiteralLong(1L), new LiteralLong(1L));
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     assertThat(
         BatfishObjectMapper.clone(OBJ, RouteTargetExtendedCommunityExpr.class), equalTo(OBJ));
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     assertThat(SerializationUtils.clone(OBJ), equalTo(OBJ));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new Object())
         .addEqualityGroup(

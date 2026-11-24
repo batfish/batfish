@@ -9,11 +9,11 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep.ExitOutputIfaceStepDetail;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ExitOutputIfaceStepTest {
+class ExitOutputIfaceStepTest {
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     ExitOutputIfaceStep step =
         ExitOutputIfaceStep.builder()
             .setAction(StepAction.RECEIVED)
@@ -37,7 +37,7 @@ public class ExitOutputIfaceStepTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new Object())
         .addEqualityGroup(

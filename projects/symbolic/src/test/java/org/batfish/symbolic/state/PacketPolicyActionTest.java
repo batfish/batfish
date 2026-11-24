@@ -5,11 +5,11 @@ import org.batfish.datamodel.packet_policy.Action;
 import org.batfish.datamodel.packet_policy.Drop;
 import org.batfish.datamodel.packet_policy.FibLookup;
 import org.batfish.datamodel.packet_policy.LiteralVrfName;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class PacketPolicyActionTest {
+final class PacketPolicyActionTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     String h1 = "h1";
     String h2 = "h2";
     String v1 = "v1";

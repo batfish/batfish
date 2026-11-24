@@ -12,8 +12,9 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpSessionProperties;
@@ -28,18 +29,17 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.main.Batfish;
 import org.batfish.representation.juniper.BgpGroup;
 import org.batfish.representation.juniper.RoutingInstance;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosBgpRemovePrivateTest {
+final class JunosBgpRemovePrivateTest {
 
   private static final String HOSTNAME = "bgp-remove-private-options";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testRemovePrivate() throws IOException {
+  void testRemovePrivate() throws IOException {
     Batfish batfish = getBatfish(_folder, HOSTNAME);
     RoutingInstance routingInstance = getDefaultRoutingInstance(batfish, HOSTNAME);
     BgpGroup basic = routingInstance.getNamedBgpGroups().get("BASIC");
@@ -94,7 +94,7 @@ public final class JunosBgpRemovePrivateTest {
   }
 
   @Test
-  public void testRemovePrivateBeforeExportPolicy() throws IOException {
+  void testRemovePrivateBeforeExportPolicy() throws IOException {
     String hostname = "bgp-remove-private-prepend";
     Batfish batfish = getBatfish(_folder, hostname);
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);

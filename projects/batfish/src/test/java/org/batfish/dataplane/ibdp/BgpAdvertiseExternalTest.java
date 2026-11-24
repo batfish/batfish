@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.contains;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.batfish.datamodel.BgpProcess;
@@ -31,16 +32,15 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * A session advertising external keeps advertising the best eBGP path while another path is the
  * overall best.
  */
-public final class BgpAdvertiseExternalTest {
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+final class BgpAdvertiseExternalTest {
+  @TempDir public File _folder;
 
   private static final Prefix PREFIX = Prefix.parse("192.0.2.0/24");
   private static final long AS_INTERNAL = 65000L;
@@ -220,14 +220,14 @@ public final class BgpAdvertiseExternalTest {
   }
 
   @Test
-  public void testADemotedBestEbgpPathStaysAdvertised() throws IOException {
+  void testADemotedBestEbgpPathStaysAdvertised() throws IOException {
     // r2 first selects r1's path and advertises it, then prefers r3's. The eBGP path is still the
     // best eBGP path, which advertise-external is for, so it must not be withdrawn.
     assertThat(pathsAtR4(true), contains("65001"));
   }
 
   @Test
-  public void testTheBestEbgpPathIsAdvertisedWhereItIsTheBest() throws IOException {
+  void testTheBestEbgpPathIsAdvertisedWhereItIsTheBest() throws IOException {
     // The companion, so the case above cannot fail by r4 never learning anything.
     assertThat(pathsAtR4(false), contains("65001"));
   }

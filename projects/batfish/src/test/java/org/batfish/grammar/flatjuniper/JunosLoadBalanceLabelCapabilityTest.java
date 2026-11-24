@@ -4,17 +4,17 @@ import static org.batfish.grammar.JunosGrammarTestUtils.parseJuniperConfig;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 
+import java.io.File;
 import org.batfish.representation.juniper.JuniperConfiguration;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosLoadBalanceLabelCapabilityTest {
+final class JunosLoadBalanceLabelCapabilityTest {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testLoadBalanceLabelCapability() {
+  void testLoadBalanceLabelCapability() {
     JuniperConfiguration enabled =
         parseJuniperConfig(_folder, "forwarding-options-load-balance-label-capability");
     JuniperConfiguration disabled =

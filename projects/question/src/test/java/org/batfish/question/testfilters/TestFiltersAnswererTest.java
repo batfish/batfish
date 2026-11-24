@@ -10,9 +10,11 @@ import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_FILTER_NA
 import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_NODE;
 import static org.batfish.specifier.Location.interfaceLocation;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -44,20 +46,16 @@ import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.specifier.LocationInfo;
 import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.SpecifierContext;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class TestFiltersAnswererTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class TestFiltersAnswererTest {
 
   private NetworkFactory _nf = new NetworkFactory();
   private Configuration.Builder _cb;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _nf = new NetworkFactory();
     _cb = _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
   }
@@ -94,7 +92,7 @@ public class TestFiltersAnswererTest {
   }
 
   @Test
-  public void testIndirection() {
+  void testIndirection() {
     Configuration c = _cb.build();
     IpAccessList.Builder aclb = _nf.aclBuilder().setOwner(c);
 
@@ -162,7 +160,7 @@ public class TestFiltersAnswererTest {
   }
 
   @Test
-  public void testOneRowPerFilterPerConfig() {
+  void testOneRowPerFilterPerConfig() {
     IpAccessList.Builder aclb = _nf.aclBuilder();
     Configuration c1 = _cb.build();
     Configuration c2 = _cb.build();
@@ -189,7 +187,7 @@ public class TestFiltersAnswererTest {
   }
 
   @Test
-  public void testOneRowPerInterface() {
+  void testOneRowPerInterface() {
     Configuration c1 = _cb.setHostname("c1").build();
     IpAccessList.Builder aclb = _nf.aclBuilder();
     aclb.setOwner(c1).build();
@@ -240,7 +238,7 @@ public class TestFiltersAnswererTest {
   }
 
   @Test
-  public void testFilteringByNodeAndFilterName() {
+  void testFilteringByNodeAndFilterName() {
     IpAccessList.Builder aclb = _nf.aclBuilder();
     Configuration c1 = _cb.build();
     Configuration c2 = _cb.build();
@@ -282,7 +280,7 @@ public class TestFiltersAnswererTest {
   }
 
   @Test
-  public void testErrorForNoMatchingFlows() {
+  void testErrorForNoMatchingFlows() {
     Configuration c1 = _cb.setHostname("c1").build();
     _nf.aclBuilder().setName("acl1").setOwner(c1).build();
     SortedMap<String, Configuration> configs = ImmutableSortedMap.of(c1.getHostname(), c1);
@@ -305,9 +303,9 @@ public class TestFiltersAnswererTest {
           new TestFiltersQuestion(c1.getHostname(), "acl1", null, "nonExistentLocation");
       TestFiltersAnswerer answerer = new TestFiltersAnswerer(question, batfish);
 
-      _thrown.expect(BatfishException.class);
-      _thrown.expectMessage("No valid flow found");
-      answerer.answer(batfish.getSnapshot());
+      Throwable exception =
+          assertThrows(BatfishException.class, () -> answerer.answer(batfish.getSnapshot()));
+      assertThat(exception.getMessage(), containsString("No valid flow found"));
     }
   }
 }

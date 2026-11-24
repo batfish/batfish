@@ -6,16 +6,13 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link Mlag} */
-@RunWith(JUnit4.class)
-public final class MlagTest {
+final class MlagTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     Mlag.Builder b =
         Mlag.builder()
             .setId("id")
@@ -33,7 +30,7 @@ public final class MlagTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     Mlag m =
         Mlag.builder()
             .setId("ID")
@@ -45,7 +42,7 @@ public final class MlagTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     Mlag m =
         Mlag.builder()
             .setId("ID")

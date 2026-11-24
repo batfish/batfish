@@ -11,6 +11,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -19,16 +20,15 @@ import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** End-to-end tests of {@link AaaAuthenticationLoginQuestion}. */
-public class AaaAuthenticationLoginTest {
+class AaaAuthenticationLoginTest {
 
   private static String TESTCONFIGS_PREFIX = "org/batfish/allinone/testconfigs/";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private Batfish getBatfishForConfigurationNames(String... configurationNames) throws IOException {
     String[] names =
@@ -37,7 +37,7 @@ public class AaaAuthenticationLoginTest {
   }
 
   @Test
-  public void testAnswer() throws IOException {
+  void testAnswer() throws IOException {
     String hostname1 = "asaNode";
     String hostname2 = "iosNoAuthentication";
     String hostname3 = "iosRequiresAuthentication";

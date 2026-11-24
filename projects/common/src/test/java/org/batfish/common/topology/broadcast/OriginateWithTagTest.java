@@ -5,11 +5,11 @@ import static org.hamcrest.Matchers.equalTo;
 
 import java.util.Optional;
 import org.batfish.common.topology.broadcast.L3Interface.Unit;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class OriginateWithTagTest {
+class OriginateWithTagTest {
   @Test
-  public void testOriginateWithTag() {
+  void testOriginateWithTag() {
     OriginateWithTag testing = new OriginateWithTag(EthernetTag.untagged());
     assertThat(testing.traverse(Unit.VALUE), equalTo(Optional.of(EthernetTag.untagged())));
   }

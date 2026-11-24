@@ -13,29 +13,29 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import java.util.Map;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link NodeInterfacePairsByVlanRange} */
-public class NodeInterfacePairsByVlanRangeTest {
+class NodeInterfacePairsByVlanRangeTest {
   private NodeInterfacePairsByVlanRange _nodeInterfacePairsByVlanRange;
 
   private static final NodeInterfacePair NI1 = NodeInterfacePair.of("c1", "i1");
   private static final NodeInterfacePair NI2 = NodeInterfacePair.of("c1", "i2");
   private static final NodeInterfacePair NI3 = NodeInterfacePair.of("c1", "i3");
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
     _nodeInterfacePairsByVlanRange = NodeInterfacePairsByVlanRange.create();
   }
 
   @Test
-  public void testStartsEmpty() {
+  void testStartsEmpty() {
     assertThat(_nodeInterfacePairsByVlanRange.asMap(), anEmptyMap());
   }
 
   @Test
-  public void testAddToEmpty() {
+  void testAddToEmpty() {
     Range<Integer> range = Range.closed(1, 2);
     Range<Integer> canonical = Range.closedOpen(1, 3);
     ImmutableSet<NodeInterfacePair> nis =
@@ -45,7 +45,7 @@ public class NodeInterfacePairsByVlanRangeTest {
   }
 
   @Test
-  public void testAddWithIntersection() {
+  void testAddWithIntersection() {
     Range<Integer> range1 = Range.closed(1, 10);
     Range<Integer> range2 = Range.closed(5, 20);
     NodeInterfacePair ni1 = NodeInterfacePair.of("c1", "i1");
@@ -63,7 +63,7 @@ public class NodeInterfacePairsByVlanRangeTest {
   }
 
   @Test
-  public void testAddDoubleIntersection() {
+  void testAddDoubleIntersection() {
     Range<Integer> range1 = Range.closed(1, 10);
     Range<Integer> range2 = Range.closed(20, 30);
     Range<Integer> range3 = Range.closed(5, 25);
@@ -84,7 +84,7 @@ public class NodeInterfacePairsByVlanRangeTest {
   }
 
   @Test
-  public void testAddSubset() {
+  void testAddSubset() {
     Range<Integer> range1 = Range.closed(1, 20);
     Range<Integer> range2 = Range.closed(5, 10);
     ImmutableSet<NodeInterfacePair> set1 = ImmutableSet.of(NI1);
@@ -100,12 +100,12 @@ public class NodeInterfacePairsByVlanRangeTest {
   }
 
   @Test
-  public void testSplitByNode_empty() {
+  void testSplitByNode_empty() {
     assertThat(_nodeInterfacePairsByVlanRange.splitByNode(), anEmptyMap());
   }
 
   @Test
-  public void testSplitByNode() {
+  void testSplitByNode() {
     NodeInterfacePair otherNodeNi = NodeInterfacePair.of("c2", "i1");
     Range<Integer> range1 = Range.closedOpen(1, 2);
     Range<Integer> range2 = Range.closedOpen(2, 3);

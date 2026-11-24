@@ -5,11 +5,11 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 
 import org.antlr.v4.runtime.tree.ParseTreeListener;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link ImplementedRules}. */
 @SuppressWarnings("unused")
-public class ImplementedRulesTest {
+class ImplementedRulesTest {
   private abstract static class NoRules implements ParseTreeListener {
     public int someOtherMethod() {
       return 5;
@@ -37,17 +37,17 @@ public class ImplementedRulesTest {
   }
 
   @Test
-  public void testNoRules() {
+  void testNoRules() {
     assertThat(ImplementedRules.getImplementedRules(NoRules.class), empty());
   }
 
   @Test
-  public void testEnterRule() {
+  void testEnterRule() {
     assertThat(ImplementedRules.getImplementedRules(EnterRule.class), containsInAnyOrder("rule"));
   }
 
   @Test
-  public void testEnterAndExitRule() {
+  void testEnterAndExitRule() {
     assertThat(
         ImplementedRules.getImplementedRules(EnterAndExit.class),
         containsInAnyOrder("rule", "rule2"));
@@ -55,13 +55,13 @@ public class ImplementedRulesTest {
 
   /** Tests that multiple variants with same name is not a problem. */
   @Test
-  public void testCollision() {
+  void testCollision() {
     assertThat(ImplementedRules.getImplementedRules(Collision.class), containsInAnyOrder("rule"));
   }
 
   /** Tests that inherited methods are not counted. */
   @Test
-  public void testExtends() {
+  void testExtends() {
     assertThat(ImplementedRules.getImplementedRules(Extends.class), containsInAnyOrder("rule2"));
   }
 }

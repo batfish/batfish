@@ -4,8 +4,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
@@ -20,19 +20,19 @@ import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
 import org.batfish.datamodel.isp_configuration.IspAnnouncement;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.datamodel.isp_configuration.IspNodeInfo;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class AzureConfigurationTest {
+class AzureConfigurationTest {
 
   @Test
-  public void testAzureConfiguration_noData() {
+  void testAzureConfiguration_noData() {
     AzureConfiguration azureConfiguration = new AzureConfiguration();
     List<Configuration> c = azureConfiguration.toVendorIndependentConfigurations();
     assertThat(c, equalTo(ImmutableList.of()));
   }
 
   @Test
-  public void testAzureConfiguration_addConfigElement() throws IOException {
+  void testAzureConfiguration_addConfigElement() throws IOException {
     AzureConfiguration azureConfiguration = new AzureConfiguration();
 
     String text = readResource("org/batfish/representation/azure/PublicIpAddressTest.json", UTF_8);
@@ -46,7 +46,7 @@ public class AzureConfigurationTest {
   }
 
   @Test
-  public void testToVendorConfigurations_ispConfiguration() throws IOException {
+  void testToVendorConfigurations_ispConfiguration() throws IOException {
 
     AzureConfiguration azureConfiguration = new AzureConfiguration();
 

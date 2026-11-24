@@ -16,13 +16,13 @@ import com.google.common.collect.Sets;
 import java.io.Serializable;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -721,25 +721,33 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       return EmptyIpSpace.INSTANCE;
     }
 
-    // Order prefixes by length (shorter first), enabling us to build
-    // the simplest routable space.
-    List<Prefix> routablePrefixes =
-        entries.stream()
-            .map(e -> e.getTopLevelRoute().getNetwork())
-            .distinct()
-            .sorted()
-            .collect(Collectors.toList());
-
-    PrefixSpace seen = new PrefixSpace();
-    List<Prefix> routable = new LinkedList<>();
-    for (Prefix network : routablePrefixes) {
+    // A default route makes all IPs routable. Check for one before sorting, since most FIBs have
+    // one. Each network is kept as (start IP << 6 | length), so sorting the keys orders networks
+    // by start IP and then by length, as Prefix#compareTo does, without comparing objects.
+    long[] keys = new long[entries.size()];
+    int n = 0;
+    for (FibEntry entry : entries) {
+      Prefix network = entry.getTopLevelRoute().getNetwork();
       if (network.equals(Prefix.ZERO)) {
-        // Default route -> all IPs are routable. Skip processing the rest.
         return UniverseIpSpace.INSTANCE;
-      } else if (!seen.containsPrefix(network)) {
-        routable.add(network);
-        seen.addPrefixRange(PrefixRange.sameAsOrMoreSpecificThan(network));
-      } // else skip prefix already contained in output space
+      }
+      keys[n++] = (network.getStartIp().asLong() << 6) | network.getPrefixLength();
+    }
+    Arrays.sort(keys);
+
+    // The routable space is the union of the networks not inside any other network. Two prefixes
+    // are either nested or disjoint, and in this order a network comes after every network
+    // containing it. So a network is redundant exactly when it starts inside the last one kept.
+    List<Prefix> routable = new ArrayList<>();
+    long keptEnd = -1;
+    for (long key : keys) {
+      long start = key >>> 6;
+      if (start <= keptEnd) {
+        continue;
+      }
+      int length = (int) (key & 0x3F);
+      routable.add(Prefix.create(Ip.create(start), length));
+      keptEnd = start + (1L << (Prefix.MAX_PREFIX_LENGTH - length)) - 1;
     }
 
     if (routable.size() == 1) {

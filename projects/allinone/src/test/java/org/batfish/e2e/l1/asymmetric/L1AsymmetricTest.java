@@ -3,6 +3,7 @@ package org.batfish.e2e.l1.asymmetric;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Edge;
@@ -10,13 +11,12 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests that a network with IP Reuse and asymmetric L1 topology is not connected redundantly. */
-public class L1AsymmetricTest {
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+class L1AsymmetricTest {
+  @TempDir public File _folder;
 
   private Topology getLayer3Edges() throws IOException {
     String prefix = "org/batfish/e2e/l1/asymmetric";
@@ -32,7 +32,7 @@ public class L1AsymmetricTest {
   }
 
   @Test
-  public void testLayer3Connectivity() throws IOException {
+  void testLayer3Connectivity() throws IOException {
     Edge forward1 =
         new Edge(NodeInterfacePair.of("a1", "Ethernet1"), NodeInterfacePair.of("b1", "Ethernet1"));
     Edge forward2 =

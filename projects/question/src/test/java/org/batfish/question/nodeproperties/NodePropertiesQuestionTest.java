@@ -5,13 +5,13 @@ import static org.hamcrest.Matchers.equalTo;
 
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link org.batfish.question.nodeproperties.NodePropertiesQuestion} */
-public class NodePropertiesQuestionTest {
+class NodePropertiesQuestionTest {
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     NodePropertiesQuestion q =
         new NodePropertiesQuestion("nodes", NodePropertySpecifier.NTP_SERVERS);
     assertThat(BatfishObjectMapper.clone(q, NodePropertiesQuestion.class), equalTo(q));

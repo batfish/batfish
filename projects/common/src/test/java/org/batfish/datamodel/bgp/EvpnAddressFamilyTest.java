@@ -11,12 +11,12 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.bgp.EvpnAddressFamily.Builder;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link EvpnAddressFamily} */
-public class EvpnAddressFamilyTest {
+class EvpnAddressFamilyTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     Builder builder =
         builder()
             .setL2Vnis(ImmutableSet.of())
@@ -65,7 +65,7 @@ public class EvpnAddressFamilyTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     EvpnAddressFamily af =
         builder()
             .setAddressFamilyCapabilities(
@@ -83,7 +83,7 @@ public class EvpnAddressFamilyTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     Builder builder =
         builder()
             .setAddressFamilyCapabilities(

@@ -1,6 +1,6 @@
 package org.batfish.minesweeper.collectors;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -11,11 +11,11 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchAny;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchExprReference;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchRegex;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link org.batfish.minesweeper.collectors.AsPathNameAsPathMatchExprCollector}. */
-public class AsPathNameAsPathMatchExprCollectorTest {
+class AsPathNameAsPathMatchExprCollectorTest {
 
   private static final String HOSTNAME = "hostname";
   private Configuration _baseConfig;
@@ -24,8 +24,8 @@ public class AsPathNameAsPathMatchExprCollectorTest {
   private static final String ASPATH_LST_1 = "lst1";
   private static final String ASPATH_LST_2 = "lst2";
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder()
@@ -41,7 +41,7 @@ public class AsPathNameAsPathMatchExprCollectorTest {
   }
 
   @Test
-  public void testVisitAsPathMatchAny() {
+  void testVisitAsPathMatchAny() {
     assertEquals(
         ImmutableSet.of(ASPATH_LST_1, ASPATH_LST_2),
         AsPathMatchAny.of(
@@ -52,7 +52,7 @@ public class AsPathNameAsPathMatchExprCollectorTest {
   }
 
   @Test
-  public void testAsPathMatchExprReference() {
+  void testAsPathMatchExprReference() {
 
     AsPathMatchExprReference reference = AsPathMatchExprReference.of(ASPATH_LST_1);
 
@@ -60,7 +60,7 @@ public class AsPathNameAsPathMatchExprCollectorTest {
   }
 
   @Test
-  public void testAsPathMatchRegex() {
+  void testAsPathMatchRegex() {
     assertEquals(ImmutableSet.of(), AsPathMatchRegex.of(" 40$").accept(_collector, _baseConfig));
   }
 }

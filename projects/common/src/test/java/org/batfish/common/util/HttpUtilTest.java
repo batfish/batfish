@@ -1,32 +1,32 @@
 package org.batfish.common.util;
 
 import static org.batfish.common.util.HttpUtil.checkClientArgument;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import javax.ws.rs.BadRequestException;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-public final class HttpUtilTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+final class HttpUtilTest {
 
   @Test
-  public void testCheckClientArgumentFalseNoVarArgs() {
-    _thrown.expect(BadRequestException.class);
-    _thrown.expectMessage("message");
-    checkClientArgument(false, "message");
+  void testCheckClientArgumentFalseNoVarArgs() {
+    Throwable exception =
+        assertThrows(BadRequestException.class, () -> checkClientArgument(false, "message"));
+    assertThat(exception.getMessage(), containsString("message"));
   }
 
   @Test
-  public void testCheckClientArgumentFalseVarArgs() {
-    _thrown.expect(BadRequestException.class);
-    _thrown.expectMessage("varargs");
-    checkClientArgument(false, "%s%s", "var", "args");
+  void testCheckClientArgumentFalseVarArgs() {
+    Throwable exception =
+        assertThrows(
+            BadRequestException.class, () -> checkClientArgument(false, "%s%s", "var", "args"));
+    assertThat(exception.getMessage(), containsString("varargs"));
   }
 
   @Test
-  public void testCheckClientArgumentTrue() {
+  void testCheckClientArgumentTrue() {
     checkClientArgument(true, "");
   }
 }

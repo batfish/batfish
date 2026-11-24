@@ -8,26 +8,26 @@ import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link CommunityExprsSet}. */
-public final class CommunityExprsSetTest {
+final class CommunityExprsSetTest {
 
   private static final CommunityExprsSet OBJ =
       CommunityExprsSet.of(new StandardCommunityHighLowExprs(new LiteralInt(1), new LiteralInt(1)));
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     assertThat(BatfishObjectMapper.clone(OBJ, CommunityExprsSet.class), equalTo(OBJ));
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     assertThat(SerializationUtils.clone(OBJ), equalTo(OBJ));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     CommunityExprsSet obj = new CommunityExprsSet(ImmutableSet.of());
     new EqualsTester()
         .addEqualityGroup(new Object())

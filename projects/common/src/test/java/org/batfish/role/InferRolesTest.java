@@ -3,8 +3,8 @@ package org.batfish.role;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -15,13 +15,10 @@ import java.util.Optional;
 import java.util.Set;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Topology;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link InferRoles}. */
-@RunWith(JUnit4.class)
-public class InferRolesTest {
+class InferRolesTest {
   private static final Set<String> EXAMPLE_NODES =
       ImmutableSet.of(
           "as1border1",
@@ -85,7 +82,7 @@ public class InferRolesTest {
               Edge.of("host2", "eth0", "as2dept1", "GigabitEthernet3/0")));
 
   @Test
-  public void inferRolesOnExampleTopology() {
+  void inferRolesOnExampleTopology() {
     Optional<RoleMapping> roleMappingOpt =
         new InferRoles(EXAMPLE_NODES, EXAMPLE_TOPOLOGY).inferRoles();
 

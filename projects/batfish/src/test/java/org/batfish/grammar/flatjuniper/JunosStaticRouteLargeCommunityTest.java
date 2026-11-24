@@ -9,6 +9,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 
+import java.io.File;
 import java.io.IOException;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.Bgpv4Route;
@@ -22,20 +23,19 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.main.Batfish;
 import org.batfish.representation.juniper.JuniperConfiguration;
 import org.batfish.representation.juniper.StaticRouteV4;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosStaticRouteLargeCommunityTest {
+final class JunosStaticRouteLargeCommunityTest {
 
   private static final String HOSTNAME = "static-route-large-community";
   private static final Prefix PREFIX = Prefix.parse("192.0.2.0/24");
   private static final LargeCommunity COMMUNITY = LargeCommunity.of(64512L, 1L, 2L);
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testExtractionAndConversion() throws IOException {
+  void testExtractionAndConversion() throws IOException {
     Batfish batfish = getBatfish(_folder, HOSTNAME);
     JuniperConfiguration juniperConfiguration = getVendorConfiguration(batfish, HOSTNAME);
     assertThat(getParseWarnings(batfish, HOSTNAME), empty());

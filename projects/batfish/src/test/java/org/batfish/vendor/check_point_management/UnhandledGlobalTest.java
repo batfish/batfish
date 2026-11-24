@@ -7,13 +7,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link UnhandledGlobal}. */
-public final class UnhandledGlobalTest {
+final class UnhandledGlobalTest {
 
   @Test
-  public void testJacksonDeserialization() throws JsonProcessingException {
+  void testJacksonDeserialization() throws JsonProcessingException {
     String input =
         "{"
             + "\"GARBAGE\":0,"
@@ -27,13 +27,13 @@ public final class UnhandledGlobalTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     UnhandledGlobal obj = new UnhandledGlobal("what", Uid.of("1"));
     assertThat(SerializationUtils.clone(obj), equalTo(obj));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     UnhandledGlobal obj = new UnhandledGlobal("what", Uid.of("1"));
     new EqualsTester()
         .addEqualityGroup(obj, new UnhandledGlobal("what", Uid.of("1")))

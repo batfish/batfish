@@ -11,6 +11,7 @@ import static org.hamcrest.Matchers.contains;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.SortedMap;
@@ -33,20 +34,19 @@ import org.batfish.datamodel.packet_policy.IngressInterfaceVrf;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.packet_policy.Return;
 import org.batfish.main.Batfish;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** An e2e test of interpretation of {@link PacketPolicy} using traceroute */
-public class PbrWithTracerouteTest {
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+class PbrWithTracerouteTest {
+  @TempDir public File _folder;
   private String _ingressIfaceName = "ingress";
   private String _pbrOutIface = "exitPBR";
   private final int _subnetLength = 24;
   private final Ip _overrideNextHop = Ip.parse("2.2.2.2");
 
   @Test
-  public void testOverrideIpExitsNetwork() throws IOException {
+  void testOverrideIpExitsNetwork() throws IOException {
 
     NetworkFactory nf = new NetworkFactory();
     Configuration c = buildPBRConfig(nf);
@@ -75,7 +75,7 @@ public class PbrWithTracerouteTest {
   }
 
   @Test
-  public void testOverrideIpDelivered() throws IOException {
+  void testOverrideIpDelivered() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration c = buildPBRConfig(nf);
 

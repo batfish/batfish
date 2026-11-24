@@ -3,13 +3,13 @@ package org.batfish.datamodel;
 import static org.batfish.common.bdd.BDDMatchers.isOne;
 import static org.batfish.datamodel.FlowToBDD.flowHeadersToBdd;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class FlowToBDDTest {
+class FlowToBDDTest {
   private static final Flow BASE_FLOW =
       Flow.builder()
           .setIngressNode("node")
@@ -25,7 +25,7 @@ public class FlowToBDDTest {
 
   /** Test that BASE_FLOW is converted to BDD correctly. */
   @Test
-  public void testFlowHeadersToBddOspf() {
+  void testFlowHeadersToBddOspf() {
     BDD headerBdd = flowHeadersToBdd(BASE_FLOW, _packet);
     assertThat(
         headerBdd.imp(_packet.getSrcIp().value(Ip.FIRST_CLASS_A_PRIVATE_IP.asLong())), isOne());
@@ -53,7 +53,7 @@ public class FlowToBDDTest {
 
   /** Test that ICMP packets are converted correctly. */
   @Test
-  public void testFlowHeadersToBddIcmp() {
+  void testFlowHeadersToBddIcmp() {
     Flow flow =
         BASE_FLOW.toBuilder().setIpProtocol(IpProtocol.ICMP).setIcmpCode(5).setIcmpType(7).build();
     BDD headerBdd = flowHeadersToBdd(flow, _packet);
@@ -74,7 +74,7 @@ public class FlowToBDDTest {
   }
 
   @Test
-  public void testFlowHeadersToBddTcp() {
+  void testFlowHeadersToBddTcp() {
     Flow flow =
         BASE_FLOW.toBuilder()
             .setIpProtocol(IpProtocol.TCP)
@@ -100,7 +100,7 @@ public class FlowToBDDTest {
   }
 
   @Test
-  public void testFlowHeadersToBddUdp() {
+  void testFlowHeadersToBddUdp() {
     Flow flow =
         BASE_FLOW.toBuilder().setIpProtocol(IpProtocol.UDP).setSrcPort(22).setDstPort(55).build();
     BDD headerBdd = flowHeadersToBdd(flow, _packet);

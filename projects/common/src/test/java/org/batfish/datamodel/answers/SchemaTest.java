@@ -4,12 +4,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.testing.EqualsTester;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class SchemaTest {
+class SchemaTest {
 
   @Test
-  public void constructorTest() {
+  void constructorTest() {
     new EqualsTester()
         .addEqualityGroup(new Schema("Set<List<Integer>>"), Schema.set(Schema.list(Schema.INTEGER)))
         .addEqualityGroup(new Schema("List<Set<Integer>>"), Schema.list(Schema.set(Schema.INTEGER)))
@@ -22,7 +22,7 @@ public class SchemaTest {
   }
 
   @Test
-  public void isIntBased() {
+  void isIntBased() {
     assertThat(Schema.INTEGER.isIntBased(), equalTo(true));
     assertThat(Schema.list(Schema.INTEGER).isIntBased(), equalTo(true));
     assertThat(Schema.set(Schema.INTEGER).isIntBased(), equalTo(true));
@@ -31,7 +31,7 @@ public class SchemaTest {
   }
 
   @Test
-  public void isCollection() {
+  void isCollection() {
     assertThat(Schema.INTEGER.isCollection(), equalTo(false));
     assertThat(Schema.list(Schema.INTEGER).isCollection(), equalTo(true));
     assertThat(Schema.set(Schema.INTEGER).isCollection(), equalTo(true));

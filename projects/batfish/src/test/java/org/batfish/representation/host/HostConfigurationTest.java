@@ -4,22 +4,19 @@ import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.representation.host.HostConfiguration.toHostInterfaces;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.util.Map;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link HostConfiguration}. */
-public final class HostConfigurationTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+final class HostConfigurationTest {
 
   @Test
-  public void testToHostInterfacesDeserializationFromArray() throws IOException {
+  void testToHostInterfacesDeserializationFromArray() throws IOException {
     String jsonText = "[{ \"name\": \"eth0\" }]";
     Map<String, HostInterface> hostInterfaces =
         toHostInterfaces(BatfishObjectMapper.mapper().readTree(jsonText));
@@ -27,7 +24,7 @@ public final class HostConfigurationTest {
   }
 
   @Test
-  public void testToHostInterfacesDeserializationFromArrayDuplicate() throws IOException {
+  void testToHostInterfacesDeserializationFromArrayDuplicate() throws IOException {
     String jsonText =
         "[{ \"name\": \"eth0\", \"gateway\": \"10.0.0.1\" },{ \"name\": \"eth0\", \"gateway\":"
             + " \"10.0.0.2\" }]";
@@ -38,7 +35,7 @@ public final class HostConfigurationTest {
   }
 
   @Test
-  public void testHostInterfacesDeserializationFromObject() throws IOException {
+  void testHostInterfacesDeserializationFromObject() throws IOException {
     String jsonText = "{ \"eth0\": {\"name\": \"eth0\" } }";
     Map<String, HostInterface> hostInterfaces =
         toHostInterfaces(BatfishObjectMapper.mapper().readTree(jsonText));
@@ -46,10 +43,11 @@ public final class HostConfigurationTest {
   }
 
   @Test
-  public void testHostInterfacesDeserializationFromObjectWithMismatch() throws IOException {
+  void testHostInterfacesDeserializationFromObjectWithMismatch() {
     String jsonText = "{ \"eth0\": {\"name\": \"eth1\" } }";
 
-    _thrown.expect(IllegalArgumentException.class);
-    toHostInterfaces(BatfishObjectMapper.mapper().readTree(jsonText));
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> toHostInterfaces(BatfishObjectMapper.mapper().readTree(jsonText)));
   }
 }

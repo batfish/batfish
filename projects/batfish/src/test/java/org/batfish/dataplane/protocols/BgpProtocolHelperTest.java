@@ -18,8 +18,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -54,10 +54,10 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.statement.Statements;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class BgpProtocolHelperTest {
+class BgpProtocolHelperTest {
   private static final Ip DEST_IP = Ip.parse("3.3.3.3");
   private static final Prefix DEST_NETWORK = Prefix.parse("4.4.4.0/24");
   private static final Ip ORIGINATOR_IP = Ip.parse("1.1.1.1");
@@ -65,7 +65,7 @@ public class BgpProtocolHelperTest {
   private Builder _baseBgpRouteBuilder;
 
   @Test
-  public void testIsReflectableEbgp() {
+  void testIsReflectableEbgp() {
     Bgpv4Route route =
         Bgpv4Route.testBuilder().setProtocol(RoutingProtocol.BGP).setNetwork(Prefix.ZERO).build();
     assertThat(
@@ -85,7 +85,7 @@ public class BgpProtocolHelperTest {
   }
 
   @Test
-  public void testIsReflectableIbgp() {
+  void testIsReflectableIbgp() {
     Bgpv4Route rrc =
         Bgpv4Route.testBuilder()
             .setProtocol(RoutingProtocol.IBGP)
@@ -125,8 +125,8 @@ public class BgpProtocolHelperTest {
   }
 
   /** Reset route builder */
-  @Before
-  public void resetDefaultRouteBuilders() {
+  @BeforeEach
+  void resetDefaultRouteBuilders() {
     _baseBgpRouteBuilder =
         Bgpv4Route.testBuilder()
             .setOriginatorIp(ORIGINATOR_IP)
@@ -138,7 +138,7 @@ public class BgpProtocolHelperTest {
   }
 
   @Test
-  public void testTransformOnImportNoAllowAsIn() {
+  void testTransformOnImportNoAllowAsIn() {
     assertThat(
         "AS path loop, return null",
         transformBgpRouteOnImport(
@@ -153,7 +153,7 @@ public class BgpProtocolHelperTest {
   }
 
   @Test
-  public void testTransformOnImportAllowAsIn() {
+  void testTransformOnImportAllowAsIn() {
     assertThat(
         "AS path loop allowed",
         transformBgpRouteOnImport(
@@ -168,7 +168,7 @@ public class BgpProtocolHelperTest {
   }
 
   @Test
-  public void testTransformOnImportEbgp() {
+  void testTransformOnImportEbgp() {
     assertThat(
         "No AS path loop, eBGP",
         transformBgpRouteOnImport(
@@ -184,7 +184,7 @@ public class BgpProtocolHelperTest {
   }
 
   @Test
-  public void testTransformOnImportClearsNextHop() {
+  void testTransformOnImportClearsNextHop() {
     assertThat(
         "NextHopInterface should be cleared even if peerInterface is null",
         transformBgpRouteOnImport(
@@ -203,7 +203,7 @@ public class BgpProtocolHelperTest {
   }
 
   @Test
-  public void testTransformOnImportWithPeerInterface() {
+  void testTransformOnImportWithPeerInterface() {
     assertThat(
         "NextHopInterface should be set to peerInterface",
         transformBgpRouteOnImport(
@@ -222,7 +222,7 @@ public class BgpProtocolHelperTest {
   }
 
   @Test
-  public void testTransformOnImportIbgp() {
+  void testTransformOnImportIbgp() {
     assertThat(
         "No AS path loop, iBGP",
         transformBgpRouteOnImport(
@@ -238,7 +238,7 @@ public class BgpProtocolHelperTest {
   }
 
   @Test
-  public void testTransformOnImportReceivedFrom() {
+  void testTransformOnImportReceivedFrom() {
     assertThat(
         transformBgpRouteOnImport(
                 _baseBgpRouteBuilder.build(), 1L, false, false, _process, Ip.parse("1.2.3.4"), null)
@@ -248,7 +248,7 @@ public class BgpProtocolHelperTest {
   }
 
   @Test
-  public void testTransformOnImportClearAdminSetInterface() {
+  void testTransformOnImportClearAdminSetInterface() {
     final Builder builder =
         transformBgpRouteOnImport(
             _baseBgpRouteBuilder.setAdmin(AbstractRoute.MAX_ADMIN_DISTANCE).build(),
@@ -263,7 +263,7 @@ public class BgpProtocolHelperTest {
   }
 
   @Test
-  public void testTransformPostExportClearTag2() {
+  void testTransformPostExportClearTag2() {
     Builder builder = _baseBgpRouteBuilder.setTag2(5L);
     transformBgpRoutePostExport(
         builder,
@@ -281,7 +281,7 @@ public class BgpProtocolHelperTest {
   }
 
   @Test
-  public void testTransformPostExportClearColors() {
+  void testTransformPostExportClearColors() {
     Builder builder = _baseBgpRouteBuilder.setColor(5L).setColor2(6L);
     transformBgpRoutePostExport(
         builder,
@@ -300,7 +300,7 @@ public class BgpProtocolHelperTest {
   }
 
   @Test
-  public void testTransformPostExportClearTag() {
+  void testTransformPostExportClearTag() {
     Builder builder = _baseBgpRouteBuilder.setTag(MAX_TAG);
     transformBgpRoutePostExport(
         builder,
@@ -333,7 +333,7 @@ public class BgpProtocolHelperTest {
   }
 
   @Test
-  public void testTransformPostExportCommunities() {
+  void testTransformPostExportCommunities() {
     CommunitySet mixedComms =
         CommunitySet.of(StandardCommunity.of(5), ExtendedCommunity.parse("1:1:1"));
 
@@ -409,7 +409,7 @@ public class BgpProtocolHelperTest {
   }
 
   @Test
-  public void testRemoveNonTransitiveExtendedCommunities() {
+  void testRemoveNonTransitiveExtendedCommunities() {
     StandardCommunity standard = StandardCommunity.of(5);
     // Transitive bit clear (type octet high bit 0x40 == 0): crosses AS boundaries.
     ExtendedCommunity transitiveExt = ExtendedCommunity.target(65000, 100);
@@ -436,7 +436,7 @@ public class BgpProtocolHelperTest {
   }
 
   @Test
-  public void testTransformPostExportNonTransitiveExtendedCommunities() {
+  void testTransformPostExportNonTransitiveExtendedCommunities() {
     ExtendedCommunity transitiveExt = ExtendedCommunity.target(65000, 100);
     ExtendedCommunity nonTransitiveExt = ExtendedCommunity.parse("65000:672277L:36867");
     CommunitySet comms = CommunitySet.of(StandardCommunity.of(5), transitiveExt, nonTransitiveExt);
@@ -509,7 +509,7 @@ public class BgpProtocolHelperTest {
   }
 
   @Test
-  public void testTransformPostExportPrependAs() {
+  void testTransformPostExportPrependAs() {
     AsPath baseAsPath = AsPath.of(ImmutableList.of(AsSet.of(777), AsSet.confed(888)));
     // Prepend own as
     _baseBgpRouteBuilder.setAsPath(baseAsPath);
@@ -614,7 +614,7 @@ public class BgpProtocolHelperTest {
   }
 
   @Test
-  public void testTransformPostExportNextHopIp() {
+  void testTransformPostExportNextHopIp() {
     Ip nextHopIp = Ip.parse("1.2.3.4");
     _baseBgpRouteBuilder.setNextHop(NextHopDiscard.instance());
 
@@ -747,7 +747,7 @@ public class BgpProtocolHelperTest {
   }
 
   @Test
-  public void testTransformGeneratedRouteWithAttrPolicy() {
+  void testTransformGeneratedRouteWithAttrPolicy() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
         nf.configurationBuilder()
@@ -773,7 +773,7 @@ public class BgpProtocolHelperTest {
   }
 
   @Test
-  public void testAllowAsPathOutEmptyAsPath() {
+  void testAllowAsPathOutEmptyAsPath() {
     long peerAs = 1L;
     AsPath asPath = AsPath.empty();
     for (AllowRemoteAsOutMode mode : AllowRemoteAsOutMode.values()) {
@@ -782,14 +782,14 @@ public class BgpProtocolHelperTest {
   }
 
   @Test
-  public void testAllowAsPathOutAlways() {
+  void testAllowAsPathOutAlways() {
     long peerAs = 1L;
     AsPath asPath = AsPath.ofSingletonAsSets(peerAs);
     assertTrue(allowAsPathOut(asPath, peerAs, ALWAYS));
   }
 
   @Test
-  public void testAllowAsPathOutNever() {
+  void testAllowAsPathOutNever() {
     long peerAs = 1L;
     assertFalse(allowAsPathOut(AsPath.ofSingletonAsSets(peerAs), peerAs, NEVER));
     assertFalse(allowAsPathOut(AsPath.ofSingletonAsSets(2L, peerAs), peerAs, NEVER));
@@ -797,7 +797,7 @@ public class BgpProtocolHelperTest {
   }
 
   @Test
-  public void testAllowAsPathOutExceptFirst() {
+  void testAllowAsPathOutExceptFirst() {
     long peerAs = 1L;
     assertFalse(allowAsPathOut(AsPath.ofSingletonAsSets(peerAs), peerAs, EXCEPT_FIRST));
     assertTrue(allowAsPathOut(AsPath.ofSingletonAsSets(2L, peerAs), peerAs, EXCEPT_FIRST));
@@ -805,7 +805,7 @@ public class BgpProtocolHelperTest {
   }
 
   @Test
-  public void testAllowAsPathOutExceptReceivedFrom() {
+  void testAllowAsPathOutExceptReceivedFrom() {
     long peerAs = 1L;
     // AS-path filtering is disabled for EXCEPT_RECEIVED_FROM — always allows
     assertTrue(allowAsPathOut(AsPath.ofSingletonAsSets(peerAs), peerAs, EXCEPT_RECEIVED_FROM));
@@ -814,7 +814,7 @@ public class BgpProtocolHelperTest {
   }
 
   @Test
-  public void testReceivedFromPeer() {
+  void testReceivedFromPeer() {
     Ip peerIp = Ip.parse("10.0.0.1");
     Ip otherIp = Ip.parse("10.0.0.2");
     Ip linkLocalIp = Ip.parse("169.254.0.1");
@@ -832,7 +832,7 @@ public class BgpProtocolHelperTest {
   }
 
   @Test
-  public void testToBgpv4RouteFromAggregate() {
+  void testToBgpv4RouteFromAggregate() {
     Prefix network = Prefix.parse("1.0.0.0/8");
     Ip routerId = Ip.parse("1.1.1.1");
     AsPath asPath = AsPath.ofSingletonAsSets(65000L);
@@ -851,7 +851,7 @@ public class BgpProtocolHelperTest {
   }
 
   @Test
-  public void testToBgpv4RouteFromAggregateAsPath() {
+  void testToBgpv4RouteFromAggregateAsPath() {
     Prefix network = Prefix.parse("1.0.0.0/8");
     Ip routerId = Ip.parse("1.1.1.1");
 

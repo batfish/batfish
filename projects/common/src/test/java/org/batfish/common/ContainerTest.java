@@ -7,21 +7,18 @@ import com.google.common.collect.Sets;
 import com.google.common.testing.EqualsTester;
 import java.util.Collections;
 import java.util.TreeSet;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link Container}. */
-@RunWith(JUnit4.class)
-public class ContainerTest {
+class ContainerTest {
   @Test
-  public void testToString() {
+  void testToString() {
     Container c = Container.of("foo", new TreeSet<>());
     assertThat(c.toString(), equalTo("Container{name=foo, testrigs=[]}"));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     Container c = Container.of("foo", new TreeSet<>());
     Container cCopy = Container.of("foo", new TreeSet<>());
     Container cWithTestrig =

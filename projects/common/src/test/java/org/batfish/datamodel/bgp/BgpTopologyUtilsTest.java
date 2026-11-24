@@ -42,12 +42,12 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.BgpTopologyUtils.AsPair;
 import org.batfish.datamodel.bgp.BgpTopologyUtils.ConfedSessionType;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link BgpTopologyUtils} */
-public class BgpTopologyUtilsTest {
+class BgpTopologyUtilsTest {
 
   private static String NODE1 = "n1";
   private static String NODE2 = "n2";
@@ -58,8 +58,8 @@ public class BgpTopologyUtilsTest {
   private static Map<String, Configuration> _configs;
 
   /** Sets up three nodes with a BGP process on each. Tests can populate BGP processes. */
-  @BeforeClass
-  public static void setup() {
+  @BeforeAll
+  static void setup() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -82,8 +82,8 @@ public class BgpTopologyUtilsTest {
     _configs = ImmutableMap.of(NODE1, c1, NODE2, c2, NODE3, c3);
   }
 
-  @Before
-  public void clearBgpProcesses() {
+  @BeforeEach
+  void clearBgpProcesses() {
     _node1BgpProcess.setNeighbors(ImmutableSortedMap.of());
     _node2BgpProcess.setNeighbors(ImmutableSortedMap.of());
     _node3BgpProcess.setNeighbors(ImmutableSortedMap.of());
@@ -100,7 +100,7 @@ public class BgpTopologyUtilsTest {
    * should pass sanity checks and appear in the topology.
    */
   @Test
-  public void testInitTopologySessionVrf() {
+  void testInitTopologySessionVrf() {
     // Peer on node1 in VRF "myVrf" with local IP 1.1.1.1 (owned by default VRF).
     // sessionVrf is set to "default", so sanity check should pass.
     Ip ip1 = Ip.parse("1.1.1.1");
@@ -206,7 +206,7 @@ public class BgpTopologyUtilsTest {
    * initiator whose dialed address is owned in a non-config VRF still finds it.
    */
   @Test
-  public void testInitTopologyAnyVrfRegistersUnderAllNodeVrfs() {
+  void testInitTopologyAnyVrfRegistersUnderAllNodeVrfs() {
     assertThat(initAnyVrfScenario(SessionVrfScope.AnyVrf.instance()).edges(), hasSize(2));
   }
 
@@ -216,7 +216,7 @@ public class BgpTopologyUtilsTest {
    * different VRF does not match.
    */
   @Test
-  public void testInitTopologyOwnVrfDoesNotRegisterUnderOtherVrfs() {
+  void testInitTopologyOwnVrfDoesNotRegisterUnderOtherVrfs() {
     assertThat(initAnyVrfScenario(SessionVrfScope.OwnVrf.instance()).edges(), empty());
   }
 
@@ -226,7 +226,7 @@ public class BgpTopologyUtilsTest {
    * FIB.
    */
   @Test
-  public void testInitTopologySourceIpInferenceWithoutFib() {
+  void testInitTopologySourceIpInferenceWithoutFib() {
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("2.2.2.2");
 
@@ -283,7 +283,7 @@ public class BgpTopologyUtilsTest {
   }
 
   @Test
-  public void testInitTopologyRemotePrefixNotMatchingLocalIp() {
+  void testInitTopologyRemotePrefixNotMatchingLocalIp() {
     // Peer 1 on node1 with IP 1.1.1.1 is active, set up to peer with 2.2.2.2
     // Peer 2 on node2 with IP 2.2.2.2 is passive, with remote prefix 1.1.1.0/24
     // Should see one session come up in BGP topology: peer 1 to peer 2
@@ -333,7 +333,7 @@ public class BgpTopologyUtilsTest {
   }
 
   @Test
-  public void testInitTopologyNoSelfLoop() {
+  void testInitTopologyNoSelfLoop() {
     // Peer 1 on node1 with IP 1.1.1.1 is active, set up to peer with 1.1.1.1
     // Should see no sessions, and should also not crash.
 
@@ -361,7 +361,7 @@ public class BgpTopologyUtilsTest {
   }
 
   @Test
-  public void testInitTopologyPeerAddressNotMatchingRemoteHost() {
+  void testInitTopologyPeerAddressNotMatchingRemoteHost() {
     // Peer 1 on node1 with IP 1.1.1.1 is active, set up to peer with 1.1.1.2
     // Peer 2 on node2 with IP 1.1.1.2 is passive, able to peer with peer 1
     // Peer 3 has the same configuration as peer 2, but on node3 with IP 1.1.1.3
@@ -412,7 +412,7 @@ public class BgpTopologyUtilsTest {
   }
 
   @Test
-  public void testInitTopologyBgpUnnumberedEbgp() {
+  void testInitTopologyBgpUnnumberedEbgp() {
     /*
          AS 1          AS 2
            N1 ---------- N2
@@ -497,7 +497,7 @@ public class BgpTopologyUtilsTest {
   }
 
   @Test
-  public void testInitTopologyBgpUnnumberedHalfWiredLink() {
+  void testInitTopologyBgpUnnumberedHalfWiredLink() {
     /*
          AS 1          AS 2
            N1 ---------- N2
@@ -532,7 +532,7 @@ public class BgpTopologyUtilsTest {
   }
 
   @Test
-  public void testInitTopologyBgpUnnumberedIbgp() {
+  void testInitTopologyBgpUnnumberedIbgp() {
     /*
          AS 1          AS 1
            N1 ---------- N2
@@ -573,7 +573,7 @@ public class BgpTopologyUtilsTest {
   }
 
   @Test
-  public void testInitTopologyIncompatibleBgpUnnumbered() {
+  void testInitTopologyIncompatibleBgpUnnumbered() {
     /*
          AS 1          AS 2
            N1 ---------- N2
@@ -642,7 +642,7 @@ public class BgpTopologyUtilsTest {
   }
 
   @Test
-  public void testComputeAsPair() {
+  void testComputeAsPair() {
     // Misconfigured
     assertPair(null, null, ALL_AS_NUMBERS, 3L, null, ALL_AS_NUMBERS, null);
     assertPair(1L, null, ALL_AS_NUMBERS, null, null, ALL_AS_NUMBERS, null);
@@ -720,7 +720,7 @@ public class BgpTopologyUtilsTest {
   }
 
   @Test
-  public void testComputeAsPair_issue9263() {
+  void testComputeAsPair_issue9263() {
     // Test case for GitHub issue #9263:
     // R1: router bgp 3001, bgp confederation identifier 30, neighbor 4.0.0.3 remote-as 3001
     // R2: router bgp 3001, neighbor 4.0.0.2 remote-as 30
@@ -748,7 +748,7 @@ public class BgpTopologyUtilsTest {
   }
 
   @Test
-  public void testComputeAsPair_confederationEdgeCases() {
+  void testComputeAsPair_confederationEdgeCases() {
     // Both peers in same confederation, different member ASes
     assertPair(
         1001L,
@@ -791,7 +791,7 @@ public class BgpTopologyUtilsTest {
   }
 
   @Test
-  public void testComputeAsPair_confederationComprehensive() {
+  void testComputeAsPair_confederationComprehensive() {
     // Test all combinations of confederation configurations
 
     // ===== Both peers in SAME confederation =====
@@ -926,7 +926,7 @@ public class BgpTopologyUtilsTest {
    * external peer expects the confed ID, causing an AS mismatch. No session should form.
    */
   @Test
-  public void testComputeAsPair_confedMemberCollisionWithExternalPeer() {
+  void testComputeAsPair_confedMemberCollisionWithExternalPeer() {
     LongSpace confedMembers = LongSpace.builder().including(65001L).including(65002L).build();
 
     // Initiator is confed peer (R2: localAs=65001, confed=65000, members={65001,65002})
@@ -973,7 +973,7 @@ public class BgpTopologyUtilsTest {
   }
 
   @Test
-  public void testGetFeasibleLocalIps_passiveCandidate() {
+  void testGetFeasibleLocalIps_passiveCandidate() {
     Ip ip2210 = Ip.parse("2.2.1.0");
     Ip ip2220 = Ip.parse("2.2.2.0");
     Ip ip2222 = Ip.parse("2.2.2.2");
@@ -986,7 +986,7 @@ public class BgpTopologyUtilsTest {
   }
 
   @Test
-  public void testGetFeasibleLocalIps_activeCandidate() {
+  void testGetFeasibleLocalIps_activeCandidate() {
     Ip ip2221 = Ip.parse("2.2.2.1");
     Ip ip2222 = Ip.parse("2.2.2.2");
     Set<Ip> potentialLocalIps = ImmutableSet.of(ip2221, ip2222);

@@ -6,13 +6,13 @@ import static org.hamcrest.Matchers.equalTo;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link CommunitySetToRegexInputString}. */
-public final class CommunitySetToRegexInputStringTest {
+final class CommunitySetToRegexInputStringTest {
 
   @Test
-  public void testVisitTypesFirstAscendingSpaceSeparated() {
+  void testVisitTypesFirstAscendingSpaceSeparated() {
     CommunitySetRendering r =
         new TypesFirstAscendingSpaceSeparated(IntegerValueRendering.instance());
     assertThat(

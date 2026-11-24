@@ -1,23 +1,23 @@
 package org.batfish.vendor.sonic.representation;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.vendor.sonic.representation.VlanMember.TaggingMode;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class VlanMemberTest {
+class VlanMemberTest {
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     VlanMember obj = VlanMember.builder().setTaggingMode(TaggingMode.UNTAGGED).build();
     assertEquals(obj, SerializationUtils.clone(obj));
   }
 
   @SuppressWarnings("UnstableApiUsage")
   @Test
-  public void testEquals() {
+  void testEquals() {
     VlanMember.Builder builder = VlanMember.builder();
     new EqualsTester()
         .addEqualityGroup(builder.build(), builder.build())

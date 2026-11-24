@@ -35,12 +35,12 @@ import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link EvpnL3VniPropertiesAnswerer} */
-public class EvpnL3VniPropertiesAnswererTest {
+class EvpnL3VniPropertiesAnswererTest {
   @Test
-  public void testGenerateRow() {
+  void testGenerateRow() {
     String node = "n";
     int vni = 100001;
     Layer3VniConfig vniConfig =
@@ -73,7 +73,7 @@ public class EvpnL3VniPropertiesAnswererTest {
 
   /** A VNI with multiple import/export route targets reports all of them, sorted. */
   @Test
-  public void testGenerateRowMultipleRouteTargets() {
+  void testGenerateRowMultipleRouteTargets() {
     String node = "n";
     int vni = 100001;
     // Provide targets out of order; the answer must be sorted.
@@ -107,7 +107,7 @@ public class EvpnL3VniPropertiesAnswererTest {
    * it
    */
   @Test
-  public void testVniConfigDeDuping() {
+  void testVniConfigDeDuping() {
     NetworkFactory nf = new NetworkFactory();
     String host = "n";
     Configuration c1 =

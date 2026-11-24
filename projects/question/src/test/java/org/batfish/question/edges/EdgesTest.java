@@ -47,19 +47,19 @@ import org.batfish.identifiers.SnapshotId;
 import org.batfish.question.edges.EdgesQuestion.EdgeType;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** End-to-end tests of {@link org.batfish.question.edges}. */
-public final class EdgesTest {
+final class EdgesTest {
 
   private NetworkFactory _nf;
   private Configuration.Builder _cb;
   private Vrf.Builder _vb;
   private Interface.Builder _ib;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _nf = new NetworkFactory();
     _cb = _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     _vb = _nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
@@ -67,7 +67,7 @@ public final class EdgesTest {
   }
 
   @Test
-  public void testAnswerLayer1() {
+  void testAnswerLayer1() {
     String c1Name = "c1";
     String c2Name = "c2";
     String c1a1Name = "c1a1";
@@ -162,7 +162,7 @@ public final class EdgesTest {
   }
 
   @Test
-  public void testAnswerVxlan() {
+  void testAnswerVxlan() {
     Ip multicastGroup = Ip.parse("224.0.0.1");
     String node1 = "n1";
     String node2 = "n2";

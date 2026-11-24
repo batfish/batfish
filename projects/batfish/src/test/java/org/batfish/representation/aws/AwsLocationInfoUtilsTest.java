@@ -8,8 +8,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -18,10 +18,10 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.TestInterface;
 import org.batfish.specifier.LocationInfo;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link AwsLocationInfoUtils}. */
-public class AwsLocationInfoUtilsTest {
+class AwsLocationInfoUtilsTest {
   private static final Interface IFACE;
 
   static {
@@ -33,7 +33,7 @@ public class AwsLocationInfoUtilsTest {
   }
 
   @Test
-  public void testInstanceInterfaceLocationInfo() {
+  void testInstanceInterfaceLocationInfo() {
     LocationInfo info = instanceInterfaceLocationInfo(IFACE);
     assertTrue(info.isSource());
     assertThat(
@@ -47,7 +47,7 @@ public class AwsLocationInfoUtilsTest {
   }
 
   @Test
-  public void testSubnetInterfaceLocationInfo() {
+  void testSubnetInterfaceLocationInfo() {
     LocationInfo info = subnetInterfaceLocationInfo(IFACE);
     assertFalse(info.isSource());
     assertThat(
@@ -61,7 +61,7 @@ public class AwsLocationInfoUtilsTest {
   }
 
   @Test
-  public void testSubnetInterfaceLinkLocationInfo() {
+  void testSubnetInterfaceLinkLocationInfo() {
     LocationInfo info = subnetInterfaceLinkLocationInfo(IFACE);
     assertFalse(info.isSource());
     assertThat(

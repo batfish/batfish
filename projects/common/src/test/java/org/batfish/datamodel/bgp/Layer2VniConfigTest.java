@@ -11,12 +11,12 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link Layer2VniConfig} */
-public class Layer2VniConfigTest {
+class Layer2VniConfigTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     Layer2VniConfig.Builder builder =
         Layer2VniConfig.builder()
             .setVni(1)
@@ -36,7 +36,7 @@ public class Layer2VniConfigTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     Layer2VniConfig vni =
         Layer2VniConfig.builder()
             .setVni(1)
@@ -49,7 +49,7 @@ public class Layer2VniConfigTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     Layer2VniConfig vni =
         Layer2VniConfig.builder()
             .setVni(1)
@@ -61,7 +61,7 @@ public class Layer2VniConfigTest {
   }
 
   @Test
-  public void testSort() {
+  void testSort() {
     Layer2VniConfig.Builder vni =
         Layer2VniConfig.builder()
             .setVni(1)

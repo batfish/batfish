@@ -10,11 +10,11 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.routing_policy.Environment;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class DecrementLocalPreferenceTest {
+class DecrementLocalPreferenceTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(5)
         .addEqualityGroup(new DecrementLocalPreference(5), new DecrementLocalPreference(5))
@@ -23,7 +23,7 @@ public class DecrementLocalPreferenceTest {
   }
 
   @Test
-  public void testEvaluate() {
+  void testEvaluate() {
     Configuration c =
         Configuration.builder()
             .setHostname("c")

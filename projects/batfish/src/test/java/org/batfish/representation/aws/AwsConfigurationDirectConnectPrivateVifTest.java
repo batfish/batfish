@@ -7,9 +7,10 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
@@ -30,10 +31,9 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * E2e tests for AWS Direct Connect Private VIFs. The topology has two on-prem routers, each
@@ -45,7 +45,7 @@ import org.junit.rules.TemporaryFolder;
  *
  * <p>Preferred path: instance → subnet → VPC → VGW → onprem-high.
  */
-public class AwsConfigurationDirectConnectPrivateVifTest {
+class AwsConfigurationDirectConnectPrivateVifTest {
 
   private static final String TESTCONFIGS_DIR =
       "org/batfish/representation/aws/test-direct-connect-private-vif";
@@ -82,12 +82,12 @@ public class AwsConfigurationDirectConnectPrivateVifTest {
   private static final Ip _onPremHighIp = Ip.parse("10.20.0.1");
   private static final Ip _onPremHighVifIp = Ip.parse("169.254.30.2");
 
-  @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public static File _folder;
 
   private static IBatfish _batfish;
 
-  @BeforeClass
-  public static void setup() throws IOException {
+  @BeforeAll
+  static void setup() throws IOException {
     _batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
@@ -103,7 +103,7 @@ public class AwsConfigurationDirectConnectPrivateVifTest {
    * its Private VIF.
    */
   @Test
-  public void testFromOnPremHighToInstance() {
+  void testFromOnPremHighToInstance() {
     testTrace(
         getAnyFlow(_onPremHigh, _instanceIp, _batfish),
         FlowDisposition.ACCEPTED,
@@ -118,7 +118,7 @@ public class AwsConfigurationDirectConnectPrivateVifTest {
    * {@code onprem-high} and not split ECMP with {@code onprem-low}.
    */
   @Test
-  public void testInstanceToOnPremPrefersHighDxCommunity() {
+  void testInstanceToOnPremPrefersHighDxCommunity() {
     testTrace(
         getAnyFlow(_instance, _onPremHighIp, _batfish),
         FlowDisposition.ACCEPTED,
@@ -132,7 +132,7 @@ public class AwsConfigurationDirectConnectPrivateVifTest {
    * dxvif-priv02 from onprem-low) but local-pref breaks the tie before ECMP is considered.
    */
   @Test
-  public void testVgwHasOnlyHighPrefRoute() {
+  void testVgwHasOnlyHighPrefRoute() {
     DataPlane dp = _batfish.loadDataPlane(_batfish.getSnapshot());
     Set<AbstractRoute> vgwRoutes =
         dp.getRibs().get(_vgw, "default").getRoutes().stream()
@@ -159,7 +159,7 @@ public class AwsConfigurationDirectConnectPrivateVifTest {
    * community on incoming BGP routes and assigns a local-pref accordingly.
    */
   @Test
-  public void testDxCommunityToLocalPreferenceMappingOnVgw() {
+  void testDxCommunityToLocalPreferenceMappingOnVgw() {
     Configuration vgwCfg = _batfish.loadConfigurations(_batfish.getSnapshot()).get(_vgw);
     String policyName = VpnGateway.vgwDxImportPolicyName(_vifIdHigh);
     RoutingPolicy policy = vgwCfg.getRoutingPolicies().get(policyName);

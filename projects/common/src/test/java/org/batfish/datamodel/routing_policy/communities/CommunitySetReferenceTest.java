@@ -6,25 +6,25 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link CommunitySetReference}. */
-public final class CommunitySetReferenceTest {
+final class CommunitySetReferenceTest {
 
   private static final CommunitySetReference EXPR = new CommunitySetReference("a");
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     assertThat(BatfishObjectMapper.clone(EXPR, CommunitySetReference.class), equalTo(EXPR));
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     assertThat(SerializationUtils.clone(EXPR), equalTo(EXPR));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(EXPR, EXPR, new CommunitySetReference("a"))
         .addEqualityGroup(new CommunitySetReference("b"))

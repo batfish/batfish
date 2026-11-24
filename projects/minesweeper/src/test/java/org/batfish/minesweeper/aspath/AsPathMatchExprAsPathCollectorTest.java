@@ -4,7 +4,7 @@ import static org.batfish.minesweeper.bdd.AsPathMatchExprToRegexes.ASSUMED_MAX_A
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -22,11 +22,11 @@ import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IntComparison;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link org.batfish.minesweeper.aspath.AsPathMatchExprAsPathCollector}. */
-public class AsPathMatchExprAsPathCollectorTest {
+class AsPathMatchExprAsPathCollectorTest {
 
   private static final String HOSTNAME = "hostname";
   private Configuration _baseConfig;
@@ -35,8 +35,8 @@ public class AsPathMatchExprAsPathCollectorTest {
   private static final String ASPATH1 = " 40$";
   private static final String ASPATH2 = "^$";
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder()
@@ -49,7 +49,7 @@ public class AsPathMatchExprAsPathCollectorTest {
   }
 
   @Test
-  public void testVisitAsPathMatchAny() {
+  void testVisitAsPathMatchAny() {
     assertEquals(
         ImmutableSet.of(), AsPathMatchAny.of(ImmutableList.of()).accept(_collector, _baseConfig));
 
@@ -61,7 +61,7 @@ public class AsPathMatchExprAsPathCollectorTest {
   }
 
   @Test
-  public void testAsPathMatchExprReference() {
+  void testAsPathMatchExprReference() {
     String name = "name";
 
     _baseConfig.setAsPathMatchExprs(ImmutableMap.of(name, AsPathMatchRegex.of(ASPATH1)));
@@ -74,14 +74,14 @@ public class AsPathMatchExprAsPathCollectorTest {
   }
 
   @Test
-  public void testAsPathMatchRegex() {
+  void testAsPathMatchRegex() {
     assertEquals(
         ImmutableSet.of(new SymbolicAsPathRegex(ASPATH1)),
         AsPathMatchRegex.of(ASPATH1).accept(_collector, _baseConfig));
   }
 
   @Test
-  public void testAsSetsMatchingRanges() {
+  void testAsSetsMatchingRanges() {
     AsSetsMatchingRanges expr =
         AsSetsMatchingRanges.of(false, true, ImmutableList.of(Range.closed(11L, 14L)));
     assertEquals(
@@ -89,7 +89,7 @@ public class AsPathMatchExprAsPathCollectorTest {
   }
 
   @Test
-  public void testHasAsPathLength() {
+  void testHasAsPathLength() {
     // Boundary conditions that evaluate to false (or crash, in EQ's case).
     for (HasAsPathLength expr :
         ImmutableList.of(

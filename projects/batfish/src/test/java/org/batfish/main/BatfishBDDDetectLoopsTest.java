@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 
 import com.google.common.collect.ImmutableSet;
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -19,13 +20,12 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.question.loop.LoopNetwork;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests for {@link Batfish#bddLoopDetection(NetworkSnapshot)}. */
-public class BatfishBDDDetectLoopsTest {
-  @Rule public TemporaryFolder _tempFolder = new TemporaryFolder();
+class BatfishBDDDetectLoopsTest {
+  @TempDir public File _tempFolder;
 
   Batfish _batfish;
 
@@ -36,14 +36,14 @@ public class BatfishBDDDetectLoopsTest {
   }
 
   @Test
-  public void testNoLoops() throws IOException {
+  void testNoLoops() throws IOException {
     initNetwork(false);
     Set<Flow> flows = _batfish.bddLoopDetection(_batfish.getSnapshot());
     assertThat(flows, empty());
   }
 
   @Test
-  public void testLoops() throws IOException {
+  void testLoops() throws IOException {
     initNetwork(true);
     Set<Flow> flows = _batfish.bddLoopDetection(_batfish.getSnapshot());
     assertThat(flows, hasSize(2));

@@ -2,8 +2,8 @@ package org.batfish.dataplane.ibdp;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import java.util.Optional;
@@ -23,11 +23,11 @@ import org.batfish.datamodel.eigrp.EigrpProcessMode;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.dataplane.rib.RibDelta;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link EigrpRoutingProcess} */
-public class EigrpRoutingProcessTest {
+class EigrpRoutingProcessTest {
 
   Configuration _c;
   EigrpProcess _process;
@@ -36,8 +36,8 @@ public class EigrpRoutingProcessTest {
   private EigrpInternalRoute.Builder _internalRouteBuilder;
   private ClassicMetric _ifaceMetric;
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
     _c =
         Configuration.builder()
             .setHostname("c1")
@@ -95,7 +95,7 @@ public class EigrpRoutingProcessTest {
   }
 
   @Test
-  public void testRedistributeNoPolicy() {
+  void testRedistributeNoPolicy() {
     // Do not crash
     _routingProcess.redistribute(
         RibDelta.adding(
@@ -108,7 +108,7 @@ public class EigrpRoutingProcessTest {
   }
 
   @Test
-  public void testTransformAndFilterExternalRouteFromNeighborBlocked() {
+  void testTransformAndFilterExternalRouteFromNeighborBlocked() {
     RoutingPolicy rp =
         RoutingPolicy.builder()
             .setName("rp")
@@ -124,7 +124,7 @@ public class EigrpRoutingProcessTest {
   }
 
   @Test
-  public void testTransformAndFilterExternalRouteFromNeighborAllowed() {
+  void testTransformAndFilterExternalRouteFromNeighborAllowed() {
     RoutingPolicy rp =
         RoutingPolicy.builder()
             .setName("rp")
@@ -153,7 +153,7 @@ public class EigrpRoutingProcessTest {
   }
 
   @Test
-  public void testTransformAndFilterInternalRouteFromNeighborBlocked() {
+  void testTransformAndFilterInternalRouteFromNeighborBlocked() {
     RoutingPolicy rp =
         RoutingPolicy.builder()
             .setName("rp")
@@ -169,7 +169,7 @@ public class EigrpRoutingProcessTest {
   }
 
   @Test
-  public void testTransformAndFilterInternalRouteFromNeighborAllowed() {
+  void testTransformAndFilterInternalRouteFromNeighborAllowed() {
     RoutingPolicy rp =
         RoutingPolicy.builder()
             .setName("rp")

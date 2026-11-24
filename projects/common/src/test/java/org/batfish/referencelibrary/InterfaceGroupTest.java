@@ -5,13 +5,13 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableSortedSet;
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link InterfaceGroup} */
-public class InterfaceGroupTest {
+class InterfaceGroupTest {
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     InterfaceGroup group = new InterfaceGroup(ImmutableSortedSet.of(), "group");
     assertThat(SerializationUtils.clone(group), equalTo(group));
   }

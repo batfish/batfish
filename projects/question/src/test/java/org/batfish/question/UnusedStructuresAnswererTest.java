@@ -31,10 +31,10 @@ import org.batfish.question.UnusedStructuresQuestionPlugin.UnusedStructuresAnswe
 import org.batfish.question.UnusedStructuresQuestionPlugin.UnusedStructuresQuestion;
 import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.SpecifierContext;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link UnusedStructuresAnswerer}. */
-public class UnusedStructuresAnswererTest {
+class UnusedStructuresAnswererTest {
 
   // Entry is: filename -> struct type -> struct name -> defined structure info
   private static final SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
@@ -58,7 +58,7 @@ public class UnusedStructuresAnswererTest {
           new FileLines("f", ImmutableSortedSet.of(1)));
 
   @Test
-  public void testProcessOneEntry() {
+  void testProcessOneEntry() {
     List<Row> expected = ImmutableList.of(BASIC_ROW);
 
     List<Row> rows =
@@ -68,7 +68,7 @@ public class UnusedStructuresAnswererTest {
   }
 
   @Test
-  public void testProcessMultipleEntries() {
+  void testProcessMultipleEntries() {
     Map<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>> refsMap =
         ImmutableMap.of(
             "f",
@@ -97,7 +97,7 @@ public class UnusedStructuresAnswererTest {
   }
 
   @Test
-  public void testAnswererFlow() {
+  void testAnswererFlow() {
     TestBatfish batfish = new TestBatfish();
     UnusedStructuresAnswerer answerer =
         new UnusedStructuresAnswerer(new UnusedStructuresQuestion(), batfish);

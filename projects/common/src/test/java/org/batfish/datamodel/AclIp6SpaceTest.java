@@ -13,9 +13,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class AclIp6SpaceTest {
+class AclIp6SpaceTest {
   /*
    * Permit everything in 2001:db8::/32 except for 2001:db8:1::/48.
    */
@@ -26,14 +26,14 @@ public class AclIp6SpaceTest {
           .build();
 
   @Test
-  public void testContainsIp() {
+  void testContainsIp() {
     assertThat(_aclIp6Space, not(containsIp6(Ip6.parse("2001:db8:1::1"))));
     assertThat(_aclIp6Space, containsIp6(Ip6.parse("2001:db8:2::1")));
     assertThat(_aclIp6Space, not(containsIp6(Ip6.parse("2001:db9::1"))));
   }
 
   @Test
-  public void testComplement() {
+  void testComplement() {
     Ip6Space notIp6Space = _aclIp6Space.complement();
     assertThat(notIp6Space, containsIp6(Ip6.parse("2001:db8:1::1")));
     assertThat(notIp6Space, not(containsIp6(Ip6.parse("2001:db8:2::1"))));
@@ -42,7 +42,7 @@ public class AclIp6SpaceTest {
   }
 
   @Test
-  public void testIntersection() {
+  void testIntersection() {
     Ip6Ip6Space ip6Space = Ip6Ip6Space.create(Ip6.parse("2001:db8:2::1"));
     assertThat(intersection(null, null), nullValue());
     assertThat(
@@ -52,7 +52,7 @@ public class AclIp6SpaceTest {
   }
 
   @Test
-  public void testUnion() {
+  void testUnion() {
     Ip6Ip6Space ip6Space = Ip6Ip6Space.create(Ip6.parse("2001:db8:2::1"));
     assertThat(union(null, null), nullValue());
     assertThat(union(EmptyIp6Space.INSTANCE), equalTo(EmptyIp6Space.INSTANCE));
@@ -62,7 +62,7 @@ public class AclIp6SpaceTest {
   }
 
   @Test
-  public void testUnionNested() {
+  void testUnionNested() {
     Ip6Ip6Space a = Ip6Ip6Space.create(Ip6.parse("2001:db8::1"));
     Ip6Ip6Space b = Ip6Ip6Space.create(Ip6.parse("2001:db8::2"));
     Ip6Ip6Space c = Ip6Ip6Space.create(Ip6.parse("2001:db8::3"));
@@ -71,7 +71,7 @@ public class AclIp6SpaceTest {
   }
 
   @Test
-  public void testDifference() {
+  void testDifference() {
     Ip6Ip6Space ip6Space = Ip6Ip6Space.create(Ip6.parse("2001:db8::1"));
 
     // Test null cases
@@ -92,7 +92,7 @@ public class AclIp6SpaceTest {
   }
 
   @Test
-  public void testStopWhenEmpty() {
+  void testStopWhenEmpty() {
     Ip6Space space =
         AclIp6Space.builder()
             .thenPermitting(Prefix6.parse("2001:db8::1/128").toIp6Space())
@@ -109,7 +109,7 @@ public class AclIp6SpaceTest {
   }
 
   @Test
-  public void testLineEvaluationOrder() {
+  void testLineEvaluationOrder() {
     // Create an ACL that permits 2001:db8::1 but denies 2001:db8::/32
     Ip6Space space =
         AclIp6Space.builder()
@@ -124,7 +124,7 @@ public class AclIp6SpaceTest {
   }
 
   @Test
-  public void testOf() {
+  void testOf() {
     AclIp6SpaceLine line1 = AclIp6SpaceLine.permit(Ip6Ip6Space.create(Ip6.parse("2001:db8::1")));
     AclIp6SpaceLine line2 = AclIp6SpaceLine.reject(Prefix6.parse("2001:db8::/32").toIp6Space());
 
@@ -135,7 +135,7 @@ public class AclIp6SpaceTest {
   }
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     Ip6Space original =
         AclIp6Space.builder()
             .thenPermitting(Ip6Ip6Space.create(Ip6.parse("2001:db8::1")))
@@ -146,7 +146,7 @@ public class AclIp6SpaceTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     Ip6Ip6Space ip1 = Ip6Ip6Space.create(Ip6.parse("2001:db8::1"));
     Ip6Ip6Space ip2 = Ip6Ip6Space.create(Ip6.parse("2001:db8::2"));
     PrefixIp6Space prefix1 = new PrefixIp6Space(Prefix6.parse("2001:db8::/32"));

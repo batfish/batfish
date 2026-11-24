@@ -14,6 +14,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasItem;
 
 import com.google.common.collect.ImmutableSet;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
@@ -35,16 +36,15 @@ import org.batfish.datamodel.route.nh.NextHopVtep;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** End-to-end-ish test of EVPN Type 5 routes and VTEP forwarding on NX-OS devices */
-public class EvpnNxosTest {
+class EvpnNxosTest {
   private static final String SNAPSHOT_FOLDER = "org/batfish/dataplane/testrigs/evpn-l3-vnis";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   private Batfish _batfish;
 
@@ -67,8 +67,8 @@ public class EvpnNxosTest {
    * - Subnets of r1/r2 interfaces connected to h1/2 are redistributed into BGP
    * - h1 and h2 should be able to reach other across the tunnel
    */
-  @Before
-  public void setup() throws IOException {
+  @BeforeEach
+  void setup() throws IOException {
     String r1Filename = "r1";
     String r2Filename = "r2";
     String h1Filename = "h1.json";
@@ -85,7 +85,7 @@ public class EvpnNxosTest {
   }
 
   @Test
-  public void testRoutes() {
+  void testRoutes() {
     DataPlane dp = _batfish.loadDataPlane(_batfish.getSnapshot());
 
     // test evpn routes
@@ -145,7 +145,7 @@ public class EvpnNxosTest {
   }
 
   @Test
-  public void testTopology() {
+  void testTopology() {
     Topology topology = _batfish.getTopologyProvider().getLayer3Topology(_batfish.getSnapshot());
     String vniIface = generatedTenantVniInterfaceName(L3VNI);
 
@@ -157,7 +157,7 @@ public class EvpnNxosTest {
   }
 
   @Test
-  public void testConnectivity() {
+  void testConnectivity() {
     Ip h1Ip = Ip.parse("10.0.1.2");
     Ip h2Ip = Ip.parse("10.0.2.2");
     {

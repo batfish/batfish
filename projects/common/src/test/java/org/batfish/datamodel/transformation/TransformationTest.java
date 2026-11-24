@@ -5,18 +5,18 @@ import static org.batfish.datamodel.transformation.Noop.NOOP_SOURCE_NAT;
 import static org.batfish.datamodel.transformation.Transformation.always;
 import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.datamodel.transformation.TransformationStep.shiftDestinationIp;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.datamodel.Prefix;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link Transformation}. */
-public class TransformationTest {
+class TransformationTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     Transformation trivial = always().apply(NOOP_SOURCE_NAT).build();
     new EqualsTester()
         .addEqualityGroup(trivial, always().apply(NOOP_SOURCE_NAT).build())
@@ -28,7 +28,7 @@ public class TransformationTest {
   }
 
   @Test
-  public void testSerialization() {
+  void testSerialization() {
     Transformation t =
         when(FALSE)
             .apply(shiftDestinationIp(Prefix.ZERO))
@@ -45,7 +45,7 @@ public class TransformationTest {
    * chain must round-trip without a {@link StackOverflowError}.
    */
   @Test
-  public void testSerializationDeepOrElseChain() {
+  void testSerializationDeepOrElseChain() {
     int depth = 100_000;
     Transformation t = null;
     for (int i = 0; i < depth; i++) {

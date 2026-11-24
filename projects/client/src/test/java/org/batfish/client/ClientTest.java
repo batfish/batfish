@@ -68,10 +68,12 @@ import static org.batfish.datamodel.questions.Variable.Type.SUBRANGE;
 import static org.batfish.datamodel.questions.Variable.Type.VRF;
 import static org.batfish.datamodel.questions.Variable.Type.ZONE;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -103,13 +105,11 @@ import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.questions.AllowedValue;
 import org.batfish.datamodel.questions.Variable;
 import org.batfish.datamodel.questions.Variable.Type;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests for {@link org.batfish.client.Client}. */
-public final class ClientTest {
+final class ClientTest {
 
   private static final String NETWORK_NOT_SET = "Active network is not set\n";
 
@@ -118,15 +118,14 @@ public final class ClientTest {
           + "Specify snapshot on command line (-snapshotdir <snapshotdir>) or use command"
           + " (init-snapshot <snapshotdir>)\n";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+  @TempDir public File _folder;
   private ObjectMapper _mapper = BatfishObjectMapper.mapper();
 
   private void checkProcessCommandErrorMessage(
       Command command, String[] parameters, String expected) throws Exception {
-    Path dummyCmdFile = _folder.newFile("dummy.cmd").toPath();
+    Path dummyCmdFile = newFile(_folder, "dummy.cmd").toPath();
     Client client = new Client(new String[] {"-cmdfile", dummyCmdFile.toString()});
-    File tempFile = _folder.newFile("writer");
+    File tempFile = newFile(_folder, "writer");
     try (FileWriter writer = new FileWriter(tempFile)) {
       client._logger = new BatfishLogger("output", false);
       String[] args = ArrayUtils.addAll(new String[] {command.commandName()}, parameters);
@@ -136,38 +135,38 @@ public final class ClientTest {
   }
 
   @Test
-  public void checkTestInvalidParas() throws Exception {
+  void checkTestInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
     testInvalidInput(TEST, new String[] {}, parameters);
   }
 
   @Test
-  public void testAddBatfishOptionInvalidParas() throws Exception {
+  void testAddBatfishOptionInvalidParas() throws Exception {
     testInvalidInput(ADD_BATFISH_OPTION, new String[] {}, new String[] {});
   }
 
   @Test
-  public void testAddBatfishOptionValidParas() throws Exception {
+  void testAddBatfishOptionValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
     testProcessCommandWithValidInput(ADD_BATFISH_OPTION, parameters, "");
   }
 
   @Test
-  public void testAnswerInvalidParas() throws Exception {
+  void testAnswerInvalidParas() throws Exception {
     testInvalidInput(ANSWER, new String[] {}, new String[] {});
   }
 
   @Test
-  public void testAnswerValidParas() throws Exception {
+  void testAnswerValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
     checkProcessCommandErrorMessage(ANSWER, parameters, SNAPSHOT_NOT_SET);
   }
 
   @Test
-  public void testDefaultCase() throws Exception {
-    Path dummyCmdFile = _folder.newFile("dummy.cmd").toPath();
+  void testDefaultCase() throws Exception {
+    Path dummyCmdFile = newFile(_folder, "dummy.cmd").toPath();
     Client client = new Client(new String[] {"-cmdfile", dummyCmdFile.toString()});
-    File tempFile = _folder.newFile("writer");
+    File tempFile = newFile(_folder, "writer");
     try (FileWriter writer = new FileWriter(tempFile)) {
       client._logger = new BatfishLogger("output", false);
       String[] args = new String[] {"non-exist command"};
@@ -178,58 +177,60 @@ public final class ClientTest {
   }
 
   @Test
-  public void testDelBatfishOptionInvalidParas() throws Exception {
+  void testDelBatfishOptionInvalidParas() throws Exception {
     testInvalidInput(DEL_BATFISH_OPTION, new String[] {}, new String[] {});
   }
 
   @Test
-  public void testDelBatfishOptionValidParas() throws Exception {
+  void testDelBatfishOptionValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
     String expected = "Batfish option parameter1 does not exist\n";
     checkProcessCommandErrorMessage(DEL_BATFISH_OPTION, parameters, expected);
   }
 
   @Test
-  public void testDelNetworkInvalidParas() throws Exception {
+  void testDelNetworkInvalidParas() throws Exception {
     testInvalidInput(DEL_NETWORK, new String[] {}, new String[] {});
   }
 
   @Test
-  public void testEmptyJsonPath() throws IOException {
+  void testEmptyJsonPath() throws IOException {
     JsonNode emptyPath = _mapper.readTree("\"\"");
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(
+    Throwable exception =
+        assertThrows(BatfishException.class, () -> Client.validateJsonPath(emptyPath));
+    assertThat(
+        exception.getMessage(),
         equalTo(
             String.format("Expecting a JSON dictionary for a Batfish %s", JSON_PATH.getName())));
-    Client.validateJsonPath(emptyPath);
   }
 
   @Test
-  public void testEmptyJsonPathRegex() {
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(
+  void testEmptyJsonPathRegex() {
+    Throwable exception =
+        assertThrows(BatfishException.class, () -> Client.validateJsonPathRegex(""));
+    assertThat(
+        exception.getMessage(),
         equalTo(String.format("A Batfish %s must start with \"/\"", JSON_PATH_REGEX.getName())));
-    Client.validateJsonPathRegex("");
   }
 
   @Test
-  public void testGenerateDataplaneInvalidParas() throws Exception {
+  void testGenerateDataplaneInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
     testInvalidInput(GEN_DP, new String[] {}, parameters);
   }
 
   @Test
-  public void testGenerateDataplaneValidParas() throws Exception {
+  void testGenerateDataplaneValidParas() throws Exception {
     checkProcessCommandErrorMessage(GEN_DP, new String[] {}, SNAPSHOT_NOT_SET);
   }
 
   @Test
-  public void testGetInvalidParas() throws Exception {
+  void testGetInvalidParas() throws Exception {
     testInvalidInput(GET, new String[] {}, new String[] {});
   }
 
   @Test
-  public void testGetQuestionName() {
+  void testGetQuestionName() {
     ObjectNode testQuestion = JsonNodeFactory.instance.objectNode();
     testQuestion.set(
         "instance",
@@ -243,36 +244,46 @@ public final class ClientTest {
   }
 
   @Test
-  public void testGetQuestionNameInvalid1() {
+  void testGetQuestionNameInvalid1() {
     ObjectNode testQuestion = JsonNodeFactory.instance.objectNode();
     testQuestion.set(
         "instance",
         JsonNodeFactory.instance.objectNode().put("description", "test question description"));
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage("question testquestion does not have instanceName field in instance");
+    Throwable exception =
+        assertThrows(
+            BatfishException.class,
+            () ->
 
-    // check exception when no instanceName is present
-    Client.getQuestionName(testQuestion, "testquestion");
+                // check exception when no instanceName is present
+                Client.getQuestionName(testQuestion, "testquestion"));
+    assertThat(
+        exception.getMessage(),
+        containsString("question testquestion does not have instanceName field in instance"));
   }
 
   @Test
-  public void testGetQuestionNameInvalid2() {
+  void testGetQuestionNameInvalid2() {
     ObjectNode testQuestion = JsonNodeFactory.instance.objectNode();
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage("question testquestion does not have instance field");
+    Throwable exception =
+        assertThrows(
+            BatfishException.class,
+            () ->
 
-    // check exception when instance itself is not present
-    Client.getQuestionName(testQuestion, "testquestion");
+                // check exception when instance itself is not present
+                Client.getQuestionName(testQuestion, "testquestion"));
+    assertThat(
+        exception.getMessage(),
+        containsString("question testquestion does not have instance field"));
   }
 
   @Test
-  public void testGetValidParas() throws Exception {
+  void testGetValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
     checkProcessCommandErrorMessage(GET, parameters, SNAPSHOT_NOT_SET);
   }
 
   @Test
-  public void testHelpInvalidParas() throws Exception {
+  void testHelpInvalidParas() throws Exception {
     Command command = HELP;
     String[] parameters = new String[] {"-option1"};
     CommandUsage usage = Command.getUsageMap().get(command);
@@ -287,7 +298,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testHelpValidParas() throws Exception {
+  void testHelpValidParas() throws Exception {
     String[] parameters = new String[] {"get"};
     CommandUsage usage = Command.getUsageMap().get(GET);
     String expected =
@@ -297,7 +308,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInitNetworkEmptyParasWithOption() throws Exception {
+  void testInitNetworkEmptyParasWithOption() throws Exception {
     Command command = INIT_NETWORK;
     String[] args = new String[] {"-setname"};
     CommandUsage usage = Command.getUsageMap().get(command);
@@ -309,7 +320,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInitNetworkInvalidOptions() throws Exception {
+  void testInitNetworkInvalidOptions() throws Exception {
     Command command = INIT_NETWORK;
     String invalidOption = "-setnetwork";
     String[] args = new String[] {invalidOption, "parameter1"};
@@ -326,23 +337,23 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInitNetworkInvalidParas() throws Exception {
+  void testInitNetworkInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1", "parameter2", "parameter3"};
     testInvalidInput(INIT_NETWORK, new String[] {}, parameters);
   }
 
   @Test
-  public void testInitSnapshotReferenceInvalidParas() throws Exception {
+  void testInitSnapshotReferenceInvalidParas() throws Exception {
     testInvalidInput(INIT_REFERENCE_SNAPSHOT, new String[] {}, new String[] {});
   }
 
   @Test
-  public void testInitSnapshotInvalidParas() throws Exception {
+  void testInitSnapshotInvalidParas() throws Exception {
     testInvalidInput(INIT_SNAPSHOT, new String[] {}, new String[] {});
   }
 
   @Test
-  public void testInvalidAddressGroupName() throws IOException {
+  void testInvalidAddressGroupName() throws IOException {
     String input = "\"addressGroup\""; // no book name
     Type expectedType = ADDRESS_GROUP_NAME;
     String expectedMessage =
@@ -353,7 +364,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidApplicationSpecifierValue() throws IOException {
+  void testInvalidApplicationSpecifierValue() throws IOException {
     String input = "5";
     Type expectedType = APPLICATION_SPEC;
     String expectedMessage =
@@ -362,7 +373,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidBgpRouteStatusSpecValue() throws IOException {
+  void testInvalidBgpRouteStatusSpecValue() throws IOException {
     String input = "5";
     Type expectedType = BGP_ROUTE_STATUS_SPEC;
     String expectedMessage =
@@ -371,7 +382,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidBgpSessionCompatStatusValue() throws IOException {
+  void testInvalidBgpSessionCompatStatusValue() throws IOException {
     String input = "5";
     Type expectedType = BGP_SESSION_COMPAT_STATUS_SPEC;
     String expectedMessage =
@@ -380,7 +391,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidBgpSessionStatusValue() throws IOException {
+  void testInvalidBgpSessionStatusValue() throws IOException {
     String input = "5";
     Type expectedType = BGP_SESSION_STATUS_SPEC;
     String expectedMessage =
@@ -389,7 +400,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidBgpSessionTypeSpecValue() throws IOException {
+  void testInvalidBgpSessionTypeSpecValue() throws IOException {
     String input = "5";
     Type expectedType = BGP_SESSION_TYPE_SPEC;
     String expectedMessage =
@@ -398,7 +409,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidBooleanValue() throws IOException {
+  void testInvalidBooleanValue() throws IOException {
     String input = "\"true\"";
     Type expectedType = BOOLEAN;
     String expectedMessage = String.format("It is not a valid JSON %s value", BOOLEAN.getName());
@@ -406,7 +417,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidComparatorValue() throws IOException {
+  void testInvalidComparatorValue() throws IOException {
     String input = "\"=>\"";
     Type expectedType = COMPARATOR;
     String expectedMessage =
@@ -415,7 +426,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidDispositionSpecifierValue() throws IOException {
+  void testInvalidDispositionSpecifierValue() throws IOException {
     String input = "5";
     Type expectedType = DISPOSITION_SPEC;
     String expectedMessage =
@@ -424,7 +435,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidDoubleValue() throws IOException {
+  void testInvalidDoubleValue() throws IOException {
     String input = "\"string\"";
     Type expectedType = DOUBLE;
     String expectedMessage = String.format("It is not a valid JSON %s value", DOUBLE.getName());
@@ -432,7 +443,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidFilterValue() throws IOException {
+  void testInvalidFilterValue() throws IOException {
     String input = "5";
     Type expectedType = FILTER;
     String expectedMessage =
@@ -441,7 +452,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidFilterSpecValue() throws IOException {
+  void testInvalidFilterSpecValue() throws IOException {
     String input = "5";
     Type expectedType = FILTER_SPEC;
     String expectedMessage =
@@ -450,7 +461,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidFloatValue() throws IOException {
+  void testInvalidFloatValue() throws IOException {
     String input = "\"string\"";
     Type expectedType = FLOAT;
     String expectedMessage = String.format("It is not a valid JSON %s value", FLOAT.getName());
@@ -472,7 +483,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidIntegerValue() throws IOException {
+  void testInvalidIntegerValue() throws IOException {
     String input = "1.5";
     Type expectedType = INTEGER;
     String expectedMessage = String.format("It is not a valid JSON %s value", INTEGER.getName());
@@ -480,7 +491,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidInterfaceName() throws IOException {
+  void testInvalidInterfaceName() throws IOException {
     String input = "\"interfaceGroup\""; // no book name
     Type expectedType = INTERFACE_GROUP_NAME;
     String expectedMessage =
@@ -491,7 +502,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidInterfaceNameValue() throws IOException {
+  void testInvalidInterfaceNameValue() throws IOException {
     String input = "5";
     Type expectedType = INTERFACE_NAME;
     String expectedMessage =
@@ -500,7 +511,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidInterfaceValue() throws IOException {
+  void testInvalidInterfaceValue() throws IOException {
     String input = "5";
     Type expectedType = INTERFACE;
     String expectedMessage =
@@ -509,7 +520,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidInterfaceTypeValueNonSting() throws IOException {
+  void testInvalidInterfaceTypeValueNonSting() throws IOException {
     String input = "5";
     Type expectedType = INTERFACE_TYPE;
     String expectedMessage =
@@ -518,7 +529,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidInterfaceTypeValueBadEnum() throws IOException {
+  void testInvalidInterfaceTypeValueBadEnum() throws IOException {
     String input = "\"XOXO\"";
     Type expectedType = INTERFACE_TYPE;
     String expectedMessage =
@@ -528,7 +539,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidInterfacesSpecValue() throws IOException {
+  void testInvalidInterfacesSpecValue() throws IOException {
     String input = "5";
     Type expectedType = INTERFACE;
     String expectedMessage =
@@ -537,18 +548,19 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidInteriorJavaRegex() {
+  void testInvalidInteriorJavaRegex() {
     String invalidJavaRegex = "/...{\\\\Q8\\\\E}/";
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(
+    Throwable exception =
+        assertThrows(BatfishException.class, () -> Client.validateJsonPathRegex(invalidJavaRegex));
+    assertThat(
+        exception.getMessage(),
         equalTo(
             String.format(
                 "Invalid %s at interior of %s", JAVA_REGEX.getName(), JSON_PATH_REGEX.getName())));
-    Client.validateJsonPathRegex(invalidJavaRegex);
   }
 
   @Test
-  public void testInvalidIpProtocolValue() throws IOException {
+  void testInvalidIpProtocolValue() throws IOException {
     String input = "\"invalid\"";
     Type expectedType = IP_PROTOCOL;
     String expectedMessage = String.format("Unknown %s string", expectedType.getName());
@@ -556,13 +568,13 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidIPValue() throws IOException {
+  void testInvalidIPValue() throws IOException {
     validateTypeWithInvalidInput(
         "\"0.0.0\"", IllegalArgumentException.class, "Invalid IPv4 address: 0.0.0", IP);
   }
 
   @Test
-  public void testInvalidIpSpaceSpecValue() throws IOException {
+  void testInvalidIpSpaceSpecValue() throws IOException {
     String input = "5";
     Type expectedType = IP_SPACE_SPEC;
     String expectedMessage =
@@ -572,7 +584,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidIpWildcardValue() throws IOException {
+  void testInvalidIpWildcardValue() throws IOException {
     String input = "\"10.168.5.5:10.168.100.$\"";
     String expectedMessage = "Invalid IPv4 address: 10.168.100.$";
     validateTypeWithInvalidInput(
@@ -580,7 +592,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidIpsecSessionStatusValue() throws IOException {
+  void testInvalidIpsecSessionStatusValue() throws IOException {
     String input = "5";
     Type expectedType = IPSEC_SESSION_STATUS_SPEC;
     String expectedMessage =
@@ -589,7 +601,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidJavaRegexValue() throws IOException {
+  void testInvalidJavaRegexValue() throws IOException {
     String invalidJavaRegex = "\"...{\\\\Q8\\\\E}\"";
     Type expectedType = JAVA_REGEX;
     String expectedMessage = "It is not a valid Java regular expression";
@@ -597,7 +609,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidJsonObjectValue() throws IOException {
+  void testInvalidJsonObjectValue() throws IOException {
     String input = "[{\"key\": \"value\"}]";
     String expectedMessage =
         String.format("A Batfish %s must be a JSON object", JSON_OBJECT.getName());
@@ -605,17 +617,18 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidJsonPath() throws IOException {
+  void testInvalidJsonPath() throws IOException {
     JsonNode invalidPath = _mapper.readTree("\"variable\" : \"I am variable\"");
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(
+    Throwable exception =
+        assertThrows(BatfishException.class, () -> Client.validateJsonPath(invalidPath));
+    assertThat(
+        exception.getMessage(),
         equalTo(
             String.format("Expecting a JSON dictionary for a Batfish %s", JSON_PATH.getName())));
-    Client.validateJsonPath(invalidPath);
   }
 
   @Test
-  public void testInvalidJsonPathRegexValue() throws IOException {
+  void testInvalidJsonPathRegexValue() throws IOException {
     String input = "\"/pathRegex\"";
     Type expectedType = JSON_PATH_REGEX;
     String expectedMessage =
@@ -624,7 +637,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidJsonPathValue() throws IOException {
+  void testInvalidJsonPathValue() throws IOException {
     String input = "{\"variable\" : \"I am variable\"}";
     Type expectedType = JSON_PATH;
     String expectedMessage = String.format("Missing 'path' element of %s", JSON_PATH.getName());
@@ -632,7 +645,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidLocationSpec() throws IOException {
+  void testInvalidLocationSpec() throws IOException {
     String input = "5";
     Type expectedType = LOCATION_SPEC;
     String expectedMessage =
@@ -641,7 +654,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidLongValue() throws IOException {
+  void testInvalidLongValue() throws IOException {
     String input = "\"string\"";
     Type expectedType = LONG;
     String expectedMessage = String.format("It is not a valid JSON %s value", LONG.getName());
@@ -649,7 +662,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidNodeRoleDimensionValue() throws IOException {
+  void testInvalidNodeRoleDimensionValue() throws IOException {
     String input = "5";
     Type expectedType = NODE_ROLE_DIMENSION_NAME;
     String expectedMessage =
@@ -658,7 +671,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidOspfSessionStatusValue() throws IOException {
+  void testInvalidOspfSessionStatusValue() throws IOException {
     String input = "5";
     Type expectedType = OSPF_SESSION_STATUS_SPEC;
     String expectedMessage =
@@ -667,21 +680,21 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidPrefixRangeValue() throws IOException {
+  void testInvalidPrefixRangeValue() throws IOException {
     String input = "\"10.168.5.5/30:s10-50\"";
     String expectedMessage = "Invalid subrange start: \"s10\"";
     validateTypeWithInvalidInput(input, expectedMessage, PREFIX_RANGE);
   }
 
   @Test
-  public void testInvalidPrefixValue() throws IOException {
+  void testInvalidPrefixValue() throws IOException {
     String input = "\"10.168.5.5/30/20\"";
     String expectedMessage = String.format("Invalid prefix string: %s", input);
     validateTypeWithInvalidInput(input, IllegalArgumentException.class, expectedMessage, PREFIX);
   }
 
   @Test
-  public void testInvalidProtocolValue() throws IOException {
+  void testInvalidProtocolValue() throws IOException {
     String input = "\"missing\"";
     String expectedMessage =
         String.format(
@@ -691,7 +704,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidRoutingProtocolSpecValue() throws IOException {
+  void testInvalidRoutingProtocolSpecValue() throws IOException {
     String input = "5";
     Type expectedType = ROUTING_PROTOCOL_SPEC;
     String expectedMessage =
@@ -700,7 +713,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidStructureNameValue() throws IOException {
+  void testInvalidStructureNameValue() throws IOException {
     String input = "5";
     Type expectedType = STRUCTURE_NAME;
     String expectedMessage =
@@ -709,14 +722,14 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidSubRangeValue() throws IOException {
+  void testInvalidSubRangeValue() throws IOException {
     String input = "\"10-s50\"";
     String expectedMessage = "Invalid subrange end: \"s50\"";
     validateTypeWithInvalidInput(input, expectedMessage, SUBRANGE);
   }
 
   @Test
-  public void testInvalidVrfValue() throws IOException {
+  void testInvalidVrfValue() throws IOException {
     String input = "5";
     Type expectedType = VRF;
     String expectedMessage =
@@ -725,7 +738,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidZoneValue() throws IOException {
+  void testInvalidZoneValue() throws IOException {
     String input = "5";
     Type expectedType = ZONE;
     String expectedMessage =
@@ -734,26 +747,32 @@ public final class ClientTest {
   }
 
   @Test
-  public void testJsonPathNoPathAttribute() throws IOException {
+  void testJsonPathNoPathAttribute() {
     String invalidJsonPath = "{\"variable\" : \"I am variable\"}";
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(
+    Throwable exception =
+        assertThrows(
+            BatfishException.class,
+            () -> Client.validateJsonPath(_mapper.readTree(invalidJsonPath)));
+    assertThat(
+        exception.getMessage(),
         equalTo(String.format("Missing 'path' element of %s", JSON_PATH.getName())));
-    Client.validateJsonPath(_mapper.readTree(invalidJsonPath));
   }
 
   @Test
-  public void testJsonPathNotBooleanSuffix() throws IOException {
+  void testJsonPathNotBooleanSuffix() {
     String invalidJsonPath = "{\"path\" : \"I am path.\", \"suffix\" : \"I " + "am suffix.\"}";
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(
+    Throwable exception =
+        assertThrows(
+            BatfishException.class,
+            () -> Client.validateJsonPath(_mapper.readTree(invalidJsonPath)));
+    assertThat(
+        exception.getMessage(),
         equalTo(
             String.format("'suffix' element of %s must be a JSON boolean", JSON_PATH.getName())));
-    Client.validateJsonPath(_mapper.readTree(invalidJsonPath));
   }
 
   @Test
-  public void testLoadQuestionFromFile() throws Exception {
+  void testLoadQuestionFromFile() throws Exception {
     ObjectNode testQuestion = JsonNodeFactory.instance.objectNode();
     testQuestion.set(
         "instance",
@@ -761,7 +780,7 @@ public final class ClientTest {
             .objectNode()
             .put("instanceName", "testQuestionName")
             .put("description", "test question description"));
-    Path questionJsonPath = _folder.newFile("testquestion.json").toPath();
+    Path questionJsonPath = newFile(_folder, "testquestion.json").toPath();
     CommonUtil.writeFile(questionJsonPath, testQuestion.toString());
     ObjectNode question = Client.loadQuestionFromFile(questionJsonPath);
 
@@ -775,7 +794,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testLoadQuestionFromText() throws Exception {
+  void testLoadQuestionFromText() throws Exception {
     ObjectNode testQuestion = JsonNodeFactory.instance.objectNode();
     testQuestion.set(
         "instance",
@@ -821,18 +840,21 @@ public final class ClientTest {
   }
 
   @Test
-  public void testLoadQuestionFromTextInvalid() {
+  void testLoadQuestionFromTextInvalid() {
     ObjectNode testQuestion = JsonNodeFactory.instance.objectNode();
 
     // checking if exception thrown for instance missing
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage("Question in questionSource has no instance data");
-    Client.loadQuestionFromText(testQuestion.toString(), "questionSource");
+    Throwable exception =
+        assertThrows(
+            BatfishException.class,
+            () -> Client.loadQuestionFromText(testQuestion.toString(), "questionSource"));
+    assertThat(
+        exception.getMessage(), containsString("Question in questionSource has no instance data"));
   }
 
   @Test
-  public void testLoadQuestionsNames() throws Exception {
-    Path dummyCmdFile = _folder.newFile("dummy.cmd").toPath();
+  void testLoadQuestionsNames() throws Exception {
+    Path dummyCmdFile = newFile(_folder, "dummy.cmd").toPath();
     Client client = new Client(new String[] {"-cmdfile", dummyCmdFile.toString()});
     ObjectNode testQuestion = JsonNodeFactory.instance.objectNode();
     testQuestion.set(
@@ -841,7 +863,7 @@ public final class ClientTest {
             .objectNode()
             .put("instanceName", "testQuestionName")
             .put("description", "test question description"));
-    Path questionJsonPath = _folder.newFile("testquestion.json").toPath();
+    Path questionJsonPath = newFile(_folder, "testquestion.json").toPath();
     CommonUtil.writeFile(questionJsonPath, testQuestion.toString());
     client._logger = new BatfishLogger("output", false);
     client.processCommand(
@@ -859,7 +881,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testLoadQuestionsFromDir() throws Exception {
+  void testLoadQuestionsFromDir() throws Exception {
     ObjectNode testQuestion = JsonNodeFactory.instance.objectNode();
     testQuestion.set(
         "instance",
@@ -867,7 +889,7 @@ public final class ClientTest {
             .objectNode()
             .put("instanceName", "testQuestionName")
             .put("description", "test question description"));
-    Path questionJsonPath = _folder.newFile("testquestion.json").toPath();
+    Path questionJsonPath = newFile(_folder, "testquestion.json").toPath();
     CommonUtil.writeFile(questionJsonPath, testQuestion.toString());
     Multimap<String, String> loadedQuestions =
         Client.loadQuestionsFromDir(questionJsonPath.toString(), null);
@@ -879,12 +901,12 @@ public final class ClientTest {
   }
 
   @Test
-  public void testLoadQuestionsInvalidParas1() throws Exception {
+  void testLoadQuestionsInvalidParas1() throws Exception {
     testInvalidInput(LOAD_QUESTIONS, new String[] {}, new String[] {"path1", "path2"});
   }
 
   @Test
-  public void testLoadQuestionsInvalidParas2() throws Exception {
+  void testLoadQuestionsInvalidParas2() throws Exception {
     testInvalidInput(
         LOAD_QUESTIONS,
         new String[] {"-loadremote", "-loadlocal"},
@@ -892,20 +914,20 @@ public final class ClientTest {
   }
 
   @Test
-  public void testLoadQuestionsValidParas1() throws Exception {
-    Path tempFilePath = _folder.newFolder("temp").toPath();
+  void testLoadQuestionsValidParas1() throws Exception {
+    Path tempFilePath = newFolder(_folder, "temp").toPath();
     String[] parameters = new String[] {tempFilePath.toString()};
     testProcessCommandWithValidInput(LOAD_QUESTIONS, parameters, "");
   }
 
   @Test
-  public void testLoadQuestionsValidParas2() throws Exception {
+  void testLoadQuestionsValidParas2() throws Exception {
     String[] parameters = new String[] {};
     testProcessCommandWithValidInput(LOAD_QUESTIONS, parameters, "");
   }
 
   @Test
-  public void testMergeQuestions1() {
+  void testMergeQuestions1() {
     Multimap<String, String> sourceMap = HashMultimap.create();
     sourceMap.put("sourceQuestion", "sourcequestionvalue");
     sourceMap.put("destinationQuestion", "destinationquestionvalue");
@@ -925,7 +947,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testMergeQuestions2() {
+  void testMergeQuestions2() {
     Multimap<String, String> sourceMap = HashMultimap.create();
     sourceMap.put("sourceQuestion", "sourcequestionvalue1");
     sourceMap.put("sourceQuestion", "sourcequestionvalue2");
@@ -940,18 +962,18 @@ public final class ClientTest {
   }
 
   @Test
-  public void testMissingNonOptionalParameterNoValue() {
+  void testMissingNonOptionalParameterNoValue() {
     Map<String, Variable> variables = new HashMap<>();
     Variable integerVariable = new Variable();
     variables.put("integer", integerVariable);
-    _thrown.expect(BatfishException.class);
     String errorMessage = "Missing parameter: integer";
-    _thrown.expectMessage(equalTo(errorMessage));
-    Client.checkVariableState(variables);
+    Throwable exception =
+        assertThrows(BatfishException.class, () -> Client.checkVariableState(variables));
+    assertThat(exception.getMessage(), equalTo(errorMessage));
   }
 
   @Test
-  public void testMissingOptionalParameterNoValue() {
+  void testMissingOptionalParameterNoValue() {
     Map<String, Variable> variables = new HashMap<>();
     Variable integerVariable = new Variable();
     integerVariable.setOptional(true);
@@ -959,16 +981,19 @@ public final class ClientTest {
   }
 
   @Test
-  public void testNestedContainerPathValue() throws IOException {
+  void testNestedContainerPathValue() {
     String invalidJsonPath = "{\"path\" : {\"innerVariable\" : \"content\"}}";
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(
+    Throwable exception =
+        assertThrows(
+            BatfishException.class,
+            () -> Client.validateJsonPath(_mapper.readTree(invalidJsonPath)));
+    assertThat(
+        exception.getMessage(),
         equalTo(String.format("'path' element of %s must be a JSON string", JSON_PATH.getName())));
-    Client.validateJsonPath(_mapper.readTree(invalidJsonPath));
   }
 
   @Test
-  public void testNonStringIpProtocolValue() throws IOException {
+  void testNonStringIpProtocolValue() throws IOException {
     String input = "10";
     Type expectedType = IP_PROTOCOL;
     String expectedMessage =
@@ -977,7 +1002,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testNonStringIpWildcardValue() throws IOException {
+  void testNonStringIpWildcardValue() throws IOException {
     String input = "10";
     Type expectedType = IP_WILDCARD;
     String expectedMessage =
@@ -986,7 +1011,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testNonStringOrIntSubRangeValue() throws IOException {
+  void testNonStringOrIntSubRangeValue() throws IOException {
     String input = "false";
     Type expectedType = SUBRANGE;
     String expectedMessage =
@@ -995,7 +1020,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testNonStringPrefixRangelValue() throws IOException {
+  void testNonStringPrefixRangelValue() throws IOException {
     String input = "10";
     Type expectedType = PREFIX_RANGE;
     String expectedMessage =
@@ -1004,7 +1029,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testNonStringPrefixValue() throws IOException {
+  void testNonStringPrefixValue() throws IOException {
     String input = "10";
     Type expectedType = PREFIX;
     String expectedMessage =
@@ -1013,7 +1038,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testNonStringProtocolValue() throws IOException {
+  void testNonStringProtocolValue() throws IOException {
     String input = "10";
     Type expectedType = PROTOCOL;
     String expectedMessage =
@@ -1022,45 +1047,50 @@ public final class ClientTest {
   }
 
   @Test
-  public void testNotStringPath() throws IOException {
+  void testNotStringPath() {
     String invalidJsonPath = "{\"path\" : 1}";
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(
+    Throwable exception =
+        assertThrows(
+            BatfishException.class,
+            () -> Client.validateJsonPath(_mapper.readTree(invalidJsonPath)));
+    assertThat(
+        exception.getMessage(),
         equalTo(String.format("'path' element of %s must be a JSON string", JSON_PATH.getName())));
-    Client.validateJsonPath(_mapper.readTree(invalidJsonPath));
   }
 
   @Test
-  public void testPathRegexInvalidEnd() {
+  void testPathRegexInvalidEnd() {
     String invalidEnd = "/pathRegex";
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(
+    Throwable exception =
+        assertThrows(BatfishException.class, () -> Client.validateJsonPathRegex(invalidEnd));
+    assertThat(
+        exception.getMessage(),
         equalTo(
             String.format(
                 "A Batfish %s must end in either \"/\" or \"/i\"", JSON_PATH_REGEX.getName())));
-    Client.validateJsonPathRegex(invalidEnd);
   }
 
   @Test
-  public void testPathRegexInvalidStart() {
+  void testPathRegexInvalidStart() {
     String invalidStart = "pathRegex";
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(
+    Throwable exception =
+        assertThrows(BatfishException.class, () -> Client.validateJsonPathRegex(invalidStart));
+    assertThat(
+        exception.getMessage(),
         equalTo(String.format("A Batfish %s must start with \"/\"", JSON_PATH_REGEX.getName())));
-    Client.validateJsonPathRegex(invalidStart);
   }
 
   @Test
-  public void testPathRegexWithOnlySlash() {
+  void testPathRegexWithOnlySlash() {
     String jsonPathRegex = "/";
     Client.validateJsonPathRegex(jsonPathRegex);
   }
 
   private void testProcessCommandWithValidInput(
       Command command, String[] parameters, String expected) throws Exception {
-    Path dummyCmdFile = _folder.newFile("dummy.cmd").toPath();
+    Path dummyCmdFile = newFile(_folder, "dummy.cmd").toPath();
     Client client = new Client(new String[] {"-cmdfile", dummyCmdFile.toString()});
-    File tempFile = _folder.newFile("writer");
+    File tempFile = newFile(_folder, "writer");
     try (FileWriter writer = new FileWriter(tempFile)) {
       String[] args = ArrayUtils.addAll(new String[] {command.commandName()}, parameters);
       client._logger = new BatfishLogger("output", false);
@@ -1070,7 +1100,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testProvideNonOptionalParameterWithValue() throws IOException {
+  void testProvideNonOptionalParameterWithValue() throws IOException {
     Map<String, Variable> variables = new HashMap<>();
     Variable integerVariable = new Variable();
     integerVariable.setValue(_mapper.readTree("3"));
@@ -1079,7 +1109,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testProvideOptionalParameterWithValue() throws IOException {
+  void testProvideOptionalParameterWithValue() throws IOException {
     Map<String, Variable> variables = new HashMap<>();
     Variable integerVariable = new Variable();
     integerVariable.setOptional(true);
@@ -1089,7 +1119,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testSatisfiedMinElementInput() throws IOException {
+  void testSatisfiedMinElementInput() throws IOException {
     Map<String, JsonNode> parameters = new HashMap<>();
     Map<String, Variable> variables = new HashMap<>();
     String jsonArray =
@@ -1103,7 +1133,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testSatisfiedMinLengthValue() throws IOException {
+  void testSatisfiedMinLengthValue() throws IOException {
     String longString = "\"long enough\"";
     Variable variable = new Variable();
     variable.setMinLength(8);
@@ -1112,36 +1142,36 @@ public final class ClientTest {
   }
 
   @Test
-  public void testSetBatfishLogLevelInvalidParas() throws Exception {
+  void testSetBatfishLogLevelInvalidParas() throws Exception {
     testInvalidInput(SET_BATFISH_LOGLEVEL, new String[] {}, new String[] {});
   }
 
   @Test
-  public void testSetBatfishLogLevelValidParas() throws Exception {
+  void testSetBatfishLogLevelValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
     checkProcessCommandErrorMessage(
         SET_BATFISH_LOGLEVEL, parameters, "Undefined loglevel value: parameter1\n");
   }
 
   @Test
-  public void testSetNetworkInvalidParas() throws Exception {
+  void testSetNetworkInvalidParas() throws Exception {
     testInvalidInput(SET_NETWORK, new String[] {}, new String[] {});
   }
 
   @Test
-  public void testSetNetworkValidParas() throws Exception {
+  void testSetNetworkValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
     testProcessCommandWithValidInput(
         SET_NETWORK, parameters, String.format("Active network is now set to %s\n", parameters[0]));
   }
 
   @Test
-  public void testSetReferenceSnapshotInvalidParas() throws Exception {
+  void testSetReferenceSnapshotInvalidParas() throws Exception {
     testInvalidInput(SET_REFERENCE_SNAPSHOT, new String[] {}, new String[] {});
   }
 
   @Test
-  public void testSetReferenceSnapshotValidParas() throws Exception {
+  void testSetReferenceSnapshotValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
     testProcessCommandWithValidInput(
         SET_REFERENCE_SNAPSHOT,
@@ -1150,131 +1180,131 @@ public final class ClientTest {
   }
 
   @Test
-  public void testSetLogLevelInvalidParas() throws Exception {
+  void testSetLogLevelInvalidParas() throws Exception {
     testInvalidInput(SET_LOGLEVEL, new String[] {}, new String[] {});
   }
 
   @Test
-  public void testSetLogLevelValidParas() throws Exception {
+  void testSetLogLevelValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
     checkProcessCommandErrorMessage(
         SET_LOGLEVEL, parameters, "Undefined loglevel value: parameter1\n");
   }
 
   @Test
-  public void testSetSnapshotInvalidParas() throws Exception {
+  void testSetSnapshotInvalidParas() throws Exception {
     testInvalidInput(SET_SNAPSHOT, new String[] {}, new String[] {});
   }
 
   @Test
-  public void testSetSnapshotValidParas() throws Exception {
+  void testSetSnapshotValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
     checkProcessCommandErrorMessage(SET_SNAPSHOT, parameters, NETWORK_NOT_SET);
   }
 
   @Test
-  public void testShowApiKeyInvalidParas() throws Exception {
+  void testShowApiKeyInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
     testInvalidInput(SHOW_API_KEY, new String[] {}, parameters);
   }
 
   @Test
-  public void testShowApiKeyValidParas() throws Exception {
+  void testShowApiKeyValidParas() throws Exception {
     testProcessCommandWithValidInput(
         SHOW_API_KEY, new String[] {}, String.format("Current API Key is %s\n", DEFAULT_API_KEY));
   }
 
   @Test
-  public void testShowBatfishLogLevelInvalidParas() throws Exception {
+  void testShowBatfishLogLevelInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
     testInvalidInput(SHOW_BATFISH_LOGLEVEL, new String[] {}, parameters);
   }
 
   @Test
-  public void testShowBatfishLogLevelValidParas() throws Exception {
+  void testShowBatfishLogLevelValidParas() throws Exception {
     testProcessCommandWithValidInput(
         SHOW_BATFISH_LOGLEVEL, new String[] {}, "Current batfish log level is warn\n");
   }
 
   @Test
-  public void testShowBatfishOptionsInvalidParas() throws Exception {
+  void testShowBatfishOptionsInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
     testInvalidInput(SHOW_BATFISH_OPTIONS, new String[] {}, parameters);
   }
 
   @Test
-  public void testShowBatfishOptionsValidParas() throws Exception {
+  void testShowBatfishOptionsValidParas() throws Exception {
     testProcessCommandWithValidInput(
         SHOW_BATFISH_OPTIONS, new String[] {}, "There are 0 additional batfish options\n");
   }
 
   @Test
-  public void testShowNetworkValidParas() throws Exception {
+  void testShowNetworkValidParas() throws Exception {
     testProcessCommandWithValidInput(SHOW_NETWORK, new String[] {}, "Current network is null\n");
   }
 
   @Test
-  public void testShowNetworkInvalidParas() throws Exception {
+  void testShowNetworkInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
     testInvalidInput(SHOW_NETWORK, new String[] {}, parameters);
   }
 
   @Test
-  public void testShowCoordinatorHostInvalidParas() throws Exception {
+  void testShowCoordinatorHostInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
     testInvalidInput(SHOW_COORDINATOR_HOST, new String[] {}, parameters);
   }
 
   @Test
-  public void testShowCoordinatorHostValidParas() throws Exception {
+  void testShowCoordinatorHostValidParas() throws Exception {
     testProcessCommandWithValidInput(
         SHOW_COORDINATOR_HOST, new String[] {}, "Current coordinator host is localhost\n");
   }
 
   @Test
-  public void testShowReferenceSnapshotInvalidParas() throws Exception {
+  void testShowReferenceSnapshotInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
     testInvalidInput(SHOW_REFERENCE_SNAPSHOT, new String[] {}, parameters);
   }
 
   @Test
-  public void testShowReferenceSnapshotValidParas() throws Exception {
+  void testShowReferenceSnapshotValidParas() throws Exception {
     checkProcessCommandErrorMessage(
         SHOW_REFERENCE_SNAPSHOT, new String[] {}, "Active delta snapshot is not set\n");
   }
 
   @Test
-  public void testShowLogLevelInvalidParas() throws Exception {
+  void testShowLogLevelInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
     testInvalidInput(SHOW_LOGLEVEL, new String[] {}, parameters);
   }
 
   @Test
-  public void testShowLogLevelValidParas() throws Exception {
+  void testShowLogLevelValidParas() throws Exception {
     testProcessCommandWithValidInput(
         SHOW_LOGLEVEL, new String[] {}, "Current client log level is output\n");
   }
 
   @Test
-  public void testShowSnapshotInvalidParas() throws Exception {
+  void testShowSnapshotInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
     testInvalidInput(SHOW_SNAPSHOT, new String[] {}, parameters);
   }
 
   @Test
-  public void testShowSnapshotValidParas() throws Exception {
+  void testShowSnapshotValidParas() throws Exception {
     String[] parameters = new String[] {};
     checkProcessCommandErrorMessage(SHOW_SNAPSHOT, parameters, SNAPSHOT_NOT_SET);
   }
 
   @Test
-  public void testShowVersionInvalidParas() throws Exception {
+  void testShowVersionInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
     testInvalidInput(SHOW_SNAPSHOT, new String[] {}, parameters);
   }
 
   @Test
-  public void testUnsatisfiedMinElementInput() throws IOException {
+  void testUnsatisfiedMinElementInput() throws IOException {
     Map<String, JsonNode> parameters = new HashMap<>();
     Map<String, Variable> variables = new HashMap<>();
     JsonNode jsonArray = _mapper.readTree("[\"action1\", \"action2\"]");
@@ -1283,61 +1313,70 @@ public final class ClientTest {
     actionsVariable.setType(STRING);
     actionsVariable.setMinElements(5);
     variables.put("actions", actionsVariable);
-    _thrown.expect(BatfishException.class);
     String errorMessage =
         String.format(
             "Invalid value for parameter actions: %s. Expecting a "
                 + "JSON array of at least 5 elements",
             jsonArray);
-    _thrown.expectMessage(equalTo(errorMessage));
-    Client.validateAndSet(parameters, variables);
+    Throwable exception =
+        assertThrows(BatfishException.class, () -> Client.validateAndSet(parameters, variables));
+    assertThat(exception.getMessage(), equalTo(errorMessage));
   }
 
   @Test
-  public void testUnsatisfiedMinLengthValue() throws IOException {
+  void testUnsatisfiedMinLengthValue() {
     String shortString = "\"short\"";
     Variable variable = new Variable();
     variable.setMinLength(8);
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(equalTo("Must be at least 8 characters in length"));
-    Client.validateType(_mapper.readTree(shortString), variable);
+    Throwable exception =
+        assertThrows(
+            BatfishException.class,
+            () -> Client.validateType(_mapper.readTree(shortString), variable));
+    assertThat(exception.getMessage(), equalTo("Must be at least 8 characters in length"));
   }
 
   @Test
-  public void testUnStringInputWhenExpectString() throws IOException {
+  void testUnStringInputWhenExpectString() throws IOException {
     String input = "10";
     String expectedMessage = String.format("A Batfish %s must be a JSON string", STRING.getName());
     validateTypeWithInvalidInput(input, expectedMessage, STRING);
   }
 
   @Test
-  public void testValidateInvalidNode() throws IOException {
+  void testValidateInvalidNode() throws IOException {
     String parameterName = "boolean";
     JsonNode invalidNode = _mapper.readTree("\"I am string\"");
     Variable variable = new Variable();
     variable.setType(BOOLEAN);
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(
+    Throwable exception =
+        assertThrows(
+            BatfishException.class,
+            () -> Client.validateNode(invalidNode, variable, parameterName));
+    assertThat(
+        exception.getMessage(),
         equalTo(String.format("Invalid value for parameter %s: %s", parameterName, invalidNode)));
-    Client.validateNode(invalidNode, variable, parameterName);
   }
 
   @Test
-  public void testValidateNodeNotAllowedValue() throws IOException {
+  void testValidateNodeNotAllowedValue() throws IOException {
     String parameterName = "boolean";
     JsonNode invalidNode = _mapper.readTree("false");
     Variable variable = new Variable();
     variable.setType(BOOLEAN);
     List<AllowedValue> allowedValues = ImmutableList.of(new AllowedValue("true", "description"));
     variable.setValues(allowedValues);
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(
-        String.format("Invalid value: false, allowed values are: %s", allowedValues));
-    Client.validateNode(invalidNode, variable, parameterName);
+    Throwable exception =
+        assertThrows(
+            BatfishException.class,
+            () -> Client.validateNode(invalidNode, variable, parameterName));
+    assertThat(
+        exception.getMessage(),
+        containsString(
+            String.format("Invalid value: false, allowed values are: %s", allowedValues)));
   }
 
   @Test
-  public void testValidateValidNode() throws IOException {
+  void testValidateValidNode() throws IOException {
     String parameterName = "boolean";
     JsonNode invalidNode = _mapper.readTree("false");
     Variable variable = new Variable();
@@ -1348,7 +1387,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidateWithInvalidInput() throws IOException {
+  void testValidateWithInvalidInput() throws IOException {
     Map<String, JsonNode> parameters = new HashMap<>();
     Map<String, Variable> variables = new HashMap<>();
     parameters.put("integer", _mapper.readTree("10"));
@@ -1359,26 +1398,26 @@ public final class ClientTest {
     Variable booleanVariable = new Variable();
     booleanVariable.setType(BOOLEAN);
     variables.put("boolean", booleanVariable);
-    _thrown.expect(BatfishException.class);
     String errorMessage = "Invalid value for parameter boolean: \"true\"";
-    _thrown.expectMessage(equalTo(errorMessage));
-    Client.validateAndSet(parameters, variables);
+    Throwable exception =
+        assertThrows(BatfishException.class, () -> Client.validateAndSet(parameters, variables));
+    assertThat(exception.getMessage(), equalTo(errorMessage));
   }
 
   @Test
-  public void testValidateWithNullVariableInput() throws IOException {
+  void testValidateWithNullVariableInput() throws IOException {
     Map<String, JsonNode> parameters = new HashMap<>();
     Map<String, Variable> variables = new HashMap<>();
     parameters.put("integer", _mapper.readTree("10"));
     variables.put("integer", null);
-    _thrown.expect(BatfishException.class);
     String errorMessage = "No variable named: 'integer' in supplied " + "question template";
-    _thrown.expectMessage(equalTo(errorMessage));
-    Client.validateAndSet(parameters, variables);
+    Throwable exception =
+        assertThrows(BatfishException.class, () -> Client.validateAndSet(parameters, variables));
+    assertThat(exception.getMessage(), equalTo(errorMessage));
   }
 
   @Test
-  public void testValidateWithValidInput() throws IOException {
+  void testValidateWithValidInput() throws IOException {
     Map<String, JsonNode> parameters = new HashMap<>();
     Map<String, Variable> variables = new HashMap<>();
     parameters.put("integer", _mapper.readTree("10"));
@@ -1393,7 +1432,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidAddressGroupName() throws IOException {
+  void testValidAddressGroupName() throws IOException {
     JsonNode addressGroupNode = _mapper.readTree("\"addressGroup, referenceBook\"");
     Variable variable = new Variable();
     variable.setType(ADDRESS_GROUP_NAME);
@@ -1401,7 +1440,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidApplicationSpecifierValue() throws IOException {
+  void testValidApplicationSpecifierValue() throws IOException {
     JsonNode specNode = _mapper.readTree("\"ssh\"");
     Variable variable = new Variable();
     variable.setType(APPLICATION_SPEC);
@@ -1409,7 +1448,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidBooleanValue() throws IOException {
+  void testValidBooleanValue() throws IOException {
     JsonNode booleanNode = _mapper.readTree("true");
     Variable variable = new Variable();
     variable.setType(BOOLEAN);
@@ -1417,7 +1456,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidBgpRouteStatusSpecValue() throws IOException {
+  void testValidBgpRouteStatusSpecValue() throws IOException {
     JsonNode sessionStatusNode = _mapper.readTree("\"valid\"");
     Variable variable = new Variable();
     variable.setType(BGP_ROUTE_STATUS_SPEC);
@@ -1425,7 +1464,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidBgpSessionCompatStatusValue() throws IOException {
+  void testValidBgpSessionCompatStatusValue() throws IOException {
     JsonNode sessionStatusNode = _mapper.readTree("\"sessionStatus\"");
     Variable variable = new Variable();
     variable.setType(BGP_SESSION_COMPAT_STATUS_SPEC);
@@ -1433,7 +1472,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidBgpSessionStatusValue() throws IOException {
+  void testValidBgpSessionStatusValue() throws IOException {
     JsonNode sessionStatusNode = _mapper.readTree("\"sessionStatus\"");
     Variable variable = new Variable();
     variable.setType(BGP_SESSION_STATUS_SPEC);
@@ -1441,7 +1480,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidBgpSessionTypeSpecValue() throws IOException {
+  void testValidBgpSessionTypeSpecValue() throws IOException {
     JsonNode sessionTypeNode = _mapper.readTree("\"sessionType\"");
     Variable variable = new Variable();
     variable.setType(BGP_SESSION_TYPE_SPEC);
@@ -1449,7 +1488,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidComparatorValue() throws IOException {
+  void testValidComparatorValue() throws IOException {
     JsonNode comparatorNode = _mapper.readTree("\">=\"");
     Variable variable = new Variable();
     variable.setType(COMPARATOR);
@@ -1457,7 +1496,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidDispositionSpecifierValue() throws IOException {
+  void testValidDispositionSpecifierValue() throws IOException {
     JsonNode dispositionSpecNode = _mapper.readTree("\"success\"");
     Variable variable = new Variable();
     variable.setType(DISPOSITION_SPEC);
@@ -1465,7 +1504,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidDoubleValue() throws IOException {
+  void testValidDoubleValue() throws IOException {
     JsonNode doubleNode = _mapper.readTree("15.0");
     Variable variable = new Variable();
     variable.setType(DOUBLE);
@@ -1473,7 +1512,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidFilterValue() throws IOException {
+  void testValidFilterValue() throws IOException {
     JsonNode filterNode = _mapper.readTree("\"filterName\"");
     Variable variable = new Variable();
     variable.setType(FILTER);
@@ -1481,7 +1520,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidFilterSpecValue() throws IOException {
+  void testValidFilterSpecValue() throws IOException {
     JsonNode filterNode = _mapper.readTree("\"@in(eth0)\"");
     Variable variable = new Variable();
     variable.setType(FILTER_SPEC);
@@ -1489,7 +1528,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidFloatValue() {
+  void testValidFloatValue() {
     Float floatValue = 15.0f;
     JsonNode floatNode = _mapper.valueToTree(floatValue);
     Variable variable = new Variable();
@@ -1498,7 +1537,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidIntegerValue() throws IOException {
+  void testValidIntegerValue() throws IOException {
     JsonNode integerNode = _mapper.readTree("15");
     Variable variable = new Variable();
     variable.setType(INTEGER);
@@ -1506,7 +1545,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidInterfaceGroupName() throws IOException {
+  void testValidInterfaceGroupName() throws IOException {
     JsonNode interfaceGroupNode = _mapper.readTree("\"interfaceGroup, referenceBook\"");
     Variable variable = new Variable();
     variable.setType(INTERFACE_GROUP_NAME);
@@ -1514,7 +1553,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidInterfaceNameValue() throws IOException {
+  void testValidInterfaceNameValue() throws IOException {
     JsonNode interfaceNode = _mapper.readTree("\"interfaceName\"");
     Variable variable = new Variable();
     variable.setType(INTERFACE);
@@ -1522,7 +1561,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidInterfaceValue() throws IOException {
+  void testValidInterfaceValue() throws IOException {
     JsonNode interfaceNode = _mapper.readTree("\"interfaceName\"");
     Variable variable = new Variable();
     variable.setType(INTERFACE);
@@ -1530,7 +1569,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidInterfaceTypeValue() throws IOException {
+  void testValidInterfaceTypeValue() throws IOException {
     JsonNode interfaceTypeNode = _mapper.readTree("\"physical\"");
     Variable variable = new Variable();
     variable.setType(INTERFACE_TYPE);
@@ -1538,7 +1577,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidInterfacesSpecValue() throws IOException {
+  void testValidInterfacesSpecValue() throws IOException {
     JsonNode interfacesSpecNode = _mapper.readTree("\"TYPE:LOOPBACK\"");
     Variable variable = new Variable();
     variable.setType(INTERFACES_SPEC);
@@ -1546,7 +1585,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidIpProtocolValue() throws IOException {
+  void testValidIpProtocolValue() throws IOException {
     JsonNode ipProtocolNode = _mapper.readTree("\"visa\"");
     Variable variable = new Variable();
     variable.setType(IP_PROTOCOL);
@@ -1554,7 +1593,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidIpSpaceSpecValue() throws IOException {
+  void testValidIpSpaceSpecValue() throws IOException {
     JsonNode addressGroupNode = _mapper.readTree("\"1.1.1.1\"");
     Variable variable = new Variable();
     variable.setType(IP_SPACE_SPEC);
@@ -1562,7 +1601,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidIPValue() throws IOException {
+  void testValidIPValue() throws IOException {
     JsonNode ipNode = _mapper.readTree("\"0.0.0.0\"");
     Variable variable = new Variable();
     variable.setType(IP);
@@ -1570,7 +1609,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidIpWildcardValue() throws IOException {
+  void testValidIpWildcardValue() throws IOException {
     JsonNode ipWildcardNode = _mapper.readTree("\"10.168.5.5:10.168.100.100\"");
     Variable variable = new Variable();
     variable.setType(IP_WILDCARD);
@@ -1578,7 +1617,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidIpsecSessionStatusValue() throws IOException {
+  void testValidIpsecSessionStatusValue() throws IOException {
     JsonNode ipsecSessionStatusNode = _mapper.readTree("\"sessionStatus\"");
     Variable variable = new Variable();
     variable.setType(IPSEC_SESSION_STATUS_SPEC);
@@ -1586,7 +1625,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidJavaRegexValue() throws IOException {
+  void testValidJavaRegexValue() throws IOException {
     JsonNode inputNode = _mapper.readTree("\".*\"");
     Variable variable = new Variable();
     variable.setType(JAVA_REGEX);
@@ -1594,7 +1633,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidJsonObjectValue() throws IOException {
+  void testValidJsonObjectValue() throws IOException {
     JsonNode inputNode = _mapper.readTree("{\"key\": [1, true, null, {\"nested\": \"value\"}]}");
     Variable variable = new Variable();
     variable.setType(JSON_OBJECT);
@@ -1602,13 +1641,13 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidJsonPath() throws IOException {
+  void testValidJsonPath() throws IOException {
     String validJsonPath = "{\"path\" : \"I am path.\", \"suffix\" : true}";
     Client.validateJsonPath(_mapper.readTree(validJsonPath));
   }
 
   @Test
-  public void testValidJsonPathRegexValue() throws IOException {
+  void testValidJsonPathRegexValue() throws IOException {
     JsonNode jsonPathRegexNode = _mapper.readTree("\"/.*/\"");
     Variable variable = new Variable();
     variable.setType(JSON_PATH_REGEX);
@@ -1616,7 +1655,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidJsonPathValue() throws IOException {
+  void testValidJsonPathValue() throws IOException {
     JsonNode jsonPathNode = _mapper.readTree("{\"path\" : \"I am path.\", \"suffix\" : true}");
     Variable variable = new Variable();
     variable.setType(JSON_PATH);
@@ -1624,7 +1663,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidLocationSpecValue() throws IOException {
+  void testValidLocationSpecValue() throws IOException {
     JsonNode location = _mapper.readTree("\"as1border1\"");
     Variable variable = new Variable();
     variable.setType(LOCATION_SPEC);
@@ -1632,7 +1671,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidLongValue() {
+  void testValidLongValue() {
     Long longValue = 15L;
     JsonNode floatNode = _mapper.valueToTree(longValue);
     Variable variable = new Variable();
@@ -1641,7 +1680,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidNodeRoleDimensionValue() throws IOException {
+  void testValidNodeRoleDimensionValue() throws IOException {
     JsonNode nodeRoleDimensionNode = _mapper.readTree("\"roleDimension\"");
     Variable variable = new Variable();
     variable.setType(NODE_ROLE_DIMENSION_NAME);
@@ -1649,7 +1688,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidOspfSessionStatusValue() throws IOException {
+  void testValidOspfSessionStatusValue() throws IOException {
     JsonNode sessionStatusNode = _mapper.readTree("\"sessionStatus\"");
     Variable variable = new Variable();
     variable.setType(OSPF_SESSION_STATUS_SPEC);
@@ -1657,13 +1696,13 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidPathRegex() {
+  void testValidPathRegex() {
     String jsonPathRegex = "/.*/";
     Client.validateJsonPathRegex(jsonPathRegex);
   }
 
   @Test
-  public void testValidPrefixRangeValue() throws IOException {
+  void testValidPrefixRangeValue() throws IOException {
     JsonNode prefixRangeNode = _mapper.readTree("\"10.168.5.5/30:10-50\"");
     Variable variable = new Variable();
     variable.setType(PREFIX_RANGE);
@@ -1671,7 +1710,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidPrefixValue() throws IOException {
+  void testValidPrefixValue() throws IOException {
     JsonNode prefixNode = _mapper.readTree("\"10.168.5.5/30\"");
     Variable variable = new Variable();
     variable.setType(PREFIX);
@@ -1679,7 +1718,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidProtocolValue() throws IOException {
+  void testValidProtocolValue() throws IOException {
     JsonNode prefixRangeNode = _mapper.readTree("\"http\"");
     Variable variable = new Variable();
     variable.setType(PROTOCOL);
@@ -1687,7 +1726,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidRoutingProtocolSpecValue() throws IOException {
+  void testValidRoutingProtocolSpecValue() throws IOException {
     JsonNode rpsNode = _mapper.readTree("\"all\"");
     Variable variable = new Variable();
     variable.setType(ROUTING_PROTOCOL_SPEC);
@@ -1695,7 +1734,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidStructureNameValue() throws IOException {
+  void testValidStructureNameValue() throws IOException {
     JsonNode structureNameNode = _mapper.readTree("\"structureName\"");
     Variable variable = new Variable();
     variable.setType(STRUCTURE_NAME);
@@ -1703,7 +1742,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidSubRangeIntegerValue() throws IOException {
+  void testValidSubRangeIntegerValue() throws IOException {
     JsonNode subRangeNode = _mapper.readTree("10");
     Variable variable = new Variable();
     variable.setType(SUBRANGE);
@@ -1711,7 +1750,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidSubRangeStringValue() throws IOException {
+  void testValidSubRangeStringValue() throws IOException {
     JsonNode subRangeNode = _mapper.readTree("\"10-50\"");
     Variable variable = new Variable();
     variable.setType(SUBRANGE);
@@ -1719,7 +1758,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidVrfValue() throws IOException {
+  void testValidVrfValue() throws IOException {
     JsonNode vrfNode = _mapper.readTree("\"vrfName\"");
     Variable variable = new Variable();
     variable.setType(VRF);
@@ -1727,7 +1766,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidZoneValue() throws IOException {
+  void testValidZoneValue() throws IOException {
     JsonNode zoneNode = _mapper.readTree("\"zoneName\"");
     Variable variable = new Variable();
     variable.setType(ZONE);
@@ -1740,9 +1779,9 @@ public final class ClientTest {
     JsonNode node = _mapper.readTree(input);
     Variable variable = new Variable();
     variable.setType(type);
-    _thrown.expect(expectedException);
-    _thrown.expectMessage(equalTo(expectedMessage));
-    Client.validateType(node, variable);
+    Throwable exception =
+        assertThrows(expectedException, () -> Client.validateType(node, variable));
+    assertThat(exception.getMessage(), equalTo(expectedMessage));
   }
 
   private void validateTypeWithInvalidInput(String input, String expectedMessage, Type type)
@@ -1751,7 +1790,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void getPatch() {
+  void getPatch() {
     String expected = "1\n2\n3";
     String actual = "1\n2";
 
@@ -1764,5 +1803,20 @@ public final class ClientTest {
                 + " 1\n"
                 + " 2\n"
                 + "-3"));
+  }
+
+  private static File newFile(File parent, String child) throws IOException {
+    File result = new File(parent, child);
+    result.createNewFile();
+    return result;
+  }
+
+  private static File newFolder(File root, String... subDirs) throws IOException {
+    String subFolder = String.join("/", subDirs);
+    File result = new File(root, subFolder);
+    if (!result.mkdirs()) {
+      throw new IOException("Couldn't create folders " + root);
+    }
+    return result;
   }
 }

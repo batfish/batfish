@@ -26,13 +26,13 @@ import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.representation.aws.NetworkAcl.NetworkAclAssociation;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link NetworkAcl} */
-public class NetworkAclTest {
+class NetworkAclTest {
 
   @Test
-  public void testDeserialization() throws IOException {
+  void testDeserialization() throws IOException {
     String text = readResource("org/batfish/representation/aws/NetworkAclTest.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
@@ -67,7 +67,7 @@ public class NetworkAclTest {
   }
 
   @Test
-  public void testDeserializationIcmp() throws IOException {
+  void testDeserializationIcmp() throws IOException {
     String text = readResource("org/batfish/representation/aws/NetworkAclIcmpTest.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
@@ -108,7 +108,7 @@ public class NetworkAclTest {
   }
 
   @Test
-  public void testDeserializationV6() throws IOException {
+  void testDeserializationV6() throws IOException {
     String text = readResource("org/batfish/representation/aws/NetworkAclV6Test.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
@@ -135,7 +135,7 @@ public class NetworkAclTest {
   }
 
   @Test
-  public void testGetAclLineAllProtocols() {
+  void testGetAclLineAllProtocols() {
     Prefix prefix = Prefix.parse("1.1.1.0/24");
     NetworkAclEntryV4 entry = new NetworkAclEntryV4(prefix, true, true, "-1", 100, null, null);
     assertThat(
@@ -168,7 +168,7 @@ public class NetworkAclTest {
   }
 
   @Test
-  public void testGetAclLineTcpAll() {
+  void testGetAclLineTcpAll() {
     Prefix prefix = Prefix.parse("1.1.1.0/24");
     NetworkAclEntryV4 entry = new NetworkAclEntryV4(prefix, true, true, "6", 100, null, null);
     assertThat(
@@ -187,7 +187,7 @@ public class NetworkAclTest {
   }
 
   @Test
-  public void testGetAclLineTcpPorts() {
+  void testGetAclLineTcpPorts() {
     Prefix prefix = Prefix.parse("1.1.1.0/24");
     NetworkAclEntryV4 entry =
         new NetworkAclEntryV4(prefix, true, true, "6", 100, null, new PortRange(1, 21));
@@ -210,7 +210,7 @@ public class NetworkAclTest {
   }
 
   @Test
-  public void testGetAclLineIcmpAll() {
+  void testGetAclLineIcmpAll() {
     Prefix prefix = Prefix.parse("1.1.1.0/24");
     NetworkAclEntryV4 entry =
         new NetworkAclEntryV4(prefix, true, true, "1", 100, new IcmpTypeCode(-1, -1), null);
@@ -230,7 +230,7 @@ public class NetworkAclTest {
   }
 
   @Test
-  public void testGetAclLineIcmpType() {
+  void testGetAclLineIcmpType() {
     Prefix prefix = Prefix.parse("1.1.1.0/24");
     NetworkAclEntryV4 entry =
         new NetworkAclEntryV4(prefix, true, true, "1", 100, new IcmpTypeCode(1, 2), null);

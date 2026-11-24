@@ -12,12 +12,12 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.flow.TransformationStep.TransformationStepDetail;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.transformation.IpField;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link TransformationStep} */
-public class TransformationStepTest {
+class TransformationStepTest {
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     TransformationStep step =
         new TransformationStep(
             new TransformationStepDetail(
@@ -32,7 +32,7 @@ public class TransformationStepTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(new Object())
         .addEqualityGroup(

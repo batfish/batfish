@@ -75,16 +75,16 @@ import org.batfish.representation.aws.Route.State;
 import org.batfish.representation.aws.Route.TargetType;
 import org.batfish.representation.aws.RouteTable.Association;
 import org.hamcrest.Matcher;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link Subnet} */
-public class SubnetTest {
+class SubnetTest {
 
   private List<Subnet> _subnetList;
 
-  @Before
-  public void setup() throws IOException {
+  @BeforeEach
+  void setup() throws IOException {
     JsonNode json =
         BatfishObjectMapper.mapper()
             .readTree(readResource("org/batfish/representation/aws/SubnetTest.json", UTF_8));
@@ -94,7 +94,7 @@ public class SubnetTest {
   }
 
   @Test
-  public void testDeserialization() {
+  void testDeserialization() {
     assertThat(
         _subnetList,
         equalTo(
@@ -110,7 +110,7 @@ public class SubnetTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new Subnet(Prefix.ZERO, "owner", "arn", "id", "vpc", "zone", ImmutableMap.of()),
@@ -135,7 +135,7 @@ public class SubnetTest {
   }
 
   @Test
-  public void testGetNextIp() {
+  void testGetNextIp() {
     Subnet subnet = _subnetList.get(0);
     assertThat(subnet.getNextIp(), equalTo(Ip.parse("172.31.0.2")));
     assertThat(subnet.getNextIp(), equalTo(Ip.parse("172.31.0.3")));
@@ -144,7 +144,7 @@ public class SubnetTest {
 
   /** Test the simplest case of subnet with only a private prefix and not even a vpn gateway */
   @Test
-  public void testToConfigurationNodePrivateOnly() {
+  void testToConfigurationNodePrivateOnly() {
     Vpc vpc = getTestVpc("vpc");
     Configuration vpcConfig = Utils.newAwsConfiguration(vpc.getId(), "awstest");
 
@@ -242,7 +242,7 @@ public class SubnetTest {
 
   /** Test that public subnets are labeled as such */
   @Test
-  public void testToConfigurationNodePublic() {
+  void testToConfigurationNodePublic() {
     Vpc vpc = getTestVpc("vpc");
     Subnet subnet = getTestSubnet(Prefix.parse("10.10.10.0/24"), "subnet", vpc.getId());
     InternetGateway igw =
@@ -279,7 +279,7 @@ public class SubnetTest {
    * subnet prefix inside all VRFs
    */
   @Test
-  public void testToConfigurationNodeConnectAllVpcVrfs() {
+  void testToConfigurationNodeConnectAllVpcVrfs() {
     Configuration vpcCfg = Utils.newAwsConfiguration("vpc", "domain");
 
     // add a connection-based VRF (in addition to the default VRF)
@@ -352,7 +352,7 @@ public class SubnetTest {
 
   /** Tests that we do the right thing when processing a route for a VPC-level gateway. */
   @Test
-  public void testProcessRouteVpcGateway() {
+  void testProcessRouteVpcGateway() {
     Vpc vpc = getTestVpc("vpc");
     Configuration vpcCfg = Utils.newAwsConfiguration(vpc.getId(), "awstest");
 
@@ -395,7 +395,7 @@ public class SubnetTest {
 
   /** Tests that we do the right thing when processing a route for VPC peering connection. */
   @Test
-  public void testProcessRouteVpcPeeringConnection() {
+  void testProcessRouteVpcPeeringConnection() {
     Vpc vpc = getTestVpc("vpc");
     Configuration vpcCfg = Utils.newAwsConfiguration(vpc.getId(), "awstest");
 
@@ -434,7 +434,7 @@ public class SubnetTest {
 
   /** Tests that we do the right thing when processing a route for transit gateway. */
   @Test
-  public void testProcessRouteTransitGateway() {
+  void testProcessRouteTransitGateway() {
     Vpc vpc = getTestVpc("vpc");
     Configuration vpcCfg = Utils.newAwsConfiguration(vpc.getId(), "awstest");
 
@@ -486,7 +486,7 @@ public class SubnetTest {
    * zone
    */
   @Test
-  public void testProcessRouteTransitGatewayOutsideConnectedAzs() {
+  void testProcessRouteTransitGatewayOutsideConnectedAzs() {
     Vpc vpc = getTestVpc("vpc");
     Configuration vpcCfg = Utils.newAwsConfiguration(vpc.getId(), "awstest");
 
@@ -528,7 +528,7 @@ public class SubnetTest {
 
   /** Tests route processing for a NAT gateway that is inside the subnet */
   @Test
-  public void testProcessRouteNatGatewayInSubnet() {
+  void testProcessRouteNatGatewayInSubnet() {
     Vpc vpc = getTestVpc("vpc");
     Configuration vpcCfg = Utils.newAwsConfiguration(vpc.getId(), "awstest");
 
@@ -572,7 +572,7 @@ public class SubnetTest {
 
   /** Tests route processing for a NAT gateway that is outside the subnet */
   @Test
-  public void testProcessRouteNatGatewayOutsideSubnet() {
+  void testProcessRouteNatGatewayOutsideSubnet() {
     Vpc vpc = getTestVpc("vpc");
     Configuration vpcCfg = Utils.newAwsConfiguration(vpc.getId(), "awstest");
 
@@ -632,7 +632,7 @@ public class SubnetTest {
 
   /** Test that all prefixes of the prefix list are inserted as destinations */
   @Test
-  public void testProcessRoutePrefixList() {
+  void testProcessRoutePrefixList() {
     Configuration vpcCfg = Utils.newAwsConfiguration("vpc", "awstest");
 
     Subnet subnet = getTestSubnet(Prefix.parse("10.10.10.0/24"), "subnet", "vpc");
@@ -675,7 +675,7 @@ public class SubnetTest {
 
   /** Test that network ACls are properly attached */
   @Test
-  public void testToConfigurationNodeNetworkAcl() {
+  void testToConfigurationNodeNetworkAcl() {
     Vpc vpc = getTestVpc("vpc");
     Configuration vpcCfg = Utils.newAwsConfiguration(vpc.getId(), "awstest");
 
@@ -725,7 +725,7 @@ public class SubnetTest {
   }
 
   @Test
-  public void testFindMyNetworkAclNoMatchingVpc() {
+  void testFindMyNetworkAclNoMatchingVpc() {
     Map<String, NetworkAcl> networkAcls =
         ImmutableMap.of(
             "aclId",
@@ -735,7 +735,7 @@ public class SubnetTest {
   }
 
   @Test
-  public void testFindMyNetworkAclPickRightSubnet() {
+  void testFindMyNetworkAclPickRightSubnet() {
     NetworkAcl networkAcl =
         new NetworkAcl(
             "acl",
@@ -760,7 +760,7 @@ public class SubnetTest {
   }
 
   @Test
-  public void testFindMyNetworkAclPickRightVpc() {
+  void testFindMyNetworkAclPickRightVpc() {
     NetworkAcl networkAcl =
         new NetworkAcl(
             "acl",
@@ -786,7 +786,7 @@ public class SubnetTest {
   }
 
   @Test
-  public void testFindMyNetworkAclPickDefaultInVpc() {
+  void testFindMyNetworkAclPickDefaultInVpc() {
     NetworkAcl networkAcl =
         new NetworkAcl("acl", "vpc", ImmutableList.of(), ImmutableList.of(), true);
     Map<String, NetworkAcl> networkAcls =
@@ -806,7 +806,7 @@ public class SubnetTest {
   }
 
   @Test
-  public void testAddNlbInstanceTargetInterfaces_subnetWithNoNlbOrInstanceTarget() {
+  void testAddNlbInstanceTargetInterfaces_subnetWithNoNlbOrInstanceTarget() {
     Subnet subnet = _subnetList.get(0);
     String instanceId = "instanceId";
     String lbDnsName = "lbDnsName";
@@ -833,7 +833,7 @@ public class SubnetTest {
   }
 
   @Test
-  public void testAddNlbInstanceTargetInterfaces_subnetWithLoadBalancer() {
+  void testAddNlbInstanceTargetInterfaces_subnetWithLoadBalancer() {
     Subnet subnet = _subnetList.get(0);
 
     // Create instance target not in subnet
@@ -980,7 +980,7 @@ public class SubnetTest {
   }
 
   @Test
-  public void testAddNlbInstanceTargetInterfaces_subnetWithInstanceTarget() {
+  void testAddNlbInstanceTargetInterfaces_subnetWithInstanceTarget() {
     Subnet subnet = _subnetList.get(0);
 
     // Create instance target in subnet
@@ -1100,7 +1100,7 @@ public class SubnetTest {
   }
 
   @Test
-  public void testAddNlbInstanceTargetInterfaces_subnetWithNlbAndInstanceTarget() {
+  void testAddNlbInstanceTargetInterfaces_subnetWithNlbAndInstanceTarget() {
     Subnet subnet = _subnetList.get(0);
 
     // Create instance target in subnet
@@ -1248,7 +1248,7 @@ public class SubnetTest {
   }
 
   @Test
-  public void testAddNlbInstanceTargetInterfaces_appliesInstanceSecurityGroups() {
+  void testAddNlbInstanceTargetInterfaces_appliesInstanceSecurityGroups() {
     // addNlbInstanceTargetInterfaces should apply security groups to instance's new interface
     Subnet subnet = _subnetList.get(0);
 

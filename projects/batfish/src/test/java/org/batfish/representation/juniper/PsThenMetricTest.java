@@ -15,11 +15,11 @@ import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.representation.juniper.PsThenMetric.Operator;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class PsThenMetricTest {
+class PsThenMetricTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(5L)
         .addEqualityGroup(new PsThenMetric(1, Operator.SET), new PsThenMetric(1, Operator.SET))
@@ -43,7 +43,7 @@ public class PsThenMetricTest {
   }
 
   @Test
-  public void testConversion() {
+  void testConversion() {
     assertThat(
         getStatements(new PsThenMetric(1, Operator.SET)),
         contains(new SetMetric(new LiteralLong(1))));

@@ -5,12 +5,12 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableSortedSet;
 import org.batfish.referencelibrary.ServiceObjectGroup;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ServiceObjectGroupBeanTest {
+class ServiceObjectGroupBeanTest {
 
   @Test
-  public void conversionToAndFrom() {
+  void conversionToAndFrom() {
     ServiceObjectGroup group = new ServiceObjectGroup("sog", ImmutableSortedSet.of("23"));
     ServiceObjectGroupBean bean = new ServiceObjectGroupBean(group);
     assertThat(new ServiceObjectGroupBean(bean.toServiceObjectGroup()), equalTo(bean));

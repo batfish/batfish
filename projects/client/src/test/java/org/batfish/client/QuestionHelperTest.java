@@ -3,7 +3,9 @@ package org.batfish.client;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.IntNode;
@@ -13,16 +15,12 @@ import java.io.IOException;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.questions.Question;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-public class QuestionHelperTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class QuestionHelperTest {
 
   @Test
-  public void fillTemplate() throws IOException {
+  void fillTemplate() throws IOException {
     ObjectNode template =
         (ObjectNode)
             BatfishObjectMapper.mapper()
@@ -39,7 +37,7 @@ public class QuestionHelperTest {
   }
 
   @Test
-  public void fillTemplateJsonObject() throws IOException {
+  void fillTemplateJsonObject() throws IOException {
     ObjectNode template =
         (ObjectNode)
             BatfishObjectMapper.mapper()
@@ -58,37 +56,43 @@ public class QuestionHelperTest {
   }
 
   @Test
-  public void validateTemplateExtraParameter() throws IOException {
+  void validateTemplateExtraParameter() throws IOException {
     ObjectNode template =
         (ObjectNode)
             BatfishObjectMapper.mapper()
                 .readTree(readResource("org/batfish/client/extraParameter.json", UTF_8));
 
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage("Unrecognized field");
-
-    QuestionHelper.validateTemplate(
-        template,
-        ImmutableSortedMap.of("parameter1", new IntNode(2), "parameter2", new IntNode(2)));
+    Throwable exception =
+        assertThrows(
+            BatfishException.class,
+            () ->
+                QuestionHelper.validateTemplate(
+                    template,
+                    ImmutableSortedMap.of(
+                        "parameter1", new IntNode(2), "parameter2", new IntNode(2))));
+    assertThat(exception.getMessage(), containsString("Unrecognized field"));
   }
 
   @Test
-  public void validateTemplateExtraVariable() throws IOException {
+  void validateTemplateExtraVariable() throws IOException {
     ObjectNode template =
         (ObjectNode)
             BatfishObjectMapper.mapper()
                 .readTree(readResource("org/batfish/client/extraVariable.json", UTF_8));
 
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage("Unused variable");
-
-    QuestionHelper.validateTemplate(
-        template,
-        ImmutableSortedMap.of("parameter1", new IntNode(1), "parameter2EXTRA", new IntNode(2)));
+    Throwable exception =
+        assertThrows(
+            BatfishException.class,
+            () ->
+                QuestionHelper.validateTemplate(
+                    template,
+                    ImmutableSortedMap.of(
+                        "parameter1", new IntNode(1), "parameter2EXTRA", new IntNode(2))));
+    assertThat(exception.getMessage(), containsString("Unused variable"));
   }
 
   @Test
-  public void validateTemplateSuccess() throws IOException {
+  void validateTemplateSuccess() throws IOException {
     ObjectNode template =
         (ObjectNode)
             BatfishObjectMapper.mapper()
@@ -105,15 +109,20 @@ public class QuestionHelperTest {
   }
 
   @Test
-  public void validateTemplateUnexercisedVariable() throws IOException {
+  void validateTemplateUnexercisedVariable() throws IOException {
     ObjectNode template =
         (ObjectNode)
             BatfishObjectMapper.mapper()
                 .readTree(readResource("org/batfish/client/goodTemplate.json", UTF_8));
 
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage("Template validation should exercise all variables");
-
-    QuestionHelper.validateTemplate(template, ImmutableSortedMap.of("parameter1", new IntNode(1)));
+    Throwable exception =
+        assertThrows(
+            BatfishException.class,
+            () ->
+                QuestionHelper.validateTemplate(
+                    template, ImmutableSortedMap.of("parameter1", new IntNode(1))));
+    assertThat(
+        exception.getMessage(),
+        containsString("Template validation should exercise all variables"));
   }
 }

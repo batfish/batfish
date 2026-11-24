@@ -14,12 +14,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-@RunWith(JUnit4.class)
-public class ParallelMapSerializerTest {
+class ParallelMapSerializerTest {
 
   private static <V> Map<String, V> roundTrip(Map<String, V> byKey) throws IOException {
     ByteArrayOutputStream bytes = new ByteArrayOutputStream();
@@ -33,12 +30,12 @@ public class ParallelMapSerializerTest {
   }
 
   @Test
-  public void testEmptyMap() throws IOException {
+  void testEmptyMap() throws IOException {
     assertThat(roundTrip(new TreeMap<String, String>()).keySet(), empty());
   }
 
   @Test
-  public void testNullValue() throws IOException {
+  void testNullValue() throws IOException {
     Map<String, String> map = new TreeMap<>();
     map.put("key", null);
     assertThat(roundTrip(map), equalTo(map));
@@ -50,7 +47,7 @@ public class ParallelMapSerializerTest {
    * enough that its values are serialized in more than one chunk in parallel.
    */
   @Test
-  public void testValuesPairedWithTheirOwnKeys() throws IOException {
+  void testValuesPairedWithTheirOwnKeys() throws IOException {
     Map<String, List<String>> map = new HashMap<>();
     for (int i = 0; i < 10_000; i++) {
       String key = "key-" + i;
@@ -63,7 +60,7 @@ public class ParallelMapSerializerTest {
 
   /** The map is read back with its entries in the order they were written. */
   @Test
-  public void testPreservesIterationOrder() throws IOException {
+  void testPreservesIterationOrder() throws IOException {
     Map<String, Integer> map = new HashMap<>();
     for (int i = 0; i < 1_000; i++) {
       map.put("key-" + i, i);

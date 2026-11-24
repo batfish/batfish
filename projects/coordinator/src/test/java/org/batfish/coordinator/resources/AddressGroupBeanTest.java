@@ -5,19 +5,19 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableSortedSet;
 import org.batfish.referencelibrary.AddressGroup;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class AddressGroupBeanTest {
+class AddressGroupBeanTest {
 
   @Test
-  public void conversionToAndFromAddresses() {
+  void conversionToAndFromAddresses() {
     AddressGroup group = new AddressGroup(ImmutableSortedSet.of("1.1.1.1:255.255.255.1"), "ag1");
     AddressGroupBean bean = new AddressGroupBean(group);
     assertThat(new AddressGroupBean(bean.toAddressGroup()), equalTo(bean));
   }
 
   @Test
-  public void conversionToAndFromAddressesAndGroups() {
+  void conversionToAndFromAddressesAndGroups() {
     AddressGroup group =
         new AddressGroup(
             "ag1", ImmutableSortedSet.of("1.1.1.1:255.255.255.1"), ImmutableSortedSet.of("sub"));

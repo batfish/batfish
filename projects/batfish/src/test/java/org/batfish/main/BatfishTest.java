@@ -29,15 +29,17 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -102,20 +104,16 @@ import org.batfish.identifiers.TestIdResolver;
 import org.batfish.job.ParseVendorConfigurationResult;
 import org.batfish.storage.TestStorageProvider;
 import org.batfish.vendor.VendorConfiguration;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests for {@link Batfish}. */
-public class BatfishTest {
+class BatfishTest {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+  @TempDir public File _folder;
 
   @Test
-  public void testAnswerBadQuestion() {
+  void testAnswerBadQuestion() {
     // missing class field
     Batfish batfish =
         BatfishTestUtils.getBatfish(
@@ -143,7 +141,7 @@ public class BatfishTest {
   }
 
   @Test
-  public void testOverlayIptables() throws IOException {
+  void testOverlayIptables() throws IOException {
     SortedMap<String, byte[]> configurationsBytes = new TreeMap<>();
     String[] configurationNames = new String[] {"host1.cfg"};
     String testConfigsPrefix = "org/batfish/grammar/host/testrigs/router-iptables/configs/";
@@ -183,7 +181,7 @@ public class BatfishTest {
   }
 
   @Test
-  public void testInitTestrigWithDuplicateHostnames() throws IOException {
+  void testInitTestrigWithDuplicateHostnames() throws IOException {
     // rtr1 and rtr2 have the same hostname
     String testrigResourcePrefix = "org/batfish/main/snapshots/duplicate_hostnames";
     List<String> configurationNames = ImmutableList.of("rtr1", "rtr2", "rtr3");
@@ -221,7 +219,7 @@ public class BatfishTest {
   }
 
   @Test
-  public void testInitTestrigWithLayer1Topology() throws IOException {
+  void testInitTestrigWithLayer1Topology() throws IOException {
     String testrigResourcePrefix = "org/batfish/common/topology/testrigs/layer1";
     TestrigText.Builder testrigTextBuilder =
         TestrigText.builder()
@@ -237,7 +235,7 @@ public class BatfishTest {
   }
 
   @Test
-  public void testInitSnapshotWithRuntimeData() throws IOException {
+  void testInitSnapshotWithRuntimeData() throws IOException {
     /*
     Setup: Config rtr1 has interfaces Ethernet0, Ethernet1, and Ethernet2, all no shutdown.
     Runtime data says Ethernet0 is line down and Ethernet1 is line up, no entry for Ethernet2.
@@ -267,7 +265,7 @@ public class BatfishTest {
   }
 
   @Test
-  public void testInitSnapshotWithEnvironmentBgpTables() throws IOException {
+  void testInitSnapshotWithEnvironmentBgpTables() throws IOException {
     /* Setup: Config rtr1 has associated environment BGP tables. */
     String snapshotResourcePrefix = "org/batfish/main/snapshots/env_bgp";
     Batfish batfish =
@@ -312,7 +310,7 @@ public class BatfishTest {
   }
 
   @Test
-  public void testInitSnapshotWithExternalBgpAnnouncements() throws IOException {
+  void testInitSnapshotWithExternalBgpAnnouncements() throws IOException {
     String snapshotResourcePrefix = "org/batfish/main/snapshots/external_bgp_announcements";
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
@@ -374,7 +372,7 @@ public class BatfishTest {
   }
 
   @Test
-  public void testLoadLayer1Topology() throws IOException {
+  void testLoadLayer1Topology() throws IOException {
     TestrigText.Builder testrigTextBuilder =
         TestrigText.builder()
             .setLayer1TopologyPrefix("org/batfish/common/topology/testrigs/layer1");
@@ -400,7 +398,7 @@ public class BatfishTest {
   }
 
   @Test
-  public void testLoadVendorConfigurations() throws IOException {
+  void testLoadVendorConfigurations() throws IOException {
     String snapshotPath = "org/batfish/main/snapshots/load_vendor_configurations";
     List<String> awsFiles =
         ImmutableList.of(
@@ -430,7 +428,7 @@ public class BatfishTest {
   }
 
   @Test
-  public void testMultipleBestVrrpCandidates() throws IOException {
+  void testMultipleBestVrrpCandidates() throws IOException {
     String testrigResourcePrefix = "org/batfish/testrigs/vrrp_multiple_best";
     List<String> configurationNames = ImmutableList.of("r1", "r2");
 
@@ -448,7 +446,7 @@ public class BatfishTest {
   }
 
   @Test
-  public void testCheckValidTopology() {
+  void testCheckValidTopology() {
     Map<String, Configuration> configs = new HashMap<>();
     configs.put(
         "h1", BatfishTestUtils.createTestConfiguration("h1", ConfigurationFormat.HOST, "eth0"));
@@ -463,7 +461,7 @@ public class BatfishTest {
   }
 
   @Test
-  public void testCheckTopologyInvalidNode() {
+  void testCheckTopologyInvalidNode() {
     Map<String, Configuration> configs = new HashMap<>();
     configs.put(
         "h1", BatfishTestUtils.createTestConfiguration("h1", ConfigurationFormat.HOST, "eth0"));
@@ -471,13 +469,14 @@ public class BatfishTest {
         new TreeSet<>(Collections.singletonList(Edge.of("h1", "eth0", "h2", "e0")));
     Topology topology = new Topology(edges);
 
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage("Topology contains a non-existent node 'h2'");
-    Batfish.checkTopology(configs, topology);
+    Throwable exception =
+        assertThrows(BatfishException.class, () -> Batfish.checkTopology(configs, topology));
+    assertThat(
+        exception.getMessage(), containsString("Topology contains a non-existent node 'h2'"));
   }
 
   @Test
-  public void testCheckTopologyInvalidInterface() {
+  void testCheckTopologyInvalidInterface() {
     Map<String, Configuration> configs = new HashMap<>();
     configs.put(
         "h1", BatfishTestUtils.createTestConfiguration("h1", ConfigurationFormat.HOST, "eth0"));
@@ -487,13 +486,15 @@ public class BatfishTest {
         new TreeSet<>(Collections.singletonList(Edge.of("h1", "eth1", "h2", "e0")));
     Topology topology = new Topology(edges);
 
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage("Topology contains a non-existent interface 'eth1' on node 'h1'");
-    Batfish.checkTopology(configs, topology);
+    Throwable exception =
+        assertThrows(BatfishException.class, () -> Batfish.checkTopology(configs, topology));
+    assertThat(
+        exception.getMessage(),
+        containsString("Topology contains a non-existent interface 'eth1' on node 'h1'"));
   }
 
   @Test
-  public void testUnusableVrrpHandledCorrectly() throws Exception {
+  void testUnusableVrrpHandledCorrectly() throws Exception {
     String configurationText =
         String.join(
             "\n",
@@ -517,7 +518,7 @@ public class BatfishTest {
   }
 
   @Test
-  public void testCreateAnswerer() {
+  void testCreateAnswerer() {
     Batfish batfish = BatfishTestUtils.getBatfish(new TestStorageProvider(), new TestIdResolver());
     Question testQuestion =
         new TestQuestion() {
@@ -552,7 +553,7 @@ public class BatfishTest {
 
   // all of these interfaces should not be ignored by processManagementInterfaces()
   @Test
-  public void testNotIgnoredManagementInterfaces() {
+  void testNotIgnoredManagementInterfaces() {
     String notIgnored = "notIgnored";
     String notIgnored2 = "them0";
     String notIgnored3 = "mgt-me0";
@@ -584,7 +585,7 @@ public class BatfishTest {
 
   // all of these interfaces should be ignored by processManagementInterfaces()
   @Test
-  public void testIgnoredManagementInterfaces() {
+  void testIgnoredManagementInterfaces() {
     String ignoredIface1 = "ignoredIface1";
     String ignoredIface2 = "ignoredIface2";
 
@@ -615,7 +616,7 @@ public class BatfishTest {
   }
 
   @Test
-  public void testPostProcessInterfaceDependenciesBind() {
+  void testPostProcessInterfaceDependenciesBind() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c1 =
         nf.configurationBuilder().setHostname("c1").setConfigurationFormat(CISCO_IOS).build();
@@ -647,7 +648,7 @@ public class BatfishTest {
   }
 
   @Test
-  public void testPostProcessInterfaceDependenciesMissing() {
+  void testPostProcessInterfaceDependenciesMissing() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c1 =
         nf.configurationBuilder().setHostname("c1").setConfigurationFormat(CISCO_IOS).build();
@@ -664,7 +665,7 @@ public class BatfishTest {
   }
 
   @Test
-  public void testPostProcessInterfaceDependenciesAggregate() {
+  void testPostProcessInterfaceDependenciesAggregate() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c1 =
         nf.configurationBuilder().setHostname("c1").setConfigurationFormat(CISCO_IOS).build();
@@ -706,7 +707,7 @@ public class BatfishTest {
   }
 
   @Test
-  public void testHaltOnParseError() throws IOException {
+  void testHaltOnParseError() throws IOException {
     String hostname = "r1";
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
@@ -718,12 +719,13 @@ public class BatfishTest {
                 .build(),
             _folder);
     batfish.getSettings().setHaltOnParseError(true);
-    _thrown.expect(hasStackTrace(containsString("Error parsing configuration file")));
-    batfish.loadConfigurations(batfish.getSnapshot());
+    Throwable exception =
+        assertThrows(Exception.class, () -> batfish.loadConfigurations(batfish.getSnapshot()));
+    assertThat(exception, hasStackTrace(containsString("Error parsing configuration file")));
   }
 
   @Test
-  public void testGetSnapshotInputObject() throws IOException {
+  void testGetSnapshotInputObject() throws IOException {
     String fileName = "fileName";
     String configText = "sup dawg";
 
@@ -741,7 +743,7 @@ public class BatfishTest {
   }
 
   @Test
-  public void testGetSnapshotInputObjectError() throws IOException {
+  void testGetSnapshotInputObjectError() throws IOException {
     String fileName = "fileName";
     String configText = "sup dawg";
 
@@ -752,16 +754,19 @@ public class BatfishTest {
             TestrigText.builder().setConfigurationText(configurations).build(), _folder);
 
     // should throw FileNotFoundException if file not found
-    _thrown.expect(FileNotFoundException.class);
-    try (InputStream inputStream =
-        batfish.getSnapshotInputObject(batfish.getSnapshot(), "missing file")) {
-      // Should not reach here
-      assertNotNull(inputStream);
-    }
+    assertThrows(
+        FileNotFoundException.class,
+        () -> {
+          try (InputStream inputStream =
+              batfish.getSnapshotInputObject(batfish.getSnapshot(), "missing file")) {
+            // Should not reach here
+            assertNotNull(inputStream);
+          }
+        });
   }
 
   @Test
-  public void testMergeInternetAndIspNodes() {
+  void testMergeInternetAndIspNodes() {
     Map<String, Configuration> snapshotConfigs = new HashMap<>();
     Configuration config = new Configuration("node1", CISCO_IOS);
     snapshotConfigs.put(config.getHostname(), config);
@@ -801,7 +806,7 @@ public class BatfishTest {
   }
 
   @Test
-  public void testMakeSonicFilePairs() {
+  void testMakeSonicFilePairs() {
     {
       // "normal" case
       assertThat(
@@ -879,7 +884,7 @@ public class BatfishTest {
   }
 
   @Test
-  public void testProcessNodeBlacklist() {
+  void testProcessNodeBlacklist() {
     Configuration c1 =
         Configuration.builder()
             .setHostname("c1")

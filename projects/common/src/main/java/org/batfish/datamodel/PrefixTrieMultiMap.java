@@ -78,6 +78,11 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
       return addElement(_node, e);
     }
 
+    /** As {@link PrefixTrieMultiMap#putAll}. */
+    public boolean addAll(Collection<T> elements) {
+      return addElements(_node, elements);
+    }
+
     /** As {@link PrefixTrieMultiMap#replaceAll}. */
     public boolean replaceAll(T e) {
       return replaceAllAt(_node, e);
@@ -940,6 +945,112 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
   public @Nonnull Set<T> longestPrefixMatch(Ip address, int maxPrefixLength) {
     int node = longestMatchNonEmptyNode((int) address.asLong(), maxPrefixLength);
     return node == NONE ? ImmutableSet.of() : elementsAt(node);
+  }
+
+  /**
+   * The elements satisfying {@code filter} at the longest prefix of length at most {@code
+   * maxPrefixLength} that contains {@code address} and has any such element; empty if there is no
+   * such prefix.
+   *
+   * <p>Searches the trie once if the deepest match has an element passing {@code filter}, and
+   * otherwise once more to find the shorter matches.
+   */
+  public @Nonnull Set<T> longestPrefixMatch(
+      Ip address, int maxPrefixLength, Predicate<? super T> filter) {
+    int ip = (int) address.asLong();
+    int deepest = longestMatchNonEmptyNode(ip, maxPrefixLength);
+    if (deepest == NONE) {
+      return ImmutableSet.of();
+    }
+    ImmutableSet<T> matching = matchingElementsAt(deepest, filter);
+    if (!matching.isEmpty()) {
+      return matching;
+    }
+    // No element at the deepest match passes. Walk down to it once more, top-down, remembering
+    // the last (so longest) shorter match that has an element passing, so nothing is allocated
+    // to revisit the path.
+    int best = NONE;
+    int[] nodes = _nodes;
+    int node = _root;
+    while (node != deepest) {
+      int a = nodes[node + 1];
+      int b = nodes[node + 2];
+      if (valued(b) && anyElementMatches(node, filter)) {
+        best = node;
+      }
+      node = bitAt(ip, lenOf(a)) ? rightOf(b) : leftOf(a);
+    }
+    return best == NONE ? ImmutableSet.of() : matchingElementsAt(best, filter);
+  }
+
+  /*
+   * Elements are not stored in the node records: they live in _values, at the index ("slot") the
+   * node's record holds (see slotOf). A node with one element stores that element there directly;
+   * a node with more stores an ImmutableSet, and has its MULTI flag set. The two accessors below
+   * are the only places that read a slot's contents as one or the other.
+   */
+
+  /** Whether valued node {@code n} holds more than one element, as a set in its slot. */
+  private boolean hasMultipleElements(int n) {
+    return multi(_nodes[n + 2]);
+  }
+
+  /** The one element of valued node {@code n}, which must not have multiple elements. */
+  @SuppressWarnings("unchecked") // Such a node's slot holds a bare T.
+  private T soleElementAt(int n) {
+    assert !hasMultipleElements(n);
+    return (T) _values[slotOf(n)];
+  }
+
+  /** The elements of valued node {@code n}, which must have multiple elements. */
+  @SuppressWarnings("unchecked") // Such a node's slot holds an ImmutableSet<T>.
+  private ImmutableSet<T> multipleElementsAt(int n) {
+    assert hasMultipleElements(n);
+    return (ImmutableSet<T>) _values[slotOf(n)];
+  }
+
+  /** Whether any element at valued node {@code n} satisfies {@code filter}. */
+  private boolean anyElementMatches(int n, Predicate<? super T> filter) {
+    if (!hasMultipleElements(n)) {
+      return filter.test(soleElementAt(n));
+    }
+    for (T e : multipleElementsAt(n)) {
+      if (filter.test(e)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /** The elements at valued node {@code n} that satisfy {@code filter}. */
+  private @Nonnull ImmutableSet<T> matchingElementsAt(int n, Predicate<? super T> filter) {
+    if (!hasMultipleElements(n)) {
+      T e = soleElementAt(n);
+      return filter.test(e) ? ImmutableSet.of(e) : ImmutableSet.of();
+    }
+    ImmutableSet<T> elements = multipleElementsAt(n);
+    // Count first so that the common cases allocate nothing: if every element passes, the answer
+    // is the stored set itself, and if none does, the shared empty set. Only a node with a mix
+    // builds a new set, which takes a second pass.
+    int matches = 0;
+    for (T e : elements) {
+      if (filter.test(e)) {
+        matches++;
+      }
+    }
+    if (matches == elements.size()) {
+      return elements;
+    }
+    if (matches == 0) {
+      return ImmutableSet.of();
+    }
+    ImmutableSet.Builder<T> builder = ImmutableSet.builderWithExpectedSize(matches);
+    for (T e : elements) {
+      if (filter.test(e)) {
+        builder.add(e);
+      }
+    }
+    return builder.build();
   }
 
   /**

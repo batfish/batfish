@@ -1,7 +1,9 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
@@ -17,14 +19,10 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link AutoAs} */
-public class AutoAsTest {
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class AutoAsTest {
 
   private static final AutoAs INSTANCE = AutoAs.instance();
   private static final Configuration C =
@@ -42,7 +40,7 @@ public class AutoAsTest {
           .build();
 
   @Test
-  public void testEvaluateDirectionIn() {
+  void testEvaluateDirectionIn() {
     Environment.Builder envBuilder = Environment.builder(C).setDirection(Direction.IN);
 
     // If not useOutputAttributes or readFromIntermediateBgpAttributes, use original route AS path
@@ -76,17 +74,16 @@ public class AutoAsTest {
   }
 
   @Test
-  public void testEvaluateDirectionIn_originalRouteNotBgp() {
+  void testEvaluateDirectionIn_originalRouteNotBgp() {
     StaticRoute sr =
         StaticRoute.testBuilder().setNetwork(Prefix.ZERO).setAdministrativeCost(1).build();
     Environment env =
         Environment.builder(C).setDirection(Direction.IN).setOriginalRoute(sr).build();
-    _thrown.expect(AssertionError.class);
-    INSTANCE.evaluate(env);
+    assertThrows(AssertionError.class, () -> INSTANCE.evaluate(env));
   }
 
   @Test
-  public void testEvaluateDirectionIn_emptyAsPath() {
+  void testEvaluateDirectionIn_emptyAsPath() {
     // In the absence of an AS path, evaluates to remote AS. TODO Untested.
     BgpSessionProperties sessionProps =
         BgpSessionProperties.builder()
@@ -105,17 +102,16 @@ public class AutoAsTest {
   }
 
   @Test
-  public void testEvaluateDirectionIn_nonSingletonAsSet() {
+  void testEvaluateDirectionIn_nonSingletonAsSet() {
     Bgpv4Route originalRoute =
         BGP_ROUTE.toBuilder().setAsPath(AsPath.of(AsSet.of(11111L, 22222L))).build();
     Environment env =
         Environment.builder(C).setDirection(Direction.IN).setOriginalRoute(originalRoute).build();
-    _thrown.expect(AssertionError.class);
-    INSTANCE.evaluate(env);
+    assertThrows(AssertionError.class, () -> INSTANCE.evaluate(env));
   }
 
   @Test
-  public void testEvaluateDirectionOut() {
+  void testEvaluateDirectionOut() {
     BgpSessionProperties sessionProps =
         BgpSessionProperties.builder()
             .setRemoteAs(11111L)
@@ -132,9 +128,9 @@ public class AutoAsTest {
   }
 
   @Test
-  public void testEvaluateDirectionOut_noBgpSessionProps() {
+  void testEvaluateDirectionOut_noBgpSessionProps() {
     Environment env = Environment.builder(C).build();
-    _thrown.expectMessage("Expected BGP session properties");
-    INSTANCE.evaluate(env);
+    Throwable exception = assertThrows(Exception.class, () -> INSTANCE.evaluate(env));
+    assertThat(exception.getMessage(), containsString("Expected BGP session properties"));
   }
 }

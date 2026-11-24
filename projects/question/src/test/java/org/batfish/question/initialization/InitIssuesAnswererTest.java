@@ -34,13 +34,13 @@ import org.batfish.datamodel.collections.FileLines;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Rows;
 import org.batfish.datamodel.table.TableAnswerElement;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link InitIssuesAnswerer}. */
-public class InitIssuesAnswererTest {
+class InitIssuesAnswererTest {
 
   @Test
-  public void testAnswererNoIssues() {
+  void testAnswererNoIssues() {
     IBatfish batfish = new TestBatfishBase(null, null);
     InitIssuesAnswerer answerer = new InitIssuesAnswerer(new InitIssuesQuestion(), batfish);
     TableAnswerElement answer = answerer.answer(batfish.getSnapshot());
@@ -50,7 +50,7 @@ public class InitIssuesAnswererTest {
   }
 
   @Test
-  public void testAnswererConvertError() {
+  void testAnswererConvertError() {
     String node = "nodeError";
     String message = "Exception message";
 
@@ -85,7 +85,7 @@ public class InitIssuesAnswererTest {
   }
 
   @Test
-  public void testAnswererConvertWarn() {
+  void testAnswererConvertWarn() {
     String node = "nodeWarn";
     String redFlag = "red flag text";
     String unimplemented = "unimplemented warning text";
@@ -137,7 +137,7 @@ public class InitIssuesAnswererTest {
   }
 
   @Test
-  public void testAnswererParseError() {
+  void testAnswererParseError() {
     String file = "configs/nodeError.cfg";
     Integer line = 9876;
     String content = "content";
@@ -177,7 +177,7 @@ public class InitIssuesAnswererTest {
   }
 
   @Test
-  public void testAnswererParseErrorNoContext() {
+  void testAnswererParseErrorNoContext() {
     String file = "configs/nodeError.cfg";
     String message = "Exception message";
 
@@ -212,7 +212,7 @@ public class InitIssuesAnswererTest {
   }
 
   @Test
-  public void testAnswererParseStatus() {
+  void testAnswererParseStatus() {
     ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
     for (ParseStatus status : ParseStatus.values()) {
       pvcae.getParseStatus().put(status.toString(), status);
@@ -251,7 +251,7 @@ public class InitIssuesAnswererTest {
   }
 
   @Test
-  public void testAnswererParseWarn() {
+  void testAnswererParseWarn() {
     String node = "nodeWarn";
     String text = "line text";
     String context = "parser context";
@@ -321,7 +321,7 @@ public class InitIssuesAnswererTest {
   }
 
   @Test
-  public void testAggregateParseStatuses() {
+  void testAggregateParseStatuses() {
     SortedMap<ParseStatus, Set<String>> aggregatedStatuses =
         aggregateParseStatuses(
             ImmutableSortedMap.of(

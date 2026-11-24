@@ -8,13 +8,13 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link OspfInterAreaRoute} */
-public class OspfInterAreaRouteTest {
+class OspfInterAreaRouteTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     OspfInterAreaRoute.Builder builder =
         OspfInterAreaRoute.builder()
             .setArea(0)
@@ -34,7 +34,7 @@ public class OspfInterAreaRouteTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     OspfInterAreaRoute r =
         OspfInterAreaRoute.builder()
             .setArea(0)
@@ -45,7 +45,7 @@ public class OspfInterAreaRouteTest {
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     OspfInterAreaRoute r =
         OspfInterAreaRoute.builder()
             .setArea(0)
@@ -56,7 +56,7 @@ public class OspfInterAreaRouteTest {
   }
 
   @Test
-  public void testToBuilder() {
+  void testToBuilder() {
     OspfInterAreaRoute r =
         OspfInterAreaRoute.builder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))

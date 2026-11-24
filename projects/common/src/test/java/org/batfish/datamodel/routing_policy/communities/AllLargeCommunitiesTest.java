@@ -6,27 +6,27 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link AllLargeCommunities}. */
-public final class AllLargeCommunitiesTest {
+final class AllLargeCommunitiesTest {
 
   @Test
-  public void testJacksonSerialization() {
+  void testJacksonSerialization() {
     assertThat(
         BatfishObjectMapper.clone(AllLargeCommunities.instance(), AllLargeCommunities.class),
         equalTo(AllLargeCommunities.instance()));
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     assertThat(
         SerializationUtils.clone(AllLargeCommunities.instance()),
         equalTo(AllLargeCommunities.instance()));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(AllLargeCommunities.instance())
         .addEqualityGroup(new Object())

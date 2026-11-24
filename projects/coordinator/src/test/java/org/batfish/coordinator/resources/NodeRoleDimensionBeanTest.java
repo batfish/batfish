@@ -4,26 +4,26 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
+import java.io.File;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.RoleDimensionMapping;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public class NodeRoleDimensionBeanTest extends WorkMgrServiceV2TestBase {
+class NodeRoleDimensionBeanTest extends WorkMgrServiceV2TestBase {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
-  @Before
-  public void initTestEnvironment() {
+  @BeforeEach
+  void initTestEnvironment() {
     WorkMgrTestUtils.initWorkManager(_folder);
   }
 
   @Test
-  public void testProperties() {
+  void testProperties() {
     String snapshot = "snapshot1";
     String dimension = "someDimension";
     RoleDimensionMapping rdMapping = new RoleDimensionMapping("(.*)");
@@ -42,7 +42,7 @@ public class NodeRoleDimensionBeanTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void toNodeRoleDimension() {
+  void toNodeRoleDimension() {
     NodeRoleDimensionBean dimBean =
         new NodeRoleDimensionBean(NodeRoleDimension.builder("name").build(), null);
     NodeRoleDimension dim = dimBean.toNodeRoleDimension();

@@ -10,13 +10,13 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link DirectConnectGateway} */
-public class DirectConnectGatewayTest {
+class DirectConnectGatewayTest {
 
   @Test
-  public void testDeserialization() throws IOException {
+  void testDeserialization() throws IOException {
     String text =
         readResource("org/batfish/representation/aws/DirectConnectGatewayTest.json", UTF_8);
 
@@ -38,7 +38,7 @@ public class DirectConnectGatewayTest {
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new DirectConnectGateway("id", "name", 64512L, ImmutableMap.of()),

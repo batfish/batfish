@@ -8,31 +8,29 @@ import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.main.Flatten.main;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import org.batfish.common.BfConsts;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class FlattenTest {
+final class FlattenTest {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+  @TempDir public File _folder;
 
   @Test
-  public void testMainBadArgs() throws IOException {
-    _thrown.expect(IllegalArgumentException.class);
-    main(new String[] {});
+  void testMainBadArgs() {
+    assertThrows(IllegalArgumentException.class, () -> main(new String[] {}));
   }
 
   private static final String TESTCONFIGS_PATH = "org/batfish/main/testconfigs";
 
   public void assertInputOutputPair(String inputFilename, String outputFilename)
       throws IOException {
-    Path root = _folder.getRoot().toPath();
+    Path root = _folder.toPath();
     Path inputDir = root.resolve("input");
     Path outputDir = root.resolve("output");
     Path inputFile = inputDir.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR).resolve("conf");
@@ -48,38 +46,38 @@ public final class FlattenTest {
   }
 
   @Test
-  public void testMainValid() throws IOException {
+  void testMainValid() throws IOException {
     assertInputOutputPair("hierarchical", "flat");
   }
 
   @Test
-  public void testReplaceOnly() throws IOException {
+  void testReplaceOnly() throws IOException {
     assertInputOutputPair("replace_only", "replace_only_flattened");
   }
 
   @Test
-  public void testReplaceFlatMix() throws IOException {
+  void testReplaceFlatMix() throws IOException {
     assertInputOutputPair("replace_flat_mix", "replace_flat_mix_flattened");
   }
 
   @Test
-  public void testReplaceFilter() throws IOException {
+  void testReplaceFilter() throws IOException {
     assertInputOutputPair("replace_filter", "replace_filter_flattened");
   }
 
   @Test
-  public void testJunosReplaceOrder() throws IOException {
+  void testJunosReplaceOrder() throws IOException {
     assertInputOutputPair(
         "junos-order-sensitive-replace-before", "junos-order-sensitive-replace-flattened");
   }
 
   @Test
-  public void testActiveOnly() throws IOException {
+  void testActiveOnly() throws IOException {
     assertInputOutputPair("active_only", "active_only_flattened");
   }
 
   @Test
-  public void testMultipleTags() throws IOException {
+  void testMultipleTags() throws IOException {
     assertInputOutputPair("multiple_tags", "multiple_tags_flattened");
   }
 
@@ -89,7 +87,7 @@ public final class FlattenTest {
    */
   private void assertValidFileProcessing(String inputFilename, String outputFilename)
       throws IOException {
-    Path root = _folder.getRoot().toPath();
+    Path root = _folder.toPath();
     Path inputFile = root.resolve("input_file");
     Path outputFile = root.resolve("output_file");
     writeFile(
@@ -102,7 +100,7 @@ public final class FlattenTest {
   }
 
   @Test
-  public void testFileBasedProcessing() throws IOException {
+  void testFileBasedProcessing() throws IOException {
     assertValidFileProcessing("hierarchical", "flat");
   }
 }

@@ -2,22 +2,20 @@ package org.batfish.datamodel.bgp.community;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.testing.EqualsTester;
 import java.math.BigInteger;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link LargeCommunity} */
-public class LargeCommunityTest {
-  @Rule public ExpectedException thrown = ExpectedException.none();
+class LargeCommunityTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     LargeCommunity lc = LargeCommunity.of(1L, 2L, 3L);
     new EqualsTester()
         .addEqualityGroup(lc, lc, LargeCommunity.of(1L, 2L, 3L))
@@ -29,90 +27,85 @@ public class LargeCommunityTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     LargeCommunity lc = LargeCommunity.of(1L, 2L, 3L);
     assertThat(SerializationUtils.clone(lc), equalTo(lc));
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     LargeCommunity lc = LargeCommunity.of(1L, 2L, 3L);
     assertThat(BatfishObjectMapper.clone(lc, LargeCommunity.class), equalTo(lc));
   }
 
   @Test
-  public void testJsonSerializationAsCommunity() {
+  void testJsonSerializationAsCommunity() {
     LargeCommunity lc = LargeCommunity.of(1L, 2L, 3L);
     assertThat(BatfishObjectMapper.clone(lc, Community.class), equalTo(lc));
   }
 
   @Test
-  public void testParse() {
+  void testParse() {
     assertThat(LargeCommunity.parse("large:1:1:1"), equalTo(LargeCommunity.of(1L, 1L, 1L)));
   }
 
   @Test
-  public void testParseTooFewParts() {
-    thrown.expect(IllegalArgumentException.class);
-    LargeCommunity.parse("1:1:1");
+  void testParseTooFewParts() {
+    assertThrows(IllegalArgumentException.class, () -> LargeCommunity.parse("1:1:1"));
   }
 
   @Test
-  public void testParseTooManyParts() {
-    thrown.expect(IllegalArgumentException.class);
-    LargeCommunity.parse("1:1:1:1");
+  void testParseTooManyParts() {
+    assertThrows(IllegalArgumentException.class, () -> LargeCommunity.parse("1:1:1:1"));
   }
 
   @Test
-  public void testParseNegativeGlobalAdmin() {
-    thrown.expect(IllegalArgumentException.class);
-    LargeCommunity.parse("-1:1:1");
+  void testParseNegativeGlobalAdmin() {
+    assertThrows(IllegalArgumentException.class, () -> LargeCommunity.parse("-1:1:1"));
   }
 
   @Test
-  public void testParseLargeGlobalAdmin() {
-    thrown.expect(IllegalArgumentException.class);
-    LargeCommunity.parse("large:4294967296:1:1");
+  void testParseLargeGlobalAdmin() {
+    assertThrows(
+        IllegalArgumentException.class, () -> LargeCommunity.parse("large:4294967296:1:1"));
   }
 
   @Test
-  public void testParseNegativeLocal1() {
-    thrown.expect(IllegalArgumentException.class);
-    LargeCommunity.parse("large:1:-1:1");
+  void testParseNegativeLocal1() {
+    assertThrows(IllegalArgumentException.class, () -> LargeCommunity.parse("large:1:-1:1"));
   }
 
   @Test
-  public void testParseLargeLocal1() {
-    thrown.expect(IllegalArgumentException.class);
-    LargeCommunity.parse("large:1:4294967296:1");
+  void testParseLargeLocal1() {
+    assertThrows(
+        IllegalArgumentException.class, () -> LargeCommunity.parse("large:1:4294967296:1"));
   }
 
   @Test
-  public void testParseNegativeLocal2() {
-    thrown.expect(IllegalArgumentException.class);
-    LargeCommunity.parse("large:1:1:-1");
+  void testParseNegativeLocal2() {
+    assertThrows(IllegalArgumentException.class, () -> LargeCommunity.parse("large:1:1:-1"));
   }
 
   @Test
-  public void testParseLargeLocal2() {
-    thrown.expect(IllegalArgumentException.class);
-    LargeCommunity.parse("large:1:1:4294967296");
+  void testParseLargeLocal2() {
+    assertThrows(
+        IllegalArgumentException.class, () -> LargeCommunity.parse("large:1:1:4294967296"));
   }
 
   @Test
-  public void testNotTransitive() {
+  void testNotTransitive() {
     assertFalse(LargeCommunity.parse("large:1:1:1").isTransitive());
   }
 
   @Test
-  public void testMatchString() {
+  void testMatchString() {
     LargeCommunity lc = LargeCommunity.parse("large:1:2:3");
     assertThat(lc.toString(), equalTo("large:1:2:3"));
     assertThat(lc.matchString(), equalTo(lc.toString()));
   }
 
   @Test
-  public void testToBigInt() {
+  void testToBigInt() {
     assertThat(
         LargeCommunity.of(4294967295L, 4294967294L, 4294967293L).asBigInt(),
         equalTo(

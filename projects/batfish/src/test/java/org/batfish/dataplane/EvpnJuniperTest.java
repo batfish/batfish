@@ -13,6 +13,7 @@ import static org.hamcrest.Matchers.instanceOf;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
@@ -40,20 +41,16 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.dataplane.ibdp.IncrementalDataPlane;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-@RunWith(JUnit4.class)
-public class EvpnJuniperTest {
+class EvpnJuniperTest {
   private static final String TESTCONFIGS_PATH = "org/batfish/dataplane/testconfigs/";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testType5RoutePresence() throws IOException {
+  void testType5RoutePresence() throws IOException {
     /*
     Setup: Single node containing three VRFs.
     - Default VRF does not redistribute anything, but has an EVPN address family configured

@@ -6,20 +6,20 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link CheckpointManagementConfiguration}. */
-public final class CheckpointManagementConfigurationTest {
+final class CheckpointManagementConfigurationTest {
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     CheckpointManagementConfiguration obj =
         new CheckpointManagementConfiguration(ImmutableMap.of());
     assertThat(SerializationUtils.clone(obj), equalTo(obj));
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     CheckpointManagementConfiguration obj =
         new CheckpointManagementConfiguration(ImmutableMap.of());
     new EqualsTester()

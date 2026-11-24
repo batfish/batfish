@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableSortedMap;
+import java.io.File;
 import java.io.IOException;
 import java.util.SortedMap;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -26,13 +27,12 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public class TunnelTopologyTest {
+class TunnelTopologyTest {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   public SortedMap<String, Configuration> twoNodeNetwork(boolean withBlockingAcl) {
     NetworkFactory nf = new NetworkFactory();
@@ -106,7 +106,7 @@ public class TunnelTopologyTest {
    * tunnel link should be reflected in L3 edges.
    */
   @Test
-  public void testPruneTunnelTopologyAclBlocks() throws IOException {
+  void testPruneTunnelTopologyAclBlocks() throws IOException {
     Batfish batfish = BatfishTestUtils.getBatfish(twoNodeNetwork(true), _folder);
     batfish.computeDataPlane(batfish.getSnapshot());
     Topology topology = batfish.getTopologyProvider().getLayer3Topology(batfish.getSnapshot());
@@ -121,7 +121,7 @@ public class TunnelTopologyTest {
    * the tunnel link should be reflected in L3 edges.
    */
   @Test
-  public void testPruneTunnelTopologyNoACL() throws IOException {
+  void testPruneTunnelTopologyNoACL() throws IOException {
     Batfish batfish = BatfishTestUtils.getBatfish(twoNodeNetwork(false), _folder);
     batfish.computeDataPlane(batfish.getSnapshot());
     Topology topology = batfish.getTopologyProvider().getLayer3Topology(batfish.getSnapshot());

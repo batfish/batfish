@@ -40,7 +40,6 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixTrieMultiMap;
-import org.batfish.datamodel.PrefixTrieMultiMap.FoldOperator;
 import org.batfish.datamodel.ResolutionRestriction;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
@@ -135,13 +134,50 @@ public final class FibImpl implements Fib {
       Predicate<AbstractRoute> fibExportFilter) {
     _root = new PrefixTrieMultiMap<>();
     Map<ResolutionKey, ResolvedNextHop> resolvedNextHops = new HashMap<>();
-    rib.getRoutes().stream()
-        .map(AbstractRouteDecorator::getAbstractRoute)
-        .filter(r -> !r.getNonForwarding() && fibExportFilter.test(r))
-        .forEach(
-            r -> _root.putAll(r.getNetwork(), resolveRoute(rib, r, restriction, resolvedNextHops)));
+    /* Insert each network's entries in one call. Inserting into a network that already has
+     * entries rebuilds its set, so going route by route would make a k-way ECMP network cost
+     * O(k^2). RIBs return a network's routes together, so consecutive routes with the same
+     * network are collected first. If a network's routes are not consecutive, it is inserted more
+     * than once, which is still correct.
+     */
+    Prefix network = null;
+    Set<FibEntry> entries = null;
+    Builder<FibEntry> moreEntries = null;
+    for (R r : rib.getRoutes()) {
+      AbstractRoute route = r.getAbstractRoute();
+      if (route.getNonForwarding() || !fibExportFilter.test(route)) {
+        continue;
+      }
+      Set<FibEntry> resolved = resolveRoute(rib, route, restriction, resolvedNextHops);
+      if (route.getNetwork().equals(network)) {
+        if (moreEntries == null) {
+          moreEntries = ImmutableSet.<FibEntry>builder().addAll(entries);
+        }
+        moreEntries.addAll(resolved);
+        continue;
+      }
+      insertEntries(network, entries, moreEntries);
+      network = route.getNetwork();
+      entries = resolved;
+      moreEntries = null;
+    }
+    insertEntries(network, entries, moreEntries);
     _root.trimToSize();
     initSuppliers();
+  }
+
+  /**
+   * Inserts the entries collected for {@code network}: {@code entries} from its first route, plus
+   * {@code moreEntries} if it had more than one. Does nothing if {@code network} is null.
+   */
+  private void insertEntries(
+      @Nullable Prefix network,
+      @Nullable Set<FibEntry> entries,
+      @Nullable Builder<FibEntry> moreEntries) {
+    if (network == null) {
+      return;
+    }
+    _root.putAll(network, moreEntries == null ? entries : moreEntries.build());
   }
 
   /**
@@ -186,6 +222,9 @@ public final class FibImpl implements Fib {
     ResolvedNextHop resolved = resolvedNextHops.get(key);
     if (resolved != null && resolved.appliesTo(route)) {
       ImmutableList<AbstractRoute> steps = ImmutableList.of(route);
+      if (resolved.actions().size() == 1) {
+        return ImmutableSet.of(new FibEntry(resolved.actions().get(0), steps));
+      }
       Builder<FibEntry> entries = ImmutableSet.builderWithExpectedSize(resolved.actions().size());
       for (FibAction action : resolved.actions()) {
         entries.add(new FibEntry(action, steps));
@@ -435,54 +474,44 @@ public final class FibImpl implements Fib {
   private @Nonnull Map<Prefix, IpSpace> computeNonTrivialMatchingIps() {
     ImmutableMap.Builder<Prefix, IpSpace> builder = ImmutableMap.builder();
 
-    /* Do a fold over the trie. At each node, create the matching Ips for that prefix (adding it
-     * to the builder) and return an IpSpace of IPs matched by any prefix in that subtrie. To create
-     * the matching Ips of the prefix, whitelist the prefix and blacklist the IPs matched by
-     * subtrie prefixes (i.e. longer prefixes).
+    /* A forwarding prefix P is the longest match for the IPs in P, except those in the next-longer
+     * forwarding prefixes inside P. Only the nearest ones matter: anything deeper is already
+     * inside one of them. This finds those exclusions for every P in one pass:
+     *
+     * - Entries are visited in post-order, so P comes after every forwarding prefix inside it.
+     * - "unclaimed" is a stack of the prefixes visited so far that no shorter prefix has excluded
+     *   yet.
+     * - When P is visited, the unclaimed prefixes inside P are exactly its next-longer ones. They
+     *   are the top of the stack: everything pushed since the walk entered P's subtree is inside
+     *   P, and everything pushed before is outside it.
+     * - P pops them as its exclusions, then pushes itself, for a shorter prefix to exclude later.
+     *
+     * Each prefix is pushed once and popped at most once, so this is linear in the number of
+     * forwarding prefixes.
      */
-    _root.fold(
-        new FoldOperator<FibEntry, Set<IpWildcard>>() {
-          @Override
-          public @Nonnull Set<IpWildcard> fold(
-              Prefix prefix,
-              Set<FibEntry> elems,
-              @Nullable Set<IpWildcard> leftPrefixes,
-              @Nullable Set<IpWildcard> rightPrefixes) {
-            Set<IpWildcard> subTriePrefixes;
-            boolean leftEmpty = leftPrefixes == null || leftPrefixes.isEmpty();
-            boolean rightEmpty = rightPrefixes == null || rightPrefixes.isEmpty();
-            if (leftEmpty && rightEmpty) {
-              subTriePrefixes = ImmutableSet.of();
-            } else if (leftEmpty) {
-              subTriePrefixes = rightPrefixes;
-            } else if (rightEmpty) {
-              subTriePrefixes = leftPrefixes;
-            } else {
-              subTriePrefixes =
-                  ImmutableSet.<IpWildcard>builderWithExpectedSize(
-                          leftPrefixes.size() + rightPrefixes.size())
-                      .addAll(leftPrefixes)
-                      .addAll(rightPrefixes)
-                      .build();
-            }
-
-            if (elems.isEmpty()) {
-              return subTriePrefixes;
-            }
-
-            IpWildcard wc = IpWildcard.create(prefix);
-
-            if (!subTriePrefixes.isEmpty()) {
-              // Ips matching prefix are those in prefix and not in any subtrie prefixes. With no
-              // subtrie prefix they are just the IPs in prefix, which matchingIps recovers from the
-              // prefix rather than storing.
-              builder.put(
-                  prefix, IpWildcardSetIpSpace.create(subTriePrefixes, ImmutableSet.of(wc)));
-            }
-
-            return ImmutableSet.of(wc);
-          }
-        });
+    List<Prefix> unclaimed = new ArrayList<>();
+    List<IpWildcard> unclaimedWildcards = new ArrayList<>();
+    _root.traverseEntries((prefix, elems) -> {
+      // Find where the run of unclaimed prefixes inside this one starts, by walking down from the
+      // top of the stack until reaching one outside it. Every prefix the walk passes is popped
+      // below, so the walks cost O(1) per prefix overall.
+      int first = unclaimed.size();
+      while (first > 0 && prefix.containsPrefix(unclaimed.get(first - 1))) {
+        first--;
+      }
+      IpWildcard wc = IpWildcard.create(prefix);
+      // Only prefixes with something inside them are stored. Any other prefix matches exactly the
+      // IPs it contains, which matchingIps recovers from the prefix itself.
+      if (first < unclaimed.size()) {
+        List<IpWildcard> beneath = unclaimedWildcards.subList(first, unclaimed.size());
+        builder.put(
+            prefix, IpWildcardSetIpSpace.create(ImmutableSet.copyOf(beneath), ImmutableSet.of(wc)));
+        beneath.clear();
+        unclaimed.subList(first, unclaimed.size()).clear();
+      }
+      unclaimed.add(prefix);
+      unclaimedWildcards.add(wc);
+    });
 
     return builder.build();
   }

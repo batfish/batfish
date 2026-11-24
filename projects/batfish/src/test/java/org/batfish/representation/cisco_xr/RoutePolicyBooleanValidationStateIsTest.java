@@ -9,11 +9,11 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class RoutePolicyBooleanValidationStateIsTest {
+class RoutePolicyBooleanValidationStateIsTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new RoutePolicyBooleanValidationStateIs(true),
@@ -33,13 +33,13 @@ public class RoutePolicyBooleanValidationStateIsTest {
   }
 
   @Test
-  public void testValidConversion() {
+  void testValidConversion() {
     RoutePolicyBooleanValidationStateIs rp = new RoutePolicyBooleanValidationStateIs(true);
     assertThat(runTest(rp), equalTo(BooleanExprs.TRUE));
   }
 
   @Test
-  public void testInvalidConversion() {
+  void testInvalidConversion() {
     RoutePolicyBooleanValidationStateIs rp = new RoutePolicyBooleanValidationStateIs(false);
     assertThat(runTest(rp), equalTo(BooleanExprs.FALSE));
   }

@@ -1,6 +1,9 @@
 package org.batfish.job;
 
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -13,27 +16,23 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.answers.AnswerElement;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link BatfishJobExecutor}. */
-public class BatfishJobExecutorTest {
+class BatfishJobExecutorTest {
 
   private static final long TEST_ELAPSED_TIME = 1000L;
   private static final String TEST_EXECUTOR_DESC = "Test Job Executor";
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
   BatfishLogger _logger;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _logger = new BatfishLogger(BatfishLogger.LEVELSTR_INFO, false);
   }
 
   @Test
-  public void testExecuteJobsResults() {
+  void testExecuteJobsResults() {
     Settings settings = new Settings();
 
     List<BfTestJob> jobs = new ArrayList<>();
@@ -50,7 +49,7 @@ public class BatfishJobExecutorTest {
   }
 
   @Test
-  public void testHandleJobResultSuccess() {
+  void testHandleJobResultSuccess() {
     Settings settings = new Settings();
 
     // initializing executor
@@ -76,7 +75,7 @@ public class BatfishJobExecutorTest {
   }
 
   @Test
-  public void testHandleJobResultFailure() {
+  void testHandleJobResultFailure() {
     Settings settings = new Settings();
 
     // initializing executor
@@ -104,7 +103,7 @@ public class BatfishJobExecutorTest {
   }
 
   @Test
-  public void testHandleProcessingError() {
+  void testHandleProcessingError() {
     Settings settings = new Settings();
 
     // initializing executor
@@ -112,10 +111,13 @@ public class BatfishJobExecutorTest {
     List<BatfishException> failureCauses = new ArrayList<>();
 
     // checking if the exception thrown has correct class
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(BatfishJobExecutor.JOB_FAILURE_MESSAGE);
-    executor.handleProcessingError(
-        Lists.newArrayList(new BfTestJob(settings, "result1")), failureCauses, true);
+    Throwable exception =
+        assertThrows(
+            BatfishException.class,
+            () ->
+                executor.handleProcessingError(
+                    Lists.newArrayList(new BfTestJob(settings, "result1")), failureCauses, true));
+    assertThat(exception.getMessage(), containsString(BatfishJobExecutor.JOB_FAILURE_MESSAGE));
   }
 
   /** Class for Batfish test job */

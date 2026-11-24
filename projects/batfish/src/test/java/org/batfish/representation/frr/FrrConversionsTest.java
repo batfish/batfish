@@ -1,7 +1,6 @@
 package org.batfish.representation.frr;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static junit.framework.TestCase.assertNotNull;
 import static org.batfish.common.matchers.WarningMatchers.hasText;
 import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
@@ -53,10 +52,11 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -135,19 +135,19 @@ import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.representation.frr.BgpNeighbor.RemoteAs;
 import org.batfish.representation.frr.BgpNeighborIpv4UnicastAddressFamily.RemovePrivateAsMode;
 import org.batfish.vendor.VendorStructureId;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Test for {@link FrrConversions}. */
-public final class FrrConversionsTest {
+final class FrrConversionsTest {
   private NetworkFactory _nf;
   private Configuration _c;
   private Vrf _v;
   private FrrVendorConfiguration _vc;
   private FrrConfiguration _frr;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     _nf = new NetworkFactory();
     _c = _nf.configurationBuilder().build();
     _v = _nf.vrfBuilder().setOwner(_c).build();
@@ -209,7 +209,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testSuppressSummarizedPrefixes() {
+  void testSuppressSummarizedPrefixes() {
     Prefix suppressedPrefix = Prefix.parse("1.2.3.0/24");
     If stmt = suppressSummarizedPrefixes(_c, _v.getName(), Stream.of(suppressedPrefix));
     assertNotNull(stmt);
@@ -219,7 +219,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testToRouteFilterLine() {
+  void testToRouteFilterLine() {
     IpPrefixListLine prefixListLine =
         new IpPrefixListLine(
             LineAction.PERMIT, 10, Prefix.parse("10.0.0.1/24"), new SubRange(27, 30));
@@ -233,7 +233,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testToRouteFilter() {
+  void testToRouteFilter() {
     IpPrefixList prefixList = new IpPrefixList("name");
     prefixList
         .getLines()
@@ -269,7 +269,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testToAsPathAccessList() {
+  void testToAsPathAccessList() {
     String permitted_regex = "(^| )11111($| )";
     String denied_regex = "(^| )22222($| )";
 
@@ -308,7 +308,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testGetAcceptStatements() {
+  void testGetAcceptStatements() {
     BgpNeighbor bgpNeighbor = new BgpIpNeighbor("10.0.0.1", Ip.parse("10.0.0.1"));
 
     {
@@ -349,7 +349,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testComputeLocalIpForBgpNeighbor() {
+  void testComputeLocalIpForBgpNeighbor() {
     Ip remoteIp = Ip.parse("1.1.1.1");
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
@@ -379,7 +379,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testComputeLocalIpForBgpNeighbor_vrf() {
+  void testComputeLocalIpForBgpNeighbor_vrf() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
         nf.configurationBuilder()
@@ -405,7 +405,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testToBgpProcess_aggregateRoutes() {
+  void testToBgpProcess_aggregateRoutes() {
     testToBgpProcess_aggregateRoutes(true);
     testToBgpProcess_aggregateRoutes(false);
   }
@@ -461,7 +461,7 @@ public final class FrrConversionsTest {
    * accounted for when the address family is active
    */
   @Test
-  public void testToBgpProcess_vrfLevelNetworks_activeV4Family() {
+  void testToBgpProcess_vrfLevelNetworks_activeV4Family() {
     // setup VI model
     NetworkFactory nf = new NetworkFactory();
     Configuration viConfig =
@@ -496,7 +496,7 @@ public final class FrrConversionsTest {
 
   /** Test that networks statement routemaps are processed in VI. */
   @Test
-  public void testToBgpProcess_vrfLevelNetworks_withRouteMap() {
+  void testToBgpProcess_vrfLevelNetworks_withRouteMap() {
     // setup VI model
     NetworkFactory nf = new NetworkFactory();
     Configuration viConfig =
@@ -543,7 +543,7 @@ public final class FrrConversionsTest {
    * ignored when the address family is not active
    */
   @Test
-  public void testToBgpProcess_vrfLevelNetworks_inactiveV4family() {
+  void testToBgpProcess_vrfLevelNetworks_inactiveV4family() {
     // setup VI model
     NetworkFactory nf = new NetworkFactory();
     Configuration viConfig =
@@ -578,7 +578,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testGenerateBgpCommonPeerConfig_rejectDefault() {
+  void testGenerateBgpCommonPeerConfig_rejectDefault() {
     Ip peerIp = Ip.parse("10.0.0.2");
     BgpIpNeighbor neighbor = new BgpIpNeighbor("BgpNeighbor", peerIp);
     neighbor.setRemoteAs(RemoteAs.internal());
@@ -606,7 +606,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testRejectDefaultRoute() {
+  void testRejectDefaultRoute() {
     Configuration viConfig =
         _nf.configurationBuilder()
             .setConfigurationFormat(ConfigurationFormat.CUMULUS_CONCATENATED)
@@ -641,7 +641,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testGenerateBgpCommonPeerConfig_defaultOriginate_unset() {
+  void testGenerateBgpCommonPeerConfig_defaultOriginate_unset() {
     // set bgp neighbor without default originate
     Ip peerIp = Ip.parse("10.0.0.2");
     BgpIpNeighbor neighbor = new BgpIpNeighbor("BgpNeighbor", peerIp);
@@ -674,7 +674,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testGenerateBgpCommonPeerConfig_defaultOriginate_set() {
+  void testGenerateBgpCommonPeerConfig_defaultOriginate_set() {
     // set bgp neighbor with default originate
     Ip peerIp = Ip.parse("10.0.0.2");
     BgpIpNeighbor neighbor = new BgpIpNeighbor("BgpNeighbor", peerIp);
@@ -718,7 +718,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testGenerateBgpCommonPeerConfig_removePrivateAs() {
+  void testGenerateBgpCommonPeerConfig_removePrivateAs() {
     Ip peerIp = Ip.parse("10.0.0.2");
     BgpIpNeighbor neighbor = new BgpIpNeighbor("BgpNeighbor", peerIp);
     neighbor.setRemoteAs(RemoteAs.internal());
@@ -790,7 +790,63 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testGenerateBgpCommonPeerConfig_SetEbgpMultiHop() {
+  void testGenerateBgpCommonPeerConfig_removePrivateAsReplaceAs() {
+    Ip peerIp = Ip.parse("10.0.0.2");
+    BgpIpNeighbor neighbor = new BgpIpNeighbor("BgpNeighbor", peerIp);
+    neighbor.setRemoteAs(RemoteAs.internal());
+    BgpNeighborIpv4UnicastAddressFamily ipv4UnicastAddressFamily =
+        new BgpNeighborIpv4UnicastAddressFamily();
+    BgpVrf bgpVrf = new BgpVrf("vrf");
+    bgpVrf
+        .getOrCreateIpv4Unicast()
+        .getNeighbors()
+        .put(neighbor.getName(), ipv4UnicastAddressFamily);
+
+    org.batfish.datamodel.BgpProcess newProc =
+        org.batfish.datamodel.BgpProcess.testBgpProcess(Ip.parse("10.0.0.1"));
+
+    // FRR replaces private ASes with the local AS in these modes, which keeps the path length.
+    // That is not modeled, so the path is left alone rather than shortened.
+    for (RemovePrivateAsMode mode :
+        ImmutableList.of(RemovePrivateAsMode.REPLACE_AS, RemovePrivateAsMode.ALL_REPLACE_AS)) {
+      ipv4UnicastAddressFamily.setRemovePrivateAsMode(mode);
+
+      Configuration viConfig =
+          _nf.configurationBuilder()
+              .setConfigurationFormat(ConfigurationFormat.CUMULUS_CONCATENATED)
+              .build();
+      Warnings w = new Warnings(true, true, true);
+
+      generateBgpCommonPeerConfig(
+          viConfig,
+          _vc,
+          _frr,
+          neighbor,
+          10000L,
+          bgpVrf,
+          newProc,
+          BgpActivePeerConfig.builder().setPeerAddress(peerIp),
+          w);
+
+      assertTrue(
+          viConfig
+              .getRoutingPolicies()
+              .get(generatedBgpPeerExportPolicyName("vrf", neighbor.getName()))
+              .getStatements()
+              .stream()
+              .noneMatch(s -> s.equals(RemovePrivateAs.toStaticStatement())));
+      assertThat(
+          w,
+          hasRedFlags(
+              contains(
+                  hasText(
+                      "neighbor BgpNeighbor: remove-private-AS replace-AS is not yet modeled"
+                          + " (private ASes will be left in exported AS paths)"))));
+    }
+  }
+
+  @Test
+  void testGenerateBgpCommonPeerConfig_SetEbgpMultiHop() {
     // set bgp neighbor
     Ip peerIp = Ip.parse("10.0.0.2");
     BgpIpNeighbor neighbor = new BgpIpNeighbor("BgpNeighbor", peerIp);
@@ -826,7 +882,7 @@ public final class FrrConversionsTest {
 
   /** Test that L2 VNIs from all VRFs are injected into BGP neighbor */
   @Test
-  public void testGenerateBgpCommonPeerConfig_allL2Vni() {
+  void testGenerateBgpCommonPeerConfig_allL2Vni() {
     Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
 
     Vrf defaultVrf = Vrf.builder().setName(DEFAULT_VRF_NAME).build();
@@ -908,7 +964,7 @@ public final class FrrConversionsTest {
 
   /** Test that L2 VPN EVPN address family route reflect is set correctly */
   @Test
-  public void testGenerateBgpCommonPeerConfig_L2vpnRouteReflector() {
+  void testGenerateBgpCommonPeerConfig_L2vpnRouteReflector() {
     BgpVrf bgpVrf = new BgpVrf(DEFAULT_VRF_NAME);
     bgpVrf.setL2VpnEvpn(new BgpL2vpnEvpnAddressFamily());
 
@@ -951,7 +1007,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testConvertIpv4UnicastAddressFamily_deactivated() {
+  void testConvertIpv4UnicastAddressFamily_deactivated() {
     // setup vi model
     NetworkFactory nf = new NetworkFactory();
     RoutingPolicy policy = nf.routingPolicyBuilder().build();
@@ -977,7 +1033,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testConvertIpv4UnicastAddressFamily_allowAsIn() {
+  void testConvertIpv4UnicastAddressFamily_allowAsIn() {
     // setup vi model
     NetworkFactory nf = new NetworkFactory();
     RoutingPolicy policy = nf.routingPolicyBuilder().build();
@@ -1014,7 +1070,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testConvertIpv4UnicastAddressFamily_routeReflectorClient() {
+  void testConvertIpv4UnicastAddressFamily_routeReflectorClient() {
 
     // setup vi model
     NetworkFactory nf = new NetworkFactory();
@@ -1042,7 +1098,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testComputeBgpNeighborImportRoutingPolicy() {
+  void testComputeBgpNeighborImportRoutingPolicy() {
     BgpNeighbor neighbor = new BgpIpNeighbor("neighbor", Ip.parse("1.2.3.4"));
 
     BgpNeighborIpv4UnicastAddressFamily neighborIpv4UnicastFamily =
@@ -1130,7 +1186,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testToOspfProcess_NoRouterId() {
+  void testToOspfProcess_NoRouterId() {
     org.batfish.datamodel.ospf.OspfProcess ospfProcess =
         toOspfProcess(
             new Configuration("dummy", ConfigurationFormat.CUMULUS_CONCATENATED),
@@ -1147,7 +1203,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testToOspfProcess_InferRouterId() {
+  void testToOspfProcess_InferRouterId() {
     org.batfish.datamodel.ospf.OspfProcess ospfProcess =
         toOspfProcess(
             getConfigurationWithLoopback(ConcreteInterfaceAddress.parse("1.1.1.1/24")),
@@ -1164,7 +1220,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testToOspfProcess_ConfigedRouterId() {
+  void testToOspfProcess_ConfigedRouterId() {
     OspfVrf ospfVrf = new OspfVrf(DEFAULT_VRF_NAME);
     ospfVrf.setRouterId(Ip.parse("1.2.3.4"));
 
@@ -1184,7 +1240,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testToOspfProcess_RedistributionPolicy() {
+  void testToOspfProcess_RedistributionPolicy() {
     // setup VI model
     NetworkFactory nf = new NetworkFactory();
     Configuration viConfig =
@@ -1209,7 +1265,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testToOspfProcess_MaxMetricRouterLsa() {
+  void testToOspfProcess_MaxMetricRouterLsa() {
     _frr.getOrCreateOspfProcess().setMaxMetricRouterLsa(true);
 
     org.batfish.datamodel.ospf.OspfProcess ospfProcess =
@@ -1229,7 +1285,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testConvertOspfRedistributionPolicy() {
+  void testConvertOspfRedistributionPolicy() {
     // setup VI model
     NetworkFactory nf = new NetworkFactory();
     Configuration viConfig =
@@ -1254,28 +1310,28 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testInferRouterID_DefaultCase() {
+  void testInferRouterID_DefaultCase() {
     assertThat(
         inferRouterId(new Configuration("dummy", ConfigurationFormat.CUMULUS_CONCATENATED)),
         equalTo(Ip.parse("0.0.0.0")));
   }
 
   @Test
-  public void testInferRouterID_Loopback() {
+  void testInferRouterID_Loopback() {
     assertThat(
         inferRouterId(getConfigurationWithLoopback(ConcreteInterfaceAddress.parse("1.1.1.1/31"))),
         equalTo(Ip.parse("1.1.1.1")));
   }
 
   @Test
-  public void testInferRouterID_LoopbackNotUsable() {
+  void testInferRouterID_LoopbackNotUsable() {
     assertThat(
         inferRouterId(getConfigurationWithLoopback(ConcreteInterfaceAddress.parse("127.0.0.2/31"))),
         equalTo(Ip.parse("0.0.0.0")));
   }
 
   @Test
-  public void testInferRouterID_MaxInterfaceIp() {
+  void testInferRouterID_MaxInterfaceIp() {
     Configuration c = new Configuration("test", ConfigurationFormat.CUMULUS_CONCATENATED);
     org.batfish.datamodel.TestInterface.builder()
         .setName("eth1")
@@ -1294,7 +1350,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testInferClusterId_with_ClusterId() {
+  void testInferClusterId_with_ClusterId() {
     org.batfish.datamodel.BgpProcess newProc =
         org.batfish.datamodel.BgpProcess.testBgpProcess(Ip.parse("1.1.1.1"));
 
@@ -1311,7 +1367,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testInferClusterId_without_ClusterId() {
+  void testInferClusterId_without_ClusterId() {
     org.batfish.datamodel.BgpProcess newProc =
         org.batfish.datamodel.BgpProcess.testBgpProcess(Ip.parse("1.1.1.1"));
 
@@ -1328,7 +1384,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testInferClusterId_eBGP() {
+  void testInferClusterId_eBGP() {
     org.batfish.datamodel.BgpProcess newProc =
         org.batfish.datamodel.BgpProcess.testBgpProcess(Ip.parse("1.1.1.1"));
 
@@ -1343,7 +1399,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testAddOspfInterfaces_HasArea() {
+  void testAddOspfInterfaces_HasArea() {
     _frr.getOrCreateInterface("iface").getOrCreateOspf().setOspfArea(1L);
 
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
@@ -1361,7 +1417,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testAddOspfInterfaces_NoArea() {
+  void testAddOspfInterfaces_NoArea() {
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
         org.batfish.datamodel.TestInterface.builder()
@@ -1377,7 +1433,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testAddOspfInterfaces_HasCost() {
+  void testAddOspfInterfaces_HasCost() {
     OspfInterface ospf = _frr.getOrCreateInterface("iface").getOrCreateOspf();
     ospf.setOspfArea(0L);
     ospf.setCost(100);
@@ -1398,7 +1454,7 @@ public final class FrrConversionsTest {
 
   /** Test that loopback cost is ignored, even if configured, and forced to 0. */
   @Test
-  public void testAddOspfInterfaces_LoopbackCost() {
+  void testAddOspfInterfaces_LoopbackCost() {
     OspfInterface ospf = _frr.getOrCreateInterface("lo").getOrCreateOspf();
     ospf.setOspfArea(0L);
     ospf.setCost(100);
@@ -1418,7 +1474,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testAddOspfInterfaces_NoCost() {
+  void testAddOspfInterfaces_NoCost() {
     _frr.getOrCreateInterface("iface").getOrCreateOspf().setOspfArea(0L);
 
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
@@ -1436,7 +1492,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testAddOspfInterfaces_NoNetworkType() {
+  void testAddOspfInterfaces_NoNetworkType() {
     _frr.getOrCreateInterface("iface").getOrCreateOspf().setOspfArea(0L);
 
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
@@ -1458,7 +1514,7 @@ public final class FrrConversionsTest {
    * accounted for when the address family is active
    */
   @Test
-  public void testToBgpProcess_OspfToBgpRedistribution() {
+  void testToBgpProcess_OspfToBgpRedistribution() {
     // setup VI model
     NetworkFactory nf = new NetworkFactory();
     Configuration viConfig =
@@ -1542,7 +1598,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testAddOspfInterfaces_NoPassiveInterface() {
+  void testAddOspfInterfaces_NoPassiveInterface() {
     _frr.getOrCreateInterface("iface").getOrCreateOspf().setOspfArea(0L);
 
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
@@ -1560,7 +1616,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testAddOspfInterfaces_NoPassiveInterface_DefaultPassive() {
+  void testAddOspfInterfaces_NoPassiveInterface_DefaultPassive() {
     _frr.getOspfProcess().setDefaultPassiveInterface(true);
 
     _frr.getOrCreateInterface("iface").getOrCreateOspf().setOspfArea(0L);
@@ -1580,7 +1636,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testAddOspfInterfaces_PassiveInterface() {
+  void testAddOspfInterfaces_PassiveInterface() {
     OspfInterface ospf = _frr.getOrCreateInterface("iface").getOrCreateOspf();
     ospf.setOspfArea(0L);
     ospf.setPassive(true);
@@ -1600,7 +1656,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testAddOspfInterfaces_NetworkTypeP2P() {
+  void testAddOspfInterfaces_NetworkTypeP2P() {
     OspfInterface ospf = _frr.getOrCreateInterface("iface").getOrCreateOspf();
     ospf.setOspfArea(0L);
     ospf.setNetwork(OspfNetworkType.POINT_TO_POINT);
@@ -1622,7 +1678,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testAddOspfInterfaces_HelloInterval() {
+  void testAddOspfInterfaces_HelloInterval() {
     OspfInterface ospf = _frr.getOrCreateInterface("iface").getOrCreateOspf();
     ospf.setOspfArea(0L);
 
@@ -1650,7 +1706,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testAddOspfInterfaces_DeadInterval() {
+  void testAddOspfInterfaces_DeadInterval() {
     OspfInterface ospf = _frr.getOrCreateInterface("iface").getOrCreateOspf();
     ospf.setOspfArea(0L);
 
@@ -1678,7 +1734,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testAddOspfInterfaces_ProcessId() {
+  void testAddOspfInterfaces_ProcessId() {
     OspfInterface ospf = _frr.getOrCreateInterface("iface").getOrCreateOspf();
     ospf.setOspfArea(0L);
 
@@ -1699,7 +1755,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testAddOspfInterfaces_NoInterface() {
+  void testAddOspfInterfaces_NoInterface() {
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
         org.batfish.datamodel.TestInterface.builder()
@@ -1716,7 +1772,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testComputeOspfProcess_HasArea() {
+  void testComputeOspfProcess_HasArea() {
     _frr.getOrCreateInterface("iface").getOrCreateOspf().setOspfArea(1L);
     OspfVrf vsVrf = _frr.getOspfProcess().getDefaultVrf();
     Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
@@ -1730,7 +1786,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testComputeOspfProcess_NoArea() {
+  void testComputeOspfProcess_NoArea() {
     _frr.getOrCreateInterface("iface").getOrCreateOspf();
     OspfVrf vsVrf = _frr.getOrCreateOspfProcess().getDefaultVrf();
     Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
@@ -1740,7 +1796,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testComputeOspfProcess_NoInterface() {
+  void testComputeOspfProcess_NoInterface() {
     OspfVrf vsVrf = _frr.getOrCreateOspfProcess().getDefaultVrf();
     Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
 
@@ -1749,7 +1805,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testResolveLocalIpFromUpdateSource_Null() {
+  void testResolveLocalIpFromUpdateSource_Null() {
     Warnings warnings = new Warnings(false, true, false);
 
     // create vi config
@@ -1763,7 +1819,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testResolveLocalIpFromUpdateSource_Ip() {
+  void testResolveLocalIpFromUpdateSource_Ip() {
     Warnings warnings = new Warnings(false, true, false);
     BgpNeighborSourceAddress source = new BgpNeighborSourceAddress(Ip.parse("1.1.1.1"));
 
@@ -1778,7 +1834,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testResolveLocalIpFromUpdateSource_Interface_NoInterface() {
+  void testResolveLocalIpFromUpdateSource_Interface_NoInterface() {
     Warnings warnings = new Warnings(false, true, false);
     BgpNeighborSourceInterface source = new BgpNeighborSourceInterface("lo");
 
@@ -1797,7 +1853,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testResolveLocalIpFromUpdateSource_Interface_NoInterfaceAddress() {
+  void testResolveLocalIpFromUpdateSource_Interface_NoInterfaceAddress() {
     Warnings warnings = new Warnings(false, true, false);
     BgpNeighborSourceInterface source = new BgpNeighborSourceInterface("lo");
 
@@ -1818,7 +1874,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testResolveLocalIpFromUpdateSource_Interface() {
+  void testResolveLocalIpFromUpdateSource_Interface() {
     Warnings warnings = new Warnings(false, true, false);
     BgpNeighborSourceInterface source = new BgpNeighborSourceInterface("lo");
 
@@ -1843,7 +1899,7 @@ public final class FrrConversionsTest {
    * An interface neighbor with (only) a /31 or /30 address should be treated as a numbered neighbor
    */
   @Test
-  public void testAddBgpNeighbor_numberedInterface() {
+  void testAddBgpNeighbor_numberedInterface() {
     // set up the VI bgp process
     org.batfish.datamodel.BgpProcess bgpProc =
         org.batfish.datamodel.BgpProcess.testBgpProcess(Ip.parse("0.0.0.0"));
@@ -1874,7 +1930,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testInferPeerIp_slash31() {
+  void testInferPeerIp_slash31() {
     assertEquals(
         inferPeerIp(
             org.batfish.datamodel.TestInterface.builder()
@@ -1894,7 +1950,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testInferPeerIp_slash30() {
+  void testInferPeerIp_slash30() {
     assertEquals(
         inferPeerIp(
             org.batfish.datamodel.TestInterface.builder()
@@ -1914,7 +1970,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testInferPeerIp_otherLength() {
+  void testInferPeerIp_otherLength() {
     assertEquals(
         inferPeerIp(
             org.batfish.datamodel.TestInterface.builder()
@@ -1934,7 +1990,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testInferPeerIp_multipleAddresses() {
+  void testInferPeerIp_multipleAddresses() {
     org.batfish.datamodel.Interface viIface =
         org.batfish.datamodel.TestInterface.builder()
             .setAddresses(
@@ -1947,7 +2003,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testNextHopSelfAll() {
+  void testNextHopSelfAll() {
     BgpNeighbor bgpNeighbor = new BgpIpNeighbor("10.0.0.1", Ip.parse("10.0.0.1"));
     {
       // If eBGP and next-hop-self is NOT set, then next-hop should not be self.
@@ -2019,7 +2075,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testGetSetMaxMedMetric() {
+  void testGetSetMaxMedMetric() {
     BgpVrf bgpVrf = new BgpVrf("bgpVrf");
 
     // Test Default Value
@@ -2031,7 +2087,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testGenerateBgpCommonPeerConfigMaxMedAdministrative() {
+  void testGenerateBgpCommonPeerConfigMaxMedAdministrative() {
     // setup VI model
     NetworkFactory nf = new NetworkFactory();
     Configuration viConfig =
@@ -2092,7 +2148,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testComputeBgpNeighborImportRoutingPolicy_undefinedRouteMap() {
+  void testComputeBgpNeighborImportRoutingPolicy_undefinedRouteMap() {
     BgpNeighbor neighbor = new BgpIpNeighbor("neighbor", Ip.parse("1.2.3.4"));
 
     BgpNeighborIpv4UnicastAddressFamily neighborIpv4UnicastFamily =
@@ -2115,7 +2171,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testConvertBgpTableMap_noTableMap() {
+  void testConvertBgpTableMap_noTableMap() {
     BgpVrf vrf = _frr.getBgpProcess().getDefaultVrf();
     org.batfish.datamodel.BgpProcess viProc =
         org.batfish.datamodel.BgpProcess.testBgpProcess(Ip.parse("1.1.1.1"));
@@ -2127,7 +2183,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testConvertBgpTableMap_denyAll() {
+  void testConvertBgpTableMap_denyAll() {
     RouteMap rm = new RouteMap("DENY_ALL");
     RouteMapEntry entry = new RouteMapEntry(1000, LineAction.DENY);
     rm.getEntries().put(1000, entry);
@@ -2146,7 +2202,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testConvertBgpTableMap_permitWithSetMetric() {
+  void testConvertBgpTableMap_permitWithSetMetric() {
     RouteMap rm = new RouteMap("WITH_METRIC");
     RouteMapEntry entry = new RouteMapEntry(10, LineAction.PERMIT);
     entry.setSetMetric(new RouteMapSetMetric(new LiteralLong(100)));
@@ -2170,7 +2226,7 @@ public final class FrrConversionsTest {
   }
 
   @Test
-  public void testConvertBgpTableMap_permitWithInvalidSet() {
+  void testConvertBgpTableMap_permitWithInvalidSet() {
     RouteMap rm = new RouteMap("WITH_LOCPREF");
     RouteMapEntry entry = new RouteMapEntry(10, LineAction.PERMIT);
     entry.setSetLocalPreference(new RouteMapSetLocalPreference(200));

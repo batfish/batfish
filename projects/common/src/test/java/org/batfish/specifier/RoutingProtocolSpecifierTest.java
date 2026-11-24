@@ -14,26 +14,26 @@ import java.util.Set;
 import java.util.stream.Stream;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.RoutingProtocol;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link RoutingProtocolSpecifier} */
-public final class RoutingProtocolSpecifierTest {
+final class RoutingProtocolSpecifierTest {
   @Test
-  public void testCreationDefault() {
+  void testCreationDefault() {
     assertThat(
         RoutingProtocolSpecifier.create(null).getProtocols(),
         equalTo(Stream.of(RoutingProtocol.values()).collect(ImmutableSet.toImmutableSet())));
   }
 
   @Test
-  public void testCaseInsensitive() {
+  void testCaseInsensitive() {
     assertThat(
         RoutingProtocolSpecifier.create("IGP").getProtocols(),
         equalTo(RoutingProtocolSpecifier.create("iGp").getProtocols()));
   }
 
   @Test
-  public void testTrimming() {
+  void testTrimming() {
     assertThat(
         RoutingProtocolSpecifier.create("bgp  ,           isis  ").getProtocols(),
         equalTo(
@@ -47,70 +47,70 @@ public final class RoutingProtocolSpecifierTest {
   }
 
   @Test
-  public void testAggregate() {
+  void testAggregate() {
     assertThat(
         RoutingProtocolSpecifier.create("aggregate").getProtocols(),
         equalTo(ImmutableSet.of(RoutingProtocol.AGGREGATE)));
   }
 
   @Test
-  public void testAll() {
+  void testAll() {
     assertThat(
         RoutingProtocolSpecifier.create("all").getProtocols(),
         equalTo(Stream.of(RoutingProtocol.values()).collect(ImmutableSet.toImmutableSet())));
   }
 
   @Test
-  public void testBgp() {
+  void testBgp() {
     assertThat(
         RoutingProtocolSpecifier.create("bgp").getProtocols(),
         equalTo(ImmutableSet.of(RoutingProtocol.BGP, RoutingProtocol.IBGP)));
   }
 
   @Test
-  public void testConnected() {
+  void testConnected() {
     assertThat(
         RoutingProtocolSpecifier.create("connected").getProtocols(),
         equalTo(ImmutableSet.of(RoutingProtocol.CONNECTED)));
   }
 
   @Test
-  public void testEbgp() {
+  void testEbgp() {
     assertThat(
         RoutingProtocolSpecifier.create("ebgp").getProtocols(),
         equalTo(ImmutableSet.of(RoutingProtocol.BGP)));
   }
 
   @Test
-  public void testEigrp() {
+  void testEigrp() {
     assertThat(
         RoutingProtocolSpecifier.create("eigrp").getProtocols(),
         equalTo(ImmutableSet.of(RoutingProtocol.EIGRP, RoutingProtocol.EIGRP_EX)));
   }
 
   @Test
-  public void testEigrpExt() {
+  void testEigrpExt() {
     assertThat(
         RoutingProtocolSpecifier.create("eigrp-ext").getProtocols(),
         equalTo(ImmutableSet.of(RoutingProtocol.EIGRP_EX)));
   }
 
   @Test
-  public void testEigrpInt() {
+  void testEigrpInt() {
     assertThat(
         RoutingProtocolSpecifier.create("eigrp-int").getProtocols(),
         equalTo(ImmutableSet.of(RoutingProtocol.EIGRP)));
   }
 
   @Test
-  public void testIbgp() {
+  void testIbgp() {
     assertThat(
         RoutingProtocolSpecifier.create("ibgp").getProtocols(),
         equalTo(ImmutableSet.of(RoutingProtocol.IBGP)));
   }
 
   @Test
-  public void testIgp() {
+  void testIgp() {
     assertThat(
         RoutingProtocolSpecifier.create("igp").getProtocols(),
         equalTo(
@@ -129,7 +129,7 @@ public final class RoutingProtocolSpecifierTest {
   }
 
   @Test
-  public void testIsis() {
+  void testIsis() {
     assertThat(
         RoutingProtocolSpecifier.create("isis").getProtocols(),
         equalTo(
@@ -141,28 +141,28 @@ public final class RoutingProtocolSpecifierTest {
   }
 
   @Test
-  public void testIsisL1() {
+  void testIsisL1() {
     assertThat(
         RoutingProtocolSpecifier.create("isis-l1").getProtocols(),
         equalTo(ImmutableSet.of(RoutingProtocol.ISIS_L1)));
   }
 
   @Test
-  public void testIsisL2() {
+  void testIsisL2() {
     assertThat(
         RoutingProtocolSpecifier.create("isis-l2").getProtocols(),
         equalTo(ImmutableSet.of(RoutingProtocol.ISIS_L2)));
   }
 
   @Test
-  public void testLocal() {
+  void testLocal() {
     assertThat(
         RoutingProtocolSpecifier.create("local").getProtocols(),
         equalTo(ImmutableSet.of(RoutingProtocol.LOCAL)));
   }
 
   @Test
-  public void testOspf() {
+  void testOspf() {
     assertThat(
         RoutingProtocolSpecifier.create("ospf").getProtocols(),
         equalTo(
@@ -174,63 +174,63 @@ public final class RoutingProtocolSpecifierTest {
   }
 
   @Test
-  public void testOspfExt() {
+  void testOspfExt() {
     assertThat(
         RoutingProtocolSpecifier.create("ospf-ext").getProtocols(),
         equalTo(ImmutableSet.of(RoutingProtocol.OSPF_E1, RoutingProtocol.OSPF_E2)));
   }
 
   @Test
-  public void testOspfExt1() {
+  void testOspfExt1() {
     assertThat(
         RoutingProtocolSpecifier.create("ospf-ext1").getProtocols(),
         equalTo(ImmutableSet.of(RoutingProtocol.OSPF_E1)));
   }
 
   @Test
-  public void testOspfExt2() {
+  void testOspfExt2() {
     assertThat(
         RoutingProtocolSpecifier.create("ospf-ext2").getProtocols(),
         equalTo(ImmutableSet.of(RoutingProtocol.OSPF_E2)));
   }
 
   @Test
-  public void testOspfInt() {
+  void testOspfInt() {
     assertThat(
         RoutingProtocolSpecifier.create("ospf-int").getProtocols(),
         equalTo(ImmutableSet.of(RoutingProtocol.OSPF, RoutingProtocol.OSPF_IA)));
   }
 
   @Test
-  public void testOspfInter() {
+  void testOspfInter() {
     assertThat(
         RoutingProtocolSpecifier.create("ospf-inter").getProtocols(),
         equalTo(ImmutableSet.of(RoutingProtocol.OSPF_IA)));
   }
 
   @Test
-  public void testOspfIntra() {
+  void testOspfIntra() {
     assertThat(
         RoutingProtocolSpecifier.create("ospf-intra").getProtocols(),
         equalTo(ImmutableSet.of(RoutingProtocol.OSPF)));
   }
 
   @Test
-  public void testRip() {
+  void testRip() {
     assertThat(
         RoutingProtocolSpecifier.create("rip").getProtocols(),
         equalTo(ImmutableSet.of(RoutingProtocol.RIP)));
   }
 
   @Test
-  public void testStatic() {
+  void testStatic() {
     assertThat(
         RoutingProtocolSpecifier.create("static").getProtocols(),
         equalTo(ImmutableSet.of(RoutingProtocol.STATIC)));
   }
 
   @Test
-  public void testSerialization() throws IOException {
+  void testSerialization() throws IOException {
     String serialized =
         BatfishObjectMapper.writePrettyString(RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER);
     assertThat(
@@ -243,7 +243,7 @@ public final class RoutingProtocolSpecifierTest {
    * is tested in tests for {@link RoutingProtocolSpecifier#getContainedAtoms(java.lang.String)}.
    */
   @Test
-  public void testGetAllProtocolGroups() {
+  void testGetAllProtocolGroups() {
     Map<String, Set<String>> groups = getGroupings();
     assertThat(
         groups.keySet(),
@@ -260,7 +260,7 @@ public final class RoutingProtocolSpecifierTest {
   }
 
   @Test
-  public void testGetContainedAtomsOnlyAtomicValues() {
+  void testGetContainedAtomsOnlyAtomicValues() {
     assertThat(
         getContainedAtoms(RoutingProtocolSpecifier.ALL),
         not(contains(RoutingProtocolSpecifier.BGP)));
@@ -270,7 +270,7 @@ public final class RoutingProtocolSpecifierTest {
   }
 
   @Test
-  public void testGetContainedAtomsAllAtomicValues() {
+  void testGetContainedAtomsAllAtomicValues() {
     assertThat(
         getContainedAtoms(RoutingProtocolSpecifier.OSPF_INT),
         equalTo(

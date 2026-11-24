@@ -18,8 +18,8 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -75,13 +75,13 @@ import org.batfish.datamodel.vxlan.VxlanNode;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.dataplane.rib.Bgpv4Rib;
 import org.batfish.dataplane.rib.Rib;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link IncrementalBdpEngine}. */
 @ParametersAreNonnullByDefault
-public final class IncrementalBdpEngineTest {
+final class IncrementalBdpEngineTest {
   @Test
-  public void testCompareTracksAndLogDifference() {
+  void testCompareTracksAndLogDifference() {
     Table<String, Integer, Boolean> hasA =
         ImmutableTable.<String, Integer, Boolean>builder()
             .put("A", 1, true)
@@ -107,7 +107,7 @@ public final class IncrementalBdpEngineTest {
   }
 
   @Test
-  public void testEvaluateTrackRoute() {
+  void testEvaluateTrackRoute() {
     Configuration c =
         Configuration.builder().setHostname("foo").setConfigurationFormat(CISCO_IOS).build();
     Vrf.builder().setOwner(c).setName(DEFAULT_VRF_NAME).build();
@@ -135,7 +135,7 @@ public final class IncrementalBdpEngineTest {
   }
 
   @Test
-  public void testEvaluateTrackRoute_bgp() {
+  void testEvaluateTrackRoute_bgp() {
     Configuration c =
         Configuration.builder().setHostname("foo").setConfigurationFormat(CISCO_IOS).build();
     Vrf v = Vrf.builder().setOwner(c).setName(DEFAULT_VRF_NAME).build();
@@ -170,7 +170,7 @@ public final class IncrementalBdpEngineTest {
   }
 
   @Test
-  public void testComputeDataPlane_trackReachability() {
+  void testComputeDataPlane_trackReachability() {
     Configuration c1 =
         Configuration.builder()
             .setHostname("c1")
@@ -286,7 +286,7 @@ public final class IncrementalBdpEngineTest {
   }
 
   @Test
-  public void testComputeDataPlane_trackRoute() {
+  void testComputeDataPlane_trackRoute() {
     Configuration c =
         Configuration.builder()
             .setHostname("foo")
@@ -345,7 +345,7 @@ public final class IncrementalBdpEngineTest {
   }
 
   @Test
-  public void testComputeDataPlane_hmmWithVrrp() {
+  void testComputeDataPlane_hmmWithVrrp() {
     // Test that HMM routes reflect post-dataplane VRRP winners.
     // Topology:
     // - h1:i1 <=> vrrp1:i1
@@ -481,7 +481,7 @@ public final class IncrementalBdpEngineTest {
   }
 
   @Test
-  public void testKernelRoutesUpdatedMidDataPlane() {
+  void testKernelRoutesUpdatedMidDataPlane() {
     // Topology: r1 <=> r2
     // - r1 has a kernel route that is activated if it wins VRRP virtual address 192.0.2.10
     // - r1 and r2 connected on interface i1 with IPs 192.0.2.{1,2}
@@ -600,7 +600,7 @@ public final class IncrementalBdpEngineTest {
   }
 
   @Test
-  public void testUpdateVxlanAutostate_gainedEdgeReactivatesIrb() {
+  void testUpdateVxlanAutostate_gainedEdgeReactivatesIrb() {
     Configuration c = buildVxlanConfig("leaf1", 100, 10100, true);
     VxlanNode leaf1 = new VxlanNode("leaf1", 10100, VniLayer.LAYER_2);
     VxlanNode leaf2 = new VxlanNode("leaf2", 10100, VniLayer.LAYER_2);
@@ -613,7 +613,7 @@ public final class IncrementalBdpEngineTest {
   }
 
   @Test
-  public void testUpdateVxlanAutostate_gainedEdgeAlreadyActive() {
+  void testUpdateVxlanAutostate_gainedEdgeAlreadyActive() {
     Configuration c = buildVxlanConfig("leaf1", 100, 10100, false);
     VxlanNode leaf1 = new VxlanNode("leaf1", 10100, VniLayer.LAYER_2);
     VxlanNode leaf2 = new VxlanNode("leaf2", 10100, VniLayer.LAYER_2);
@@ -626,7 +626,7 @@ public final class IncrementalBdpEngineTest {
   }
 
   @Test
-  public void testUpdateVxlanAutostate_gainedEdgeAdminDown() {
+  void testUpdateVxlanAutostate_gainedEdgeAdminDown() {
     Configuration c =
         Configuration.builder().setHostname("leaf1").setConfigurationFormat(CISCO_IOS).build();
     Vrf vrf = Vrf.builder().setOwner(c).setName(DEFAULT_VRF_NAME).build();
@@ -660,7 +660,7 @@ public final class IncrementalBdpEngineTest {
   }
 
   @Test
-  public void testUpdateVxlanAutostate_lostEdgeDeactivatesIrb() {
+  void testUpdateVxlanAutostate_lostEdgeDeactivatesIrb() {
     Configuration c = buildVxlanConfig("leaf1", 100, 10100, false);
     VxlanNode leaf1 = new VxlanNode("leaf1", 10100, VniLayer.LAYER_2);
     VxlanNode leaf2 = new VxlanNode("leaf2", 10100, VniLayer.LAYER_2);
@@ -673,7 +673,7 @@ public final class IncrementalBdpEngineTest {
   }
 
   @Test
-  public void testUpdateVxlanAutostate_lostEdgeWithPhysicalMembers() {
+  void testUpdateVxlanAutostate_lostEdgeWithPhysicalMembers() {
     Configuration c = buildVxlanConfig("leaf1", 100, 10100, false);
     // Add a trunk port member for VLAN 100
     Vrf vrf = c.getVrfs().get(DEFAULT_VRF_NAME);
@@ -697,7 +697,7 @@ public final class IncrementalBdpEngineTest {
   }
 
   @Test
-  public void testUpdateVxlanAutostate_noChanges() {
+  void testUpdateVxlanAutostate_noChanges() {
     Configuration c = buildVxlanConfig("leaf1", 100, 10100, false);
     VxlanNode leaf1 = new VxlanNode("leaf1", 10100, VniLayer.LAYER_2);
     VxlanNode leaf2 = new VxlanNode("leaf2", 10100, VniLayer.LAYER_2);

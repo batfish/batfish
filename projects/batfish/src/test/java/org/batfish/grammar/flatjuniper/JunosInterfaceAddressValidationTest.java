@@ -7,21 +7,21 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 
+import java.io.File;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.representation.juniper.Interface;
 import org.batfish.representation.juniper.JuniperConfiguration;
 import org.batfish.representation.juniper.NatPool;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public final class JunosInterfaceAddressValidationTest {
+final class JunosInterfaceAddressValidationTest {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @TempDir public File _folder;
 
   @Test
-  public void testInvalidAddresses() {
+  void testInvalidAddresses() {
     JuniperConfiguration jc = parseJuniperConfig(_folder, "interface-address-validation-invalid");
     assertThat(
         jc.getWarnings().getFatalRedFlagWarnings(),
@@ -58,7 +58,7 @@ public final class JunosInterfaceAddressValidationTest {
   }
 
   @Test
-  public void testValidAddresses() {
+  void testValidAddresses() {
     JuniperConfiguration jc = parseJuniperConfig(_folder, "interface-address-validation-valid");
     assertThat(jc.getWarnings().getFatalRedFlagWarnings(), empty());
     Interface iface =

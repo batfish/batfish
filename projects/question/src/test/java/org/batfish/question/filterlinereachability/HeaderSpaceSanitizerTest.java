@@ -8,6 +8,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcPort;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.sameInstance;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
@@ -26,13 +27,10 @@ import org.batfish.datamodel.acl.MatchIpProtocol;
 import org.batfish.datamodel.acl.MatchSourceIp;
 import org.batfish.datamodel.acl.MatchSourcePort;
 import org.batfish.datamodel.acl.UndefinedReferenceException;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link HeaderSpaceSanitizer} */
-public class HeaderSpaceSanitizerTest {
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+class HeaderSpaceSanitizerTest {
 
   private static final String IP_SPACE_NAME = "ipSpace";
   private static final Ip REFERENCED_IP = Ip.parse("1.1.1.1");
@@ -50,7 +48,7 @@ public class HeaderSpaceSanitizerTest {
   private static final HeaderSpaceSanitizer SANITIZER = new HeaderSpaceSanitizer(NAMED_IP_SPACES);
 
   @Test
-  public void testDereferencesNamedIpSpaceInLine() {
+  void testDereferencesNamedIpSpaceInLine() {
     ExprAclLine.Builder lineBuilder = ExprAclLine.builder().setAction(LineAction.PERMIT);
     MatchHeaderSpace matchHeaderSpace =
         new MatchHeaderSpace(
@@ -65,7 +63,7 @@ public class HeaderSpaceSanitizerTest {
   }
 
   @Test
-  public void testDereferencesNamedIpSpace() {
+  void testDereferencesNamedIpSpace() {
     MatchHeaderSpace matchHeaderSpace =
         new MatchHeaderSpace(
             HeaderSpace.builder().setDstIps(new IpSpaceReference(IP_SPACE_NAME)).build());
@@ -75,31 +73,29 @@ public class HeaderSpaceSanitizerTest {
   }
 
   @Test
-  public void testDoesNotAffectIpIpSpace() {
+  void testDoesNotAffectIpIpSpace() {
     MatchHeaderSpace matchHeaderSpace =
         new MatchHeaderSpace(HeaderSpace.builder().setDstIps(REFERENCED_SPACE).build());
     assertThat(SANITIZER.visit(matchHeaderSpace), equalTo(matchHeaderSpace));
   }
 
   @Test
-  public void testUndefinedIpSpaceReference() {
+  void testUndefinedIpSpaceReference() {
     MatchHeaderSpace matchHeaderSpace =
         new MatchHeaderSpace(
             HeaderSpace.builder().setDstIps(new IpSpaceReference("unknown name")).build());
-    _thrown.expect(UndefinedReferenceException.class);
-    SANITIZER.visit(matchHeaderSpace);
+    assertThrows(UndefinedReferenceException.class, () -> SANITIZER.visit(matchHeaderSpace));
   }
 
   @Test
-  public void testDestinationIpError() {
+  void testDestinationIpError() {
     MatchDestinationIp matchDestinationIp =
         (MatchDestinationIp) matchDst(new IpSpaceReference("unknown name"));
-    _thrown.expect(UndefinedReferenceException.class);
-    SANITIZER.visit(matchDestinationIp);
+    assertThrows(UndefinedReferenceException.class, () -> SANITIZER.visit(matchDestinationIp));
   }
 
   @Test
-  public void testDestinationIpInterning() {
+  void testDestinationIpInterning() {
     // Unchanged is interned
     MatchDestinationIp matchDestinationIp = (MatchDestinationIp) matchDst(REFERENCED_IP);
     assertThat(SANITIZER.visit(matchDestinationIp), sameInstance(matchDestinationIp));
@@ -109,7 +105,7 @@ public class HeaderSpaceSanitizerTest {
   }
 
   @Test
-  public void testSourceIpInterning() {
+  void testSourceIpInterning() {
     // Unchanged is interned
     MatchSourceIp matchSourceIp = (MatchSourceIp) matchSrc(REFERENCED_IP);
     assertThat(SANITIZER.visit(matchSourceIp), sameInstance(matchSourceIp));
@@ -118,29 +114,28 @@ public class HeaderSpaceSanitizerTest {
   }
 
   @Test
-  public void testDestinationPort() {
+  void testDestinationPort() {
     MatchDestinationPort match = (MatchDestinationPort) matchDstPort(1);
     assertThat(SANITIZER.visit(match), sameInstance(match));
   }
 
   @Test
-  public void testSourcePort() {
+  void testSourcePort() {
     MatchSourcePort match = (MatchSourcePort) matchSrcPort(1);
     assertThat(SANITIZER.visit(match), sameInstance(match));
   }
 
   @Test
-  public void testIpProtocol() {
+  void testIpProtocol() {
     MatchIpProtocol match = (MatchIpProtocol) matchIpProtocol(IpProtocol.TCP);
     assertThat(SANITIZER.visit(match), sameInstance(match));
   }
 
   @Test
-  public void testCyclicIpSpaceReference() {
+  void testCyclicIpSpaceReference() {
     MatchHeaderSpace matchHeaderSpace =
         new MatchHeaderSpace(
             HeaderSpace.builder().setDstIps(new IpSpaceReference(CIRCULAR_REF_NAME)).build());
-    _thrown.expect(CircularReferenceException.class);
-    SANITIZER.visit(matchHeaderSpace);
+    assertThrows(CircularReferenceException.class, () -> SANITIZER.visit(matchHeaderSpace));
   }
 }

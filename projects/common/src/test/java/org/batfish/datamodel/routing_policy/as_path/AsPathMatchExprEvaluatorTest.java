@@ -1,7 +1,7 @@
 package org.batfish.datamodel.routing_policy.as_path;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -11,18 +11,18 @@ import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IntComparison;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link AsPathMatchExprEvaluator}. */
-public final class AsPathMatchExprEvaluatorTest {
+final class AsPathMatchExprEvaluatorTest {
 
   @Test
-  public void testAsPathMatchAnyEmpty() {
+  void testAsPathMatchAnyEmpty() {
     assertFalse(eval(AsPathMatchAny.of(ImmutableList.of()), AsPath.ofSingletonAsSets(1L)));
   }
 
   @Test
-  public void testAsPathMatchAnyTrueFalse() {
+  void testAsPathMatchAnyTrueFalse() {
     assertTrue(
         eval(
             AsPathMatchAny.of(
@@ -33,7 +33,7 @@ public final class AsPathMatchExprEvaluatorTest {
   }
 
   @Test
-  public void testAsPathMatchAnyFalse() {
+  void testAsPathMatchAnyFalse() {
     assertFalse(
         eval(
             AsPathMatchAny.of(
@@ -43,7 +43,7 @@ public final class AsPathMatchExprEvaluatorTest {
   }
 
   @Test
-  public void testAsPathMatchExprReference() {
+  void testAsPathMatchExprReference() {
     String name = "expr1";
     AsPathMatchExpr target =
         HasAsPathLength.of(new IntComparison(IntComparator.EQ, new LiteralInt(1)));
@@ -61,7 +61,7 @@ public final class AsPathMatchExprEvaluatorTest {
   }
 
   @Test
-  public void testAsPathMatchRegex() {
+  void testAsPathMatchRegex() {
     AsPathMatchRegex match = AsPathMatchRegex.of("^2 5");
     assertTrue(eval(match, AsPath.ofSingletonAsSets(2L, 5L)));
     assertTrue(eval(match, AsPath.ofSingletonAsSets(2L, 5L, 6L)));
@@ -69,7 +69,7 @@ public final class AsPathMatchExprEvaluatorTest {
   }
 
   @Test
-  public void testAsSetsMatchingRangesAnchorNone() {
+  void testAsSetsMatchingRangesAnchorNone() {
     assertTrue(
         eval(
             AsSetsMatchingRanges.of(
@@ -126,7 +126,7 @@ public final class AsPathMatchExprEvaluatorTest {
   }
 
   @Test
-  public void testAsSetsMatchingRangesAnchorStart() {
+  void testAsSetsMatchingRangesAnchorStart() {
     assertTrue(
         eval(
             AsSetsMatchingRanges.of(
@@ -151,7 +151,7 @@ public final class AsPathMatchExprEvaluatorTest {
   }
 
   @Test
-  public void testAsSetsMatchingRangesAnchorEnd() {
+  void testAsSetsMatchingRangesAnchorEnd() {
     assertTrue(
         eval(
             AsSetsMatchingRanges.of(
@@ -176,7 +176,7 @@ public final class AsPathMatchExprEvaluatorTest {
   }
 
   @Test
-  public void testAsSetsMatchingRangesAnchorBoth() {
+  void testAsSetsMatchingRangesAnchorBoth() {
     assertTrue(
         eval(
             AsSetsMatchingRanges.of(
@@ -208,7 +208,7 @@ public final class AsPathMatchExprEvaluatorTest {
   }
 
   @Test
-  public void testHasAsPathLength() {
+  void testHasAsPathLength() {
     {
       // test singleton
       AsPath asPath = AsPath.ofSingletonAsSets(5L);

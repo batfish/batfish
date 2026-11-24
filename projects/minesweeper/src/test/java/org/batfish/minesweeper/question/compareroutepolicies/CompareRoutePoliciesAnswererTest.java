@@ -16,6 +16,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -88,6 +90,7 @@ import org.batfish.datamodel.routing_policy.expr.LiteralAdministrativeCost;
 import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
+import org.batfish.datamodel.routing_policy.expr.MatchColor;
 import org.batfish.datamodel.routing_policy.expr.MatchInterface;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchSourceVrf;
@@ -98,26 +101,32 @@ import org.batfish.datamodel.routing_policy.expr.TrackSucceeded;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
+import org.batfish.datamodel.routing_policy.statement.SetColor;
+import org.batfish.datamodel.routing_policy.statement.SetColor2;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
+import org.batfish.datamodel.routing_policy.statement.SetTag2;
 import org.batfish.datamodel.routing_policy.statement.SetWeight;
+import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
+import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
+import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link
  * org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer}.
  */
-public class CompareRoutePoliciesAnswererTest {
+class CompareRoutePoliciesAnswererTest {
   private static final String HOSTNAME = "hostname";
   private static final String POLICY_REFERENCE_NAME = "policy_reference";
   private static final String POLICY_NEW_NAME = "policy_new";
@@ -170,8 +179,8 @@ public class CompareRoutePoliciesAnswererTest {
     }
   }
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder()
@@ -237,7 +246,7 @@ public class CompareRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testBothPermit() {
+  void testBothPermit() {
     RoutingPolicy policy_reference =
         _policyBuilderDelta.addStatement(new StaticStatement(Statements.ExitAccept)).build();
     RoutingPolicy policy_new =
@@ -258,7 +267,7 @@ public class CompareRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testPermitDeny() {
+  void testPermitDeny() {
     RoutingPolicy policy_reference =
         _policyBuilderDelta.addStatement(new StaticStatement(Statements.ExitAccept)).build();
     RoutingPolicy policy_new =
@@ -293,7 +302,7 @@ public class CompareRoutePoliciesAnswererTest {
 
   /** Tests permit/deny differences when one of the statements is ignored. */
   @Test
-  public void testPermitDenyDeadCode() {
+  void testPermitDenyDeadCode() {
     RoutingPolicy policy_reference =
         _policyBuilderDelta.addStatement(new StaticStatement(Statements.ExitAccept)).build();
     RoutingPolicy policy_new =
@@ -331,7 +340,7 @@ public class CompareRoutePoliciesAnswererTest {
 
   /** Tests that differences in local preference are detected. */
   @Test
-  public void testLocalPrefDifference() {
+  void testLocalPrefDifference() {
     RoutingPolicy policy_reference =
         _policyBuilderDelta
             .addStatement(new SetLocalPreference(new LiteralLong(200)))
@@ -374,7 +383,7 @@ public class CompareRoutePoliciesAnswererTest {
 
   /** Tests that differences in tag are detected. */
   @Test
-  public void testSetTagDifference() {
+  void testSetTagDifference() {
     RoutingPolicy policy_reference =
         _policyBuilderDelta
             .addStatement(new SetTag(new LiteralLong(0)))
@@ -414,9 +423,111 @@ public class CompareRoutePoliciesAnswererTest {
                 hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
   }
 
+  /** Runs compareRoutePolicies on the new (base) policy against the reference (delta) policy. */
+  private TableAnswerElement compare(RoutingPolicy policyNew, RoutingPolicy policyReference) {
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
+            DEFAULT_DIRECTION, policyNew.getName(), policyReference.getName(), HOSTNAME);
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer answerer =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer(
+            question, _batfish);
+    return (TableAnswerElement)
+        answerer.answerDiff(_batfish.getSnapshot(), _batfish.getReferenceSnapshot());
+  }
+
+  /** Builds a policy that executes the given statements and then accepts. */
+  private static RoutingPolicy acceptAfter(RoutingPolicy.Builder builder, Statement... statements) {
+    for (Statement statement : statements) {
+      builder.addStatement(statement);
+    }
+    return builder.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+  }
+
+  /** Matches a single row where both policies permit the input route, with the given diff. */
+  private static Matcher<Iterable<? extends Row>> bothPermitWithDiff(
+      Matcher<? super BgpRoute> inputRoute, BgpRouteDiff diff) {
+    return Matchers.contains(
+        allOf(
+            hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+            hasColumn(COL_POLICY_NAME, equalTo(POLICY_NEW_NAME), Schema.STRING),
+            hasColumn(COL_REFERENCE_POLICY_NAME, equalTo(POLICY_REFERENCE_NAME), Schema.STRING),
+            hasColumn(COL_INPUT_ROUTE, inputRoute, Schema.BGP_ROUTE),
+            hasColumn(baseColumnName(COL_ACTION), equalTo(PERMIT.toString()), Schema.STRING),
+            hasColumn(deltaColumnName(COL_ACTION), equalTo(PERMIT.toString()), Schema.STRING),
+            hasColumn(
+                COL_DIFF,
+                equalTo(new BgpRouteDiffs(ImmutableSet.of(diff))),
+                Schema.BGP_ROUTE_DIFFS)));
+  }
+
+  /** Tests that differences in tag2 are detected. */
+  @Test
+  void testSetTag2Difference() {
+    RoutingPolicy policyReference =
+        acceptAfter(_policyBuilderDelta, new SetTag2(new LiteralLong(5)));
+    RoutingPolicy policyNew = acceptAfter(_policyBuilderBase, new SetTag2(new LiteralLong(7)));
+
+    assertThat(
+        compare(policyNew, policyReference).getRows().getData(),
+        bothPermitWithDiff(anything(), new BgpRouteDiff(BgpRoute.PROP_TAG2, "5", "7")));
+  }
+
+  /** Tests that setting color in only one policy is detected, using an input route without it. */
+  @Test
+  void testSetColorDifference() {
+    RoutingPolicy policyReference = acceptAfter(_policyBuilderDelta);
+    RoutingPolicy policyNew = acceptAfter(_policyBuilderBase, new SetColor(new LiteralLong(3)));
+
+    assertThat(
+        compare(policyNew, policyReference).getRows().getData(),
+        bothPermitWithDiff(
+            hasProperty("color", equalTo(0L)), new BgpRouteDiff(BgpRoute.PROP_COLOR, "0", "3")));
+  }
+
+  /** Tests that differences in color2 are detected. */
+  @Test
+  void testSetColor2Difference() {
+    RoutingPolicy policyReference =
+        acceptAfter(_policyBuilderDelta, new SetColor2(new LiteralLong(3)));
+    RoutingPolicy policyNew = acceptAfter(_policyBuilderBase, new SetColor2(new LiteralLong(4)));
+
+    assertThat(
+        compare(policyNew, policyReference).getRows().getData(),
+        bothPermitWithDiff(anything(), new BgpRouteDiff(BgpRoute.PROP_COLOR2, "3", "4")));
+  }
+
+  /**
+   * Tests that a difference only for routes with a given color is found, with an input route that
+   * has that color.
+   */
+  @Test
+  void testDifferenceForMatchedColor() {
+    RoutingPolicy policyReference =
+        acceptAfter(
+            _policyBuilderDelta,
+            new If(
+                new MatchColor(9),
+                ImmutableList.of(
+                    new SetTag2(new LiteralLong(5)), new StaticStatement(Statements.ExitAccept))),
+            new StaticStatement(Statements.ExitReject));
+    RoutingPolicy policyNew =
+        acceptAfter(
+            _policyBuilderBase,
+            new If(
+                new MatchColor(9),
+                ImmutableList.of(
+                    new SetTag2(new LiteralLong(6)), new StaticStatement(Statements.ExitAccept))),
+            new StaticStatement(Statements.ExitReject));
+
+    assertThat(
+        compare(policyNew, policyReference).getRows().getData(),
+        bothPermitWithDiff(
+            hasProperty("color", equalTo(9L)), new BgpRouteDiff(BgpRoute.PROP_TAG2, "5", "6")));
+  }
+
   /** Tests that setting the tag to the default value is still found as a difference. */
   @Test
-  public void testSetTagDefault() {
+  void testSetTagDefault() {
     RoutingPolicy policy_reference =
         _policyBuilderDelta
             .addStatement(new SetTag(new LiteralLong(0)))
@@ -455,7 +566,7 @@ public class CompareRoutePoliciesAnswererTest {
 
   /** Tests that differences in MED are detected. */
   @Test
-  public void testSetMedDifference() {
+  void testSetMedDifference() {
 
     RoutingPolicy policy_reference =
         _policyBuilderDelta
@@ -498,7 +609,7 @@ public class CompareRoutePoliciesAnswererTest {
 
   /** Tests that differences in weight are detected. */
   @Test
-  public void testWeightDifference() {
+  void testWeightDifference() {
 
     RoutingPolicy policy_reference =
         _policyBuilderDelta
@@ -541,7 +652,7 @@ public class CompareRoutePoliciesAnswererTest {
 
   /** Tests that differences in nexthop IP are detected. */
   @Test
-  public void testSetNextHop() {
+  void testSetNextHop() {
 
     RoutingPolicy policy_reference =
         _policyBuilderDelta
@@ -586,7 +697,7 @@ public class CompareRoutePoliciesAnswererTest {
 
   /** Tests that when the nexthop IP is discarded the difference is captured. */
   @Test
-  public void testDiscardNexthop() {
+  void testDiscardNexthop() {
 
     RoutingPolicy policy_reference =
         _policyBuilderDelta
@@ -631,7 +742,7 @@ public class CompareRoutePoliciesAnswererTest {
 
   /** Tests that when the nexthop IP is set to the local IP the difference is captured. */
   @Test
-  public void testSelfNexthop() {
+  void testSelfNexthop() {
 
     RoutingPolicy policy_reference =
         _policyBuilderDelta
@@ -676,7 +787,7 @@ public class CompareRoutePoliciesAnswererTest {
 
   /** Tests that when the nexthop IP is set to the remote IP the difference is captured. */
   @Test
-  public void testPeerNexthop() {
+  void testPeerNexthop() {
 
     RoutingPolicy policy_reference =
         _policyBuilderDelta
@@ -724,7 +835,7 @@ public class CompareRoutePoliciesAnswererTest {
    * BgpRoute/BgpRouteDiff.
    */
   @Test
-  public void testOspfMetric() {
+  void testOspfMetric() {
 
     RoutingPolicy policy_reference =
         _policyBuilderDelta
@@ -755,7 +866,7 @@ public class CompareRoutePoliciesAnswererTest {
 
   /** Tests that differences in administrative cost are detected. */
   @Test
-  public void testAdministrativeDistance() {
+  void testAdministrativeDistance() {
 
     RoutingPolicy policy_reference =
         _policyBuilderDelta
@@ -799,7 +910,7 @@ public class CompareRoutePoliciesAnswererTest {
 
   /** Test differences in set communities. */
   @Test
-  public void testSetCommunity() {
+  void testSetCommunity() {
 
     RoutingPolicy policy_reference =
         _policyBuilderDelta.addStatement(new StaticStatement(Statements.ExitAccept)).build();
@@ -844,7 +955,7 @@ public class CompareRoutePoliciesAnswererTest {
 
   /** Test differences in set extcommunities. */
   @Test
-  public void testSetExtCommunity() {
+  void testSetExtCommunity() {
 
     RoutingPolicy policy_reference =
         _policyBuilderDelta
@@ -887,7 +998,7 @@ public class CompareRoutePoliciesAnswererTest {
 
   /** Tests that differences caused by AS-path prepends are detected. */
   @Test
-  public void testSetAsPathPrepend() {
+  void testSetAsPathPrepend() {
 
     RoutingPolicy policy_reference =
         _policyBuilderDelta
@@ -928,7 +1039,7 @@ public class CompareRoutePoliciesAnswererTest {
 
   /** Tests that differences caused by AS-path prepends are detected. */
   @Test
-  public void testMatchSetAsPath() {
+  void testMatchSetAsPath() {
 
     RoutingPolicy policy_reference =
         _policyBuilderDelta
@@ -1014,7 +1125,7 @@ public class CompareRoutePoliciesAnswererTest {
 
   /** Tests differences resulting from different treatment of incoming route's AS path. */
   @Test
-  public void testMatchAs() {
+  void testMatchAs() {
 
     RoutingPolicy policy_reference =
         _policyBuilderDelta.addStatement(new StaticStatement(Statements.ExitAccept)).build();
@@ -1069,7 +1180,7 @@ public class CompareRoutePoliciesAnswererTest {
 
   /** Tests differences from Prefix Matching. */
   @Test
-  public void testMatchPrefixes() {
+  void testMatchPrefixes() {
 
     RoutingPolicy policy_reference =
         _policyBuilderDelta
@@ -1127,7 +1238,7 @@ public class CompareRoutePoliciesAnswererTest {
 
   /** Tests differences from Prefix Matching. */
   @Test
-  public void testMatchPrefixesSplit() {
+  void testMatchPrefixesSplit() {
 
     RoutingPolicy policy_reference =
         _policyBuilderDelta
@@ -1211,7 +1322,7 @@ public class CompareRoutePoliciesAnswererTest {
 
   /** Tests differences resulting from different treatment of incoming route's communities. */
   @Test
-  public void testMatchCommunity() {
+  void testMatchCommunity() {
 
     RoutingPolicy policy_reference =
         _policyBuilderDelta
@@ -1270,7 +1381,7 @@ public class CompareRoutePoliciesAnswererTest {
    * Second policy always sets community 1:1.
    */
   @Test
-  public void testMatchSetCommunity() {
+  void testMatchSetCommunity() {
     Community comm0 = StandardCommunity.parse("0:0");
     Community comm1 = StandardCommunity.parse("1:1");
 
@@ -1343,7 +1454,7 @@ public class CompareRoutePoliciesAnswererTest {
    * due to the input conditions under which each path is traversed.
    */
   @Test
-  public void testNoDifferencesMultiplePaths() {
+  void testNoDifferencesMultiplePaths() {
     Community comm = StandardCommunity.parse("1:1");
 
     RoutingPolicy policy_reference =
@@ -1387,7 +1498,7 @@ public class CompareRoutePoliciesAnswererTest {
 
   /** Tests multiple differences in set values. */
   @Test
-  public void testMultipleSetDifferences() {
+  void testMultipleSetDifferences() {
 
     RoutingPolicy policy_reference =
         _policyBuilderDelta
@@ -1446,7 +1557,7 @@ public class CompareRoutePoliciesAnswererTest {
    * consideration (requiring that the outputs differ).
    */
   @Test
-  public void testDeleteCommunity() {
+  void testDeleteCommunity() {
 
     RoutingPolicy policy_reference =
         _policyBuilderDelta
@@ -1500,35 +1611,47 @@ public class CompareRoutePoliciesAnswererTest {
                 hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void testRejectMissingOriginalPolicy() {
-
-    _policyBuilderBase.build();
-    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
-        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
-            DEFAULT_DIRECTION, "does not exist", POLICY_NEW_NAME, HOSTNAME);
-    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer answerer =
-        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer(
-            question, _batfish);
-    answerer.answerDiff(_batfish.getSnapshot(), _batfish.getReferenceSnapshot());
+  @Test
+  void testRejectMissingOriginalPolicy() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> {
+          _policyBuilderBase.build();
+          org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion
+              question =
+                  new org.batfish.minesweeper.question.compareroutepolicies
+                      .CompareRoutePoliciesQuestion(
+                      DEFAULT_DIRECTION, "does not exist", POLICY_NEW_NAME, HOSTNAME);
+          org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer
+              answerer =
+                  new org.batfish.minesweeper.question.compareroutepolicies
+                      .CompareRoutePoliciesAnswerer(question, _batfish);
+          answerer.answerDiff(_batfish.getSnapshot(), _batfish.getReferenceSnapshot());
+        });
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void testRejectMissingProposedPolicy() {
-
-    _policyBuilderDelta.build();
-    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
-        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
-            DEFAULT_DIRECTION, POLICY_REFERENCE_NAME, "does not exist", HOSTNAME);
-    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer answerer =
-        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer(
-            question, _batfish);
-    answerer.answerDiff(_batfish.getSnapshot(), _batfish.getReferenceSnapshot());
+  @Test
+  void testRejectMissingProposedPolicy() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> {
+          _policyBuilderDelta.build();
+          org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion
+              question =
+                  new org.batfish.minesweeper.question.compareroutepolicies
+                      .CompareRoutePoliciesQuestion(
+                      DEFAULT_DIRECTION, POLICY_REFERENCE_NAME, "does not exist", HOSTNAME);
+          org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer
+              answerer =
+                  new org.batfish.minesweeper.question.compareroutepolicies
+                      .CompareRoutePoliciesAnswerer(question, _batfish);
+          answerer.answerDiff(_batfish.getSnapshot(), _batfish.getReferenceSnapshot());
+        });
   }
 
   /** Tests that a difference due to tracks is properly reported. */
   @Test
-  public void testTrackSucceeded() {
+  void testTrackSucceeded() {
 
     RoutingPolicy policy_reference =
         _policyBuilderDelta.addStatement(new StaticStatement(Statements.ExitAccept)).build();
@@ -1580,7 +1703,7 @@ public class CompareRoutePoliciesAnswererTest {
 
   /** Tests that irrelevant tracks are properly ignored. */
   @Test
-  public void testTrackSucceededHarmless() {
+  void testTrackSucceededHarmless() {
 
     RoutingPolicy policy_reference =
         _policyBuilderDelta.addStatement(new StaticStatement(Statements.ExitAccept)).build();
@@ -1609,7 +1732,7 @@ public class CompareRoutePoliciesAnswererTest {
 
   /** Tests that different route maps can have different tracks. */
   @Test
-  public void testDifferentTracks() {
+  void testDifferentTracks() {
 
     RoutingPolicy policy_reference =
         _policyBuilderDelta
@@ -1675,7 +1798,7 @@ public class CompareRoutePoliciesAnswererTest {
 
   /** Tests that a difference due to source VRFs is properly reported. */
   @Test
-  public void testMatchSourceVrf() {
+  void testMatchSourceVrf() {
 
     RoutingPolicy policy_reference =
         _policyBuilderDelta.addStatement(new StaticStatement(Statements.ExitAccept)).build();
@@ -1727,7 +1850,7 @@ public class CompareRoutePoliciesAnswererTest {
 
   /** Tests that different route maps can have different source Vrfs. */
   @Test
-  public void testDifferentSourceVrfs() {
+  void testDifferentSourceVrfs() {
 
     RoutingPolicy policy_reference =
         _policyBuilderDelta
@@ -1793,7 +1916,7 @@ public class CompareRoutePoliciesAnswererTest {
 
   /** Tests that a difference due to next-hop interfaces is properly reported. */
   @Test
-  public void testMatchInterface() {
+  void testMatchInterface() {
 
     RoutingPolicy policy_reference =
         _policyBuilderDelta.addStatement(new StaticStatement(Statements.ExitAccept)).build();
@@ -1845,7 +1968,7 @@ public class CompareRoutePoliciesAnswererTest {
 
   /** Tests that different route maps can have different next-hop interface names. */
   @Test
-  public void testDifferentNextHopInterfaces() {
+  void testDifferentNextHopInterfaces() {
 
     RoutingPolicy policy_reference =
         _policyBuilderDelta

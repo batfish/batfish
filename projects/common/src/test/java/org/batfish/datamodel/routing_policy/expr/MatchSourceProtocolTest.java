@@ -2,8 +2,8 @@ package org.batfish.datamodel.routing_policy.expr;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
@@ -17,12 +17,12 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.routing_policy.Environment;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link MatchSourceProtocol} */
-public class MatchSourceProtocolTest {
+class MatchSourceProtocolTest {
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new MatchSourceProtocol(RoutingProtocol.STATIC),
@@ -32,19 +32,19 @@ public class MatchSourceProtocolTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  void testJavaSerialization() {
     MatchSourceProtocol mp = new MatchSourceProtocol(RoutingProtocol.STATIC);
     assertThat(SerializationUtils.clone(mp), equalTo(mp));
   }
 
   @Test
-  public void testJsonSerialization() {
+  void testJsonSerialization() {
     MatchSourceProtocol mp = new MatchSourceProtocol(RoutingProtocol.STATIC);
     assertThat(BatfishObjectMapper.clone(mp, BooleanExpr.class), equalTo(mp));
   }
 
   @Test
-  public void testMatches() {
+  void testMatches() {
     // Setup
     NetworkFactory nf = new NetworkFactory();
     Configuration c =

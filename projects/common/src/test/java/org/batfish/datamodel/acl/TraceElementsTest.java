@@ -7,12 +7,12 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.vendor.VendorStructureId;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class TraceElementsTest {
+class TraceElementsTest {
 
   @Test
-  public void testPermittedByNamedIpSpace() {
+  void testPermittedByNamedIpSpace() {
     Ip ip = Ip.parse("1.2.3.4");
     // No metadata, just a string
     assertThat(

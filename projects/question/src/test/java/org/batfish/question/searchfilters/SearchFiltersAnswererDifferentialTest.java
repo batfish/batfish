@@ -9,11 +9,12 @@ import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressInterface;
 import static org.batfish.question.searchfilters.SearchFiltersAnswerer.getDiffResult;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import java.io.File;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.plugin.IBatfish;
@@ -27,14 +28,13 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.question.SearchFiltersParameters;
 import org.batfish.question.searchfilters.SearchFiltersAnswerer.DiffConfigContext;
 import org.batfish.specifier.NameRegexInterfaceLinkLocationSpecifier;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Tests of {@link SearchFiltersAnswerer} */
-public class SearchFiltersAnswererDifferentialTest {
-  @Rule public TemporaryFolder _tmp = new TemporaryFolder();
+class SearchFiltersAnswererDifferentialTest {
+  @TempDir public File _tmp;
 
   private final BDDPacket _pkt = new BDDPacket();
   private static final String HOSTNAME = "hostname";
@@ -49,8 +49,8 @@ public class SearchFiltersAnswererDifferentialTest {
   private Interface.Builder _ib;
   private IpAccessList.Builder _ab;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     NetworkFactory nf = new NetworkFactory();
     _cb =
         nf.configurationBuilder()
@@ -65,7 +65,7 @@ public class SearchFiltersAnswererDifferentialTest {
   }
 
   @Test
-  public void testMatchSrcInterface() {
+  void testMatchSrcInterface() {
     Configuration config = _cb.build();
     Configuration refConfig = _cb.build();
     _ib.setName(IFACE1)
@@ -99,8 +99,8 @@ public class SearchFiltersAnswererDifferentialTest {
             _pkt);
     DifferentialSearchFiltersResult result =
         getDiffResult(acl, refAcl, configContext, PERMIT_QUERY);
-    assertFalse("Expected no decreased result", result.getDecreasedFlow().isPresent());
-    assertTrue("Expected increased result", result.getIncreasedFlow().isPresent());
+    assertFalse(result.getDecreasedFlow().isPresent(), "Expected no decreased result");
+    assertTrue(result.getIncreasedFlow().isPresent(), "Expected increased result");
     assertThat(result.getIncreasedFlow().get(), allOf(hasIngressInterface(IFACE1), hasDstIp(IP)));
 
     // flip base and delta
@@ -115,13 +115,13 @@ public class SearchFiltersAnswererDifferentialTest {
             DEFAULT_PARAMS,
             _pkt);
     result = getDiffResult(acl, refAcl, configContext, PERMIT_QUERY);
-    assertFalse("Expected no increased result", result.getIncreasedFlow().isPresent());
-    assertTrue("Expected decreased result", result.getDecreasedFlow().isPresent());
+    assertFalse(result.getIncreasedFlow().isPresent(), "Expected no increased result");
+    assertTrue(result.getDecreasedFlow().isPresent(), "Expected decreased result");
     assertThat(result.getDecreasedFlow().get(), allOf(hasIngressInterface(IFACE1), hasDstIp(IP)));
   }
 
   @Test
-  public void testAclLineAddedRemoved() {
+  void testAclLineAddedRemoved() {
     Configuration config = _cb.build();
     Configuration refConfig = _cb.build();
     String aclName = "aclName";
@@ -146,8 +146,8 @@ public class SearchFiltersAnswererDifferentialTest {
             _pkt);
     DifferentialSearchFiltersResult result =
         getDiffResult(acl, refAcl, configContext, PERMIT_QUERY);
-    assertFalse("Expected no decreased result", result.getDecreasedFlow().isPresent());
-    assertTrue("Expected increased result", result.getIncreasedFlow().isPresent());
+    assertFalse(result.getDecreasedFlow().isPresent(), "Expected no decreased result");
+    assertTrue(result.getIncreasedFlow().isPresent(), "Expected increased result");
     assertThat(result.getIncreasedFlow().get(), hasDstIp(IP));
 
     // flip base and delta ACL
@@ -162,13 +162,13 @@ public class SearchFiltersAnswererDifferentialTest {
             DEFAULT_PARAMS,
             _pkt);
     result = getDiffResult(refAcl, acl, configContext, PERMIT_QUERY);
-    assertFalse("Expected no increased result", result.getIncreasedFlow().isPresent());
-    assertTrue("Expected decreased result", result.getDecreasedFlow().isPresent());
+    assertFalse(result.getIncreasedFlow().isPresent(), "Expected no increased result");
+    assertTrue(result.getDecreasedFlow().isPresent(), "Expected decreased result");
     assertThat(result.getDecreasedFlow().get(), hasDstIp(IP));
   }
 
   @Test
-  public void testSourceInterfaceParameter() {
+  void testSourceInterfaceParameter() {
     Configuration refConfig = _cb.build();
     Configuration config = _cb.build();
     _ib.setName(IFACE1)
@@ -213,8 +213,8 @@ public class SearchFiltersAnswererDifferentialTest {
             _pkt);
     DifferentialSearchFiltersResult result =
         getDiffResult(acl, refAcl, configContext, PERMIT_QUERY);
-    assertFalse("Expected no decreased result", result.getDecreasedFlow().isPresent());
-    assertTrue("Expected increased result", result.getIncreasedFlow().isPresent());
+    assertFalse(result.getDecreasedFlow().isPresent(), "Expected no decreased result");
+    assertTrue(result.getIncreasedFlow().isPresent(), "Expected increased result");
     assertThat(result.getIncreasedFlow().get(), allOf(hasIngressInterface(IFACE1), hasDstIp(IP)));
 
     params =
@@ -234,7 +234,7 @@ public class SearchFiltersAnswererDifferentialTest {
             params,
             _pkt);
     result = getDiffResult(acl, refAcl, configContext, PERMIT_QUERY);
-    assertFalse("Expected no decreased result", result.getDecreasedFlow().isPresent());
-    assertFalse("Expected no increased result", result.getIncreasedFlow().isPresent());
+    assertFalse(result.getDecreasedFlow().isPresent(), "Expected no decreased result");
+    assertFalse(result.getIncreasedFlow().isPresent(), "Expected no increased result");
   }
 }

@@ -15,13 +15,13 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.Environment;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Test of {@link CommunityContext}. */
-public final class CommunityContextTest {
+final class CommunityContextTest {
 
   @Test
-  public void testFromEnvironment() {
+  void testFromEnvironment() {
     Map<String, CommunityMatchExpr> communityMatchExprs =
         ImmutableMap.of("cme", AllStandardCommunities.instance());
     Map<String, CommunitySetExpr> communitySetExprs =

@@ -1,12 +1,12 @@
 package org.batfish.specifier;
 
 import com.google.common.testing.EqualsTester;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public final class DifferenceNodeSpecifierTest {
+final class DifferenceNodeSpecifierTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     DifferenceNodeSpecifier group1Elem1 =
         new DifferenceNodeSpecifier(AllNodesNodeSpecifier.INSTANCE, AllNodesNodeSpecifier.INSTANCE);
     DifferenceNodeSpecifier group1Elem2 =

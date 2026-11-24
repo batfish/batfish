@@ -16,8 +16,8 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -78,11 +78,11 @@ import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.symbolic.state.PacketPolicyAction;
 import org.batfish.symbolic.state.PacketPolicyStatement;
 import org.batfish.symbolic.state.StateExpr;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests of {@link PacketPolicyToBdd} */
-public final class PacketPolicyToBddTest {
+final class PacketPolicyToBddTest {
   private static final IpsRoutedOutInterfaces EMPTY_IPS_ROUTED_OUT_INTERFACES =
       new IpsRoutedOutInterfaces(MockFib.builder().build());
 
@@ -102,8 +102,8 @@ public final class PacketPolicyToBddTest {
         _hostname, _ingressVrf, _policyName, new FibLookup(new LiteralVrfName(vrfName)));
   }
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
     _bddPacket = new BDDPacket();
     _ipAccessListToBdd =
         new IpAccessListToBddImpl(
@@ -114,7 +114,7 @@ public final class PacketPolicyToBddTest {
       new PacketPolicyAction(_hostname, _ingressVrf, _policyName, Drop.instance());
 
   @Test
-  public void testDefaultAction() {
+  void testDefaultAction() {
     BddPacketPolicy converted =
         PacketPolicyToBdd.evaluate(
             _hostname,
@@ -129,7 +129,7 @@ public final class PacketPolicyToBddTest {
   }
 
   @Test
-  public void testReturn() {
+  void testReturn() {
     BddPacketPolicy converted =
         PacketPolicyToBdd.evaluate(
             _hostname,
@@ -147,7 +147,7 @@ public final class PacketPolicyToBddTest {
   }
 
   @Test
-  public void testNestedIfs() {
+  void testNestedIfs() {
     String vrf1 = "vrf1";
     String vrf2 = "vrf2";
     String vrf3 = "vrf3";
@@ -187,7 +187,7 @@ public final class PacketPolicyToBddTest {
   }
 
   @Test
-  public void testIfFallThrough() {
+  void testIfFallThrough() {
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("2.2.2.2");
     Ip ip3 = Ip.parse("3.3.3.3");
@@ -237,7 +237,7 @@ public final class PacketPolicyToBddTest {
   }
 
   @Test
-  public void testNoFallThrough() {
+  void testNoFallThrough() {
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("2.2.2.2");
     Transformation transformation = always().apply(assignDestinationIp(ip2)).build();
@@ -277,7 +277,7 @@ public final class PacketPolicyToBddTest {
   }
 
   @Test
-  public void testIfTrue_fallThrough() {
+  void testIfTrue_fallThrough() {
     List<Edge> edges =
         PacketPolicyToBdd.evaluate(
                 _hostname,
@@ -298,7 +298,7 @@ public final class PacketPolicyToBddTest {
   }
 
   @Test
-  public void testIfTrue_noFallThrough() {
+  void testIfTrue_noFallThrough() {
     String vrf = "vrf";
     BddPacketPolicy converted =
         PacketPolicyToBdd.evaluate(
@@ -324,7 +324,7 @@ public final class PacketPolicyToBddTest {
   }
 
   @Test
-  public void testApplyFilter() {
+  void testApplyFilter() {
     // Set up an ACL that permits traffic to 1.1.1.0/24
     Prefix permittedPrefix = Prefix.parse("1.1.1.0/24");
     AclLine line =
@@ -361,7 +361,7 @@ public final class PacketPolicyToBddTest {
   }
 
   @Test
-  public void testApplyTransformation() {
+  void testApplyTransformation() {
     FibLookup fl = new FibLookup(new LiteralVrfName("vrf"));
     Ip ip = Ip.parse("8.8.8.8");
     Transformation transformation =
@@ -385,7 +385,7 @@ public final class PacketPolicyToBddTest {
   }
 
   @Test
-  public void testFibLookupOutgoingInterfaceIsOneOf() {
+  void testFibLookupOutgoingInterfaceIsOneOf() {
     String iface1 = "iface1";
     String iface2 = "iface2";
     FibLookupOutgoingInterfaceIsOneOf expr =
@@ -459,7 +459,7 @@ public final class PacketPolicyToBddTest {
   }
 
   @Test
-  public void testConjunction() {
+  void testConjunction() {
     FibLookup fl = new FibLookup(new LiteralVrfName("vrf"));
     {
       List<Edge> edges =
@@ -499,7 +499,7 @@ public final class PacketPolicyToBddTest {
   }
 
   @Test
-  public void testLongPolicyBreaks() {
+  void testLongPolicyBreaks() {
     Return fl = new Return(new FibLookup(new LiteralVrfName("vrf")));
     Return drop = new Return(Drop.instance());
 
@@ -552,7 +552,7 @@ public final class PacketPolicyToBddTest {
 
   /** Test that we don't insert breaks in long policies if the conversion itself creates breaks. */
   @Test
-  public void testLongPolicyBreaks_reset() {
+  void testLongPolicyBreaks_reset() {
     Return fl = new Return(new FibLookup(new LiteralVrfName("vrf")));
     Return drop = new Return(Drop.instance());
 

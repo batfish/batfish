@@ -40,10 +40,11 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -70,21 +71,15 @@ import org.batfish.datamodel.matchers.ConfigurationMatchers;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.main.Batfish;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-@RunWith(JUnit4.class)
-public class NxosBgpTest {
+class NxosBgpTest {
   private static final String TESTCONFIGS_PREFIX = "org/batfish/vendor/cisco_nxos/grammar/bgp/";
   private static final String TEST_SNAPSHOTS_PREFIX =
       "org/batfish/vendor/cisco_nxos/grammar/bgp/snapshots/";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+  @TempDir public File _folder;
 
   private @Nonnull Batfish getBatfishForConfigurationNames(String... configurationNames)
       throws IOException {
@@ -108,7 +103,7 @@ public class NxosBgpTest {
   }
 
   @Test
-  public void testDynamicRouteMap() throws IOException {
+  void testDynamicRouteMap() throws IOException {
     Configuration c = parseConfig("nxos-bgp-dynamic-route-map");
     assertThat(
         c,
@@ -119,7 +114,7 @@ public class NxosBgpTest {
   }
 
   @Test
-  public void testMaximumPaths() throws IOException {
+  void testMaximumPaths() throws IOException {
     Configuration c = parseConfig("nxos-bgp-maximum-paths");
     assertThat(
         c,
@@ -132,7 +127,7 @@ public class NxosBgpTest {
   }
 
   @Test
-  public void testMultipathAsPathRelax() throws IOException {
+  void testMultipathAsPathRelax() throws IOException {
     Configuration c = parseConfig("nxos-bgp-multipath-relax");
     assertThat(
         c, hasVrf("default", hasBgpProcess(hasMultipathEquivalentAsPathMatchMode(EXACT_PATH))));
@@ -154,7 +149,7 @@ public class NxosBgpTest {
    * route it originates (nothing is imported). 2) R2 learns 1.1.1.1/32, and S learns 3.3.3.3/32.
    */
   @Test
-  public void testRouteMapUndefined() throws IOException {
+  void testRouteMapUndefined() throws IOException {
     Set<AbstractRoute> undefined =
         parseDpAndGetRib(
                 "nxos-bgp-route-map-undefined",
@@ -196,7 +191,7 @@ public class NxosBgpTest {
   }
 
   @Test
-  public void testBgpTagImportedRoutes() throws IOException {
+  void testBgpTagImportedRoutes() throws IOException {
     Configuration c = parseConfig("nxos_bgp_tag_imports");
     Map<Ip, BgpActivePeerConfig> neighbors = c.getDefaultVrf().getBgpProcess().getActiveNeighbors();
     Bgpv4Route.Builder rb =
@@ -251,7 +246,7 @@ public class NxosBgpTest {
   }
 
   @Test
-  public void testNxosBgpVrf() throws IOException {
+  void testNxosBgpVrf() throws IOException {
     Configuration c = parseConfig("nxos-bgp-vrf");
     assertThat(c, ConfigurationMatchers.hasVrf("bar", any(Vrf.class)));
     assertThat(c.getVrfs().get("bar").getBgpProcess().getActiveNeighbors().values(), hasSize(2));
@@ -279,7 +274,7 @@ public class NxosBgpTest {
   }
 
   @Test
-  public void testRouterId() throws IOException {
+  void testRouterId() throws IOException {
     Configuration c = parseConfig("nxos-bgp-router-id");
     // default VRF has manually set router id.
     assertThat(c, hasVrf("default", hasBgpProcess(hasRouterId(Ip.parse("4.4.4.4")))));
@@ -295,7 +290,7 @@ public class NxosBgpTest {
   }
 
   @Test
-  public void testUpdateSourceShutdown() throws IOException {
+  void testUpdateSourceShutdown() throws IOException {
     Configuration c = parseConfig("nxos-bgp-update-source-shutdown");
     BgpProcess p = c.getDefaultVrf().getBgpProcess();
     assertThat(p, notNullValue());
@@ -333,7 +328,7 @@ public class NxosBgpTest {
 
   // Neighbor default-originate overrides outbound route map.
   @Test
-  public void testDefaultOriginate() throws Exception {
+  void testDefaultOriginate() throws Exception {
     Set<AbstractRoute> listenerRoutes =
         parseDpAndGetRib(
             "nxos-bgp-default-route", "ios-bgp-listener", "nxos-bgp-default-originate");
@@ -342,7 +337,7 @@ public class NxosBgpTest {
 
   // static route and default-information originate, but no redistribute is not advertised.
   @Test
-  public void testDefaultInformationOriginateNoRedistribute() throws Exception {
+  void testDefaultInformationOriginateNoRedistribute() throws Exception {
     Set<AbstractRoute> listenerRoutes =
         parseDpAndGetRib("nxos-bgp-default-route", "ios-bgp-listener", "nxos-bgp-default-inf-only");
     assertThat(listenerRoutes, not(hasItem(hasPrefix(Prefix.ZERO))));
@@ -350,7 +345,7 @@ public class NxosBgpTest {
 
   // static route and redistribution, but no default-information originate is not advertised.
   @Test
-  public void testStaticRedistributionNoDefaultInformationOriginate() throws Exception {
+  void testStaticRedistributionNoDefaultInformationOriginate() throws Exception {
     Set<AbstractRoute> listenerRoutes =
         parseDpAndGetRib(
             "nxos-bgp-default-route", "ios-bgp-listener", "nxos-bgp-static-redist-only");
@@ -359,7 +354,7 @@ public class NxosBgpTest {
 
   // default-information originate, static route, redistribute. Outbound route maps are honored.
   @Test
-  public void testDefaultInformationOriginateRedistribute() throws Exception {
+  void testDefaultInformationOriginateRedistribute() throws Exception {
     Set<AbstractRoute> outboundAllowRoutes =
         parseDpAndGetRib(
             "nxos-bgp-default-route", "ios-bgp-listener", "nxos-bgp-default-inf-working");
@@ -373,7 +368,7 @@ public class NxosBgpTest {
 
   // network, static route. Outbound route maps are honored.
   @Test
-  public void testDefaultNetwork() throws Exception {
+  void testDefaultNetwork() throws Exception {
     Set<AbstractRoute> outboundAllowRoutes =
         parseDpAndGetRib(
             "nxos-bgp-default-route", "ios-bgp-listener", "nxos-bgp-network-statement");
@@ -388,7 +383,7 @@ public class NxosBgpTest {
   // When network statement and redistribution are both present, the network statement ends up
   // as the best path.
   @Test
-  public void testNetworkAndRedistribution() throws Exception {
+  void testNetworkAndRedistribution() throws Exception {
     String hostname = "nxos-bgp-network-redistribute";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     batfish.loadConfigurations(batfish.getSnapshot());
@@ -407,7 +402,7 @@ public class NxosBgpTest {
 
   // Aggregate routes are created with local admin distance
   @Test
-  public void testAggregates() throws Exception {
+  void testAggregates() throws Exception {
     String hostname = "nxos-bgp-aggregate";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     batfish.loadConfigurations(batfish.getSnapshot());
