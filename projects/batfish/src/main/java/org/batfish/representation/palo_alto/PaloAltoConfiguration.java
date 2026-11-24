@@ -2797,36 +2797,34 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     RoutingPolicy commonExportPolicy = getBgpCommonExportPolicy(bgp, vr, _w, _c);
     List<org.batfish.datamodel.routing_policy.statement.Statement> prefixStatements =
         bgp.getRedistRules().entrySet().stream()
-            .filter(
-                e ->
-                    e.getKey().getPrefix() != null
-                        && Boolean.TRUE.equals(e.getValue().getEnable())
-                        && e.getValue().getAddressFamilyIdentifier() == AddressFamilyIdentifier.IPV4
-                        && (e.getValue().getRouteTableType() == RouteTableType.UNICAST
-                            || e.getValue().getRouteTableType() == RouteTableType.BOTH))
+            .filter(e ->
+                e.getKey().getPrefix() != null
+                    && Boolean.TRUE.equals(e.getValue().getEnable())
+                    && e.getValue().getAddressFamilyIdentifier() == AddressFamilyIdentifier.IPV4
+                    && (e.getValue().getRouteTableType() == RouteTableType.UNICAST
+                        || e.getValue().getRouteTableType() == RouteTableType.BOTH))
             .sorted(Comparator.comparing(e -> e.getKey().getPrefix()))
-            .map(
-                e -> {
-                  Prefix prefix = e.getKey().getPrefix();
-                  RedistRule rule = e.getValue();
-                  ImmutableList.Builder<org.batfish.datamodel.routing_policy.statement.Statement>
-                      trueStatements = ImmutableList.builder();
-                  if (rule.getOrigin() != null) {
-                    trueStatements.add(new SetOrigin(new LiteralOrigin(rule.getOrigin(), null)));
-                  }
-                  trueStatements.add(
-                      new org.batfish.datamodel.routing_policy.statement.If(
-                          BooleanExprs.CALL_EXPR_CONTEXT,
-                          ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
-                          ImmutableList.of(Statements.ExitAccept.toStaticStatement())));
-                  return (org.batfish.datamodel.routing_policy.statement.Statement)
-                      new org.batfish.datamodel.routing_policy.statement.If(
-                          new MatchPrefixSet(
-                              DestinationNetwork.instance(),
-                              new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(prefix)))),
-                          trueStatements.build(),
-                          ImmutableList.of());
-                })
+            .map(e -> {
+              Prefix prefix = e.getKey().getPrefix();
+              RedistRule rule = e.getValue();
+              ImmutableList.Builder<org.batfish.datamodel.routing_policy.statement.Statement>
+                  trueStatements = ImmutableList.builder();
+              if (rule.getOrigin() != null) {
+                trueStatements.add(new SetOrigin(new LiteralOrigin(rule.getOrigin(), null)));
+              }
+              trueStatements.add(
+                  new org.batfish.datamodel.routing_policy.statement.If(
+                      BooleanExprs.CALL_EXPR_CONTEXT,
+                      ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
+                      ImmutableList.of(Statements.ExitAccept.toStaticStatement())));
+              return (org.batfish.datamodel.routing_policy.statement.Statement)
+                  new org.batfish.datamodel.routing_policy.statement.If(
+                      new MatchPrefixSet(
+                          DestinationNetwork.instance(),
+                          new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(prefix)))),
+                      trueStatements.build(),
+                      ImmutableList.of());
+            })
             .collect(ImmutableList.toImmutableList());
     if (!prefixStatements.isEmpty()) {
       List<org.batfish.datamodel.routing_policy.statement.Statement> stmts =

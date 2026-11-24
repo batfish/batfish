@@ -5445,7 +5445,7 @@ final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testLogicalRouterBgp() throws IOException {
+  void testLogicalRouterBgp() throws IOException {
     String hostname = "logical-router-bgp";
     PaloAltoConfiguration vc = parseNestedConfig(hostname);
     assertThat(vc.getWarnings().getParseWarnings(), empty());
@@ -5486,12 +5486,11 @@ final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testLogicalRouterAdvertiseNetwork() {
+  void testLogicalRouterAdvertiseNetwork() {
     String hostname = "logical-router-advertise-network";
     PaloAltoConfiguration vc = parseNestedConfig(hostname);
     assertThat(
-        vc.getWarnings().getParseWarnings(),
-        contains(hasComment(containsString("ospf-inter"))));
+        vc.getWarnings().getParseWarnings(), contains(hasComment(containsString("ospf-inter"))));
 
     Configuration c = parseConfig(hostname);
     BgpProcess proc = c.getVrfs().get("LR1").getBgpProcess();
@@ -5533,7 +5532,7 @@ final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testLogicalRouterNextLr() throws IOException {
+  void testLogicalRouterNextLr() throws IOException {
     String hostname = "logical-router-next-lr";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
@@ -5561,7 +5560,7 @@ final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testLogicalRouterLongNames() {
+  void testLogicalRouterLongNames() {
     String hostname = "logical-router-long-names";
     String pg63 = "pg-" + "a".repeat(60);
     String peer63 = "pr-" + "b".repeat(60);
@@ -5591,7 +5590,7 @@ final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testVirtualRouterBgpLimits() {
+  void testVirtualRouterBgpLimits() {
     String hostname = "virtual-router-bgp-limits";
     String peer32 = "peer-" + "x".repeat(27);
 
@@ -5615,7 +5614,7 @@ final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testLogicalRouter4ByteAsn() {
+  void testLogicalRouter4ByteAsn() {
     Configuration c = parseConfig("logical-router-4byte-asn");
     BgpProcess proc = c.getVrfs().get("LR1").getBgpProcess();
     assertThat(proc, notNullValue());
@@ -5626,13 +5625,12 @@ final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testLogicalRouterNondefaultVrf() {
+  void testLogicalRouterNondefaultVrf() {
     String hostname = "logical-router-nondefault-vrf";
     PaloAltoConfiguration vc = parseNestedConfig(hostname);
     assertThat(vc.getLogicalRouters().keySet(), contains("LR1:tenantA"));
     assertThat(
-        vc.getWarnings().getParseWarnings(),
-        contains(hasComment(containsString("LR1:tenantA"))));
+        vc.getWarnings().getParseWarnings(), contains(hasComment(containsString("LR1:tenantA"))));
 
     Configuration c = parseConfig(hostname);
     assertThat(c.getVrfs().keySet(), contains("LR1:tenantA"));
@@ -5640,7 +5638,7 @@ final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testLogicalRouterEngineSelection() throws IOException {
+  void testLogicalRouterEngineSelection() throws IOException {
     {
       String hostname = "logical-router-engine-on";
       Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -5652,9 +5650,7 @@ final class PaloAltoGrammarTest {
               .loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot())
               .getWarnings()
               .get(hostname);
-      assertThat(
-          warnings,
-          hasRedFlag(hasText(containsString("Ignoring virtual-router stanzas"))));
+      assertThat(warnings, hasRedFlag(hasText(containsString("Ignoring virtual-router stanzas"))));
     }
     {
       String hostname = "logical-router-engine-off";
@@ -5667,14 +5663,12 @@ final class PaloAltoGrammarTest {
               .loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot())
               .getWarnings()
               .get(hostname);
-      assertThat(
-          warnings,
-          hasRedFlag(hasText(containsString("Ignoring logical-router stanzas"))));
+      assertThat(warnings, hasRedFlag(hasText(containsString("Ignoring logical-router stanzas"))));
     }
   }
 
   @Test
-  public void testLogicalRouterRoutingProfile() {
+  void testLogicalRouterRoutingProfile() {
     String hostname = "logical-router-routing-profile";
     PaloAltoConfiguration vc = parseNestedConfig(hostname);
     List<ParseWarning> parseWarnings = vc.getWarnings().getParseWarnings();

@@ -364,8 +364,8 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_ip_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_netmaskContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_ntp_serversContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsd_serversContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsn_ntp_server_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdset_advance_routingContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsn_ntp_server_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Selt_ipContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Set_line_config_devicesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Set_line_device_groupContext;
@@ -3667,7 +3667,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
             .computeIfAbsent(batfishVrfName, VirtualRouter::new);
     defineFlattenedStructure(VIRTUAL_ROUTER, batfishVrfName, ctx);
     referenceStructure(
-        VIRTUAL_ROUTER, batfishVrfName, VIRTUAL_ROUTER_SELF_REFERENCE, getLine(ctx.name.getStart()));
+        VIRTUAL_ROUTER,
+        batfishVrfName,
+        VIRTUAL_ROUTER_SELF_REFERENCE,
+        getLine(ctx.name.getStart()));
   }
 
   @Override
@@ -4448,7 +4451,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   private @Nonnull Optional<String> toString(
       ParserRuleContext ctx, Lr_bgp_peer_group_nameContext pg) {
-    return toStringWithLengthInSpace(ctx, pg, LR_BGP_PEER_GROUP_NAME_LENGTH_SPACE, "bgp peer-group");
+    return toStringWithLengthInSpace(
+        ctx, pg, LR_BGP_PEER_GROUP_NAME_LENGTH_SPACE, "bgp peer-group");
   }
 
   private static final IntegerSpace LR_BGP_PEER_NAME_LENGTH_SPACE =
