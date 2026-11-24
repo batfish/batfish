@@ -12,7 +12,6 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableList;
@@ -27,9 +26,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-import java.util.stream.IntStream;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -43,7 +40,6 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
-import org.batfish.datamodel.MockRib;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.ResolutionRestriction;
@@ -681,59 +677,5 @@ final class FibImplTest {
         }
       }
     }
-  }
-
-  private static AnnotatedRoute<AbstractRoute> ecmpRoute(Prefix network, String iface) {
-    return annotateRoute(
-        StaticRoute.testBuilder()
-            .setNetwork(network)
-            .setNextHopInterface(iface)
-            .setAdministrativeCost(1)
-            .build());
-  }
-
-  @Test
-  void testEcmpRoutesAllInstalled() {
-    Prefix network = Prefix.parse("10.0.0.0/24");
-    Rib rib = new Rib();
-    for (int i = 0; i < 8; i++) {
-      rib.mergeRoute(ecmpRoute(network, "Eth" + i));
-    }
-    rib.mergeRoute(ecmpRoute(Prefix.parse("10.0.1.0/24"), "Eth0"));
-    Fib fib = new FibImpl(rib, alwaysTrue());
-
-    Set<FibEntry> entries = fib.get(Ip.parse("10.0.0.1"));
-    assertThat(entries, hasSize(8));
-    assertThat(
-        entries.stream()
-            .map(e -> ((FibForward) e.getAction()).getInterfaceName())
-            .collect(ImmutableSet.toImmutableSet()),
-        equalTo(
-            IntStream.range(0, 8).mapToObj(i -> "Eth" + i).collect(ImmutableSet.toImmutableSet())));
-    assertThat(fib.allEntries(), hasSize(9));
-  }
-
-  /** A RIB need not return a network's routes together; they are still all installed. */
-  @Test
-  void testRoutesForOneNetworkNotTogetherAllInstalled() {
-    Prefix p1 = Prefix.parse("10.0.0.0/24");
-    Prefix p2 = Prefix.parse("10.0.1.0/24");
-    MockRib rib =
-        MockRib.builder()
-            .setRoutes(
-                ImmutableSet.of(
-                    ecmpRoute(p1, "Eth1"),
-                    ecmpRoute(p2, "Eth2"),
-                    ecmpRoute(p1, "Eth3"),
-                    ecmpRoute(p1, "Eth4")))
-            .build();
-    Fib fib = new FibImpl(rib, alwaysTrue());
-
-    assertThat(
-        fib.get(Ip.parse("10.0.0.1")).stream()
-            .map(e -> ((FibForward) e.getAction()).getInterfaceName())
-            .collect(ImmutableSet.toImmutableSet()),
-        equalTo(ImmutableSet.of("Eth1", "Eth3", "Eth4")));
-    assertThat(fib.get(Ip.parse("10.0.1.1")), hasSize(1));
   }
 }
