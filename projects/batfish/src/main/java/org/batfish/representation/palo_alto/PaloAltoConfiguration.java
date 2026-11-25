@@ -137,6 +137,8 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixRange;
+import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.UniverseIpSpace;
@@ -172,6 +174,13 @@ import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopVrf;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
+import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
+import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
+import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.statement.SetOrigin;
+import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.AssignPortFromPool;
 import org.batfish.datamodel.transformation.IpField;
@@ -180,6 +189,8 @@ import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.representation.palo_alto.OspfAreaNssa.DefaultRouteType;
 import org.batfish.representation.palo_alto.OspfInterface.LinkType;
+import org.batfish.representation.palo_alto.RedistRule.AddressFamilyIdentifier;
+import org.batfish.representation.palo_alto.RedistRule.RouteTableType;
 import org.batfish.representation.palo_alto.SecurityRule.RuleType;
 import org.batfish.representation.palo_alto.Vsys.NamespaceType;
 import org.batfish.representation.palo_alto.Zone.Type;
@@ -271,6 +282,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
   private ConfigurationFormat _vendor;
 
+  private @Nullable Boolean _advanceRouting;
+
+  private final SortedMap<String, VirtualRouter> _logicalRouters;
+
   private final SortedMap<String, VirtualRouter> _virtualRouters;
 
   private final SortedMap<String, Vsys> _virtualSystems;
@@ -294,6 +309,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     _ipsecTunnels = new TreeMap<>();
     _interfaces = new TreeMap<>();
     _hostnameMap = new HashMap<>();
+    _logicalRouters = new TreeMap<>();
     _sharedGateways = new TreeMap<>();
     _templates = new TreeMap<>();
     _templateStacks = new HashMap<>();
@@ -452,8 +468,34 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     return _templates.get(name);
   }
 
+  public @Nullable Boolean getAdvanceRouting() {
+    return _advanceRouting;
+  }
+
+  public void setAdvanceRouting(@Nullable Boolean advanceRouting) {
+    _advanceRouting = advanceRouting;
+  }
+
+  public SortedMap<String, VirtualRouter> getLogicalRouters() {
+    return _logicalRouters;
+  }
+
   public SortedMap<String, VirtualRouter> getVirtualRouters() {
     return _virtualRouters;
+  }
+
+  private boolean useLogicalRouters() {
+    if (Boolean.TRUE.equals(_advanceRouting)) {
+      return true;
+    }
+    if (Boolean.FALSE.equals(_advanceRouting)) {
+      return false;
+    }
+    return _virtualRouters.isEmpty() && !_logicalRouters.isEmpty();
+  }
+
+  private SortedMap<String, VirtualRouter> getActiveRouters() {
+    return useLogicalRouters() ? _logicalRouters : _virtualRouters;
   }
 
   public SortedMap<String, Vsys> getVirtualSystems() {
@@ -2684,7 +2726,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     } else {
       // Get the local address by choosing the IP on the specified interface.
       Optional.ofNullable(peer.getLocalInterface())
-          .map(_interfaces::get)
+          .map(this::findInterfaceByName)
           .map(Interface::getAddress)
           .map(a -> interfaceAddressToConcreteInterfaceAddress(a, vsys, _w))
           .map(ConcreteInterfaceAddress::getIp)
@@ -2743,9 +2785,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         BgpProcess.builder()
             .setRouterId(bgp.getRouterId())
             .setEbgpAdminCost(vr.getAdminDists().getEbgp())
-            /* TODO: PAN does not let you configure local AD. Confirm IBGP AD is used */
             .setIbgpAdminCost(vr.getAdminDists().getIbgp())
-            .setLocalAdminCost(vr.getAdminDists().getIbgp())
+            .setLocalAdminCost(
+                firstNonNull(vr.getAdminDists().getBgpLocal(), vr.getAdminDists().getIbgp()))
             // arbitrary values below
             .setLocalOriginationTypeTieBreaker(NO_PREFERENCE)
             .setNetworkNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP)
@@ -2753,6 +2795,42 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             .build();
     // common BGP export policy (combination of all redist rules at the BgpVr level)
     RoutingPolicy commonExportPolicy = getBgpCommonExportPolicy(bgp, vr, _w, _c);
+    List<org.batfish.datamodel.routing_policy.statement.Statement> prefixStatements =
+        bgp.getRedistRules().entrySet().stream()
+            .filter(e ->
+                e.getKey().getPrefix() != null
+                    && Boolean.TRUE.equals(e.getValue().getEnable())
+                    && e.getValue().getAddressFamilyIdentifier() == AddressFamilyIdentifier.IPV4
+                    && (e.getValue().getRouteTableType() == RouteTableType.UNICAST
+                        || e.getValue().getRouteTableType() == RouteTableType.BOTH))
+            .sorted(Comparator.comparing(e -> e.getKey().getPrefix()))
+            .map(e -> {
+              Prefix prefix = e.getKey().getPrefix();
+              RedistRule rule = e.getValue();
+              ImmutableList.Builder<org.batfish.datamodel.routing_policy.statement.Statement>
+                  trueStatements = ImmutableList.builder();
+              if (rule.getOrigin() != null) {
+                trueStatements.add(new SetOrigin(new LiteralOrigin(rule.getOrigin(), null)));
+              }
+              trueStatements.add(
+                  new org.batfish.datamodel.routing_policy.statement.If(
+                      BooleanExprs.CALL_EXPR_CONTEXT,
+                      ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
+                      ImmutableList.of(Statements.ExitAccept.toStaticStatement())));
+              return (org.batfish.datamodel.routing_policy.statement.Statement)
+                  new org.batfish.datamodel.routing_policy.statement.If(
+                      new MatchPrefixSet(
+                          DestinationNetwork.instance(),
+                          new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(prefix)))),
+                      trueStatements.build(),
+                      ImmutableList.of());
+            })
+            .collect(ImmutableList.toImmutableList());
+    if (!prefixStatements.isEmpty()) {
+      List<org.batfish.datamodel.routing_policy.statement.Statement> stmts =
+          commonExportPolicy.getStatements();
+      stmts.addAll(Math.max(0, stmts.size() - 1), prefixStatements);
+    }
     _c.getRoutingPolicies().put(commonExportPolicy.getName(), commonExportPolicy);
 
     bgp.getPeerGroups().forEach((name, pg) -> convertPeerGroup(pg, bgp, proc, vr));
@@ -2927,7 +3005,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             routeName, nextVrf);
         return Optional.empty();
       }
-      if (!_virtualRouters.containsKey(nextVrf)) {
+      if (!getActiveRouters().containsKey(nextVrf)) {
         _w.redFlagf(
             "Cannot convert static route %s, as its next-vr '%s' is not a virtual-router.",
             routeName, nextVrf);
@@ -3269,9 +3347,13 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       if (template.getNtpServerSecondary() != null) {
         setNtpServerSecondary(template.getNtpServerSecondary());
       }
+      if (template.getAdvanceRouting() != null) {
+        setAdvanceRouting(template.getAdvanceRouting());
+      }
 
       // Network entities
       _interfaces.putAll(template.getInterfaces());
+      _logicalRouters.putAll(template.getLogicalRouters());
       _sharedGateways.putAll(template.getSharedGateways());
       _virtualRouters.putAll(template.getVirtualRouters());
       _cryptoProfiles.addAll(template.getCryptoProfiles());
@@ -3794,7 +3876,18 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     }
 
     // Vrf conversion uses interfaces, so must be done after interface exist in VI model
-    for (VirtualRouter vr : _virtualRouters.values()) {
+    boolean useLogicalRouters = useLogicalRouters();
+    SortedMap<String, VirtualRouter> activeRouters = getActiveRouters();
+    SortedMap<String, VirtualRouter> ignoredRouters =
+        useLogicalRouters ? _virtualRouters : _logicalRouters;
+    if (!ignoredRouters.isEmpty()) {
+      _w.redFlagf(
+          "Ignoring %s stanzas (%s) because %s engine is active",
+          useLogicalRouters ? "virtual-router" : "logical-router",
+          String.join(", ", ignoredRouters.keySet()),
+          useLogicalRouters ? "logical-router" : "virtual-router");
+    }
+    for (VirtualRouter vr : activeRouters.values()) {
       _c.getVrfs().put(vr.getName(), toVrf(vr));
     }
 
@@ -3869,6 +3962,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     markConcreteStructure(PaloAltoStructureType.SECURITY_RULE);
     markConcreteStructure(PaloAltoStructureType.TEMPLATE);
     markConcreteStructure(PaloAltoStructureType.ZONE);
+    markConcreteStructure(PaloAltoStructureType.LOGICAL_ROUTER);
     markConcreteStructure(PaloAltoStructureType.VIRTUAL_ROUTER);
 
     // Handle marking for structures that may exist in one of a couple namespaces

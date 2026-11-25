@@ -1,0 +1,47 @@
+#RANCID-CONTENT-TYPE: paloalto
+deviceconfig {
+  system {
+    hostname logical-router-engine-off;
+  }
+  setting {
+    advance-routing no;
+  }
+}
+network {
+  interface {
+    ethernet {
+      ethernet1/1 {
+        layer3 {
+          ip {
+            10.0.1.1/24;
+          }
+        }
+      }
+    }
+  }
+  logical-router {
+    LR1 {
+      vrf {
+        default {
+          bgp {
+            enable yes;
+            router-id 10.0.1.1;
+            local-as 65001;
+          }
+        }
+      }
+    }
+  }
+  virtual-router {
+    VR1 {
+      interface [ ethernet1/1 ];
+      protocol {
+        bgp {
+          enable yes;
+          router-id 10.0.1.1;
+          local-as 65002;
+        }
+      }
+    }
+  }
+}

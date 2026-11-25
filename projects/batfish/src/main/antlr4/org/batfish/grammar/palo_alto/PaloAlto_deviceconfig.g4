@@ -23,7 +23,7 @@ s_deviceconfig
     DEVICECONFIG
     (
         sd_high_availability
-        | sd_null
+        | sd_setting
         | sd_system
     )
 ;
@@ -65,10 +65,23 @@ sdhagm_active_active
 
 sdhagmaa_device_id: DEVICE_ID id = active_active_device_id;
 
-sd_null
+sd_setting
 :
     SETTING
-    null_rest_of_line
+    (
+        sdset_advance_routing
+        | sdset_null
+    )?
+;
+
+sdset_advance_routing
+:
+    ADVANCE_ROUTING yn = yes_or_no
+;
+
+sdset_null
+:
+    ~(ADVANCE_ROUTING | NEWLINE) null_rest_of_line
 ;
 
 sd_system

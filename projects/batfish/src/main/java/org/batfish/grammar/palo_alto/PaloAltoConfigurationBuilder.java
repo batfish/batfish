@@ -29,6 +29,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.INTERFA
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.IPSEC_CRYPTO_PROFILE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.IPSEC_CRYPTO_PROFILE_OR_NONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.IPSEC_TUNNEL;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.LOGICAL_ROUTER;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.NAT_RULE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.REDIST_PROFILE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SECURITY_RULE;
@@ -84,6 +85,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURI
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SERVICE_GROUP_MEMBER;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.STATIC_ROUTE_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.STATIC_ROUTE_NEXTHOP_IP;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.STATIC_ROUTE_NEXT_LR;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.STATIC_ROUTE_NEXT_VR;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.TAP_INTERFACE_ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.TEMPLATE_STACK_TEMPLATES;
@@ -93,6 +95,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUA
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_WIRE_INTERFACE_ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VLAN_INTERFACE_ADDRESS;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VSYS_IMPORT_INTERFACE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VSYS_IMPORT_LOGICAL_ROUTER;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ZONE_INTERFACE;
 import static org.batfish.representation.palo_alto.Zone.Type.EXTERNAL;
 import static org.batfish.representation.palo_alto.Zone.Type.LAYER2;
@@ -104,6 +107,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -201,6 +205,87 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_address_or_slash32Context
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_prefixContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_prefix_listContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_rangeContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lr_bgp_peer_group_nameContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lr_bgp_peer_nameContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lr_definitionContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lr_protocol_adContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrb_aggregate_routesContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrb_default_local_preferenceContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrb_enableContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrb_install_routeContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrb_local_asContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrb_reject_default_routeContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrb_router_idContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrban4_prefixContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrban4p_unicastContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrbgppg_definitionContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrbgppg_enableContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrbgppg_peerContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrbgppgaf_profileContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrbgppgaf_unicastContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrbgppgco_timersContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrbgppgfp_profileContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrbgppgfp_unicastContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrbgppgp_enableContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrbgppgp_enable_sender_side_loop_detectionContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrbgppgp_max_prefixesContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrbgppgp_peer_asContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrbgppgp_reflector_clientContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrbgppgpco_multihopContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrbgppgpcoi_allowContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrbgppgpcoi_remote_portContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrbgppgpcoo_allowContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrbgppgpcoo_local_portContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrbgppgpla_interfaceContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrbgppgpla_ipContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrbgppgt_ebgpContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrbgppgt_ibgpContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrbgppgte_export_nexthopContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrbgppgte_import_nexthopContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrbgppgte_remove_private_asContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrbgr_enableContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrbm_always_compare_medContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrbm_deterministic_med_comparisonContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrbpa_ipContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrbrp_af_profileContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrbrp_profileContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrbrp_unicastContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrv_aggregate_routesContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrv_bgpContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrv_definitionContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrv_interfaceContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrv_multicastContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrv_ospfContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrv_ospfv3Context;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrv_rib_filterContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrv_ripContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrvad_bgp_externalContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrvad_bgp_internalContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrvad_bgp_localContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrvad_ebgpContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrvad_ibgpContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrvad_ospf_extContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrvad_ospf_intContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrvad_ospf_interContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrvad_ospf_intraContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrvad_ospfv3_extContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrvad_ospfv3_intContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrvad_ospfv3_interContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrvad_ospfv3_intraContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrvad_ripContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrvad_staticContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrvad_static_ipv6Context;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrvecmp_enableContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrvrti_static_routeContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrvrtis_admin_distContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrvrtis_destinationContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrvrtis_interfaceContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrvrtis_metricContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrvrtisn_discardContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrvrtisn_ipContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrvrtisn_next_lrContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrvrtisn_next_vrContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Lrvrtispm_enableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_areaContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_area_metricContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_enableContext;
@@ -279,6 +364,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_ip_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_netmaskContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_ntp_serversContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsd_serversContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sdset_advance_routingContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsn_ntp_server_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Selt_ipContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Set_line_config_devicesContext;
@@ -391,6 +477,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sts_devicesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sts_templatesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Svi_visible_vsysContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Svin_interfaceContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Svin_logical_routerContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Szn_externalContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Szn_layer2Context;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Szn_layer3Context;
@@ -582,9 +669,13 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   private Template _currentTemplate;
   private TemplateStack _currentTemplateStack;
   private Optional<String> _currentTemplateVariableName;
+  private String _currentLogicalRouterName;
   private VirtualRouter _currentVirtualRouter;
   private Vsys _currentVsys;
   private Zone _currentZone;
+  private final Set<String> _warnedNonDefaultLogicalRouterVrfs = new HashSet<>();
+  private final Set<String> _warnedOspfInterAdminDistVrfs = new HashSet<>();
+  private final Set<String> _warnedOspfv3InterAdminDistVrfs = new HashSet<>();
 
   public PaloAltoConfigurationBuilder(
       PaloAltoCombinedParser parser,
@@ -1826,6 +1917,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
     } else if (ctx.secondary_name != null) {
       _currentConfiguration.setDnsServerSecondary(getText(ctx.secondary_name));
     }
+  }
+
+  @Override
+  public void exitSdset_advance_routing(Sdset_advance_routingContext ctx) {
+    _currentConfiguration.setAdvanceRouting(toBoolean(ctx.yn));
   }
 
   @Override
@@ -3531,6 +3627,528 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   }
 
   @Override
+  public void exitSvin_logical_router(Svin_logical_routerContext ctx) {
+    for (Variable_list_itemContext var : variables(ctx.variable_list())) {
+      String name = getText(var);
+      referenceStructure(LOGICAL_ROUTER, name, VSYS_IMPORT_LOGICAL_ROUTER, getLine(var.start));
+    }
+  }
+
+  @Override
+  public void enterLr_definition(Lr_definitionContext ctx) {
+    _currentLogicalRouterName = getText(ctx.name);
+    defineFlattenedStructure(LOGICAL_ROUTER, _currentLogicalRouterName, ctx);
+  }
+
+  @Override
+  public void exitLr_definition(Lr_definitionContext ctx) {
+    _currentLogicalRouterName = null;
+  }
+
+  @Override
+  public void enterLrv_definition(Lrv_definitionContext ctx) {
+    String vrfName = getText(ctx.name);
+    String batfishVrfName;
+    if (vrfName.equals("default")) {
+      batfishVrfName = _currentLogicalRouterName;
+    } else {
+      batfishVrfName = _currentLogicalRouterName + ":" + vrfName;
+      if (_warnedNonDefaultLogicalRouterVrfs.add(batfishVrfName)) {
+        warn(
+            ctx,
+            String.format(
+                "Non-default VRF '%s' on logical-router '%s' is named '%s'",
+                vrfName, _currentLogicalRouterName, batfishVrfName));
+      }
+    }
+    _currentVirtualRouter =
+        _currentConfiguration
+            .getLogicalRouters()
+            .computeIfAbsent(batfishVrfName, VirtualRouter::new);
+    defineFlattenedStructure(VIRTUAL_ROUTER, batfishVrfName, ctx);
+    referenceStructure(
+        VIRTUAL_ROUTER,
+        batfishVrfName,
+        VIRTUAL_ROUTER_SELF_REFERENCE,
+        getLine(ctx.name.getStart()));
+  }
+
+  @Override
+  public void exitLrv_definition(Lrv_definitionContext ctx) {
+    _currentVirtualRouter = null;
+  }
+
+  @Override
+  public void exitLrvad_bgp_external(Lrvad_bgp_externalContext ctx) {
+    toInteger(ctx, ctx.ad).ifPresent(_currentVirtualRouter.getAdminDists()::setEbgp);
+  }
+
+  @Override
+  public void exitLrvad_bgp_internal(Lrvad_bgp_internalContext ctx) {
+    toInteger(ctx, ctx.ad).ifPresent(_currentVirtualRouter.getAdminDists()::setIbgp);
+  }
+
+  @Override
+  public void exitLrvad_bgp_local(Lrvad_bgp_localContext ctx) {
+    toInteger(ctx, ctx.ad).ifPresent(_currentVirtualRouter.getAdminDists()::setBgpLocal);
+  }
+
+  @Override
+  public void exitLrvad_ebgp(Lrvad_ebgpContext ctx) {
+    toInteger(ctx, ctx.ad).ifPresent(_currentVirtualRouter.getAdminDists()::setEbgp);
+  }
+
+  @Override
+  public void exitLrvad_ibgp(Lrvad_ibgpContext ctx) {
+    toInteger(ctx, ctx.ad).ifPresent(_currentVirtualRouter.getAdminDists()::setIbgp);
+  }
+
+  @Override
+  public void exitLrvad_ospf_ext(Lrvad_ospf_extContext ctx) {
+    toInteger(ctx, ctx.ad).ifPresent(_currentVirtualRouter.getAdminDists()::setOspfExt);
+  }
+
+  @Override
+  public void exitLrvad_ospf_int(Lrvad_ospf_intContext ctx) {
+    toInteger(ctx, ctx.ad).ifPresent(_currentVirtualRouter.getAdminDists()::setOspfInt);
+  }
+
+  @Override
+  public void exitLrvad_ospf_inter(Lrvad_ospf_interContext ctx) {
+    toInteger(ctx, ctx.ad);
+    if (_warnedOspfInterAdminDistVrfs.add(_currentVirtualRouter.getName())) {
+      warn(ctx, "Inter-area OSPF admin-dist (ospf-inter) is not modeled separately");
+    }
+  }
+
+  @Override
+  public void exitLrvad_ospf_intra(Lrvad_ospf_intraContext ctx) {
+    toInteger(ctx, ctx.ad).ifPresent(_currentVirtualRouter.getAdminDists()::setOspfInt);
+  }
+
+  @Override
+  public void exitLrvad_ospfv3_ext(Lrvad_ospfv3_extContext ctx) {
+    toInteger(ctx, ctx.ad).ifPresent(_currentVirtualRouter.getAdminDists()::setOspfV3Ext);
+  }
+
+  @Override
+  public void exitLrvad_ospfv3_int(Lrvad_ospfv3_intContext ctx) {
+    toInteger(ctx, ctx.ad).ifPresent(_currentVirtualRouter.getAdminDists()::setOspfV3Int);
+  }
+
+  @Override
+  public void exitLrvad_ospfv3_inter(Lrvad_ospfv3_interContext ctx) {
+    toInteger(ctx, ctx.ad);
+    if (_warnedOspfv3InterAdminDistVrfs.add(_currentVirtualRouter.getName())) {
+      warn(ctx, "Inter-area OSPFv3 admin-dist (ospfv3-inter) is not modeled separately");
+    }
+  }
+
+  @Override
+  public void exitLrvad_ospfv3_intra(Lrvad_ospfv3_intraContext ctx) {
+    toInteger(ctx, ctx.ad).ifPresent(_currentVirtualRouter.getAdminDists()::setOspfV3Int);
+  }
+
+  @Override
+  public void exitLrvad_rip(Lrvad_ripContext ctx) {
+    toInteger(ctx, ctx.ad).ifPresent(_currentVirtualRouter.getAdminDists()::setRip);
+  }
+
+  @Override
+  public void exitLrvad_static(Lrvad_staticContext ctx) {
+    toInteger(ctx, ctx.ad).ifPresent(_currentVirtualRouter.getAdminDists()::setStatic);
+  }
+
+  @Override
+  public void exitLrvad_static_ipv6(Lrvad_static_ipv6Context ctx) {
+    toInteger(ctx, ctx.ad).ifPresent(_currentVirtualRouter.getAdminDists()::setStaticv6);
+  }
+
+  @Override
+  public void exitLrv_aggregate_routes(Lrv_aggregate_routesContext ctx) {
+    warn(ctx, "aggregate-routes under logical-router is currently ignored");
+  }
+
+  @Override
+  public void exitLrvecmp_enable(Lrvecmp_enableContext ctx) {
+    if (!toBoolean(ctx.yn)) {
+      warn(ctx, "Disabling of ECMP for IGP is not supported");
+    }
+  }
+
+  @Override
+  public void exitLrv_interface(Lrv_interfaceContext ctx) {
+    for (Variable_list_itemContext var : variables(ctx.variable_list())) {
+      String name = getText(var);
+      _currentVirtualRouter.getInterfaceNames().add(name);
+      referenceStructure(INTERFACE, name, VIRTUAL_ROUTER_INTERFACE, getLine(var.start));
+    }
+  }
+
+  @Override
+  public void exitLrv_multicast(Lrv_multicastContext ctx) {
+    warn(ctx, "Multicast under logical-router is currently ignored");
+  }
+
+  @Override
+  public void exitLrv_ospf(Lrv_ospfContext ctx) {
+    warn(ctx, "OSPF under logical-router is currently ignored");
+  }
+
+  @Override
+  public void exitLrv_ospfv3(Lrv_ospfv3Context ctx) {
+    warn(ctx, "OSPFv3 under logical-router is currently ignored");
+  }
+
+  @Override
+  public void exitLrv_rib_filter(Lrv_rib_filterContext ctx) {
+    warn(ctx, "rib-filter under logical-router is currently ignored");
+  }
+
+  @Override
+  public void exitLrv_rip(Lrv_ripContext ctx) {
+    warn(ctx, "RIP under logical-router is currently ignored");
+  }
+
+  @Override
+  public void enterLrvrti_static_route(Lrvrti_static_routeContext ctx) {
+    _currentStaticRoute =
+        _currentVirtualRouter
+            .getStaticRoutes()
+            .computeIfAbsent(getText(ctx.name), StaticRoute::new);
+  }
+
+  @Override
+  public void exitLrvrti_static_route(Lrvrti_static_routeContext ctx) {
+    _currentStaticRoute = null;
+  }
+
+  @Override
+  public void exitLrvrtis_admin_dist(Lrvrtis_admin_distContext ctx) {
+    toInteger(ctx, ctx.distance).ifPresent(_currentStaticRoute::setAdminDistance);
+  }
+
+  @Override
+  public void exitLrvrtis_destination(Lrvrtis_destinationContext ctx) {
+    _currentStaticRoute.setDestination(toPrefix(ctx.destination));
+  }
+
+  @Override
+  public void exitLrvrtis_interface(Lrvrtis_interfaceContext ctx) {
+    String name = getText(ctx.iface);
+    _currentStaticRoute.setNextHopInterface(name);
+    referenceStructure(INTERFACE, name, STATIC_ROUTE_INTERFACE, getLine(ctx.iface.start));
+  }
+
+  @Override
+  public void exitLrvrtis_metric(Lrvrtis_metricContext ctx) {
+    _currentStaticRoute.setMetric(Integer.parseInt(getText(ctx.metric)));
+  }
+
+  @Override
+  public void exitLrvrtisn_discard(Lrvrtisn_discardContext ctx) {
+    _currentStaticRoute.setNextHopDiscard();
+  }
+
+  @Override
+  public void exitLrvrtisn_ip(Lrvrtisn_ipContext ctx) {
+    _currentStaticRoute.setNextHopIp(toInterfaceAddress(ctx.addr));
+    referenceInterfaceAddress(ctx.addr, STATIC_ROUTE_NEXTHOP_IP);
+  }
+
+  @Override
+  public void exitLrvrtisn_next_lr(Lrvrtisn_next_lrContext ctx) {
+    String name = getText(ctx.name);
+    _currentStaticRoute.setNextVr(name);
+    referenceStructure(LOGICAL_ROUTER, name, STATIC_ROUTE_NEXT_LR, getLine(ctx.name.start));
+  }
+
+  @Override
+  public void exitLrvrtisn_next_vr(Lrvrtisn_next_vrContext ctx) {
+    String name = getText(ctx.name);
+    _currentStaticRoute.setNextVr(name);
+    referenceStructure(VIRTUAL_ROUTER, name, STATIC_ROUTE_NEXT_VR, getLine(ctx.name.start));
+  }
+
+  @Override
+  public void exitLrvrtispm_enable(Lrvrtispm_enableContext ctx) {
+    if (toBoolean(ctx.yn)) {
+      warn(ctx, "Static route path monitoring is not implemented");
+    }
+  }
+
+  @Override
+  public void enterLrv_bgp(Lrv_bgpContext ctx) {
+    _currentBgpVr = _currentVirtualRouter.getOrCreateBgp();
+    _currentBgpVr.getRoutingOptions().setAsFormat(AsFormat.FOUR_BYTE_AS);
+  }
+
+  @Override
+  public void exitLrv_bgp(Lrv_bgpContext ctx) {
+    _currentBgpVr = null;
+  }
+
+  @Override
+  public void enterLrban4_prefix(Lrban4_prefixContext ctx) {
+    _currentRedistRule =
+        _currentBgpVr.getOrCreateRedistRule(new RedistRuleRefNameOrPrefix(toPrefix(ctx.prefix)));
+    _currentRedistRule.setAddressFamilyIdentifier(AddressFamilyIdentifier.IPV4);
+    _currentRedistRule.setRouteTableType(RouteTableType.UNICAST);
+    if (_currentRedistRule.getOrigin() == null) {
+      _currentRedistRule.setOrigin(OriginType.IGP);
+    }
+    if (_currentRedistRule.getEnable() == null) {
+      _currentRedistRule.setEnable(true);
+    }
+  }
+
+  @Override
+  public void exitLrban4_prefix(Lrban4_prefixContext ctx) {
+    _currentRedistRule = null;
+  }
+
+  @Override
+  public void exitLrban4p_unicast(Lrban4p_unicastContext ctx) {
+    _currentRedistRule.setEnable(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitLrb_aggregate_routes(Lrb_aggregate_routesContext ctx) {
+    warn(ctx, "BGP aggregate-routes under logical-router is currently ignored");
+  }
+
+  @Override
+  public void exitLrb_default_local_preference(Lrb_default_local_preferenceContext ctx) {
+    _currentBgpVr.getRoutingOptions().setDefaultLocalPreference(toLong(ctx.pref.uint32()));
+  }
+
+  @Override
+  public void exitLrb_enable(Lrb_enableContext ctx) {
+    _currentBgpVr.setEnable(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitLrbgr_enable(Lrbgr_enableContext ctx) {
+    _currentBgpVr.getRoutingOptions().setGracefulRestartEnable(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitLrb_install_route(Lrb_install_routeContext ctx) {
+    _currentBgpVr.setInstallRoute(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitLrb_local_as(Lrb_local_asContext ctx) {
+    toAsn(ctx, ctx.asn, _currentBgpVr.getRoutingOptions().getAsFormat())
+        .ifPresent(_currentBgpVr::setLocalAs);
+  }
+
+  @Override
+  public void exitLrbm_always_compare_med(Lrbm_always_compare_medContext ctx) {
+    _currentBgpVr.getRoutingOptions().setAlwaysCompareMed(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitLrbm_deterministic_med_comparison(Lrbm_deterministic_med_comparisonContext ctx) {
+    _currentBgpVr.getRoutingOptions().setDeterministicMedComparison(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitLrb_reject_default_route(Lrb_reject_default_routeContext ctx) {
+    _currentBgpVr.setRejectDefaultRoute(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitLrb_router_id(Lrb_router_idContext ctx) {
+    toIp(ctx, ctx.addr, "BGP router-id").ifPresent(_currentBgpVr::setRouterId);
+  }
+
+  @Override
+  public void enterLrbgppg_definition(Lrbgppg_definitionContext ctx) {
+    _currentBgpPeerGroup =
+        toString(ctx, ctx.name)
+            .map(_currentBgpVr::getOrCreatePeerGroup)
+            .orElseGet(() -> new BgpPeerGroup("dummy"));
+  }
+
+  @Override
+  public void exitLrbgppg_definition(Lrbgppg_definitionContext ctx) {
+    _currentBgpPeerGroup = null;
+  }
+
+  @Override
+  public void exitLrbgppgaf_unicast(Lrbgppgaf_unicastContext ctx) {
+    warn(ctx, String.format("BGP address-family profile '%s' is not applied", getText(ctx.name)));
+  }
+
+  @Override
+  public void exitLrbgppgaf_profile(Lrbgppgaf_profileContext ctx) {
+    warn(ctx, String.format("BGP address-family profile '%s' is not applied", getText(ctx.name)));
+  }
+
+  @Override
+  public void exitLrbgppgco_timers(Lrbgppgco_timersContext ctx) {
+    warn(ctx, String.format("BGP timer-profile '%s' is not applied", getText(ctx.name)));
+  }
+
+  @Override
+  public void exitLrbgppg_enable(Lrbgppg_enableContext ctx) {
+    _currentBgpPeerGroup.setEnable(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitLrbgppgfp_unicast(Lrbgppgfp_unicastContext ctx) {
+    warn(ctx, String.format("BGP filtering-profile '%s' is not applied", getText(ctx.name)));
+  }
+
+  @Override
+  public void exitLrbgppgfp_profile(Lrbgppgfp_profileContext ctx) {
+    warn(ctx, String.format("BGP filtering-profile '%s' is not applied", getText(ctx.name)));
+  }
+
+  @Override
+  public void enterLrbgppgt_ebgp(Lrbgppgt_ebgpContext ctx) {
+    _currentBgpPeerGroup.updateAndGetEbgpType();
+  }
+
+  @Override
+  public void exitLrbgppgte_export_nexthop(Lrbgppgte_export_nexthopContext ctx) {
+    BgpPeerGroupTypeAndOptions options = _currentBgpPeerGroup.getTypeAndOptions();
+    assert options instanceof EbgpPeerGroupType;
+    EbgpPeerGroupType ebgp = (EbgpPeerGroupType) options;
+    ebgp.setExportNexthop(
+        ctx.RESOLVE() != null ? ExportNexthopMode.RESOLVE : ExportNexthopMode.USE_SELF);
+  }
+
+  @Override
+  public void exitLrbgppgte_import_nexthop(Lrbgppgte_import_nexthopContext ctx) {
+    BgpPeerGroupTypeAndOptions options = _currentBgpPeerGroup.getTypeAndOptions();
+    assert options instanceof EbgpPeerGroupType;
+    EbgpPeerGroupType ebgp = (EbgpPeerGroupType) options;
+    ebgp.setImportNexthop(
+        ctx.ORIGINAL() != null ? ImportNexthopMode.ORIGINAL : ImportNexthopMode.USE_PEER);
+  }
+
+  @Override
+  public void exitLrbgppgte_remove_private_as(Lrbgppgte_remove_private_asContext ctx) {
+    BgpPeerGroupTypeAndOptions options = _currentBgpPeerGroup.getTypeAndOptions();
+    assert options instanceof EbgpPeerGroupType;
+    EbgpPeerGroupType ebgp = (EbgpPeerGroupType) options;
+    ebgp.setRemovePrivateAs(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void enterLrbgppgt_ibgp(Lrbgppgt_ibgpContext ctx) {
+    _currentBgpPeerGroup.updateAndGetIbgpType();
+  }
+
+  @Override
+  public void enterLrbgppg_peer(Lrbgppg_peerContext ctx) {
+    _currentBgpPeer =
+        toString(ctx, ctx.name)
+            .map(_currentBgpPeerGroup::getOrCreatePeerGroup)
+            .orElseGet(() -> new BgpPeer("dummy"));
+  }
+
+  @Override
+  public void exitLrbgppg_peer(Lrbgppg_peerContext ctx) {
+    _currentBgpPeer = null;
+  }
+
+  @Override
+  public void exitLrbgppgpcoi_allow(Lrbgppgpcoi_allowContext ctx) {
+    _currentBgpPeer.getConnectionOptions().setIncomingAllow(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitLrbgppgpcoi_remote_port(Lrbgppgpcoi_remote_portContext ctx) {
+    _currentBgpPeer.getConnectionOptions().setRemotePort(toInteger(ctx.p));
+  }
+
+  @Override
+  public void enterLrbgppgpco_multihop(Lrbgppgpco_multihopContext ctx) {
+    _currentBgpPeer.setMultihop(toInteger(ctx.num));
+  }
+
+  @Override
+  public void exitLrbgppgpcoo_allow(Lrbgppgpcoo_allowContext ctx) {
+    _currentBgpPeer.getConnectionOptions().setOutgoingAllow(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitLrbgppgpcoo_local_port(Lrbgppgpcoo_local_portContext ctx) {
+    _currentBgpPeer.getConnectionOptions().setLocalPort(toInteger(ctx.p));
+  }
+
+  @Override
+  public void exitLrbgppgp_enable(Lrbgppgp_enableContext ctx) {
+    _currentBgpPeer.setEnable(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitLrbgppgp_enable_sender_side_loop_detection(
+      Lrbgppgp_enable_sender_side_loop_detectionContext ctx) {
+    _currentBgpPeer.setEnableSenderSideLoopDetection(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitLrbgppgpla_interface(Lrbgppgpla_interfaceContext ctx) {
+    String name = getText(ctx.name);
+    _currentBgpPeer.setLocalInterface(name);
+    referenceStructure(INTERFACE, name, BGP_PEER_LOCAL_ADDRESS_INTERFACE, getLine(ctx.name.start));
+  }
+
+  @Override
+  public void exitLrbgppgpla_ip(Lrbgppgpla_ipContext ctx) {
+    _currentBgpPeer.setLocalAddress(toInterfaceAddress(ctx.addr));
+    referenceInterfaceAddress(ctx.addr, BGP_PEER_LOCAL_ADDRESS_IP);
+  }
+
+  @Override
+  public void exitLrbgppgp_max_prefixes(Lrbgppgp_max_prefixesContext ctx) {
+    warn(ctx, "Batfish does not limit the number of prefixes received over BGP");
+  }
+
+  @Override
+  public void exitLrbpa_ip(Lrbpa_ipContext ctx) {
+    _currentBgpPeer.setPeerAddress(toInterfaceAddress(ctx.addr));
+    referenceInterfaceAddress(ctx.addr, BGP_PEER_ADDRESS);
+  }
+
+  @Override
+  public void exitLrbgppgp_peer_as(Lrbgppgp_peer_asContext ctx) {
+    toAsn(ctx, ctx.asn, _currentBgpVr.getRoutingOptions().getAsFormat())
+        .ifPresent(_currentBgpPeer::setPeerAs);
+  }
+
+  @Override
+  public void exitLrbgppgp_reflector_client(Lrbgppgp_reflector_clientContext ctx) {
+    if (ctx.CLIENT() != null) {
+      _currentBgpPeer.setReflectorClient(ReflectorClient.CLIENT);
+    } else if (ctx.MESHED_CLIENT() != null) {
+      _currentBgpPeer.setReflectorClient(ReflectorClient.MESHED_CLIENT);
+    } else {
+      assert ctx.NON_CLIENT() != null;
+      _currentBgpPeer.setReflectorClient(ReflectorClient.NON_CLIENT);
+    }
+  }
+
+  @Override
+  public void exitLrbrp_unicast(Lrbrp_unicastContext ctx) {
+    warn(ctx, String.format("BGP redistribution-profile '%s' is not applied", getText(ctx.name)));
+  }
+
+  @Override
+  public void exitLrbrp_af_profile(Lrbrp_af_profileContext ctx) {
+    warn(ctx, String.format("BGP redistribution-profile '%s' is not applied", getText(ctx.name)));
+  }
+
+  @Override
+  public void exitLrbrp_profile(Lrbrp_profileContext ctx) {
+    warn(ctx, String.format("BGP redistribution-profile '%s' is not applied", getText(ctx.name)));
+  }
+
+  @Override
   public void exitSzn_external(Szn_externalContext ctx) {
     _currentZone.setType(EXTERNAL);
     for (Variable_list_itemContext var : variables(ctx.variable_list())) {
@@ -3720,6 +4338,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
     return toIntegerInSpace(ctx, ad, PROTOCOL_ADMIN_DISTANCE_SPACE, "admin-dist");
   }
 
+  private Optional<Integer> toInteger(ParserRuleContext ctx, Lr_protocol_adContext ad) {
+    return toIntegerInSpace(ctx, ad, PROTOCOL_ADMIN_DISTANCE_SPACE, "admin-dist");
+  }
+
   private static final IntegerSpace VLAN_TAG_SPACE = IntegerSpace.of(Range.closed(1, 4094));
 
   private Optional<Integer> toInteger(ParserRuleContext ctx, Vlan_tagContext vlan) {
@@ -3822,6 +4444,22 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   private @Nonnull Optional<String> toString(ParserRuleContext ctx, Bgp_peer_nameContext peer) {
     return toStringWithLengthInSpace(ctx, peer, BGP_PEER_NAME_LENGTH_SPACE, "bgp peer");
+  }
+
+  private static final IntegerSpace LR_BGP_PEER_GROUP_NAME_LENGTH_SPACE =
+      IntegerSpace.of(Range.closed(1, 63));
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext ctx, Lr_bgp_peer_group_nameContext pg) {
+    return toStringWithLengthInSpace(
+        ctx, pg, LR_BGP_PEER_GROUP_NAME_LENGTH_SPACE, "bgp peer-group");
+  }
+
+  private static final IntegerSpace LR_BGP_PEER_NAME_LENGTH_SPACE =
+      IntegerSpace.of(Range.closed(1, 63));
+
+  private @Nonnull Optional<String> toString(ParserRuleContext ctx, Lr_bgp_peer_nameContext peer) {
+    return toStringWithLengthInSpace(ctx, peer, LR_BGP_PEER_NAME_LENGTH_SPACE, "bgp peer");
   }
 
   private static final IntegerSpace CUSTOM_URL_CATEGORY_NAME_LENGTH_SPACE =

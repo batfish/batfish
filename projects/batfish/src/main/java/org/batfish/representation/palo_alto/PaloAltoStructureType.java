@@ -26,6 +26,7 @@ public enum PaloAltoStructureType implements StructureType {
   IPSEC_CRYPTO_PROFILE_OR_NONE("ipsec-crypto-profile or none"),
   IPSEC_TUNNEL("ipsec tunnel"),
   INTERFACE("interface"),
+  LOGICAL_ROUTER("logical-router"),
   NAT_RULE("nat rule"),
   REDIST_PROFILE("redist-profile"),
   SECURITY_RULE("security rule"),

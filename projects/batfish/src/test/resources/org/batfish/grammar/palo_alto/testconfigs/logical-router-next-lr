@@ -1,0 +1,39 @@
+#RANCID-CONTENT-TYPE: paloalto
+deviceconfig {
+  system {
+    hostname logical-router-next-lr;
+  }
+}
+network {
+  logical-router {
+    LR1 {
+      vrf {
+        default {
+          routing-table {
+            ip {
+              static-route {
+                to-lr2 {
+                  destination 10.2.0.0/24;
+                  admin-dist 15;
+                  metric 10;
+                  nexthop {
+                    next-lr LR2;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    LR2 {
+      vrf {
+        default {
+          admin-dists {
+            static 10;
+          }
+        }
+      }
+    }
+  }
+}
