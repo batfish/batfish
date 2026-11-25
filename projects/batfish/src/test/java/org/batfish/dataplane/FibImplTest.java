@@ -308,6 +308,42 @@ final class FibImplTest {
     }
   }
 
+  /**
+   * Routes sharing a next hop that resolves to a single action: the later route reuses the cached
+   * resolution, and each still gets exactly one entry for its own network.
+   */
+  @Test
+  void testResolutionSharedAcrossRoutesWithSingleAction() {
+    Rib rib = new Rib();
+    ConnectedRoute connected = new ConnectedRoute(Prefix.parse("10.0.0.0/24"), "Eth1");
+    StaticRoute route1 =
+        StaticRoute.testBuilder()
+            .setNetwork(Prefix.parse("1.1.1.0/24"))
+            .setNextHopIp(Ip.parse("10.0.0.1"))
+            .setAdministrativeCost(1)
+            .build();
+    StaticRoute route3 =
+        StaticRoute.testBuilder()
+            .setNetwork(Prefix.parse("3.3.3.0/24"))
+            .setNextHopIp(Ip.parse("10.0.0.1"))
+            .setAdministrativeCost(1)
+            .build();
+    rib.mergeRoute(annotateRoute(connected));
+    rib.mergeRoute(annotateRoute(route1));
+    rib.mergeRoute(annotateRoute(route3));
+
+    Fib fib = new FibImpl(rib, alwaysTrue());
+
+    // Whichever route is resolved second takes the cached single-action shortcut.
+    for (StaticRoute route : ImmutableList.of(route1, route3)) {
+      Set<FibEntry> entries = fib.get(route.getNetwork().getStartIp());
+      assertThat(entries, hasSize(1));
+      FibEntry entry = entries.iterator().next();
+      assertThat(entry.getAction(), equalTo(FibForward.of(Ip.parse("10.0.0.1"), "Eth1")));
+      assertThat(entry.getTopLevelRoute(), equalTo(route));
+    }
+  }
+
   @Test
   void testResolutionWhenNextHopMatchesNonForwardingRoute() {
     Rib rib = new Rib();
