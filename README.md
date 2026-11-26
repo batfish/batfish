@@ -1,127 +1,85 @@
+# POLARIS
 
-**Got questions, feedback, or feature requests? Join our community on [Slack!](https://join.slack.com/t/batfish-org/shared_invite/enQtMzA0Nzg2OTAzNzQ1LTcyYzY3M2Q0NWUyYTRhYjdlM2IzYzRhZGU1NWFlNGU2MzlhNDY3OTJmMDIyMjQzYmRlNjhkMTRjNWIwNTUwNTQ)**
+### Policy-Oriented Logical Analysis and Risk Inspection System
 
-[![codecov](https://codecov.io/gh/batfish/batfish/branch/master/graph/badge.svg)](https://codecov.io/gh/batfish/batfish)
+**Understand. Analyze. Secure.**
 
-## What is Batfish?
+POLARIS is an experimental network-security research project built on top of [Batfish](https://github.com/batfish/batfish). It explores additional ways to inspect network security policies, reason about network reachability, explain security exposure, and evaluate low-impact policy corrections.
 
-Batfish is a network validation tool that provides correctness guarantees for security, reliability, and compliance by analyzing the configuration of network devices. It builds complete models of network behavior from device configurations and finds violations of network policies (built-in, user-defined, and best-practices).
+> **Project status:** Early-stage research and development. The capabilities described as research objectives below are planned work unless explicitly documented as implemented and tested.
 
-A primary use case for Batfish is to validate configuration changes *before* deployment (though it can be used to validate deployed configurations as well). Pre-deployment validation is a critical gap in existing network automation workflows. By including Batfish in automation workflows, network engineers can close this gap and ensure that only correct changes are deployed.
+## Why POLARIS?
 
-**Batfish does NOT require direct access to network devices.** The core analysis requires only the configuration of network devices. This analysis may be enhanced using additional information from the network such as:
-* BGP routes received from external peers
-* Topology information represented by LLDP/CDP
+Network configurations combine routing, access-control lists, firewall rules, and segmentation policies. Their interactions can create unintended communication paths or overly broad access, even when individual rules appear reasonable.
 
-See [www.batfish.org](http://www.batfish.org) for technical information on how it works.
+POLARIS aims to help network engineers reason about these interactions before deployment by combining Batfish's configuration-analysis foundation with additional security-oriented analysis.
 
-## What kinds of correctness checks does Batfish support?
+## Research objectives
 
-[<img src=batfish_video.png width=370>](https://www.youtube.com/channel/UCA-OUW_3IOt9U_s60KvmJYA/videos)
-[<img src=batfish_notebook.png width=470>](https://github.com/batfish/pybatfish/tree/master/jupyter_notebooks)
+- **Graph-based reachability analysis** — represent relevant network entities and permitted communication relationships to inspect possible paths.
+- **Security policy analysis** — investigate unintended reachability, overly permissive rules, shadowed rules, and policy conflicts.
+- **Explainable risk assessment** — provide traceable explanations of why a flow is considered risky, including the relevant path and policy conditions.
+- **Minimal-impact policy remediation** — research candidate policy changes that block unauthorized communication while preserving required legitimate flows.
+- **Independent verification** — use Batfish analysis to validate network behavior and assess proposed changes where supported.
 
-The [Batfish YouTube channel](https://www.youtube.com/channel/UCA-OUW_3IOt9U_s60KvmJYA/videos) (subscribe!) and [Python notebooks](https://github.com/batfish/pybatfish/tree/master/jupyter_notebooks) illustrate many checks. Batfish checks span a range of network behaviors.
-#### Configuration Compliance
-* Flag undefined-but-referenced or defined-but-unreferenced structures (e.g., ACLs, route maps)
-* Configuration settings for MTUs, AAA, NTP, logging, etc. match templates
-* Devices can only be accessed using SSHv2 and password is not null
-#### Reliability
-* End-to-end reachability is not impacted for any flow after any single-link or single-device failure
-* Certain services (e.g., DNS) are globally reachable
-#### Security
-* Sensitive services can be reached only from specific subnets or devices
-* Paths between endpoints are as expected (e.g., traverse a firewall, have at least 2 way ECMP, etc...)
-#### Change Analysis
-* End-to-end reachability is identical across the current and a planned configuration
-* Planned ACL or firewall changes are provably correct and causes no collateral damage for other traffic
-* Two configurations, potentially from different vendors, are functionally equivalent
+## Research direction: risk-aware policy repair
 
+A central research direction is a risk-aware minimal policy repair method.
 
+Given:
+1. a network configuration,
+2. a set of intended communication requirements, and
+3. one or more detected policy violations,
 
-## How do I get started?
+the method will explore candidate changes and evaluate them against criteria such as:
 
-#### 1. Run the Batfish service
-Getting started with Batfish is easy. Just pull and run the latest `allinone` Docker container that includes Batfish as well as example Jupyter notebooks. 
+- whether the unauthorized flow is blocked;
+- how many policy rules must change;
+- whether legitimate communication is disrupted;
+- how broad the proposed change is; and
+- what potential side effects it introduces.
 
-    docker pull batfish/allinone
-   
-    docker run --name batfish -v batfish-data:/data -p 8888:8888 -p 9997:9997 -p 9996:9996 batfish/allinone
+The goal is to identify and explain a low-impact correction, then re-check the resulting policy model. The algorithm, evaluation methodology, and measured results will be documented as implementation progresses.
 
-The second command starts the Batfish service and maps the necessary TCP ports.
+## Relationship with Batfish
 
-##### Advanced Docker configuration:
-The amount of memory available to Batfish is determined by the Docker configuration. You may wish to supply the [`--memory` command-line argument](https://docs.docker.com/config/containers/resource_constraints/#limit-a-containers-access-to-memory) to explicitly set this value.
+POLARIS is built upon the open-source [Batfish](https://github.com/batfish/batfish) project. Batfish analyzes network-device configurations and models network behavior to support security, reliability, compliance, and change-validation workflows.
 
-On Linux systems that run the OOM Killer, you may also wish to supply the `--oom-kill-disable` argument, which runs in conjunction with the `--memory` argument to prevent Linux from killing Batfish when there is memory pressure on the system.
+POLARIS does not claim to replace Batfish. The project intends to extend and complement its existing capabilities with additional research components focused on security-policy reasoning and remediation.
 
-#### 2. Browse example notebooks (optional)
+- Original project: [batfish/batfish](https://github.com/batfish/batfish)
+- Python client: [batfish/pybatfish](https://github.com/batfish/pybatfish)
+- Original documentation: [Batfish documentation](https://batfish.readthedocs.io/)
 
-If you are new to Batfish, consider walking through our notebooks which highlight different capabilities and use cases of Batfish. Point your browser to [http://localhost:8888](http://localhost:8888), and in the `Password or token:` prompt, enter the token that Jupyter showed when you ran the container (e.g. **token=abcdef123456...**). 
+## Development principles
 
-Jupyter will show you the list of available notebooks. "Getting Started with Batfish" is a good one to start with. This [README](https://github.com/batfish/pybatfish/tree/master/jupyter_notebooks) explains what each notebook does. 
+- Preserve the upstream project's licensing, copyright notices, and required attribution.
+- Keep POLARIS-specific code and changes clearly documented.
+- Prefer independently testable components over invasive changes to the Batfish core.
+- Validate findings against reproducible test scenarios.
+- Distinguish implemented functionality from planned research objectives.
+- Report limitations and false positives rather than overstating guarantees.
 
+## Current status
 
-#### 3. Install Pybatfish
+This repository is currently an early-stage fork and research workspace. The original Batfish codebase remains the technical foundation. POLARIS-specific algorithms, interfaces, experiments, and documentation will be added incrementally.
 
-To analyze your network configurations, you also need [Pybatfish](https://www.github.com/batfish/pybatfish), a Python 3 SDK to interact with the Batfish service. Though not strictly necessary, we recommend that you install Pybatfish in a [virtual environment](https://docs.python.org/3/library/venv.html). 
+No research objective should be considered implemented until its code, tests, and evaluation results are available in this repository.
 
-To install Pybatfish run the following commands (in a virtual environment if applicable):
+## Intended technology areas
 
-    python3 -m pip install --upgrade pybatfish
+- Java and the Batfish codebase
+- Python and PyBatfish
+- Graph theory and network reachability
+- Network security policy analysis
+- Automated testing and reproducible experiments
 
-#### 4. Develop your analysis 
+The final implementation choices may evolve as the architecture and feasibility are assessed.
 
-After installing Pybatfish, use your Python environment of choice (e.g., PyCharm, interactive Python shell, Jupyter, ..) to interact with Batfish. The [notebooks](https://github.com/batfish/pybatfish/tree/master/jupyter_notebooks) provide examples of such scripts. 
+## Contributing and feedback
 
-See complete documentation of Pybatfish on [readthedocs](https://pybatfish.readthedocs.io/en/latest/).
+This is currently an individual research and development project. Issues and technical feedback are welcome, especially around reproducible network-policy scenarios, verification methodology, and algorithm evaluation.
 
+## License and attribution
 
-## System Requirements for running Batfish
-
-Batfish can be run on any operating system that supports Docker. The containers are actively tested on Mac OS X and Ubuntu 16.04 LTS.
-
-To get started with the example Jupyter notebooks, all you need is a reasonably capable laptop:
-
-* Dual core CPU
-* 8 GB RAM
-* 256 GB hard-drive
-
-When you transition to running Batfish on your own network, we recommend a server that at least has:
-
-* Quad-core CPU with 2 threads per CPU
-* 32 GB RAM
-* 256 GB hard-drive
-
-
-## Supported Network Device and Operating System List
-
-Batfish supports configurations for a large and growing set of (physical and virtual) devices, including:
-
-* A10 Networks
-* Arista
-* AWS (VPCs, Network ACLs, VPN GW, NAT GW, Internet GW, Security Groups, etc…)
-* Azure (VirtualNetworks, Standard workflows, Public IPs / Nat Gateways, NSGs etc.)
-* Cisco (All Cisco NX-OS, IOS, IOS-XE, IOS-XR and ASA devices)
-* Check Point 
-* [Cumulus](https://github.com/batfish/batfish/wiki/Packaging-snapshots-for-analysis#format-for-cumulus-configuration-files)
-* [F5 BIG-IP](https://github.com/batfish/batfish/wiki/Packaging-snapshots-for-analysis#format-for-f5-big-ip-configuration-files)
-* Fortinet
-* Free-Range Routing (FRR)
-* [iptables (on hosts)](https://github.com/batfish/batfish/wiki/Packaging-snapshots-for-analysis#format-for-host-json-files)
-* Juniper (All JunOS platforms: MX, EX, QFX, SRX, T-series, PTX)
-* Nokia (SR OS / SR-SIM, MD-CLI)
-* Palo Alto Networks
-* SONiC
-
-Batfish has limited support for the following platforms:
-
-* Aruba
-* Dell Force10
-* Foundry
-
-If you'd like support for additional vendors or currently-unsupported configuration features, let us know via [Slack](https://join.slack.com/t/batfish-org/shared_invite/enQtMzA0Nzg2OTAzNzQ1LTcyYzY3M2Q0NWUyYTRhYjdlM2IzYzRhZGU1NWFlNGU2MzlhNDY3OTJmMDIyMjQzYmRlNjhkMTRjNWIwNTUwNTQ) or [GitHub](https://github.com/batfish/batfish/issues/new). We'll try to add support. Or, you can &mdash; we welcome pull requests! :)
-
-## License and Dependencies
-
-Batfish is released under The Apache Software License, Version 2.0. All
-third-party dependencies are compatible with this licensing.
+POLARIS is a fork of [Batfish](https://github.com/batfish/batfish), which is distributed under the Apache License 2.0. The upstream license and copyright notices must be retained. See the repository's [LICENSE](LICENSE) and upstream project for the applicable terms.
