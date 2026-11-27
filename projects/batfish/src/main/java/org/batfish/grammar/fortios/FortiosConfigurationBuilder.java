@@ -1157,6 +1157,10 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     _currentVdom = DEFAULT_VDOM;
   }
 
+  /**
+   * Returns {@code true} if the given VDOM-scoped config block should be skipped during walking,
+   * recording a parse warning for modeled non-static-route sections.
+   */
   boolean skipVdomConfig(Cve_configContext ctx) {
     if (_currentVdom == null) {
       return true;

@@ -1,19 +1,33 @@
 package org.batfish.grammar.fortios;
 
+import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
+import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
+import static org.batfish.common.matchers.WarningsMatchers.hasParseWarnings;
 import static org.batfish.grammar.fortios.FortiosConfigurationBuilder.addrgrpContains;
 import static org.batfish.grammar.fortios.FortiosConfigurationBuilder.policyValid;
 import static org.batfish.grammar.fortios.FortiosConfigurationBuilder.serviceGroupContains;
 import static org.batfish.grammar.fortios.FortiosConfigurationBuilder.serviceValid;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
+import org.antlr.v4.runtime.CommonToken;
+import org.batfish.common.Warnings;
+import org.batfish.config.Settings;
 import org.batfish.datamodel.IntegerSpace;
+import org.batfish.grammar.fortios.FortiosParser.Cv_editContext;
+import org.batfish.grammar.fortios.FortiosParser.Cve_configContext;
+import org.batfish.grammar.fortios.FortiosParser.StrContext;
+import org.batfish.grammar.fortios.FortiosParser.Str_contentContext;
+import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.representation.fortios.Addrgrp;
 import org.batfish.representation.fortios.BatfishUUID;
+import org.batfish.representation.fortios.FortiosConfiguration;
 import org.batfish.representation.fortios.Policy;
 import org.batfish.representation.fortios.Service;
 import org.batfish.representation.fortios.ServiceGroup;
@@ -227,6 +241,46 @@ class FortiosConfigurationBuilderTest {
     BatfishUUID orphan = new BatfishUUID(4);
 
     assertFalse(addrgrpContains(parent, orphan, ImmutableMap.of(childId2, child2)));
+  }
+
+  @Test
+  void testEnterCvEditMissingName() {
+    FortiosCombinedParser parser = new FortiosCombinedParser("", new Settings());
+    Warnings warnings = new Warnings(true, true, true);
+    FortiosConfigurationBuilder builder =
+        new FortiosConfigurationBuilder(
+            "", parser, warnings, new FortiosConfiguration(), new SilentSyntaxCollection());
+
+    CommonToken editToken = new CommonToken(FortiosLexer.EDIT, "edit");
+    editToken.setLine(1);
+
+    Cv_editContext nullName = new Cv_editContext(null, 0);
+    nullName.addChild(editToken);
+    builder.enterCv_edit(nullName);
+
+    Cv_editContext nullStrContent = new Cv_editContext(null, 0);
+    nullStrContent.addChild(editToken);
+    StrContext emptyStr = new StrContext(nullStrContent, 0);
+    nullStrContent.name = emptyStr;
+    builder.enterCv_edit(nullStrContent);
+
+    Cv_editContext nullChildren = new Cv_editContext(null, 0);
+    nullChildren.addChild(editToken);
+    StrContext strWithEmptyContent = new StrContext(nullChildren, 0);
+    strWithEmptyContent.addChild(new Str_contentContext(strWithEmptyContent, 0));
+    nullChildren.name = strWithEmptyContent;
+    builder.enterCv_edit(nullChildren);
+
+    assertThat(
+        warnings,
+        hasParseWarnings(
+            contains(
+                allOf(hasText("edit"), hasComment("VDOM edit block ignored: missing VDOM name")),
+                allOf(hasText("edit"), hasComment("VDOM edit block ignored: missing VDOM name")),
+                allOf(hasText("edit"), hasComment("VDOM edit block ignored: missing VDOM name")))));
+    assertTrue(builder.skipVdomConfig(new Cve_configContext(null, 0)));
+    builder.exitCv_edit(nullChildren);
+    assertFalse(builder.skipVdomConfig(new Cve_configContext(null, 0)));
   }
 
   private static Service buildCompleteService() {

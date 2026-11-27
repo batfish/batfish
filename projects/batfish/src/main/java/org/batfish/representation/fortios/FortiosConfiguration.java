@@ -149,7 +149,7 @@ public class FortiosConfiguration extends VendorConfiguration {
   }
 
   /** Returns the static routes in the given VDOM. */
-  public @Nonnull Map<String, StaticRoute> getStaticRoutes(@Nonnull String vdom) {
+  public @Nonnull Map<String, StaticRoute> getStaticRoutes(String vdom) {
     return _staticRoutes.getOrDefault(vdom, ImmutableMap.of());
   }
 

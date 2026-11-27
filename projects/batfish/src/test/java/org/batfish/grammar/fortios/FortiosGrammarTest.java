@@ -2457,7 +2457,8 @@ final class FortiosGrammarTest {
   @Test
   void testStaticRouteVdomConversion() throws IOException {
     String hostname = "static_routes_vdom";
-    Configuration c = parseConfig(hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
 
     Set<org.batfish.datamodel.StaticRoute> rootRoutes =
         c.getVrfs().get(computeVrfName("root", Interface.DEFAULT_VRF)).getStaticRoutes();
@@ -2498,6 +2499,19 @@ final class FortiosGrammarTest {
                 .setNetwork(Prefix.parse("8.8.8.0/24"))
                 .setNextHop(NextHopInterface.of("port2", Ip.parse("10.0.0.254")))
                 .build()));
+
+    Warnings conversionWarnings =
+        batfish
+            .loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot())
+            .getWarnings()
+            .get(hostname);
+    assertThat(
+        conversionWarnings,
+        hasRedFlags(
+            contains(
+                WarningMatchers.hasText(
+                    "Cannot convert static route 2 in VDOM software-factory: outgoing interface"
+                        + " port1 belongs to VDOM root"))));
   }
 
   /**
@@ -2596,16 +2610,16 @@ final class FortiosGrammarTest {
                 .build()));
   }
 
+  /**
+   * Inside {@code config vdom -> edit <vdom1>} on real backups, unsupported blocks like {@code
+   * config vpn certificate ca} and {@code config vpn ipsec phase1-interface} appear before {@code
+   * edit <vdom2>} and {@code config router static}. Without {@code F_IgnoredLineRest}, multi-line
+   * PEM certs and escaped quotes inside those blocks escape {@code M_IgnoredConfigBlock} back to
+   * {@code DEFAULT_MODE}, causing inner {@code next}/{@code end} lines to prematurely close {@code
+   * config vdom} and drop all subsequent {@code <vdom2>} static routes into {@code root}.
+   */
   @Test
   void testStaticRouteVdomMultilineIgnored() throws IOException {
-/**
- * Inside config vdom → edit <vdom1> on real backups, unsupported blocks like config vpn certificate ca
- * and config vpn ipsec phase1-interface appear before edit <vdom2> and config router static.
- * Without F_IgnoredLineRest, multi-line PEM certs and escaped \" inside those blocks escape
- * M_IgnoredConfigBlock back to DEFAULT_MODE, causing inner next/end lines to prematurely close
- * config vdom and drop all subsequent <vdom2> static routes into root.
- **/
-
     String hostname = "static_routes_vdom_multiline_ignored";
     FortiosConfiguration vc = parseVendorConfig(hostname);
 
@@ -2652,6 +2666,59 @@ final class FortiosGrammarTest {
                 .setNetwork(Prefix.parse("192.168.2.0/24"))
                 .setNextHop(NextHopInterface.of("port2", Ip.parse("10.0.0.254")))
                 .build()));
+  }
+
+  @Test
+  void testStaticRouteVdomWarnings() throws IOException {
+    String hostname = "static_routes_vdom_warnings";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    FortiosConfiguration vc =
+        (FortiosConfiguration)
+            batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
+    assertThat(vc.getAddresses(), anEmptyMap());
+    assertThat(vc.getStaticRoutes(), hasKeys("root"));
+    assertThat(vc.getStaticRoutes("root"), hasKeys("1", "2"));
+
+    Warnings parseWarnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    assertThat(
+        parseWarnings,
+        hasParseWarnings(
+            containsInAnyOrder(
+                allOf(
+                    hasText(equalTo("config firewall address")),
+                    hasComment("Only static routes are modeled inside VDOMs")),
+                hasComment("Illegal value for VDOM name"))));
+
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+    assertThat(
+        c.getVrfs().get(computeVrfName("root", Interface.DEFAULT_VRF)).getStaticRoutes(),
+        contains(
+            org.batfish.datamodel.StaticRoute.builder()
+                .setAdmin(StaticRoute.DEFAULT_DISTANCE)
+                .setNetwork(Prefix.parse("10.0.0.0/8"))
+                .setNextHop(NextHopInterface.of("port1", Ip.parse("192.168.1.254")))
+                .build()));
+
+    Warnings conversionWarnings =
+        batfish
+            .loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot())
+            .getWarnings()
+            .get(hostname);
+    assertThat(
+        conversionWarnings,
+        hasRedFlags(
+            containsInAnyOrder(
+                WarningMatchers.hasText(
+                    "Interface mesh1 has unsupported type WL_MESH and will not be converted"),
+                WarningMatchers.hasText(
+                    "Cannot convert static route 2 in VDOM root: outgoing interface mesh1 of type"
+                        + " WL_MESH was not converted"))));
   }
 
   @Test
