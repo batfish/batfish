@@ -1,0 +1,47 @@
+
+# vdom creation at the top of the file
+config vdom
+edit root
+next
+edit software-factory
+next
+end
+
+config global
+    config system global
+        set hostname "static_routes_vdom_fmg"
+    end
+    config system interface
+        edit "port1"
+            set vdom "root"
+            set ip 192.168.1.1 255.255.255.0
+            set type physical
+        next
+        edit "port2"
+            set vdom "software-factory"
+            set ip 10.0.0.1 255.255.255.0
+            set type physical
+        next
+    end
+end
+
+config vdom
+edit root
+config router static
+    edit 1
+        set device port1
+        set gateway 192.168.1.254
+        set dst 10.0.0.0 255.0.0.0
+    next
+end
+next
+# same config backup starts next vdom definition after a next
+edit software-factory
+config router static
+    edit 1
+        set device port2
+        set gateway 10.0.0.254
+        set dst 192.168.1.0 255.255.255.0
+    next
+end
+end

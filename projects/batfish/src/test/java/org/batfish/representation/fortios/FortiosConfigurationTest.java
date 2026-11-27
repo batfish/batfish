@@ -1,6 +1,8 @@
 package org.batfish.representation.fortios;
 
+import static com.google.common.collect.Iterables.getOnlyElement;
 import static org.batfish.common.matchers.WarningMatchers.hasText;
+import static org.batfish.representation.fortios.FortiosConfiguration.computeVrfName;
 import static org.batfish.representation.fortios.FortiosConfiguration.convertAccessList;
 import static org.batfish.representation.fortios.FortiosPolicyConversions.toIpSpace;
 import static org.batfish.representation.fortios.FortiosPolicyConversions.toMatchExpr;
@@ -9,6 +11,7 @@ import static org.batfish.representation.fortios.FortiosTraceElementCreators.mat
 import static org.batfish.representation.fortios.Service.DEFAULT_SOURCE_PORT_RANGE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -16,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.google.common.base.Functions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import java.util.HashMap;
 import java.util.Set;
 import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
@@ -24,6 +28,7 @@ import org.batfish.common.bdd.HeaderSpaceToBDD;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.BddTestbed;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
@@ -35,6 +40,7 @@ import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.vendor.VendorStructureId;
 import org.junit.jupiter.api.Test;
 
@@ -410,6 +416,73 @@ class FortiosConfigurationTest {
         equalTo(
             new VendorStructureId(
                 "file", FortiosStructureType.ACCESS_LIST.getDescription(), "name")));
+  }
+
+  @Test
+  void testConvertVdomStaticRoutesWarnings() {
+    FortiosConfiguration vc = new FortiosConfiguration();
+    vc.setHostname("host");
+    vc.setFilename("filename");
+    Warnings w = new Warnings(true, true, true);
+    vc.setWarnings(w);
+
+    Interface port1 = new Interface("port1");
+    port1.setType(Interface.Type.PHYSICAL);
+    vc.getInterfaces().put(port1.getName(), port1);
+
+    Interface mesh1 = new Interface("mesh1");
+    mesh1.setType(Interface.Type.WL_MESH);
+    vc.getInterfaces().put(mesh1.getName(), mesh1);
+
+    StaticRoute missingIface = new StaticRoute("1");
+    missingIface.setDevice("missing");
+    missingIface.setDst(Prefix.parse("10.0.1.0/24"));
+
+    StaticRoute unconvIface = new StaticRoute("2");
+    unconvIface.setDevice("mesh1");
+    unconvIface.setDst(Prefix.parse("10.0.2.0/24"));
+
+    StaticRoute disabled = new StaticRoute("3");
+    disabled.setDevice("missing");
+    disabled.setStatus(StaticRoute.Status.DISABLE);
+
+    StaticRoute valid = new StaticRoute("4");
+    valid.setDevice("port1");
+    valid.setDst(Prefix.parse("10.0.4.0/24"));
+    valid.setGateway(Ip.parse("192.0.2.1"));
+
+    StaticRoute wrongVdom = new StaticRoute("5");
+    wrongVdom.setDevice("port1");
+    wrongVdom.setDst(Prefix.parse("10.0.5.0/24"));
+
+    vc.getStaticRoutes().computeIfAbsent("root", k -> new HashMap<>()).put("1", missingIface);
+    vc.getStaticRoutes().get("root").put("2", unconvIface);
+    vc.getStaticRoutes().get("root").put("3", disabled);
+    vc.getStaticRoutes().get("root").put("4", valid);
+    vc.getStaticRoutes().computeIfAbsent("other", k -> new HashMap<>()).put("5", wrongVdom);
+
+    Configuration c = getOnlyElement(vc.toVendorIndependentConfigurations());
+    assertThat(
+        c.getVrfs().get(computeVrfName("root", Interface.DEFAULT_VRF)).getStaticRoutes(),
+        contains(
+            org.batfish.datamodel.StaticRoute.builder()
+                .setAdmin(StaticRoute.DEFAULT_DISTANCE)
+                .setNetwork(Prefix.parse("10.0.4.0/24"))
+                .setNextHop(NextHopInterface.of("port1", Ip.parse("192.0.2.1")))
+                .build()));
+    assertThat(
+        w.getRedFlagWarnings(),
+        containsInAnyOrder(
+            hasText("Interface mesh1 has unsupported type WL_MESH and will not be converted"),
+            hasText(
+                "Cannot convert static route 1 in VDOM root: outgoing interface missing is"
+                    + " undefined"),
+            hasText(
+                "Cannot convert static route 2 in VDOM root: outgoing interface mesh1 of type"
+                    + " WL_MESH was not converted"),
+            hasText(
+                "Cannot convert static route 5 in VDOM other: outgoing interface port1 belongs to"
+                    + " VDOM root")));
   }
 
   private static void assertConvertsWithoutWarnings(Address address, IpSpace expected) {

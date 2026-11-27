@@ -3,11 +3,14 @@ package org.batfish.grammar.fortios;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
+import org.batfish.grammar.fortios.FortiosParser.Cve_configContext;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.representation.fortios.FortiosConfiguration;
 import org.batfish.vendor.VendorConfiguration;
@@ -44,8 +47,17 @@ public final class FortiosControlPlaneExtractor implements ControlPlaneExtractor
     // extract metadata and set defaults
     walker.walk(new FortiosPreprocessor(_parser, _w), tree);
     // build the configuration
-    walker.walk(
-        new FortiosConfigurationBuilder(_text, _parser, _w, _configuration, _silentSyntax), tree);
+    FortiosConfigurationBuilder builder =
+        new FortiosConfigurationBuilder(_text, _parser, _w, _configuration, _silentSyntax);
+    new BatfishParseTreeWalker(_parser) {
+      @Override
+      public void walk(ParseTreeListener listener, ParseTree node) {
+        if (node instanceof Cve_configContext ctx && builder.skipVdomConfig(ctx)) {
+          return;
+        }
+        super.walk(listener, node);
+      }
+    }.walk(builder, tree);
   }
 
   private final @Nonnull FortiosConfiguration _configuration;

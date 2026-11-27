@@ -1,6 +1,7 @@
 package org.batfish.grammar.fortios;
 
 import static org.batfish.grammar.fortios.FortiosLexer.UNQUOTED_WORD_CHARS;
+import static org.batfish.representation.fortios.FortiosConfiguration.DEFAULT_VDOM;
 import static org.batfish.representation.fortios.FortiosStructureUsage.BGP_UPDATE_SOURCE_INTERFACE;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -109,6 +110,8 @@ import org.batfish.grammar.fortios.FortiosParser.Cfsg_renameContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsg_set_commentContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsg_set_memberContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsga_memberContext;
+import org.batfish.grammar.fortios.FortiosParser.Config_bodyContext;
+import org.batfish.grammar.fortios.FortiosParser.Config_unsupportedContext;
 import org.batfish.grammar.fortios.FortiosParser.Cr_bgpContext;
 import org.batfish.grammar.fortios.FortiosParser.Cral_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Crale_set_commentsContext;
@@ -163,6 +166,8 @@ import org.batfish.grammar.fortios.FortiosParser.Csz_renameContext;
 import org.batfish.grammar.fortios.FortiosParser.Csz_set_descriptionContext;
 import org.batfish.grammar.fortios.FortiosParser.Csz_set_interfaceContext;
 import org.batfish.grammar.fortios.FortiosParser.Csz_set_intrazoneContext;
+import org.batfish.grammar.fortios.FortiosParser.Cv_editContext;
+import org.batfish.grammar.fortios.FortiosParser.Cve_configContext;
 import org.batfish.grammar.fortios.FortiosParser.Device_hostnameContext;
 import org.batfish.grammar.fortios.FortiosParser.Double_quoted_stringContext;
 import org.batfish.grammar.fortios.FortiosParser.Enable_or_disableContext;
@@ -1136,10 +1141,58 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   @Override
+  public void enterCv_edit(Cv_editContext ctx) {
+    _currentVdom = null;
+    if (ctx.name != null
+        && ctx.name.str_content() != null
+        && ctx.name.str_content().children != null) {
+      _currentVdom = toString(ctx.name, ctx.name, "VDOM name", VDOM_NAME_PATTERN).orElse(null);
+    } else {
+      warn(ctx, ctx.EDIT(), "VDOM edit block ignored: missing VDOM name");
+    }
+  }
+
+  @Override
+  public void exitCv_edit(Cv_editContext ctx) {
+    _currentVdom = DEFAULT_VDOM;
+  }
+
+  /**
+   * Returns {@code true} if the given VDOM-scoped config block should be skipped during walking,
+   * recording a parse warning for modeled non-static-route sections.
+   */
+  boolean skipVdomConfig(Cve_configContext ctx) {
+    if (_currentVdom == null) {
+      return true;
+    }
+    Config_bodyContext body = ctx.config_body();
+    if (body == null
+        || body.config_unsupported() != null
+        || body.IGNORED_CONFIG_BLOCK() != null
+        || (body.c_router() != null
+            && (body.c_router().cr_static() != null
+                || body.c_router().config_unsupported() != null))) {
+      return false;
+    }
+    // The remaining models use device-wide keys and cannot safely represent VDOM-local objects.
+    Token start = ctx.getStart();
+    int end = _text.indexOf('\n', start.getStartIndex());
+    String header = _text.substring(start.getStartIndex(), end < 0 ? _text.length() : end).trim();
+    _w.addWarning(ctx, header, _parser, "Only static routes are modeled inside VDOMs");
+    return true;
+  }
+
+  @Override
+  public void exitConfig_unsupported(Config_unsupportedContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
   public void enterCrs_edit(Crs_editContext ctx) {
+    assert _currentVdom != null;
     Optional<Long> routeNum = toLong(ctx, ctx.route_num());
     StaticRoute existing =
-        routeNum.map(Object::toString).map(_c.getStaticRoutes()::get).orElse(null);
+        routeNum.map(Object::toString).map(_c.getStaticRoutes(_currentVdom)::get).orElse(null);
     if (existing != null) {
       // Make a clone to edit
       _currentStaticRoute = SerializationUtils.clone(existing);
@@ -1153,7 +1206,10 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   public void exitCrs_edit(Crs_editContext ctx) {
     String invalidReason = staticRouteValid(_currentStaticRoute, _currentStaticRouteNumValid);
     if (invalidReason == null) {
-      _c.getStaticRoutes().put(_currentStaticRoute.getSeqNum(), _currentStaticRoute);
+      assert _currentVdom != null;
+      _c.getStaticRoutes()
+          .computeIfAbsent(_currentVdom, vdom -> new HashMap<>())
+          .put(_currentStaticRoute.getSeqNum(), _currentStaticRoute);
     } else {
       warn(ctx, String.format("Static route edit block ignored: %s", invalidReason));
     }
@@ -3141,6 +3197,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   // TODO determine more precise limitations on allowed chars for route-map name
   private static final Pattern ROUTE_MAP_NAME_PATTERN = Pattern.compile("^[^ \r\n()'\"#<>]{1,35}$");
   private static final Pattern SERVICE_NAME_PATTERN = Pattern.compile("^[^\r\n]{1,79}$");
+  private static final Pattern VDOM_NAME_PATTERN = Pattern.compile("^[^\r\n]{1,31}$");
   private static final Pattern WORD_PATTERN = Pattern.compile("^[^ \t\r\n]+$");
   private static final Pattern ZONE_NAME_PATTERN = Pattern.compile("^[^\r\n]{1,35}$");
 
@@ -3218,6 +3275,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private ServiceGroup _currentServiceGroup;
   private boolean _currentServiceGroupNameValid;
 
+  private @Nullable String _currentVdom = DEFAULT_VDOM;
   private StaticRoute _currentStaticRoute;
   private boolean _currentStaticRouteNumValid;
   private Zone _currentZone;

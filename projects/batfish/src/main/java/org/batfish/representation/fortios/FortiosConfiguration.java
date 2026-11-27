@@ -16,13 +16,13 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -50,6 +50,8 @@ import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.VendorStructureId;
 
 public class FortiosConfiguration extends VendorConfiguration {
+
+  public static final String DEFAULT_VDOM = "root";
 
   public FortiosConfiguration() {
     _accessLists = new HashMap<>();
@@ -141,9 +143,14 @@ public class FortiosConfiguration extends VendorConfiguration {
     return _serviceGroups;
   }
 
-  /** route seq num -> static route */
-  public @Nonnull Map<String, StaticRoute> getStaticRoutes() {
+  /** vdom -> route seq num -> static route */
+  public @Nonnull Map<String, Map<String, StaticRoute>> getStaticRoutes() {
     return _staticRoutes;
+  }
+
+  /** Returns the static routes in the given VDOM. */
+  public @Nonnull Map<String, StaticRoute> getStaticRoutes(String vdom) {
+    return _staticRoutes.getOrDefault(vdom, ImmutableMap.of());
   }
 
   /** name -> zone */
@@ -172,7 +179,7 @@ public class FortiosConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, RouteMap> _routeMaps;
   private final @Nonnull Map<String, Service> _services;
   private final @Nonnull Map<String, ServiceGroup> _serviceGroups;
-  private final @Nonnull Map<String, StaticRoute> _staticRoutes;
+  private final @Nonnull Map<String, Map<String, StaticRoute>> _staticRoutes;
   private final @Nonnull Map<String, Zone> _zones;
 
   private @Nullable BgpProcess _bgpProcess;
@@ -223,13 +230,8 @@ public class FortiosConfiguration extends VendorConfiguration {
       convertBgp(_bgpProcess, c, _w);
     }
 
-    // TODO Are FortiOS static routes really global? Can't set their VRFs. Perhaps they should
-    //  only exist in their device's VRF.
-    // Convert static routes and add them to every VRF. Must happen after all VRFs are created
-    // (interfaces must be converted).
-    SortedSet<org.batfish.datamodel.StaticRoute> viStaticRoutes =
-        convertStaticRoutes(_staticRoutes.values());
-    c.getVrfs().values().forEach(vrf -> vrf.setStaticRoutes(viStaticRoutes));
+    // Static routes use the VRF of their outgoing interface.
+    convertVdomStaticRoutes(c);
 
     // Count structure references
     markConcreteStructure(FortiosStructureType.ROUTE_MAP);
@@ -242,6 +244,43 @@ public class FortiosConfiguration extends VendorConfiguration {
     markConcreteStructure(FortiosStructureType.ACCESS_LIST);
     markConcreteStructure(FortiosStructureType.POLICY);
     return c;
+  }
+
+  private void convertVdomStaticRoutes(Configuration c) {
+    Map<String, List<StaticRoute>> routesByVrf = new HashMap<>();
+    _staticRoutes.forEach((vdom, routes) -> {
+      for (StaticRoute route : routes.values()) {
+        if (!route.getStatusEffective()) {
+          continue;
+        }
+        String device = route.getDevice();
+        Interface iface = _interfaces.get(device);
+        if (iface == null) {
+          _w.redFlagf(
+              "Cannot convert static route %s in VDOM %s: outgoing interface %s is undefined",
+              route.getSeqNum(), vdom, device);
+          continue;
+        }
+        String interfaceVdom = iface.getVdomEffective();
+        if (!vdom.equals(interfaceVdom)) {
+          _w.redFlagf(
+              "Cannot convert static route %s in VDOM %s: outgoing interface %s belongs to VDOM %s",
+              route.getSeqNum(), vdom, device, interfaceVdom);
+          continue;
+        }
+        org.batfish.datamodel.Interface converted = c.getAllInterfaces().get(device);
+        if (converted == null) {
+          _w.redFlagf(
+              "Cannot convert static route %s in VDOM %s: outgoing interface %s of type %s was not"
+                  + " converted",
+              route.getSeqNum(), vdom, device, iface.getTypeEffective());
+          continue;
+        }
+        routesByVrf.computeIfAbsent(converted.getVrfName(), vrf -> new ArrayList<>()).add(route);
+      }
+    });
+    routesByVrf.forEach(
+        (vrf, routes) -> c.getVrfs().get(vrf).setStaticRoutes(convertStaticRoutes(routes)));
   }
 
   @VisibleForTesting
@@ -274,9 +313,7 @@ public class FortiosConfiguration extends VendorConfiguration {
           iface.getName(), iface.getTypeEffective());
       return;
     }
-    String vdom = iface.getVdom();
-    assert vdom != null; // An interface with no VDOM set should fail in extraction
-    String vrfName = computeVrfName(vdom, iface.getVrfEffective());
+    String vrfName = computeVrfName(iface.getVdomEffective(), iface.getVrfEffective());
     // Referencing a VRF in an interface implicitly creates it
     Vrf vrf = c.getVrfs().computeIfAbsent(vrfName, name -> Vrf.builder().setName(name).build());
     org.batfish.datamodel.Interface.Builder viIface =

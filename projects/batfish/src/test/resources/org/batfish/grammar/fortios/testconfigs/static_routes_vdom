@@ -1,0 +1,77 @@
+config global
+    config system global
+        set hostname "static_routes_vdom"
+    end
+    config system interface
+        # port1 uses the default root VDOM.
+        edit "port1"
+            set ip 192.168.1.1 255.255.255.0
+            set type physical
+        next
+        edit "port2"
+            set vdom "software-factory"
+            set vrf 7
+            set ip 10.0.0.1 255.255.255.0
+            set type physical
+        next
+        edit "npu0_vlink0"
+            set vdom "root"
+            set type physical
+        next
+        edit "npu0_vlink1"
+            set vdom "software-factory"
+            set type physical
+        next
+        edit "root_vl0_10"
+            set vdom "root"
+            set ip 172.16.254.1 255.255.255.248
+            set interface "npu0_vlink0"
+            set vlanid 10
+        next
+        edit "sw_fact_vl1_10"
+            set vdom "software-factory"
+            set ip 172.16.254.2 255.255.255.248
+            set interface "npu0_vlink1"
+            set vlanid 10
+        next
+    end
+end
+
+# root VDOM
+config vdom
+edit root
+config router static
+    edit 0
+        set device port1
+        set gateway 192.168.1.10
+    next
+    edit 1
+        set device port1
+        set dst 1.1.1.1 255.255.255.0
+        set gateway 2.2.2.2
+    next
+end
+next
+end
+
+# second VDOM
+config vdom
+edit software-factory
+config router static
+    # default route to root vdom
+    edit 0
+        set gateway 172.16.254.1
+        set device "sw_fact_vl1_10"
+    next
+    edit 1
+        set gateway 10.0.0.254
+        set dst 8.8.8.8 255.255.255.0
+        set device "port2"
+    next
+    edit 2
+        set dst 203.0.113.0 255.255.255.0
+        set device "port1"
+    next
+end
+next
+end

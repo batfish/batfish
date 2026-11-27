@@ -19,6 +19,7 @@ Different vendors have unique configuration formats and parsing requirements. Fo
 
 - [Cisco IOS](vendors/cisco_ios.md) - why the `cisco` grammar is IOS-only, and what that means for the formats still routed through it
 - [Cisco IOS-XR](vendors/ios_xr.md) - IOS-XR-specific parsing and extraction details
+- [FortiOS](vendors/fortios.md) - VDOM scoping in configuration backups
 - [Juniper](vendors/juniper.md) - Juniper-specific parsing and extraction details
 - [Nokia SR-OS](vendors/sros.md) - SR-OS-specific parsing and extraction details
 - [ANTLR4 Tips and Tricks](antlr4_tips.md) - Practical ANTLR4 patterns, lexer rules, parser design, debugging
