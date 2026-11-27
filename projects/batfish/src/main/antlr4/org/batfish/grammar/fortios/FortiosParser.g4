@@ -15,6 +15,7 @@ import
   Fortios_service,
   Fortios_static,
   Fortios_system,
+  Fortios_vdom,
   Fortios_zone;
 
 options {
@@ -26,12 +27,21 @@ fortios_configuration: NEWLINE? statement+ EOF;
 
 statement: s_config;
 
-s_config
+s_config: CONFIG (c_global | c_vdom | config_body);
+
+c_global: GLOBAL NEWLINE cg_config* END NEWLINE;
+
+cg_config: CONFIG config_body;
+
+config_body
 :
-    CONFIG (
+    (
         c_system
         | c_firewall
         | c_router
+        | config_unsupported
         | IGNORED_CONFIG_BLOCK
     ) END NEWLINE
 ;
+
+config_unsupported: UNSUPPORTED_CONFIG_BLOCK;

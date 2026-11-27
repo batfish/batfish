@@ -9,6 +9,7 @@ c_system: SYSTEM (
   | cs_interface
   | cs_replacemsg
   | cs_zone
+  | config_unsupported
   | IGNORED_CONFIG_BLOCK
 );
 

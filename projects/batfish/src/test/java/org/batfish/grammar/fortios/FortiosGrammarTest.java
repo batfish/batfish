@@ -2320,10 +2320,11 @@ final class FortiosGrammarTest {
     String hostname = "static_routes";
     FortiosConfiguration vc = parseVendorConfig(hostname);
 
-    assertThat(vc.getStaticRoutes(), hasKeys("0", "1", "2", "4294967295"));
+    assertThat(vc.getStaticRoutes(), hasKeys("root"));
+    assertThat(vc.getStaticRoutes("root"), hasKeys("0", "1", "2", "4294967295"));
 
     // All values explicitly configured
-    StaticRoute r0 = vc.getStaticRoutes().get("0");
+    StaticRoute r0 = vc.getStaticRoutes("root").get("0");
     assertThat(r0.getDevice(), equalTo("port1"));
     assertThat(r0.getDistance(), equalTo(20));
     assertThat(r0.getDst(), equalTo(Prefix.parse("1.1.1.0/24")));
@@ -2332,7 +2333,7 @@ final class FortiosGrammarTest {
     assertThat(r0.getStatus(), equalTo(StaticRoute.Status.ENABLE));
 
     // All values default except device (which is required to be set)
-    StaticRoute r1 = vc.getStaticRoutes().get("1");
+    StaticRoute r1 = vc.getStaticRoutes("root").get("1");
     assertThat(r1.getDevice(), equalTo("port1"));
     assertNull(r1.getDistance());
     assertThat(r1.getDistanceEffective(), equalTo(StaticRoute.DEFAULT_DISTANCE));
@@ -2345,12 +2346,12 @@ final class FortiosGrammarTest {
     assertTrue(r1.getStatusEffective());
 
     // SD-WAN enabled; default distance should reflect that
-    StaticRoute r2 = vc.getStaticRoutes().get("2");
+    StaticRoute r2 = vc.getStaticRoutes("root").get("2");
     assertThat(r2.getSdwanEnabled(), equalTo(true));
     assertThat(r2.getDistanceEffective(), equalTo(StaticRoute.DEFAULT_DISTANCE_SDWAN));
 
     // Disabled (also max seq num)
-    StaticRoute r4294967295 = vc.getStaticRoutes().get("4294967295");
+    StaticRoute r4294967295 = vc.getStaticRoutes("root").get("4294967295");
     assertThat(r4294967295.getStatus(), equalTo(StaticRoute.Status.DISABLE));
   }
 
@@ -2426,6 +2427,231 @@ final class FortiosGrammarTest {
             FortiosStructureType.INTERFACE,
             "port1",
             FortiosStructureUsage.STATIC_ROUTE_DEVICE));
+  }
+
+  @Test
+  void testStaticRouteVdomExtraction() {
+    String hostname = "static_routes_vdom";
+    FortiosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getStaticRoutes(), hasKeys("root", "software-factory"));
+
+    // root VDOM routes
+    Map<String, StaticRoute> rootRoutes = vc.getStaticRoutes("root");
+    assertThat(rootRoutes, hasKeys("0", "1"));
+    assertThat(rootRoutes.get("0").getDevice(), equalTo("port1"));
+    assertThat(rootRoutes.get("1").getDst(), equalTo(Prefix.parse("1.1.1.0/24")));
+    assertThat(rootRoutes.get("1").getGateway(), equalTo(Ip.parse("2.2.2.2")));
+
+    // software-factory VDOM routes
+    Map<String, StaticRoute> swRoutes = vc.getStaticRoutes("software-factory");
+    assertThat(swRoutes, hasKeys("0", "1", "2"));
+    assertThat(swRoutes.get("0").getGateway(), equalTo(Ip.parse("172.16.254.1")));
+    assertThat(swRoutes.get("0").getDevice(), equalTo("sw_fact_vl1_10"));
+    assertThat(swRoutes.get("1").getDevice(), equalTo("port2"));
+    assertThat(swRoutes.get("1").getGateway(), equalTo(Ip.parse("10.0.0.254")));
+    assertThat(swRoutes.get("1").getDst(), equalTo(Prefix.parse("8.8.8.0/24")));
+    assertThat(swRoutes.get("2").getDevice(), equalTo("port1"));
+  }
+
+  @Test
+  void testStaticRouteVdomConversion() throws IOException {
+    String hostname = "static_routes_vdom";
+    Configuration c = parseConfig(hostname);
+
+    Set<org.batfish.datamodel.StaticRoute> rootRoutes =
+        c.getVrfs().get(computeVrfName("root", Interface.DEFAULT_VRF)).getStaticRoutes();
+    Set<org.batfish.datamodel.StaticRoute> swDefaultRoutes =
+        c.getVrfs()
+            .get(computeVrfName("software-factory", Interface.DEFAULT_VRF))
+            .getStaticRoutes();
+    Set<org.batfish.datamodel.StaticRoute> swVrf7Routes =
+        c.getVrfs().get(computeVrfName("software-factory", 7)).getStaticRoutes();
+
+    assertThat(
+        rootRoutes,
+        containsInAnyOrder(
+            org.batfish.datamodel.StaticRoute.builder()
+                .setAdmin(StaticRoute.DEFAULT_DISTANCE)
+                .setNetwork(Prefix.ZERO)
+                .setNextHop(NextHopInterface.of("port1", Ip.parse("192.168.1.10")))
+                .build(),
+            org.batfish.datamodel.StaticRoute.builder()
+                .setAdmin(StaticRoute.DEFAULT_DISTANCE)
+                .setNetwork(Prefix.parse("1.1.1.0/24"))
+                .setNextHop(NextHopInterface.of("port1", Ip.parse("2.2.2.2")))
+                .build()));
+
+    assertThat(
+        swDefaultRoutes,
+        contains(
+            org.batfish.datamodel.StaticRoute.builder()
+                .setAdmin(StaticRoute.DEFAULT_DISTANCE)
+                .setNetwork(Prefix.ZERO)
+                .setNextHop(NextHopInterface.of("sw_fact_vl1_10", Ip.parse("172.16.254.1")))
+                .build()));
+    assertThat(
+        swVrf7Routes,
+        contains(
+            org.batfish.datamodel.StaticRoute.builder()
+                .setAdmin(StaticRoute.DEFAULT_DISTANCE)
+                .setNetwork(Prefix.parse("8.8.8.0/24"))
+                .setNextHop(NextHopInterface.of("port2", Ip.parse("10.0.0.254")))
+                .build()));
+  }
+
+  /**
+   * Verifies that VDOM config blocks using end/end (no "next") are parsed correctly, and that route
+   * sequence numbers are scoped per-VDOM (multiple VDOMs can reuse the same ID).
+   */
+  @Test
+  void testStaticRouteVdomNoNextExtraction() {
+    String hostname = "static_routes_vdom_no_next";
+    FortiosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getStaticRoutes(), hasKeys("root", "software-factory"));
+
+    Map<String, StaticRoute> rootRoutes = vc.getStaticRoutes("root");
+    assertThat(rootRoutes, hasKeys("1"));
+    assertThat(rootRoutes.get("1").getDevice(), equalTo("port1"));
+
+    Map<String, StaticRoute> swRoutes = vc.getStaticRoutes("software-factory");
+    assertThat(swRoutes, hasKeys("1"));
+    assertThat(swRoutes.get("1").getDevice(), equalTo("port2"));
+  }
+
+  @Test
+  void testStaticRouteVdomEndExtraction() throws IOException {
+    assertStaticRouteVdomExtraction("static_routes_vdom_end", "primary");
+    Batfish batfish = getBatfishForConfigurationNames("static_routes_vdom_end");
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    assertThat(
+        warnings,
+        hasParseWarning(
+            allOf(
+                hasText(equalTo("config router bgp")),
+                hasComment("Only static routes are modeled inside VDOMs"))));
+    assertThat(
+        warnings,
+        hasParseWarning(allOf(hasText(equalTo("ospf")), hasComment(Warnings.TODO_COMMENT))));
+  }
+
+  @Test
+  void testStaticRouteVdomFmgExtraction() {
+    assertStaticRouteVdomExtraction("static_routes_vdom_fmg", "root");
+  }
+
+  private void assertStaticRouteVdomExtraction(String hostname, String firstVdom) {
+    FortiosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getHostname(), equalTo(hostname));
+    assertThat(vc.getBgpProcess(), nullValue());
+    assertThat(vc.getStaticRoutes(), hasKeys(firstVdom, "software-factory"));
+
+    Map<String, StaticRoute> firstRoutes = vc.getStaticRoutes(firstVdom);
+    assertThat(firstRoutes, hasKeys("1"));
+    assertThat(firstRoutes.get("1").getDst(), equalTo(Prefix.parse("10.0.0.0/8")));
+
+    Map<String, StaticRoute> swRoutes = vc.getStaticRoutes("software-factory");
+    assertThat(swRoutes, hasKeys("1"));
+    assertThat(swRoutes.get("1").getDst(), equalTo(Prefix.parse("192.168.1.0/24")));
+  }
+
+  @Test
+  void testStaticRouteVdomNoNextConversion() throws IOException {
+    String hostname = "static_routes_vdom_no_next";
+    Configuration c = parseConfig(hostname);
+
+    Set<org.batfish.datamodel.StaticRoute> rootRoutes =
+        c.getVrfs().get(computeVrfName("root", Interface.DEFAULT_VRF)).getStaticRoutes();
+    assertThat(rootRoutes, hasSize(1));
+
+    Set<org.batfish.datamodel.StaticRoute> swRoutes =
+        c.getVrfs()
+            .get(computeVrfName("software-factory", Interface.DEFAULT_VRF))
+            .getStaticRoutes();
+    assertThat(swRoutes, hasSize(1));
+
+    // root route 1 must not appear in software-factory and vice versa
+    assertThat(
+        rootRoutes,
+        containsInAnyOrder(
+            org.batfish.datamodel.StaticRoute.builder()
+                .setAdmin(StaticRoute.DEFAULT_DISTANCE)
+                .setNetwork(Prefix.parse("10.0.0.0/8"))
+                .setNextHop(NextHopInterface.of("port1", Ip.parse("192.168.1.254")))
+                .build()));
+    assertThat(
+        swRoutes,
+        containsInAnyOrder(
+            org.batfish.datamodel.StaticRoute.builder()
+                .setAdmin(StaticRoute.DEFAULT_DISTANCE)
+                .setNetwork(Prefix.parse("192.168.1.0/24"))
+                .setNextHop(NextHopInterface.of("port2", Ip.parse("10.0.0.254")))
+                .build()));
+  }
+
+  @Test
+  void testStaticRouteVdomMultilineIgnored() throws IOException {
+/**
+ * Inside config vdom → edit <vdom1> on real backups, unsupported blocks like config vpn certificate ca
+ * and config vpn ipsec phase1-interface appear before edit <vdom2> and config router static.
+ * Without F_IgnoredLineRest, multi-line PEM certs and escaped \" inside those blocks escape
+ * M_IgnoredConfigBlock back to DEFAULT_MODE, causing inner next/end lines to prematurely close
+ * config vdom and drop all subsequent <vdom2> static routes into root.
+ **/
+
+    String hostname = "static_routes_vdom_multiline_ignored";
+    FortiosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getHostname(), equalTo(hostname));
+    assertThat(vc.getStaticRoutes(), hasKeys("root", "legacy"));
+    assertThat(vc.getStaticRoutes("root"), hasKeys("1"));
+    assertThat(vc.getStaticRoutes("root").get("1").getDevice(), equalTo("port1"));
+    assertThat(vc.getStaticRoutes("legacy"), hasKeys("1"));
+    assertThat(vc.getStaticRoutes("legacy").get("1").getDevice(), equalTo("port2"));
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    assertThat(warnings, not(hasParseWarning(hasComment("This syntax is unrecognized"))));
+    assertThat(
+        warnings,
+        hasParseWarnings(
+            contains(
+                allOf(hasText(equalTo("vpn")), hasComment(Warnings.TODO_COMMENT)),
+                allOf(hasText(equalTo("vpn")), hasComment(Warnings.TODO_COMMENT)),
+                allOf(hasText(equalTo("vpn")), hasComment(Warnings.TODO_COMMENT)))));
+    assertThat(
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot()).getWarnings(),
+        not(hasKey(hostname)));
+
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+    assertThat(
+        c.getVrfs().get(computeVrfName("root", Interface.DEFAULT_VRF)).getStaticRoutes(),
+        containsInAnyOrder(
+            org.batfish.datamodel.StaticRoute.builder()
+                .setAdmin(StaticRoute.DEFAULT_DISTANCE)
+                .setNetwork(Prefix.parse("10.0.0.0/8"))
+                .setNextHop(NextHopInterface.of("port1", Ip.parse("192.168.1.254")))
+                .build()));
+    assertThat(
+        c.getVrfs().get(computeVrfName("legacy", Interface.DEFAULT_VRF)).getStaticRoutes(),
+        containsInAnyOrder(
+            org.batfish.datamodel.StaticRoute.builder()
+                .setAdmin(StaticRoute.DEFAULT_DISTANCE)
+                .setNetwork(Prefix.parse("192.168.2.0/24"))
+                .setNextHop(NextHopInterface.of("port2", Ip.parse("10.0.0.254")))
+                .build()));
   }
 
   @Test

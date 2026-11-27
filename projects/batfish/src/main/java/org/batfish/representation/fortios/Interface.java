@@ -1,6 +1,7 @@
 package org.batfish.representation.fortios;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.representation.fortios.FortiosConfiguration.DEFAULT_VDOM;
 
 import com.google.common.annotations.VisibleForTesting;
 import java.io.Serializable;
@@ -68,6 +69,11 @@ public final class Interface implements InterfaceOrZone, Serializable {
 
   public @Nullable String getVdom() {
     return _vdom;
+  }
+
+  /** Interfaces belong to the root VDOM by default. */
+  public @Nonnull String getVdomEffective() {
+    return firstNonNull(_vdom, DEFAULT_VDOM);
   }
 
   public @Nullable ConcreteInterfaceAddress getIp() {
