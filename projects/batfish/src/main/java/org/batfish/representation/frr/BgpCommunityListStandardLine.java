@@ -1,8 +1,10 @@
 package org.batfish.representation.frr;
 
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 
@@ -26,5 +28,21 @@ public final class BgpCommunityListStandardLine implements Serializable {
 
   public @Nonnull Set<StandardCommunity> getCommunities() {
     return _communities;
+  }
+
+  @Override
+  public boolean equals(@Nullable Object o) {
+    if (this == o) {
+      return true;
+    } else if (!(o instanceof BgpCommunityListStandardLine)) {
+      return false;
+    }
+    BgpCommunityListStandardLine that = (BgpCommunityListStandardLine) o;
+    return _action == that._action && _communities.equals(that._communities);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_action.ordinal(), _communities);
   }
 }

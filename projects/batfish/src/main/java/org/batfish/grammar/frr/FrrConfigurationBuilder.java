@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -1829,9 +1830,11 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
       return;
     }
     BgpCommunityListExpanded communityListExpanded = (BgpCommunityListExpanded) communityList;
-    communityListExpanded
-        .getLines()
-        .add(new BgpCommunityListExpandedLine(toLineAction(ctx.action), regex));
+    addLineBySeq(
+        ctx,
+        communityListExpanded.getLines(),
+        ctx.seq,
+        new BgpCommunityListExpandedLine(toLineAction(ctx.action), regex));
     _vc.defineStructure(BGP_COMMUNITY_LIST_EXPANDED, name, ctx);
   }
 
@@ -1857,9 +1860,11 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
       return;
     }
     BgpCommunityListStandard communityListStandard = (BgpCommunityListStandard) communityList;
-    communityListStandard
-        .getLines()
-        .add(new BgpCommunityListStandardLine(toLineAction(ctx.action), communities.get()));
+    addLineBySeq(
+        ctx,
+        communityListStandard.getLines(),
+        ctx.seq,
+        new BgpCommunityListStandardLine(toLineAction(ctx.action), communities.get()));
     _vc.defineStructure(BGP_COMMUNITY_LIST_STANDARD, name, ctx);
   }
 
@@ -1941,9 +1946,11 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     String name = ctx.name.getText();
     LineAction action = toLineAction(ctx.action);
     String regex = ctx.as_path_regex.getText();
-    _frr.getBgpAsPathAccessLists()
-        .computeIfAbsent(name, BgpAsPathAccessList::new)
-        .addLine(new BgpAsPathAccessListLine(action, regex));
+    addLineBySeq(
+        ctx,
+        _frr.getBgpAsPathAccessLists().computeIfAbsent(name, BgpAsPathAccessList::new).getLines(),
+        ctx.seq,
+        new BgpAsPathAccessListLine(action, regex));
     _vc.defineStructure(BGP_AS_PATH_ACCESS_LIST, name, ctx);
   }
 
@@ -2019,6 +2026,44 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     }
     Ipv6PrefixListLine pll = new Ipv6PrefixListLine(action, num, prefix, range);
     _currentIpv6PrefixList.getLines().put(num, pll);
+  }
+
+  /**
+   * Adds {@code line} to {@code lines} the way FRR adds an entry to a community-list or as-path
+   * access-list. An entry the list already has is dropped. An omitted sequence number becomes the
+   * next multiple of 5 after the highest one. An entry whose sequence number is already in use
+   * replaces the earlier entry.
+   */
+  private <T> void addLineBySeq(
+      ParserRuleContext ctx, SortedMap<Long, T> lines, @Nullable Uint32Context seqCtx, T line) {
+    @Nullable Long seq = seqCtx == null ? null : toLong(seqCtx);
+    Optional<Long> existingSeq =
+        lines.entrySet().stream()
+            .filter(e -> e.getValue().equals(line))
+            .map(Map.Entry::getKey)
+            .findFirst();
+    if (existingSeq.isPresent()) {
+      if (seq != null && !seq.equals(existingSeq.get())) {
+        _w.addRiskyWarning(
+            ctx,
+            getFullText(ctx),
+            _parser,
+            String.format(
+                "FRR ignores this entry because the list already has it at seq %d",
+                existingSeq.get()));
+      }
+      return;
+    }
+    if (seq == null) {
+      seq = nextMultipleOfFive(lines.isEmpty() ? null : lines.lastKey());
+    } else if (lines.containsKey(seq)) {
+      _w.addRiskyWarning(
+          ctx,
+          getFullText(ctx),
+          _parser,
+          String.format("This entry replaces the earlier entry with seq %d", seq));
+    }
+    lines.put(seq, line);
   }
 
   @VisibleForTesting

@@ -1715,7 +1715,7 @@ public final class FrrConversions {
     Set<Community> blacklist = new HashSet<>();
 
     // TODO: support set comm-list delete semantics for line with more than one community
-    for (BgpCommunityListStandardLine line : bgpCommunityListStandard.getLines()) {
+    for (BgpCommunityListStandardLine line : bgpCommunityListStandard.getLines().values()) {
       if (line.getCommunities().size() != 1) {
         continue;
       }
@@ -1738,7 +1738,7 @@ public final class FrrConversions {
   static @Nonnull CommunityMatchExpr toCommunityMatchExpr(
       BgpCommunityListExpanded bgpCommunityListExpanded) {
     return CommunityAcl.acl(
-        bgpCommunityListExpanded.getLines().stream()
+        bgpCommunityListExpanded.getLines().values().stream()
             .map(FrrConversions::toCommunityAclLine)
             .collect(ImmutableList.toImmutableList()));
   }
@@ -1746,7 +1746,7 @@ public final class FrrConversions {
   private static @Nonnull CommunitySetMatchExpr toCommunitySetMatchExpr(
       BgpCommunityListStandard bgpCommunityListStandard) {
     return CommunitySetAcl.acl(
-        bgpCommunityListStandard.getLines().stream()
+        bgpCommunityListStandard.getLines().values().stream()
             .map(FrrConversions::toCommunitySetAclLine)
             .collect(ImmutableList.toImmutableList()));
   }
@@ -1754,7 +1754,7 @@ public final class FrrConversions {
   private static @Nonnull CommunitySetMatchExpr toCommunitySetMatchExpr(
       BgpCommunityListExpanded bgpCommunityListExpanded) {
     return CommunitySetAcl.acl(
-        bgpCommunityListExpanded.getLines().stream()
+        bgpCommunityListExpanded.getLines().values().stream()
             .map(FrrConversions::toCommunitySetAclLine)
             .collect(ImmutableList.toImmutableList()));
   }
@@ -1801,7 +1801,7 @@ public final class FrrConversions {
   static @Nonnull AsPathAccessList toAsPathAccessList(BgpAsPathAccessList asPathAccessList) {
     String name = asPathAccessList.getName();
     List<AsPathAccessListLine> lines =
-        asPathAccessList.getLines().stream()
+        asPathAccessList.getLines().values().stream()
             // TODO Check FRR AS path match semantics.
             // This regex assumes we should match any path containing the specified ASN anywhere.
             .map(line -> new AsPathAccessListLine(line.getAction(), line.getRegex()))
